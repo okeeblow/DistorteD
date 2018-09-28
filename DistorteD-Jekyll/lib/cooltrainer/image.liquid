@@ -1,0 +1,17 @@
+<div class="image-wrapper {{ float }}" >
+    {% if url %}
+        {% if url == 'original' %}
+            {%- capture url %}{{ image }}{% endcapture -%}
+        {% else %}
+            {%- assign url = url -%}
+        {% endif %}
+        <a href="{{ url }}" title="{{ title }}" target="_blank">
+    {% endif %}
+    <img src="{{ image }}" alt="{{ alt }}" title="{{ title }}"/>
+    {% if url %}
+    </a>
+    {% endif %}
+    {% if caption %}
+        <p class="image-caption">{{ caption }}</p>
+    {% endif %}
+</div>
