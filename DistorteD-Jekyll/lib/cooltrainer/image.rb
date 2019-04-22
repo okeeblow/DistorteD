@@ -1,9 +1,11 @@
 require "cooltrainer/image/version"
-
 require "liquid/tag/parser"
 
-module Cooltrainer
-  class ImageTag < Liquid::Tag
+module Jekyll
+  class ImageFiles < Jekyll::StaticFile
+
+  end
+  class CooltrainerImage < Liquid::Tag
     def initialize(tag_name, arguments, liquid_options)
       super
       parsed_arguments = Liquid::Tag::Parser.new(arguments)
@@ -29,5 +31,5 @@ module Cooltrainer
   end
 end
 
-Liquid::Template.register_tag('coolimage', Cooltrainer::ImageTag)
+Liquid::Template.register_tag('coolimage', Jekyll::CooltrainerImage)
 
