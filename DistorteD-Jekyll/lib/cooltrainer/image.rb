@@ -1,3 +1,4 @@
+require "pathname"
 require "cooltrainer/image/version"
 require "liquid/tag/parser"
 
@@ -32,6 +33,14 @@ module Jekyll
 
   end
   class CooltrainerImage < Liquid::Tag
+
+    class ImageNotFoundError < ArgumentError
+      attr_reader :image
+      def initialize(image)
+        super("The specified image path #{image} was not found")
+      end
+    end
+
     def initialize(tag_name, arguments, liquid_options)
       super
       @tag_name = tag_name
@@ -55,10 +64,10 @@ module Jekyll
       # `path` is the path of the Markdown source file that included our tag,
       # relative to the project root.
       # Example: _posts/2019-04-20/laundry-day-is-a-very-dangerous-day.markdown
-      page_markdown_path = page_data["path"]
+      markdown_path = Pathname.new(page_data["path"])
       Jekyll.logger.debug(
         @tag_name,
-        "Initializing CooltrainerImage for #{@image} in #{page_markdown_path}"
+        "Initializing CooltrainerImage for #{@image} in #{markdown_path}"
       )
       return template.render({
         "image" => @image,
@@ -67,6 +76,15 @@ module Jekyll
         "url" => @url,
         "caption" => @caption,
       })
+      image_path = markdown_path.dirname + @image
+      if FileTest.exist?(image_path)
+        Jekyll.logger.debug(@tag_name, "#{image_path} exists")
+        @image_src_path = image_path
+      else
+        Jekyll.logger.error(@tag_name, "#{image_path} does not exist")
+        # TODO: Enable/disable raising exceptions via a _config.yaml toggle.
+        raise ImageNotFoundError.new(image_path)
+      end
 
       # `url` is the intended URL of the final rendered page, relative to the
       # site's root URL. This can be explicitly defined in the Markdown
