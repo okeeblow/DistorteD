@@ -29,4 +29,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "liquid", "~> 4.0"
   spec.add_dependency "liquid-tag-parser", "~> 1.9"
+  spec.add_dependency "ruby-vips", "~> 2.0"
 end

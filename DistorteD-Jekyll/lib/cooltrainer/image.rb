@@ -1,6 +1,32 @@
 require "cooltrainer/image/version"
 require "liquid/tag/parser"
 
+# Tell the user to install the shared library if it's missing.
+begin
+  require "vips"
+rescue LoadError => le
+  # Only match libvips.so load failure
+  raise unless le.message =~ /libvips.so/
+
+  # Multiple OS help
+  help = <<~INSTALL
+
+  Please install the libvips image processing library.
+
+  FreeBSD:
+    pkg install graphics/vips
+
+  macOS:
+    brew install vips
+
+  Debian/Ubuntu/Mint:
+    apt install libvips libvips-dev
+  INSTALL
+
+  # Re-raise with install message
+  raise $!, "#{help}\n#{$!}", $!.backtrace
+end
+
 module Jekyll
   class ImageFiles < Jekyll::StaticFile
 
