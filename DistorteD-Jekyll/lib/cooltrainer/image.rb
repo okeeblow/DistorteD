@@ -32,8 +32,48 @@ end
 module Jekyll
   # Tag-specific StaticFile child that handles thumbnail generation.
   class ImageFile < Jekyll::StaticFile
+    def initialize(
+        site,
+        site_source_path,
+        relative_original_image_directory,
+        destination_filename,
+        page_destination_directory,
+        image_pipeline,
+        dimensions
+    )
+      # Construct a Jekyll::StaticFile for this image size, though we haven't
+      # yet generated the resized image at `destination_filename`.
+      super(
+        site,
+        site_source_path,
+        relative_original_image_directory,
+        destination_filename
+      )
+      @destination_filename = destination_filename
+      @page_destination_directory = page_destination_directory
 
+      # Split String arg e.g. "153x426" dimensions into Int list e.g. [153, 426]
+      bounding_box = dimensions.split('x').map! { |x| Integer(x) }
+
+      # Resize to the given dimensions, and returning a Vips::Image
+      # instead of saving over the original filename.
+      resized_image = image_pipeline.resize_to_limit(
+        *bounding_box
+      ).call(save: false)
+
+      # Write the Vips::Image to the size-specific filename.
+      resized_image.write_to_file destination
+      Jekyll.logger.debug("ImageFile", "Wrote #{destination} #{bounding_box}")
+
+      # Tell Jekyll we modified this file so it will be included in the output.
+      @modified = true
+    end
+
+    def destination
+      File.join(@page_destination_directory, @destination_filename)
+    end
   end
+
   class CooltrainerImage < Liquid::Tag
 
     class ImageNotFoundError < ArgumentError
