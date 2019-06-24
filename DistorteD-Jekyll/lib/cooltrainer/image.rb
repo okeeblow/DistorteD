@@ -79,7 +79,17 @@ module Jekyll
         "url" => @url,
         "caption" => @caption,
       })
+    end
 
+    # Generate a size-specific filename for an image.
+    # Ex: "tidd.png" for setting "large"=>"1200x750" = "tidd-large.png"
+    def image_name(image_filename, size_name)
+      return [
+        File.basename(image_filename, ".*"),
+        "-",
+        size_name,
+        File.extname(image_filename)
+      ].join()
     end
   end
 end
