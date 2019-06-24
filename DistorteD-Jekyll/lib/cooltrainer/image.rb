@@ -1,6 +1,7 @@
 require "pathname"
 require "cooltrainer/image/version"
 require "liquid/tag/parser"
+require "image_processing/vips"
 
 # Tell the user to install the shared library if it's missing.
 begin
