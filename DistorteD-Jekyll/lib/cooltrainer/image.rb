@@ -30,7 +30,8 @@ rescue LoadError => le
 end
 
 module Jekyll
-  class ImageFiles < Jekyll::StaticFile
+  # Tag-specific StaticFile child that handles thumbnail generation.
+  class ImageFile < Jekyll::StaticFile
 
   end
   class CooltrainerImage < Liquid::Tag
@@ -44,7 +45,10 @@ module Jekyll
 
     def initialize(tag_name, arguments, liquid_options)
       super
+      # Tag name as given to Liquid::Template.register_tag()
       @tag_name = tag_name
+
+      # Parse arguments with https://github.com/envygeeks/liquid-tag-parser
       parsed_arguments = Liquid::Tag::Parser.new(arguments)
       @image = parsed_arguments[:argv1]
       @alt = parsed_arguments[:alt]
@@ -54,8 +58,6 @@ module Jekyll
     end
 
     def render(context)
-      template = Liquid::Template.parse(
-        File.read(File.join(File.dirname(__FILE__), "image.liquid"))
       # Jekyll fills the first `page` Liquid context variable with the complete
       # text content of the page Markdown source, and page variables are
       # available via Hash keys, both for generated options like `path`
@@ -77,28 +79,11 @@ module Jekyll
         "url" => @url,
         "caption" => @caption,
       })
-      image_path = markdown_path.dirname + @image
-      if FileTest.exist?(image_path)
-        Jekyll.logger.debug(@tag_name, "#{image_path} exists")
-        @image_src_path = image_path
-      else
-        Jekyll.logger.error(@tag_name, "#{image_path} does not exist")
-        # TODO: Enable/disable raising exceptions via a _config.yaml toggle.
-        raise ImageNotFoundError.new(image_path)
-      end
 
-      # `url` is the intended URL of the final rendered page, relative to the
-      # site's root URL. This can be explicitly defined in the Markdown
-      # front-matter, otherwise will be automatically generated.
-      # Example: /laundry-day/
-      page_url = page_data["url"]
-      Jekyll.logger.debug(
-        @tag_name,
-        "Generated images will be placed in _site#{page_url}"
-      )
     end
   end
 end
 
+# Do the thing.
 Liquid::Template.register_tag('coolimage', Jekyll::CooltrainerImage)
 
