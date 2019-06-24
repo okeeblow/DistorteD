@@ -90,7 +90,7 @@ module Jekyll
 
       # Parse arguments with https://github.com/envygeeks/liquid-tag-parser
       parsed_arguments = Liquid::Tag::Parser.new(arguments)
-      @image = parsed_arguments[:argv1]
+      @original_image_filename = parsed_arguments[:argv1]
       @alt = parsed_arguments[:alt]
       @title = parsed_arguments[:title]
       @url = parsed_arguments[:url]
@@ -98,19 +98,97 @@ module Jekyll
     end
 
     def render(context)
+      # Pull Jekyll site object back from context registers because we need
+      # to pass it to the ImageFile created for each size.
+      site = context.registers[:site]
+
+      # Get image size name/dimension hash from config.
+      # Example:
+      # {
+      #   "thumbnail"=>"400x250",
+      #   "medium"=>"800x500",
+      #   "large"=>"1200x750"
+      # }
+      sizes = site.config['cool_image']['sizes']
+      Jekyll.logger.debug(@tag_name, sizes)
+
+      # Access context data for the page including this tag.
       # Jekyll fills the first `page` Liquid context variable with the complete
       # text content of the page Markdown source, and page variables are
       # available via Hash keys, both for generated options like `path`
       # as well as options explicitly defined in the Markdown front-matter.
       page_data = context.environments.first["page"]
 
-      # `path` is the path of the Markdown source file that included our tag,
-      # relative to the project root.
+      # Extract the pathname of the Markdown source file
+      # of the page including this tag, relative to the site source directory.
       # Example: _posts/2019-04-20/laundry-day-is-a-very-dangerous-day.markdown
-      markdown_path = Pathname.new(page_data["path"])
+      markdown_pathname = Pathname.new(page_data["path"])
       Jekyll.logger.debug(
         @tag_name,
-        "Initializing CooltrainerImage for #{@image} in #{markdown_path}"
+        "Initializing for #{@original_image_filename} in #{markdown_pathname}"
+      )
+
+      # Get the complete path to the original image file we're resizing.
+      # This must be a realpath because it gets compared to the built-in
+      # Jekyll::Site.source with `relative_path_from` which requires a realpath.
+      original_image_pathname = markdown_pathname.realpath.dirname + @original_image_filename
+
+      # Test (again) that the original image exists and bail out if not.
+      if FileTest.exist?(original_image_pathname)
+        Jekyll.logger.debug(@tag_name, "#{original_image_pathname} exists")
+        @original_image_pathname = original_image_pathname
+      else
+        Jekyll.logger.error(@tag_name, "#{original_image_pathname} does not exist")
+        raise ImageNotFoundError.new(original_image_pathname)
+      end
+
+      # Access the final generated URL of the page including this tag,
+      # relative to the directory of the generated site.
+      # This URL can be explicitly defined in the page's Markdown front-matter,
+      # but if not it will be automatically generated.
+      # Assuming these paths will only ever be directories,
+      # and these directories are where we want to put our images.
+      #
+      # Example: 2019-06-22-laundry-day.markdown has `url` /laundry-day/
+      page_destination_directory = site.dest + page_data["url"]
+      Jekyll.logger.debug(
+        @tag_name,
+        "Generated images will be placed in #{page_destination_directory}"
+      )
+
+      # We need a String path for site source, not Pathname.
+      site_source_path = Pathname.new(site.source).to_path
+
+      # Relative path from site source dir to original image's parent dir
+      relative_original_image_path = original_image_pathname.relative_path_from(
+        Pathname.new(site.source)
+      ).dirname.to_path
+
+      # Load original image into a processing pipeline to pass to each size
+      image_pipeline = ImageProcessing::Vips.source(
+        original_image_pathname.to_path
+      )
+
+      # Generate a StaticFile for each size
+      generated = sizes.map {
+        |size_name, dimensions|
+        ImageFile.new(
+          site,
+          site_source_path,
+          relative_original_image_path,
+          image_name(@original_image_filename, size_name),
+          page_destination_directory,
+          image_pipeline,
+          dimensions
+        )
+      }
+
+      # Tell Jekyll about the files we just created
+      site.static_files.concat(generated)
+      # TODO: Copy the original file too if we don't have jekyll-postfiles
+
+      template = Liquid::Template.parse(
+        File.read(File.join(File.dirname(__FILE__), "image.liquid"))
       )
       return template.render({
         "image" => @image,
