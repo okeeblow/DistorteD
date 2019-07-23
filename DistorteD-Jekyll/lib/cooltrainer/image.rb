@@ -1,3 +1,4 @@
+require "tempfile"
 require "pathname"
 require "cooltrainer/image/version"
 require "liquid/tag/parser"
@@ -61,15 +62,34 @@ module Jekyll
         *bounding_box
       ).call(save: false)
 
-      # Write the Vips::Image to the size-specific filename.
-      resized_image.write_to_file destination
-      Jekyll.logger.debug("ImageFile", "Wrote #{destination} #{bounding_box}")
+      # We must use the [pre, post] Array argument to ensure the tempfile
+      # includes the same extension as the original file.
+      # Vips uses file extension to determine its saver format.
+      temp_file = Tempfile.new([
+        File.basename(destination_filename),
+        File.extname(destination_filename)
+      ])
+
+      # Write the Vips::Image to the size-specific filename after resizing.
+      resized_image.write_to_file temp_file.path
+      Jekyll.logger.debug("ImageFile", "Wrote #{temp_file.path} #{bounding_box}")
+      @temp_file_path = temp_file.path
 
       # Tell Jekyll we modified this file so it will be included in the output.
       @modified = true
+      @modified_time = Time.now
     end
 
-    def destination
+    def modified?
+      return true
+    end
+
+    def path
+      Jekyll.logger.debug("ImageFile", "Using temp file #{@temp_file_path}")
+      return @temp_file_path
+    end
+
+    def destination(dest)
       File.join(@page_destination_directory, @destination_filename)
     end
   end
