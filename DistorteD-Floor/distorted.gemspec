@@ -1,16 +1,16 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "cooltrainer/image/version"
+require "cooltrainer/distorted/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "cooltrainer-image"
-  spec.version       = Cooltrainer::Image::VERSION
+  spec.name          = "distorted"
+  spec.version       = Cooltrainer::DistorteD::VERSION
   spec.authors       = ["Allison Reid"]
   spec.email         = ["root@cooltrainer.org"]
 
-  spec.summary       = "Image thumbnailing, embedding, and linking tag for Liquid."
-  spec.description   = "Cooltrainer::Image is a Liquid tag developed for using images in my Jekyll blog with automatic thumbnailing."
+  spec.summary       = "Media thumbnailing, embedding, and linking tag for Liquid."
+  spec.description   = "Cooltrainer::DistorteD is a Liquid tag developed for using images in my Jekyll blog with automatic thumbnailing."
   spec.homepage      = "https://cooltrainer.org"
   spec.license       = "MIT"
 
@@ -30,5 +30,4 @@ Gem::Specification.new do |spec|
   spec.add_dependency "liquid", "~> 4.0"
   spec.add_dependency "liquid-tag-parser", "~> 1.9"
   spec.add_dependency "ruby-vips", "~> 2.0"
-  spec.add_dependency "image_processing", "~> 1.0"
 end
