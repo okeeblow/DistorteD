@@ -230,4 +230,3 @@ end
 
 # Do the thing.
 Liquid::Template.register_tag('distorted', Jekyll::DistorteD)
-
