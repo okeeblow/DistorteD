@@ -198,7 +198,7 @@ module Jekyll
       ).dirname.to_path
 
       # Tell Jekyll about the files we just created
-      # TODO: Copy the original file too if we don't have jekyll-postfiles
+      #
       # StaticFile args:
       # site - The Site.
       # base - The String path to the <source> - /srv/jekyll
