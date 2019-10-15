@@ -1,6 +1,6 @@
 require "tempfile"
 require "pathname"
-require "cooltrainer/distorted/version"
+require "distorted/version"
 require "liquid/tag/parser"
 
 # Tell the user to install the shared library if it's missing.
