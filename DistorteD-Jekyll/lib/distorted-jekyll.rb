@@ -31,7 +31,7 @@ end
 
 module Jekyll
   # Tag-specific StaticFile child that handles thumbnail generation.
-  class ImageFile < Jekyll::StaticFile
+  class DistorteDImage < Jekyll::StaticFile
     def initialize(
         site,
         base,
@@ -206,7 +206,7 @@ module Jekyll
       # name - The String filename of the file - cool.svg
       # dest - The String path to the containing folder of the document which is output
       base = Pathname.new site.source
-      site.static_files << ImageFile.new(
+      site.static_files << DistorteDImage.new(
         site,
         base,
         dir,
