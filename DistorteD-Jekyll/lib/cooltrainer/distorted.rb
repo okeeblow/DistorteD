@@ -1,8 +1,7 @@
 require "tempfile"
 require "pathname"
-require "cooltrainer/image/version"
+require "cooltrainer/distorted/version"
 require "liquid/tag/parser"
-require "image_processing/vips"
 
 # Tell the user to install the shared library if it's missing.
 begin
@@ -50,10 +49,6 @@ module Jekyll
       @dir = dir
       @name = name
       @dest = dest
-      # We will instantiate one Jekyll::StaticFile for each size generated
-      # from our original full-resolution image. One StaticFile instance
-      # tracks one actual file in the final `_site_ directory.
-      #
       # Constructor args for Jekyll::StaticFile:
       # site - The Jekyll Site object
       # base - The String path to the generated `_site` directory.
@@ -66,25 +61,7 @@ module Jekyll
         name
       )
 
-      dimensions = site.config['cool_image']['dimensions']
-
-      # Load original image into a processing pipeline to pass to each size
-      image_pipeline = ImageProcessing::Vips.source(
-        File.join(base, dir, name)
-      )
-
-      # Resize to the given dimensions, and returning a Vips::Image
-      # instead of saving over the original filename.
-      resized_image = image_pipeline.resize_to_limit(
-        200, 200
-      ).call(save: false)
-
-      # Write the Vips::Image to the size-specific filename after resizing.
-      resized_name = File.join(dest, File.basename(name, ".*") + '-lol' + File.extname(name))
-      resized_file = File.new(resized_name, "w")
-      resized_file.close
-
-      resized_image.write_to_file resized_name
+      @dimensions = site.config['distorted']['image']
 
       # Tell Jekyll we modified this file so it will be included in the output.
       @modified = true
@@ -102,7 +79,7 @@ module Jekyll
 
     # dest: string realpath to `_site_` directory
     def write(dest)
-      Jekyll.logger.debug("ImageFile", "Writing filez to #{dest}")
+      Jekyll.logger.debug(@tag_name, "Writing filez to #{dest}")
       dest_path = destination(dest)
       return false if File.exist?(dest_path) && !modified?
 
@@ -110,7 +87,16 @@ module Jekyll
 
       FileUtils.mkdir_p(File.dirname(dest_path))
       FileUtils.rm(dest_path) if File.exist?(dest_path)
-      copy_file(dest_path)
+
+      orig = Vips::Image.new_from_file orig_path
+
+      Jekyll.logger.debug(@tag_name, "Rotating #{@name} if tagged.")
+      orig = orig.autorot
+
+      # Nuke the entire site from orbit. It's the only way to be sure.
+      orig.get_fields.grep(/exif-ifd/).each {|field| orig.remove field}
+
+      orig.write_to_file dest_path
 
       true
     end
@@ -119,12 +105,12 @@ module Jekyll
       return true
     end
 
-    #def destination(dest)
-    #  File.join(@destdir, @name)
-    #end
+    def orig_path
+      File.join(@base, @dir, @name)
+    end
   end
 
-  class CooltrainerImage < Liquid::Tag
+  class DistorteD < Liquid::Tag
 
     class ImageNotFoundError < ArgumentError
       attr_reader :image
@@ -171,7 +157,7 @@ module Jekyll
       # ]
 
       # TODO: Handle failure when config block is missing
-      dimensions = site.config['cool_image']['dimensions']
+      dimensions = site.config['distorted']['image']
       # TODO: Conditional debug since even that is spammy with many tags.
       Jekyll.logger.debug(@tag_name, dimensions)
 
@@ -243,5 +229,5 @@ module Jekyll
 end
 
 # Do the thing.
-Liquid::Template.register_tag('coolimage', Jekyll::CooltrainerImage)
+Liquid::Template.register_tag('distorted', Jekyll::DistorteD)
 
