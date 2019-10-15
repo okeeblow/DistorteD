@@ -178,15 +178,19 @@ module Jekyll
       )
       @srcdir = markdown_pathname.realpath.dirname
 
-      # Access the final generated URL of the page including this tag,
+      # Generate image destination based on URL of the page invoking this tag,
       # relative to the directory of the generated site.
       # This URL can be explicitly defined in the page's Markdown front-matter,
-      # but if not it will be automatically generated.
-      # Assuming these paths will only ever be directories,
-      # and these directories are where we want to put our images.
+      # otherwise automatically generated based on the `permalink` config.
+      # Assume these paths will only ever be directories containing an index.html,
+      # and that these directories are where we want to put our images.
       #
-      # Example: 2019-06-22-laundry-day.markdown has `url` /laundry-day/
       dest = site.dest + page_data["url"]
+      # Example:
+      # A post 2019-06-22-laundry-day.markdown has `url` /laundry-day/ based
+      # on my _config.yml setting "permalink: /:title/",
+      # so any images displayed in a {% distorted %} tag on that page will end
+      # up in the generated path `_site/laundry-day/`.
       Jekyll.logger.debug(
         @tag_name,
         "Generated images will be placed in #{dest}"
@@ -201,10 +205,12 @@ module Jekyll
       #
       # StaticFile args:
       # site - The Site.
-      # base - The String path to the <source> - /srv/jekyll
-      # dir  - The String path between <source> and the file - _posts/somedir
-      # name - The String filename of the file - cool.svg
-      # dest - The String path to the containing folder of the document which is output
+      # base - The String path to the <source> - /home/okeeblow/cooltrainer
+      # dir  - The String path between <base> and the file - _posts/2018-10-15-super-cool-post
+      # name - The String filename - cool.jpg
+      #
+      # Our subclass' additional args:
+      # dest - The String path to the generated `url` folder of the page HTML output
       base = Pathname.new site.source
       site.static_files << DistorteDImage.new(
         site,
