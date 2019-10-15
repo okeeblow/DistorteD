@@ -185,12 +185,13 @@ module Jekyll
       # Assume these paths will only ever be directories containing an index.html,
       # and that these directories are where we want to put our images.
       #
-      dest = site.dest + page_data["url"]
       # Example:
       # A post 2019-06-22-laundry-day.markdown has `url` /laundry-day/ based
       # on my _config.yml setting "permalink: /:title/",
       # so any images displayed in a {% distorted %} tag on that page will end
       # up in the generated path `_site/laundry-day/`.
+      url = page_data["url"]
+      dest = site.dest + url
       Jekyll.logger.debug(
         @tag_name,
         "Generated images will be placed in #{dest}"
@@ -224,7 +225,8 @@ module Jekyll
         File.read(File.join(File.dirname(__FILE__), "image.liquid"))
       )
       return template.render({
-        "image" => @image,
+        "name" => @name,
+        "path" => url,
         "alt" => @alt,
         "title" => @title,
         "href" => @href,
