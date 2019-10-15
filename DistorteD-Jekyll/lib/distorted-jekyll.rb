@@ -134,7 +134,7 @@ module Jekyll
       @name = parsed_arguments[:argv1]
       @alt = parsed_arguments[:alt]
       @title = parsed_arguments[:title]
-      @url = parsed_arguments[:url]
+      @href = parsed_arguments[:href]
       @caption = parsed_arguments[:caption]
     end
 
@@ -221,7 +221,7 @@ module Jekyll
         "image" => @image,
         "alt" => @alt,
         "title" => @title,
-        "url" => @url,
+        "href" => @href,
         "caption" => @caption,
       })
     end
