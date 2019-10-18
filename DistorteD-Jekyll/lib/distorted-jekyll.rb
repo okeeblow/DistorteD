@@ -1,11 +1,11 @@
-require "tempfile"
-require "pathname"
-require "distorted/version"
-require "liquid/tag/parser"
+require 'tempfile'
+require 'pathname'
+require 'distorted/version'
+require 'liquid/tag/parser'
 
 # Tell the user to install the shared library if it's missing.
 begin
-  require "vips"
+  require 'vips'
 rescue LoadError => le
   # Only match libvips.so load failure
   raise unless le.message =~ /libvips.so/
@@ -71,7 +71,7 @@ module Jekyll
     # dest: string realpath to `_site_` directory
     def destination(dest, suffix = nil)
       if suffix
-        File.join(@dest, File.basename(@name, ".*") + '-' + suffix + File.extname(@name))
+        File.join(@dest, File.basename(@name, '.*') + '-' + suffix + File.extname(@name))
       else
         File.join(@dest, @name)
       end
@@ -158,6 +158,7 @@ module Jekyll
 
       # TODO: Handle failure when config block is missing
       dimensions = site.config['distorted']['image']
+
       # TODO: Conditional debug since even that is spammy with many tags.
       Jekyll.logger.debug(@tag_name, dimensions)
 
@@ -166,12 +167,12 @@ module Jekyll
       # text content of the page Markdown source, and page variables are
       # available via Hash keys, both for generated options like `path`
       # as well as options explicitly defined in the Markdown front-matter.
-      page_data = context.environments.first["page"]
+      page_data = context.environments.first['page']
 
       # Extract the pathname of the Markdown source file
       # of the page including this tag, relative to the site source directory.
       # Example: _posts/2019-04-20/laundry-day-is-a-very-dangerous-day.markdown
-      markdown_pathname = Pathname.new(page_data["path"])
+      markdown_pathname = Pathname.new(page_data['path'])
       Jekyll.logger.debug(
         @tag_name,
         "Initializing for #{@name} in #{markdown_pathname}"
@@ -190,7 +191,7 @@ module Jekyll
       # on my _config.yml setting "permalink: /:title/",
       # so any images displayed in a {% distorted %} tag on that page will end
       # up in the generated path `_site/laundry-day/`.
-      url = page_data["url"]
+      url = page_data['url']
       dest = site.dest + url
       Jekyll.logger.debug(
         @tag_name,
