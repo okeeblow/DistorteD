@@ -5,13 +5,13 @@
         {% else %}
             {%- assign href = href -%}
         {% endif %}
-        <a href="{{ href }}" title="{{ title }}" target="_blank">
+  <a href="{{ href }}" title="{{ title }}" target="_blank">
     {% endif %}
     <img src="{{ path }}/{{ name }}" alt="{{ alt }}" title="{{ title }}"/>
     {% if href %}
-    </a>
+  </a>
     {% endif %}
     {% if caption %}
-        <p class="image-caption">{{ caption }}</p>
+  <p class="image-caption">{{ caption }}</p>
     {% endif %}
 </div>
