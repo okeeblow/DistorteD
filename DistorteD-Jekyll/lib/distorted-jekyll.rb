@@ -98,6 +98,13 @@ module Jekyll
 
       orig.write_to_file orig_dest
 
+      for d in @dimensions
+        ver_dest = destination(dest, d['tag'])
+        Jekyll.logger.debug(@tag_name, "Writing #{d['width']}px version to #{ver_dest}")
+        ver = orig.thumbnail_image(d['width'])
+        ver.write_to_file ver_dest
+      end
+
       true
     end
 
