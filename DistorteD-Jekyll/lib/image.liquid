@@ -1,7 +1,7 @@
 <div class="image-wrapper {{ float }}" >
     {% if href %}
         {% if href == 'original' %}
-            {%- capture href %}{{ image }}{% endcapture -%}
+            {%- capture href %}{{ path }}{{ name }}{% endcapture -%}
         {% else %}
             {%- assign href = href -%}
         {% endif %}
