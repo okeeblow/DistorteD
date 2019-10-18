@@ -80,13 +80,13 @@ module Jekyll
     # dest: string realpath to `_site_` directory
     def write(dest)
       Jekyll.logger.debug(@tag_name, "Writing filez to #{dest}")
-      dest_path = destination(dest)
-      return false if File.exist?(dest_path) && !modified?
+      orig_dest = destination(dest)
+      return false if File.exist?(orig_path) && !modified?
 
       self.class.mtimes[path] = mtime
 
-      FileUtils.mkdir_p(File.dirname(dest_path))
-      FileUtils.rm(dest_path) if File.exist?(dest_path)
+      FileUtils.mkdir_p(File.dirname(orig_dest))
+      FileUtils.rm(orig_dest) if File.exist?(orig_dest)
 
       orig = Vips::Image.new_from_file orig_path
 
@@ -96,7 +96,7 @@ module Jekyll
       # Nuke the entire site from orbit. It's the only way to be sure.
       orig.get_fields.grep(/exif-ifd/).each {|field| orig.remove field}
 
-      orig.write_to_file dest_path
+      orig.write_to_file orig_dest
 
       true
     end
