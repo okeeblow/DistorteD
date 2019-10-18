@@ -138,6 +138,15 @@ module Jekyll
       @caption = parsed_arguments[:caption]
     end
 
+    # TODO: Combine this and DistorteDImage::destination() into one thing.
+    def image_filename(orig, suffix = nil)
+      if suffix
+        File.basename(orig, '.*') + '-' + suffix + File.extname(orig)
+      else
+        orig
+      end
+    end
+
     # This will become render_to_output_buffer(context, output) some day,
     # according to upstream Liquid tag.rb.
     def render(context)
