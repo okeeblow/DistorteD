@@ -231,17 +231,31 @@ module Jekyll
         dest
       )
 
-      template = Liquid::Template.parse(
-        File.read(File.join(File.dirname(__FILE__), "image.liquid"))
-      )
-      return template.render({
-        "name" => @name,
-        "path" => url,
-        "alt" => @alt,
-        "title" => @title,
-        "href" => @href,
-        "caption" => @caption,
-      })
+      # String keys instead of symbols due to YAML config format
+      # and Liquid template hash.
+      sources = dimensions.map { |d| {
+        'name' => image_filename(@name, d['tag']),
+        'media' => d['media']
+      }}
+      Jekyll.logger.debug(@tag_name, "#{@name} <source>s: #{sources}")
+
+      begin
+        template = Liquid::Template.parse(
+          File.read(File.join(File.dirname(__FILE__), 'image.liquid'))
+        )
+        template.render({
+          'name' => @name,
+          'path' => url,
+          'alt' => @alt,
+          'title' => @title,
+          'href' => @href,
+          'caption' => @caption,
+          'sources' => sources,
+        })
+      rescue Liquid::SyntaxError => l
+        # TODO: Only in dev
+        l.message
+      end
     end
   end
 end
