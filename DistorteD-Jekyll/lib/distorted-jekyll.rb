@@ -1,5 +1,6 @@
 require 'tempfile'
 require 'pathname'
+require 'distorted/floor'
 require 'distorted/version'
 require 'liquid/tag/parser'
 
@@ -70,11 +71,7 @@ module Jekyll
 
     # dest: string realpath to `_site_` directory
     def destination(dest, suffix = nil)
-      if suffix
-        File.join(@dest, File.basename(@name, '.*') + '-' + suffix + File.extname(@name))
-      else
-        File.join(@dest, @name)
-      end
+      File.join(@dest, Cooltrainer::DistortedFloor::image_name(@name, suffix))
     end
 
     # dest: string realpath to `_site_` directory
@@ -143,15 +140,6 @@ module Jekyll
       @title = parsed_arguments[:title]
       @href = parsed_arguments[:href]
       @caption = parsed_arguments[:caption]
-    end
-
-    # TODO: Combine this and DistorteDImage::destination() into one thing.
-    def image_filename(orig, suffix = nil)
-      if suffix
-        File.basename(orig, '.*') + '-' + suffix + File.extname(orig)
-      else
-        orig
-      end
     end
 
     # This will become render_to_output_buffer(context, output) some day,
@@ -241,7 +229,7 @@ module Jekyll
       # String keys instead of symbols due to YAML config format
       # and Liquid template hash.
       sources = dimensions.map { |d| {
-        'name' => image_filename(@name, d['tag']),
+        'name' => Cooltrainer::DistortedFloor::image_name(@name, d['tag']),
         'media' => d['media']
       }}
       Jekyll.logger.debug(@tag_name, "#{@name} <source>s: #{sources}")
