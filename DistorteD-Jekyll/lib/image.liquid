@@ -1,25 +1,25 @@
 <div class="image-wrapper {{ float }}" >
-    {% if href %}
-        {% if href == 'original' %}
-            {%- capture href %}{{ path }}{{ name }}{% endcapture -%}
-        {% else %}
+    {%- if href %}
+        {%- if href == 'original' %}
+            {%- capture href %}{{ path }}{{ name }}{%- endcapture -%}
+        {%- else %}
             {%- assign href = href -%}
-        {% endif %}
+        {%- endif %}
   <a href="{{ href }}" title="{{ title }}" target="_blank">
-    {% endif %}
+    {%- endif %}
     <picture>
-      {% if sources %}
-        {% for source in sources %}
-      {%- comment %} TODO: Add `type` attribute to <source>s{% endcomment -%}
+      {%- if sources %}
+        {%- for source in sources %}
+      {%- comment %} TODO: Add `type` attribute to <source>s{%- endcomment -%}
       <source srcset="{{ path }}{{ source.name }}" media="{{ source.media }}"/>
-        {% endfor %}
-      {% endif %}
+        {%- endfor %}
+      {%- endif %}
       <img src="{{ path }}{{ name }}" alt="{{ alt }}" title="{{ title }}"/>
     </picture>
-    {% if href %}
+    {%- if href %}
   </a>
-    {% endif %}
-    {% if caption %}
+    {%- endif %}
+    {%- if caption %}
   <p class="image-caption">{{ caption }}</p>
-    {% endif %}
+    {%- endif %}
 </div>
