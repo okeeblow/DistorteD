@@ -234,10 +234,23 @@ module Jekyll
       Jekyll.logger.debug(@tag_name, "#{@name} <source>s: #{sources}")
 
       begin
-        template = Liquid::Template.parse(
-          File.read(File.join(File.dirname(__FILE__), 'image.liquid'))
-        )
-        template.render({
+				template = File.join(File.dirname(__FILE__), 'image.liquid')
+
+				# Jekyll's Liquid renderer caches in 4.0+.
+				# Make this a config option or get rid of it and always cache
+				# once I have more experience with it.
+        cache_templates = true
+				if cache_templates
+					# file(path) is the caching function, with path as the cache key.
+					# The `template` here will be the full path, so no versions of this
+					# gem should ever conflict. For example, right now during dev it's:
+					# `/home/okeeblow/Works/DistorteD/lib/image.liquid`
+					picture = site.liquid_renderer.file(template).parse(File.read(template))
+				else
+					picture = Liquid::Template.parse(File.read(template))
+				end
+
+        picture.render({
           'name' => @name,
           'path' => url,
           'alt' => @alt,
