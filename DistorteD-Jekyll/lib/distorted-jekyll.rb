@@ -1,4 +1,3 @@
-require 'tempfile'
 require 'pathname'
 require 'distorted/floor'
 require 'distorted/version'
