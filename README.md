@@ -22,12 +22,14 @@ Or install it yourself as:
 
 Use the `{% distorted %}` tag to generate web-ready variations for multimedia in any Jekyll post or page.
 
-```{% distorted 
+```
+{% distorted 
   IIDX-Readers-Unboxing.jpg
   href="original"
   alt="Wavepass card reader hardware being removed from a shipping box"
   title="Complete with that fresh Game Center cigarette smell."
-%}```
+%}
+```
 
 ## Development
 
