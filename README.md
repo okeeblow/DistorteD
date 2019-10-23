@@ -1,8 +1,6 @@
 # Cooltrainer::DistorteD
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/cooltrainer/image`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+`DistorteD` is a multimedia processing tag plugin for Jekyll.
 
 ## Installation
 
@@ -22,7 +20,14 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Use the `{% distorted %}` tag to generate web-ready variations for multimedia in any Jekyll post or page.
+
+```{% distorted 
+  IIDX-Readers-Unboxing.jpg
+  href="original"
+  alt="Wavepass card reader hardware being removed from a shipping box"
+  title="Complete with that fresh Game Center cigarette smell."
+%}```
 
 ## Development
 
@@ -32,4 +37,4 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [GNU General Public License version 3](https://opensource.org/licenses/GPL-3.0).
