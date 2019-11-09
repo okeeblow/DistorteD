@@ -11,7 +11,7 @@ module Jekyll::DistorteD::Image
     end
   end
 
-  ATTRS = [:alt, :caption, :title]
+  ATTRS = [:alt, :caption, :href]
 
   # This will become render_to_output_buffer(context, output) some day,
   # according to upstream Liquid tag.rb.
