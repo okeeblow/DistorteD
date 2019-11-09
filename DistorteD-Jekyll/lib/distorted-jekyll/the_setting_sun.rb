@@ -2,14 +2,14 @@ module Jekyll
   class DistorteD < Liquid::Tag
     class Floor
 
-			attr_reader :sources
+      attr_reader :sources
 
       def initialize(config, name)
-				@config_key = 'distorted'
-				Jekyll.logger.debug(@config_key, "Loading config from key '#{@config_key}'")
+        @config_key = 'distorted'
+        Jekyll.logger.debug(@config_key, "Loading config from key '#{@config_key}'")
         @dimensions = config.dig(@config_key, 'image')
         Jekyll.logger.debug(@config_key, @dimensions)
-				@name = name
+        @name = name
       end
 
       def sources
