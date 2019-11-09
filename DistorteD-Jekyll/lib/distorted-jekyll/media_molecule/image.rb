@@ -1,110 +1,118 @@
-# Tell the user to install the shared library if it's missing.
-begin
-  require 'vips'
-rescue LoadError => le
-  # Only match libvips.so load failure
-  raise unless le.message =~ /libvips.so/
+require 'pathname'
+require 'distorted/floor'
+require 'formats/image'
 
-  # Multiple OS help
-  help = <<~INSTALL
+module Jekyll::DistorteD::Image
 
-  Please install the libvips image processing library.
+	class ImageNotFoundError < ArgumentError
+		attr_reader :image
+		def initialize(image)
+			super("The specified image path #{image} was not found")
+		end
+	end
 
-  FreeBSD:
-    pkg install graphics/vips
+	# This will become render_to_output_buffer(context, output) some day,
+	# according to upstream Liquid tag.rb.
+	def render(context)
+		# Get Jekyll Site object back from tag rendering context registers so we
+		# can get configuration data and path information from it,
+		# then pass it along to our StaticFile subclass.
+		site = context.registers[:site]
 
-  macOS:
-    brew install vips
+		# We need a String path for site source, not Pathname, for StaticFile.
+		@source = Pathname.new(site.source).to_path
 
-  Debian/Ubuntu/Mint:
-    apt install libvips libvips-dev
-  INSTALL
+		# Load _config.yml values || defaults.
+		dimensions = site.config['distorted']['image']
+		df = Jekyll::DistorteD::Floor.new(site.config, @name)
 
-  # Re-raise with install message
-  raise $!, "#{help}\n#{$!}", $!.backtrace
-end
+		# TODO: Conditional debug since even that is spammy with many tags.
+		Jekyll.logger.debug(@tag_name, dimensions)
 
-module Jekyll
-  # Tag-specific StaticFile child that handles thumbnail generation.
-  class DistorteDImage < Jekyll::StaticFile
-    def initialize(
-        site,
-        base,
-        dir,
-        name,
-        dest,
-        collection = nil
-    )
-      @tag_name = self.class.name.split('::').last
-      Jekyll.logger.debug(@tag_name, "base is #{base}")
-      Jekyll.logger.debug(@tag_name, "dir is #{dir}")
-      Jekyll.logger.debug(@tag_name, "name is #{name}")
-      Jekyll.logger.debug(@tag_name, "dest is #{dest}")
-      @base = base
-      @dir = dir
-      @name = name
-      @dest = dest
-      # Constructor args for Jekyll::StaticFile:
-      # site - The Jekyll Site object
-      # base - The String path to the generated `_site` directory.
-      # dir  - The String path for generated images, aka the page URL.
-      # name - The String filename for one generated or original image.
-      super(
-        site,
-        base,
-        dir,
-        name
-      )
+		# Access context data for the page including this tag.
+		# Jekyll fills the first `page` Liquid context variable with the complete
+		# text content of the page Markdown source, and page variables are
+		# available via Hash keys, both for generated options like `path`
+		# as well as options explicitly defined in the Markdown front-matter.
+		page_data = context.environments.first['page']
 
-      @dimensions = site.config['distorted']['image']
+		# Extract the pathname of the Markdown source file
+		# of the page including this tag, relative to the site source directory.
+		# Example: _posts/2019-04-20/laundry-day-is-a-very-dangerous-day.markdown
+		markdown_pathname = Pathname.new(page_data['path'])
+		Jekyll.logger.debug(
+			@tag_name,
+			"Initializing for #{@name} in #{markdown_pathname}"
+		)
+		@srcdir = markdown_pathname.realpath.dirname
 
-      # Tell Jekyll we modified this file so it will be included in the output.
-      @modified = true
-      @modified_time = Time.now
-    end
+		# Generate image destination based on URL of the page invoking this tag,
+		# relative to the directory of the generated site.
+		# This URL can be explicitly defined in the page's Markdown front-matter,
+		# otherwise automatically generated based on the `permalink` config.
+		# Assume these paths will only ever be directories containing an index.html,
+		# and that these directories are where we want to put our images.
+		#
+		# Example:
+		# A post 2019-06-22-laundry-day.markdown has `url` /laundry-day/ based
+		# on my _config.yml setting "permalink: /:title/",
+		# so any images displayed in a {% distorted %} tag on that page will end
+		# up in the generated path `_site/laundry-day/`.
+		url = page_data['url']
 
-    # dest: string realpath to `_site_` directory
-    def destination(dest, suffix = nil)
-      File.join(@dest, Cooltrainer::DistortedFloor::image_name(@name, suffix))
-    end
+		# Relative path from site source dir to original image's parent dir
+		dir = Pathname(@srcdir + @name).relative_path_from(
+			Pathname.new(site.source)
+		).dirname.to_path
 
-    # dest: string realpath to `_site_` directory
-    def write(dest)
-      Jekyll.logger.debug(@tag_name, "Writing filez to #{dest}")
-      orig_dest = destination(dest)
-      return false if File.exist?(orig_path) && !modified?
+		# Tell Jekyll about the files we just created
+		#
+		# StaticFile args:
+		# site - The Site.
+		# base - The String path to the <source> - /home/okeeblow/cooltrainer
+		# dir  - The String path between <base> and the file - _posts/2018-10-15-super-cool-post
+		# name - The String filename - cool.jpg
+		#
+		# Our subclass' additional args:
+		# dest - The String path to the generated `url` folder of the page HTML output
+		base = Pathname.new site.source
+		site.static_files << Jekyll::DistorteD::ImageFile.new(
+			site,
+			base,
+			dir,
+			@name,
+			url,
+		)
 
-      self.class.mtimes[path] = mtime
+		begin
+      template = File.join(File.dirname(__FILE__), '..', 'templates', 'image.liquid')
 
-      FileUtils.mkdir_p(File.dirname(orig_dest))
-      FileUtils.rm(orig_dest) if File.exist?(orig_dest)
+			# Jekyll's Liquid renderer caches in 4.0+.
+			# Make this a config option or get rid of it and always cache
+			# once I have more experience with it.
+			cache_templates = true
+			if cache_templates
+				# file(path) is the caching function, with path as the cache key.
+				# The `template` here will be the full path, so no versions of this
+				# gem should ever conflict. For example, right now during dev it's:
+				# `/home/okeeblow/Works/DistorteD/lib/image.liquid`
+				picture = site.liquid_renderer.file(template).parse(File.read(template))
+			else
+				picture = Liquid::Template.parse(File.read(template))
+			end
 
-      orig = Vips::Image.new_from_file orig_path
-
-      Jekyll.logger.debug(@tag_name, "Rotating #{@name} if tagged.")
-      orig = orig.autorot
-
-      # Nuke the entire site from orbit. It's the only way to be sure.
-      orig.get_fields.grep(/exif-ifd/).each {|field| orig.remove field}
-
-      orig.write_to_file orig_dest
-
-      for d in @dimensions
-        ver_dest = destination(dest, d['tag'])
-        Jekyll.logger.debug(@tag_name, "Writing #{d['width']}px version to #{ver_dest}")
-        ver = orig.thumbnail_image(d['width'])
-        ver.write_to_file ver_dest
-      end
-
-      true
-    end
-
-    def modified?
-      return true
-    end
-
-    def orig_path
-      File.join(@base, @dir, @name)
-    end
-  end
+			picture.render({
+				'name' => @name,
+				'path' => url,
+				'alt' => @alt,
+				'title' => @title,
+				'href' => @href,
+				'caption' => @caption,
+				'sources' => df.sources,
+			})
+		rescue Liquid::SyntaxError => l
+			# TODO: Only in dev
+			l.message
+		end
+	end
 end
