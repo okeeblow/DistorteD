@@ -11,16 +11,18 @@ module Jekyll::DistorteD::Image
 		end
 	end
 
-	# This will become render_to_output_buffer(context, output) some day,
-	# according to upstream Liquid tag.rb.
-	def render(context)
-		# Get Jekyll Site object back from tag rendering context registers so we
-		# can get configuration data and path information from it,
-		# then pass it along to our StaticFile subclass.
-		site = context.registers[:site]
+  ATTRS = [:alt, :caption, :title]
 
-		# We need a String path for site source, not Pathname, for StaticFile.
-		@source = Pathname.new(site.source).to_path
+  # This will become render_to_output_buffer(context, output) some day,
+  # according to upstream Liquid tag.rb.
+  def render(context)
+    # Get Jekyll Site object back from tag rendering context registers so we
+    # can get configuration data and path information from it,
+    # then pass it along to our StaticFile subclass.
+    site = context.registers[:site]
+
+    # We need a String path for site source, not Pathname, for StaticFile.
+    @source = Pathname.new(site.source).to_path
 
 		# Load _config.yml values || defaults.
 		dimensions = site.config['distorted']['image']
