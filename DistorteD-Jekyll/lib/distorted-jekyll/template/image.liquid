@@ -10,7 +10,7 @@
     <picture>
       {%- if sources %}
         {%- for source in sources %}
-      {%- comment %} TODO: Add `type` attribute to <source>s{%- endcomment -%}
+      {%- comment %} TODO: Add `type` attribute to <source>s{%- endcomment %}
       <source srcset="{{ path }}{{ source.name }}" media="{{ source.media }}"/>
         {%- endfor %}
       {%- endif %}
