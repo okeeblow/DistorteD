@@ -25,11 +25,7 @@ module Jekyll::DistorteD::Image
     @source = Pathname.new(site.source).to_path
 
     # Load _config.yml values || defaults.
-    dimensions = site.config['distorted']['image']
     df = Jekyll::DistorteD::Floor.new(site.config, @name)
-
-    # TODO: Conditional debug since even that is spammy with many tags.
-    Jekyll.logger.debug(@tag_name, dimensions)
 
     # Access context data for the page including this tag.
     # Jekyll fills the first `page` Liquid context variable with the complete
