@@ -24,9 +24,6 @@ module Jekyll::DistorteD::Image
     # We need a String path for site source, not Pathname, for StaticFile.
     @source = Pathname.new(site.source).to_path
 
-    # Load _config.yml values || defaults.
-    df = Jekyll::DistorteD::Floor.new(site.config, @name)
-
     # Access context data for the page including this tag.
     # Jekyll fills the first `page` Liquid context variable with the complete
     # text content of the page Markdown source, and page variables are
@@ -106,11 +103,19 @@ module Jekyll::DistorteD::Image
         'title' => @title,
         'href' => @href,
         'caption' => @caption,
-        'sources' => df.sources,
+        'sources' => sources(site),
       })
     rescue Liquid::SyntaxError => l
       # TODO: Only in dev
       l.message
     end
   end
+
+  def sources(site)
+    config(site, :image).map { |d| {
+      'name' => name(d['tag']),
+      'media' => d['media']
+    }}
+  end
+
 end
