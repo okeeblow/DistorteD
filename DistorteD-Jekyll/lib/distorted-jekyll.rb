@@ -1,10 +1,13 @@
+require 'distorted/floor'
 require 'distorted/image'
+require 'liquid/tag'
 require 'liquid/tag/parser'
 require 'mime/types'
 
 module Jekyll
-
   class DistorteD::Invoker < Liquid::Tag
+
+    include Jekyll::DistorteD::Floor
 
     # This list should contain global attributes only, as symbols.
     # The final attribute set will be this + the media-type-specific set.
@@ -57,11 +60,8 @@ module Jekyll
       for attr in attrs
         instance_variable_set('@' + attr.to_s, parsed_arguments[attr])
       end
-
     end
-
   end
-
 end
 
 # Do the thing.

@@ -1,23 +1,16 @@
 module Jekyll
-  class DistorteD < Liquid::Tag
-    class Floor
+  module DistorteD
+    module Floor
 
-      attr_reader :sources
+      CONFIG_KEY = 'distorted'
 
-      def initialize(config, name)
-        @config_key = 'distorted'
-        Jekyll.logger.debug(@config_key, "Loading config from key '#{@config_key}'")
-        @dimensions = config.dig(@config_key, 'image')
-        Jekyll.logger.debug(@config_key, @dimensions)
-        @name = name
+      def config(site, media_type)
+        Jekyll.logger.debug(CONFIG_KEY, "Loading config from key '#{CONFIG_KEY}'")
+        site.config.dig(CONFIG_KEY, media_type.to_s)
       end
 
-      def sources
-        Jekyll.logger.debug(@config_key, @dimensions)
-        @dimensions.map { |d| {
-          'name' => Jekyll::DistorteD::Floor::image_name(@name, d['tag']),
-          'media' => d['media']
-        }}
+      def name(suffix = nil)
+        Floor::image_name(@name, suffix)
       end
 
       def self.image_name(orig, suffix = nil)
@@ -27,7 +20,6 @@ module Jekyll
           orig
         end
       end
-
     end
   end
 end
