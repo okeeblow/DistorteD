@@ -9,6 +9,15 @@ module Jekyll
 
     include Jekyll::DistorteD::Floor
 
+    # The built-in NotImplementedError is for "when a feature is not implemented
+    # on the current platform", so make our own more appropriate one.
+    class MediaTypeNotImplementedError < StandardError
+      attr_reader :media_type
+      def initialize(media_type)
+        super("The media type '#{media_type}' is not supported")
+      end
+    end
+
     # This list should contain global attributes only, as symbols.
     # The final attribute set will be this + the media-type-specific set.
     # https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
@@ -48,14 +57,21 @@ module Jekyll
       # Select handler module based on the detected media type.
       # For an example MIME Type image/jpeg, 
       # `media_type` is 'image' and `sub_type` is 'jpeg'.
-      case mime.media_type
+      @media_type = mime.media_type
+
+      # Mix in known media_type handlers by prepending our singleton class
+      # with the handler module, so module methods override ones defined here.
+      # Also combine the handler module's tag attributes with the global ones.
+      case @media_type
       when 'image'
         attrs.push(*Jekyll::DistorteD::Image::ATTRS)
         (class <<self; prepend Jekyll::DistorteD::Image; end)
+      else
+        raise MediaTypeNotImplementedError.new(@media_type)
       end
 
-      # Set instance variables for the combined set of attributes used
-      # by this handler.
+      # Set instance variables for the combined set of global+handler tag
+      # attributes used by this media_type.
       # TODO: Handle missing/malformed tag arguments.
       for attr in attrs
         instance_variable_set('@' + attr.to_s, parsed_arguments[attr])
@@ -71,7 +87,7 @@ module Jekyll
       # The rendering context's `first` page will be the one that invoked us.
       page_data = context.environments.first['page']
 
-			# Create an instance of the media-appropriate Jekyll::StaticFile subclass.
+      # Create an instance of the media-appropriate Jekyll::StaticFile subclass.
       #
       # StaticFile args:
       # site - The Jekyll Site object.
@@ -81,16 +97,15 @@ module Jekyll
       #
       # Our subclass' additional args:
       # dest - The String path to the generated `url` folder of the page HTML output
-			base = site.source
-			dir = File.dirname(page_data['relative_path'])
-			@url = page_data['url']
-      site.static_files << Jekyll::DistorteD::ImageFile.new(
-        site,
-        base,
-        dir,
-        @name,
-        @url,
-      )
+      base = site.source
+      dir = File.dirname(page_data['relative_path'])
+      @url = page_data['url']
+      site.static_files << self.static_file(site, base, dir, @name, @url)
+    end
+
+    # Bail out if this is not handled by the module we just mixed in.
+    def static_file(site, base, dir, name, url)
+      raise MediaTypeNotImplementedError.new(@media_type)
     end
 
   end

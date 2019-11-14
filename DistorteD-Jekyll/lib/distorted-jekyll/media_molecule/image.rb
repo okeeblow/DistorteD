@@ -4,13 +4,6 @@ require 'formats/image'
 
 module Jekyll::DistorteD::Image
 
-  class ImageNotFoundError < ArgumentError
-    attr_reader :image
-    def initialize(image)
-      super("The specified image path #{image} was not found")
-    end
-  end
-
   ATTRS = [:alt, :caption, :href]
 
   # This will become render_to_output_buffer(context, output) some day,
@@ -54,6 +47,10 @@ module Jekyll::DistorteD::Image
       'name' => name(d['tag']),
       'media' => d['media']
     }}
+  end
+
+  def static_file(site, base, dir, name, url)
+    Jekyll::DistorteD::ImageFile.new(site, base, dir, name, url)
   end
 
 end
