@@ -4,6 +4,7 @@ require 'formats/image'
 
 module Jekyll::DistorteD::Image
 
+  MEDIA_TYPE = 'image'
   ATTRS = [:alt, :caption, :href]
 
   # This will become render_to_output_buffer(context, output) some day,

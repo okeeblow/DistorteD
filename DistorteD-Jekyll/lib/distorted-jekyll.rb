@@ -63,7 +63,7 @@ module Jekyll
       # with the handler module, so module methods override ones defined here.
       # Also combine the handler module's tag attributes with the global ones.
       case @media_type
-      when 'image'
+      when Jekyll::DistorteD::Image::MEDIA_TYPE
         attrs.push(*Jekyll::DistorteD::Image::ATTRS)
         (class <<self; prepend Jekyll::DistorteD::Image; end)
       else
