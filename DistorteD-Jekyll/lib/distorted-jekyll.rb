@@ -103,6 +103,29 @@ module Jekyll
       site.static_files << self.static_file(site, base, dir, @name, @url)
     end
 
+    def parse_template(site)
+      begin
+        template = File.join(File.dirname(__FILE__), 'templates', "#{@media_type}.liquid")
+
+        # Jekyll's Liquid renderer caches in 4.0+.
+        # Make this a config option or get rid of it and always cache
+        # once I have more experience with it.
+        cache_templates = true
+        if cache_templates
+          # file(path) is the caching function, with path as the cache key.
+          # The `template` here will be the full path, so no versions of this
+          # gem should ever conflict. For example, right now during dev it's:
+          # `/home/okeeblow/Works/DistorteD/lib/image.liquid`
+          site.liquid_renderer.file(template).parse(File.read(template))
+        else
+          Liquid::Template.parse(File.read(template))
+        end
+
+      rescue Liquid::SyntaxError => l
+        l.message
+      end
+    end
+
     # Bail out if this is not handled by the module we just mixed in.
     def static_file(site, base, dir, name, url)
       raise MediaTypeNotImplementedError.new(@media_type)
