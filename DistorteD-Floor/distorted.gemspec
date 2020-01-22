@@ -31,4 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "liquid-tag-parser", "~> 1.9"
   spec.add_dependency "ruby-vips", "~> 2.0"
   spec.add_dependency "mime-types", "~> 3.0"
+  spec.add_dependency "kramdown", "~> 2.0"
 end
