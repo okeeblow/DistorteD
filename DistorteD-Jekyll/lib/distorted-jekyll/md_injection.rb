@@ -72,17 +72,6 @@ MD_IMAGE_REGEX = %r&
   )+  # Capture multiple images together for block display.
 &x
 
-def extract_list(hash, collect = false)
-  hash.map do |k, v|
-    v.is_a?(Array) ? extract_list(v, (k == :children)) : 
-       (collect ? v : nil)
-  end.compact.flatten
-end
-
-def get_images(hash, collection = nil)
-  hash[:children]
-end
-
 def distort_markdown
   Proc.new { |document, payload|
     # Compare any given document's file extension to the list of enabled
