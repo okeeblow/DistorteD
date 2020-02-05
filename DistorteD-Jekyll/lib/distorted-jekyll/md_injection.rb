@@ -93,12 +93,49 @@ def distort_markdown
 end
 
 module Kramdown
-
   module Converter
-
-    # Converts a Kramdown::Document to a nested hash for further processing or debug output.
     class Liquid < Base
-    end
 
+      def extract_imgs(el)
+        imgs = []
+        if el.type.equal? :img
+          # Images won't have a `:value`, only `:attr`s, and the only
+          # important things in their `:options` (like IAL contents)
+          # will be duplicated in `class` or some other `:attr` anyway.
+          imgs << el.attr unless el.attr.empty?
+        end
+        unless el.children.empty?
+          el.children.each {|child| imgs.push(*extract_imgs(child)) }
+        end
+        imgs
+      end
+
+      def to_attrs(k, v)
+        # DistorteD expects the media filename as a positional argument,
+        # not a named kwarg.
+        if k == 'src'
+          v.to_s
+        else
+          k.to_s + '="' + v.to_s + '"'
+        end
+      end
+
+      def distorted(attrs)
+        "{% distorted #{attrs.map{|k,v| to_attrs(k, v)}.join(' ')} %}"
+      end
+
+      def convert(el)
+        imgs = extract_imgs(el)
+        case imgs.count
+        when 0
+          raise "Attempted to render zero images as DistorteD Liquid tags."
+        when 1
+          distorted(imgs.first)
+        else
+          "{% distort %}\n#{imgs.map{|img| distorted(img)}.join("\n")}{% enddistort %}"
+        end
+      end
+
+    end
   end
 end
