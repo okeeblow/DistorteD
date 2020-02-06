@@ -29,11 +29,6 @@ module Jekyll
       # Yes, this is redundant considering this same file defines the name.
       @tag_name = tag_name
 
-      # Attributes  will be given to our liquid tag as keyword arguments.
-      # Start with the base set of shared attributes defined here in the
-      # loader, then push() a handler's additional ATTRs on to it.
-      attrs = self.class::ATTRS
-
       # Liquid leaves argument parsing totally up to us.
       # Use the envygeeks/liquid-tag-parser library to wrangle them.
       parsed_arguments = Liquid::Tag::Parser.new(arguments)
@@ -64,7 +59,7 @@ module Jekyll
       # Also combine the handler module's tag attributes with the global ones.
       case @media_type
       when Jekyll::DistorteD::Image::MEDIA_TYPE
-        attrs.push(*Jekyll::DistorteD::Image::ATTRS)
+        self.class::ATTRS.merge(Jekyll::DistorteD::Image::ATTRS)
         (class <<self; prepend Jekyll::DistorteD::Image; end)
       else
         raise MediaTypeNotImplementedError.new(@media_type)
@@ -73,7 +68,8 @@ module Jekyll
       # Set instance variables for the combined set of global+handler tag
       # attributes used by this media_type.
       # TODO: Handle missing/malformed tag arguments.
-      for attr in attrs
+      for attr in self.class::ATTRS
+        Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{parsed_arguments[attr]}")
         instance_variable_set('@' + attr.to_s, parsed_arguments[attr])
       end
     end
@@ -100,7 +96,19 @@ module Jekyll
       base = site.source
       dir = File.dirname(page_data['relative_path'])
       @url = page_data['url']
-      site.static_files << self.static_file(site, base, dir, @name, @url)
+
+      # Instantiate the appropriate StaticFile subclass for any handler.
+      static_file = self.static_file(site, base, dir, @name, @url)
+
+      # Copy the media attribute instance variable contents to the StaticFile.
+      for attr in self.class::ATTRS
+        Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{instance_variable_get('@' + attr.to_s)}")
+        static_file.instance_variable_set('@' + attr.to_s, instance_variable_get('@' + attr.to_s))
+      end
+
+      # Add our new file to the list that will be handled
+      # by Jekyll's built-in StaticFile generator.
+      site.static_files << static_file
     end
 
     def parse_template(site)
