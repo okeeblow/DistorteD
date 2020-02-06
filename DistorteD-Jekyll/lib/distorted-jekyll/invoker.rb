@@ -21,7 +21,7 @@ module Jekyll
     # This list should contain global attributes only, as symbols.
     # The final attribute set will be this + the media-type-specific set.
     # https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
-    ATTRS = [:title]
+    ATTRS = Set[:title]
 
     def initialize(tag_name, arguments, liquid_options)
       super
