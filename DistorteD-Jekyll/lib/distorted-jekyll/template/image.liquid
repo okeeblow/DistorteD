@@ -1,10 +1,10 @@
-<div class="image-wrapper {{ float }}" >
     {%- if href %}
         {%- if href == 'original' %}
             {%- capture href %}{{ path }}{{ name }}{%- endcapture -%}
         {%- else %}
             {%- assign href = href -%}
         {%- endif %}
+<div class="distorted" >
   <a href="{{ href }}" title="{{ title }}" target="_blank">
     {%- endif %}
     <picture>
