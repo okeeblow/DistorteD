@@ -4,7 +4,7 @@ require 'formats/image'
 module Jekyll::DistorteD::Image
 
   MEDIA_TYPE = 'image'
-  ATTRS = [:alt, :caption, :href]
+  ATTRS = Set[:alt, :caption, :href, :crop]
 
   # This will become render_to_output_buffer(context, output) some day,
   # according to upstream Liquid tag.rb.
