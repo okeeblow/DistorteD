@@ -27,6 +27,7 @@ end
 module Jekyll
   # Tag-specific StaticFile child that handles thumbnail generation.
   class DistorteD::ImageFile < Jekyll::StaticFile
+
     def initialize(
         site,
         base,
@@ -36,7 +37,7 @@ module Jekyll
         collection = nil
     )
       @tag_name = self.class.name.split('::').drop(1).join('::')
-			Jekyll.logger.debug(@tag_name, "#{base}/#{dir}/#{name} -> #{url}")
+      Jekyll.logger.debug(@tag_name, "#{base}/#{dir}/#{name} -> #{url}")
       @base = base
       @dir = dir
       @name = name
@@ -77,6 +78,7 @@ module Jekyll
 
       orig = Vips::Image.new_from_file orig_path
 
+      Jekyll.logger.info(@tag_name, "Crop setting is #{@crop}")
       Jekyll.logger.debug(@tag_name, "Rotating #{@name} if tagged.")
       orig = orig.autorot
 
@@ -88,7 +90,7 @@ module Jekyll
       for d in @dimensions
         ver_dest = destination(dest, d['tag'])
         Jekyll.logger.debug(@tag_name, "Writing #{d['width']}px version to #{ver_dest}")
-        ver = orig.thumbnail_image(d['width'])
+        ver = orig.thumbnail_image(d['width'], {:crop => @crop&.to_sym || :attention})
         ver.write_to_file ver_dest
       end
 
