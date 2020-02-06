@@ -1,12 +1,8 @@
-    {%- if href %}
-        {%- if href == 'original' %}
-            {%- capture href %}{{ path }}{{ name }}{%- endcapture -%}
-        {%- else %}
-            {%- assign href = href -%}
-        {%- endif %}
 <div class="distorted" >
+  {%- if href != true %}
+      {%- capture href %}{{ path }}{{ name }}{%- endcapture -%}
+  {%- endif %}
   <a href="{{ href }}" title="{{ title }}" target="_blank">
-    {%- endif %}
     <picture>
       {%- if sources %}
         {%- for source in sources %}
@@ -16,10 +12,9 @@
       {%- endif %}
       <img src="{{ path }}{{ name }}" alt="{{ alt }}" title="{{ title }}"/>
     </picture>
-    {%- if href %}
   </a>
-    {%- endif %}
     {%- if caption %}
   <p class="image-caption">{{ caption }}</p>
     {%- endif %}
+  <span style="clear: left;"></span>
 </div>
