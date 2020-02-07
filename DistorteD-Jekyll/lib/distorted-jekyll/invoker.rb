@@ -1,5 +1,6 @@
 require 'distorted/floor'
 require 'distorted/image'
+require 'distorted/video'
 require 'liquid/tag'
 require 'liquid/tag/parser'
 require 'mime/types'
@@ -61,6 +62,9 @@ module Jekyll
       when Jekyll::DistorteD::Image::MEDIA_TYPE
         self.class::ATTRS.merge(Jekyll::DistorteD::Image::ATTRS)
         (class <<self; prepend Jekyll::DistorteD::Image; end)
+      when Jekyll::DistorteD::Video::MEDIA_TYPE
+        self.class::ATTRS.merge(Jekyll::DistorteD::Video::ATTRS)
+        (class <<self; prepend Jekyll::DistorteD::Video; end)
       else
         raise MediaTypeNotImplementedError.new(@media_type)
       end
