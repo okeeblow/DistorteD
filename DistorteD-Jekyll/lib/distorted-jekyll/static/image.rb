@@ -24,46 +24,23 @@ rescue LoadError => le
   raise $!, "#{help}\n#{$!}", $!.backtrace
 end
 
+require 'formats/static_state'
+
 module Jekyll
   # Tag-specific StaticFile child that handles thumbnail generation.
-  class DistorteD::ImageFile < Jekyll::StaticFile
+  class DistorteD::ImageFile < Jekyll::StaticState
 
     def initialize(
-        site,
-        base,
-        dir,
-        name,
-        url,
-        collection = nil
+      site,
+      base,
+      dir,
+      name,
+      url,
+      collection = nil
     )
-      @tag_name = self.class.name.split('::').drop(1).join('::')
-      Jekyll.logger.debug(@tag_name, "#{base}/#{dir}/#{name} -> #{url}")
-      @base = base
-      @dir = dir
-      @name = name
-      @url = url
-      # Constructor args for Jekyll::StaticFile:
-      # site - The Jekyll Site object
-      # base - The String path to the generated `_site` directory.
-      # dir  - The String path for generated images, aka the page URL.
-      # name - The String filename for one generated or original image.
-      super(
-        site,
-        base,
-        dir,
-        name
-      )
+      super
 
       @dimensions = site.config['distorted']['image']
-
-      # Tell Jekyll we modified this file so it will be included in the output.
-      @modified = true
-      @modified_time = Time.now
-    end
-
-    # site_dest: string realpath to `_site_` directory
-    def destination(dest, suffix = nil)
-      File.join(dest, @url, DistorteD::Floor::image_name(@name, suffix))
     end
 
     # dest: string realpath to `_site_` directory
@@ -95,14 +72,6 @@ module Jekyll
       end
 
       true
-    end
-
-    def modified?
-      return true
-    end
-
-    def orig_path
-      File.join(@base, @dir, @name)
     end
   end
 end
