@@ -67,18 +67,20 @@ module Jekyll
       # Mix in known media_type handlers by prepending our singleton class
       # with the handler module, so module methods override ones defined here.
       # Also combine the handler module's tag attributes with the global ones.
-      case
-      when mime & Jekyll::DistorteD::Image::MIME_TYPES
+      if not (mime & Jekyll::DistorteD::Image::MIME_TYPES).empty?
+        Jekyll.logger.debug(@tag_name, mime & Jekyll::DistorteD::Image::MIME_TYPES)
         self.class::ATTRS.merge(Jekyll::DistorteD::Image::ATTRS)
         @media_type = Jekyll::DistorteD::Image::MEDIA_TYPE
         (class <<self; prepend Jekyll::DistorteD::Image; end)
-      when mine & Jekyll::DistorteD::Video::MIME_TYPES
+    elsif not (mime & Jekyll::DistorteD::Video::MIME_TYPES).empty?
+        Jekyll.logger.debug(@tag_name, mime & Jekyll::DistorteD::Video::MIME_TYPES)
         self.class::ATTRS.merge(Jekyll::DistorteD::Video::ATTRS)
         @media_type = Jekyll::DistorteD::Video::MEDIA_TYPE
         (class <<self; prepend Jekyll::DistorteD::Video; end)
       else
         raise MediaTypeNotImplementedError.new(@media_type)
       end
+      Jekyll.logger.debug(@tag_name, "Handling #{@name} as a(n) #{@media_type}")
 
       # Set instance variables for the combined set of global+handler tag
       # attributes used by this media_type.
