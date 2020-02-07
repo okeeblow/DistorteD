@@ -1,9 +1,11 @@
 require 'distorted/floor'
 require 'formats/image'
+require 'mime/types'
 
 module Jekyll::DistorteD::Image
 
   MEDIA_TYPE = 'image'
+  MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
   ATTRS = Set[:alt, :caption, :href, :crop]
 
   # This will become render_to_output_buffer(context, output) some day,

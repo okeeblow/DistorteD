@@ -1,9 +1,11 @@
 require 'distorted/floor'
 require 'formats/video'
+require 'mime/types'
 
 module Jekyll::DistorteD::Video
 
   MEDIA_TYPE = 'video'
+  MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
   ATTRS = Set[:caption]
 
   # This will become render_to_output_buffer(context, output) some day,

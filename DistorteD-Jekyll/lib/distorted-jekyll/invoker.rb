@@ -46,24 +46,35 @@ module Jekyll
       mime = MIME::Types.type_for(@name)
       Jekyll.logger.debug(@tag_name, "#{@name}: #{mime}")
 
-      # TODO: Properly support multiple MIME types from type_for().
-      # For now just take the first since we're mostly working with images.
-      mime = mime.first
-
-      # Select handler module based on the detected media type.
-      # For an example MIME Type image/jpeg, 
-      # `media_type` is 'image' and `sub_type` is 'jpeg'.
-      @media_type = mime.media_type
-
+      # Activate media handler based on union of detected MIME Types and
+      # the supported types declared in each handler.
+      # Handlers will likely declare their Types with a regex:
+      # https://rdoc.info/gems/mime-types/MIME%2FTypes:[]
+      #
+      # MIME::Types.type_for('IIDX-Readers-Unboxing.jpg')
+      # => [#<MIME::Type: image/jpeg>]
+      #
+      # MIME::Types.type_for('play.mp4') => [
+      #   #<MIME::Type: application/mp4>,
+      #   #<MIME::Type: audio/mp4>,
+      #   #<MIME::Type: video/mp4>,
+      #   #<MIME::Type: video/vnd.objectvideo>
+      # ]
+      #
+      # MIME::Types.type_for('play.mp4') & MIME::Types[/^video/, :complete => true]
+      # => [#<MIME::Type: video/mp4>, #<MIME::Type: video/vnd.objectvideo>]
+      #
       # Mix in known media_type handlers by prepending our singleton class
       # with the handler module, so module methods override ones defined here.
       # Also combine the handler module's tag attributes with the global ones.
-      case @media_type
-      when Jekyll::DistorteD::Image::MEDIA_TYPE
+      case
+      when mime & Jekyll::DistorteD::Image::MIME_TYPES
         self.class::ATTRS.merge(Jekyll::DistorteD::Image::ATTRS)
+        @media_type = Jekyll::DistorteD::Image::MEDIA_TYPE
         (class <<self; prepend Jekyll::DistorteD::Image; end)
-      when Jekyll::DistorteD::Video::MEDIA_TYPE
+      when mine & Jekyll::DistorteD::Video::MIME_TYPES
         self.class::ATTRS.merge(Jekyll::DistorteD::Video::ATTRS)
+        @media_type = Jekyll::DistorteD::Video::MEDIA_TYPE
         (class <<self; prepend Jekyll::DistorteD::Video; end)
       else
         raise MediaTypeNotImplementedError.new(@media_type)
