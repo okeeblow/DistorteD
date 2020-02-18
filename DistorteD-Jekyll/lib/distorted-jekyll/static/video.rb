@@ -1,6 +1,7 @@
+#!/usr/bin/env ruby
 # Tell the user to install the shared library if it's missing.
 begin
-  require 'gstreamer'
+  require 'gst'
 rescue LoadError => le
   # Only match libvips.so load failure
   raise unless le.message =~ /libvips.so/
