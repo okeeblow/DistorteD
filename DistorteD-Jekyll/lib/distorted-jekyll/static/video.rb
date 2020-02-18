@@ -42,13 +42,15 @@ module Jekyll
       self.class.mtimes[path] = mtime
 
       FileUtils.mkdir_p(File.dirname(orig_dest))
-      FileUtils.rm(orig_dest) if File.exist?(orig_dest)
 
-      #orig = Vips::Image.new_from_file orig_path
 
 
       true
     end
+      #FileUtils.rm(orig_dest) if File.exist?(orig_dest)
+      if not File.file?(orig_dest)
+        FileUtils.cp(orig_path, orig_dest)
+      end
 
   end
 end
