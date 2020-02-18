@@ -17,6 +17,11 @@ module Jekyll
       @dir = dir
       @name = name
       @url = url
+
+      # Child classes need clean versions of these for various things.
+      @basename = File.basename(name, '.*')
+      @extname = File.extname(name)
+
       # Constructor args for Jekyll::StaticFile:
       # site - The Jekyll Site object
       # base - The String path to the generated `_site` directory.
