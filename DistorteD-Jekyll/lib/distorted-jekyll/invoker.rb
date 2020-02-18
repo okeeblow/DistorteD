@@ -43,8 +43,8 @@ module Jekyll
       #
       # Types#type_for can return multiple possibilities for a filename.
       # For example, an XML file: [application/xml, text/xml].
-      mime = MIME::Types.type_for(@name)
-      Jekyll.logger.debug(@tag_name, "#{@name}: #{mime}")
+      @mime = MIME::Types.type_for(@name)
+      Jekyll.logger.debug(@tag_name, "#{@name}: #{@mime}")
 
       # Activate media handler based on union of detected MIME Types and
       # the supported types declared in each handler.
@@ -67,13 +67,13 @@ module Jekyll
       # Mix in known media_type handlers by prepending our singleton class
       # with the handler module, so module methods override ones defined here.
       # Also combine the handler module's tag attributes with the global ones.
-      if not (mime & Jekyll::DistorteD::Image::MIME_TYPES).empty?
-        Jekyll.logger.debug(@tag_name, mime & Jekyll::DistorteD::Image::MIME_TYPES)
+      if not (@mime & Jekyll::DistorteD::Image::MIME_TYPES).empty?
+        Jekyll.logger.debug(@tag_name, @mime & Jekyll::DistorteD::Image::MIME_TYPES)
         self.class::ATTRS.merge(Jekyll::DistorteD::Image::ATTRS)
         @media_type = Jekyll::DistorteD::Image::MEDIA_TYPE
         (class <<self; prepend Jekyll::DistorteD::Image; end)
-    elsif not (mime & Jekyll::DistorteD::Video::MIME_TYPES).empty?
-        Jekyll.logger.debug(@tag_name, mime & Jekyll::DistorteD::Video::MIME_TYPES)
+    elsif not (@mime & Jekyll::DistorteD::Video::MIME_TYPES).empty?
+        Jekyll.logger.debug(@tag_name, @mime & Jekyll::DistorteD::Video::MIME_TYPES)
         self.class::ATTRS.merge(Jekyll::DistorteD::Video::ATTRS)
         @media_type = Jekyll::DistorteD::Video::MEDIA_TYPE
         (class <<self; prepend Jekyll::DistorteD::Video; end)
@@ -116,6 +116,8 @@ module Jekyll
 
       # Instantiate the appropriate StaticFile subclass for any handler.
       static_file = self.static_file(site, base, dir, @name, @url)
+
+      static_file.instance_variable_set('@mime', instance_variable_get('@mime'))
 
       # Copy the media attribute instance variable contents to the StaticFile.
       for attr in self.class::ATTRS
