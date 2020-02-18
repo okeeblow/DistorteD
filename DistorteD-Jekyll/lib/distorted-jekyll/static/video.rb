@@ -54,7 +54,7 @@ module Jekyll
 
       # https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html?gi-language=c#pipeline-description
       # TODO: Convert this from parse_launch() pipeline notation to Element objects
-      pipeline, error = Gst.parse_launch("filesrc name=src ! decodebin name=demux ! videoconvert ! vaapih264enc ! queue2 ! mpegtsmux name=mux ! hlssink name=hls max-files=0 playlist-length=60 target-duration=2 allowcache=yes demux. ! audioconvert ! voaacenc ! queue2 ! mux.")
+      pipeline, error = Gst.parse_launch("filesrc name=src ! decodebin name=demux ! videoconvert ! vaapih264enc ! queue2 ! mpegtsmux name=mux ! hlssink name=hls max-files=0 playlist-length=60 target-duration=2 demux. ! audioconvert ! voaacenc ! queue2 ! mux.")
 
       if pipeline.nil?
         Jekyll.logger.error(@tag_name, "Parse error: #{error.message}")
@@ -64,10 +64,11 @@ module Jekyll
       filesrc = pipeline.get_by_name('src')
       filesrc.location = orig_path
 
+      hls_playlist = "#{hls_dest}/#{@basename}.m3u8"
       hls = pipeline.get_by_name('hls')
       #hls.playlist_root = hls_dest
       hls.location = "#{hls_dest}/#{@basename}%05d.ts"
-      hls.playlist_location = "#{hls_dest}/#{@basename}.m3u8"
+      hls.playlist_location = hls_playlist
 
       pipeline.play
 
@@ -75,6 +76,12 @@ module Jekyll
       event_loop(pipeline)
 
       pipeline.stop
+
+      # HACK HACK HACK: Replace X-ALLOW-CACHE line in playlist with YES.
+      # This property does not seem to be exposed to the outside of hlssink:
+      # https://cgit.freedesktop.org/gstreamer/gst-plugins-bad/tree/ext/hls/gsthlssink.c
+      text = File.read(hls_playlist)
+      File.write(hls_playlist, text.gsub(/^#EXT-X-ALLOW-CACHE:NO$/, '#EXT-X-ALLOW-CACHE:YES'))
     end
 
     def event_loop(pipeline)
