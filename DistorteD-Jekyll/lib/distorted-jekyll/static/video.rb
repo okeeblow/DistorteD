@@ -70,6 +70,9 @@ module Jekyll
       hls.location = "#{hls_dest}/#{@basename}%05d.ts"
       hls.playlist_location = hls_playlist
 
+      # TODO: dashsink support once there is a stable GStreamer release including it:
+      # https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/merge_requests/704
+
       pipeline.play
 
       # Play until End Of Stream
