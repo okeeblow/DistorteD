@@ -66,9 +66,11 @@ module Jekyll
 
       hls_playlist = "#{hls_dest}/#{@basename}.m3u8"
       hls = pipeline.get_by_name('hls')
-      #hls.playlist_root = hls_dest
       hls.location = "#{hls_dest}/#{@basename}%05d.ts"
       hls.playlist_location = hls_playlist
+
+      # TODO: config option for absolute vs relative segment URIs in the playlist.
+      #hls.playlist_root = @url
 
       # TODO: dashsink support once there is a stable GStreamer release including it:
       # https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/merge_requests/704
