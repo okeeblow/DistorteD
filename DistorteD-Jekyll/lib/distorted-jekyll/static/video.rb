@@ -54,7 +54,9 @@ module Jekyll
 
       # https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html?gi-language=c#pipeline-description
       # TODO: Convert this from parse_launch() pipeline notation to Element objects
-      pipeline, error = Gst.parse_launch("filesrc name=src ! decodebin name=demux ! videoconvert ! vaapih264enc ! queue2 ! h264parse ! mpegtsmux name=mux ! hlssink name=hls max-files=0 playlist-length=60 target-duration=2 demux. ! audioconvert ! voaacenc ! queue2 ! mux.")
+      # TODO: Get source video duration/resolution/etc and use it to compute a
+      #  value for `target-duration`.
+      pipeline, error = Gst.parse_launch("filesrc name=src ! decodebin name=demux ! videoconvert ! vaapih264enc ! queue2 ! h264parse ! mpegtsmux name=mux ! hlssink name=hls max-files=0 playlist-length=0 target-duration=2 demux. ! audioconvert ! voaacenc ! queue2 ! mux.")
 
       if pipeline.nil?
         Jekyll.logger.error(@tag_name, "Parse error: #{error.message}")
