@@ -15,6 +15,7 @@ module Jekyll::DistorteD::Video
     begin
       parse_template(context.registers[:site]).render({
         'name' => @name,
+        'basename' => File.basename(@name, '.*'),
         'path' => @url,
         'alt' => @alt,
         'title' => @title,

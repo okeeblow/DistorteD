@@ -2,17 +2,9 @@
   {%- if href != true %}
       {%- capture href %}{{ path }}{{ name }}{%- endcapture -%}
   {%- endif %}
-  <a href="{{ href }}" title="{{ title }}" target="_blank">
-    <video>
-      {%- if sources %}
-        {%- for source in sources %}
-      {%- comment %} TODO: Add `type` attribute to <source>s{%- endcomment %}
-      <source srcset="{{ path }}{{ source.name }}" media="{{ source.media }}"/>
-        {%- endfor %}
-      {%- endif %}
-      <img src="{{ path }}{{ name }}" alt="{{ alt }}" title="{{ title }}"/>
-    </video>
-  </a>
+  <video id="distorted-video" class="video-js vjs-default-skin" controls>
+    <source src="{{ path }}{{ basename }}.hls/{{ basename }}.m3u8" type="application/x-mpegURL"/>
+  </video>
     {%- if caption %}
   <p class="distorted-caption">{{ caption }}</p>
     {%- endif %}
