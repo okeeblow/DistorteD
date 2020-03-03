@@ -56,6 +56,7 @@ module Jekyll
       # TODO: Convert this from parse_launch() pipeline notation to Element objects
       # TODO: Get source video duration/resolution/etc and use it to compute a
       #  value for `target-duration`.
+      # TODO: Also support urldecodebin for remote media.
       pipeline, error = Gst.parse_launch("filesrc name=src ! decodebin name=demux ! videoconvert ! vaapih264enc ! queue2 ! h264parse ! queue2 ! mux.video hlssink2 name=mux max-files=0 playlist-length=0 target-duration=2 demux. ! audioconvert ! voaacenc ! queue2 ! mux.audio")
 
       if pipeline.nil?
