@@ -30,6 +30,7 @@ image syntax in your site to instances of DistorteD's Liquid tag.
 ```
 
 e.g.
+
 ```
 !["beatmania IIDX WavePass card readers being removed from shipping box."](IIDX-Readers-Unboxing.jpg "Including that authentic game center cigarette smell."]
 
@@ -38,10 +39,10 @@ list item will be combined into a DistorteD grid where the images or videos
 will group and flow together in one block on the page, like a tweet.
 
 ```
-- ![Wavepass card reader installed on my IIDX machine](IIDX-Readers-Installed.jpg "Number one")
-- ![IIDX PC parts](IIDX-PC-Parts.jpg "Twoooo")
-- ![Adjusting monitor height](IIDX-Raising-Monitor.jpg "Three.")
-- ![Card reader enclosures unlocked and hanging open](IIDX-Readers-Unlocked.jpg "Four!")
+‑ ![Wavepass card reader installed on my IIDX machine](IIDX-Readers-Installed.jpg "Number one")
+‑ ![IIDX PC parts](IIDX-PC-Parts.jpg "Twoooo")
+‑ ![Adjusting monitor height](IIDX-Raising-Monitor.jpg "Three.")
+‑ ![Card reader enclosures unlocked and hanging open](IIDX-Readers-Unlocked.jpg "Four!")
 ```
 
 You can also invoke DD's Liquid tag directly. This is the syntax the above Markdown
