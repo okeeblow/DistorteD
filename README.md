@@ -33,6 +33,7 @@ e.g.
 
 ```
 !["beatmania IIDX WavePass card readers being removed from shipping box."](IIDX-Readers-Unboxing.jpg "Including that authentic game center cigarette smell."]
+```
 
 Two or more adjacent lines containing a Markdown image/video inside a Markdown
 list item will be combined into a DistorteD grid where the images or videos
