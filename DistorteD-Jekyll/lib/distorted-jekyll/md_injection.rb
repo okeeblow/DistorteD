@@ -156,20 +156,67 @@ module Kramdown
   module Converter
     class Liquid < Base
 
-      def extract_imgs(el)
-        imgs = []
-        if el.type.equal? :img
-          # Images won't have a `:value`, only `:attr`s, and the only
-          # important things in their `:options` (like IAL contents)
-          # will be duplicated in `class` or some other `:attr` anyway.
-          imgs << el.attr unless el.attr.empty?
+      # The incoming parsed Markdown tree will include many spurious elements,
+      # like container paragraph elements and the list item elements when
+      # parsing DD Grid style Markdown. Use this function to map a tree of
+      # arbitrary elements to a flat list of elements of a single type.
+      def children(el, type)
+        matched = []
+
+        if el.is_a? Enumerable
+        # We might want to run this against an Array output from an
+        # earlier invokation of this method.
+          el.each {
+            |item| matched.push(*children(item, type))
+          }
+        elsif el.type.equal? type
+          # If we find the type we're looking for, stop and return it.
+          # Let it bring its children along with it instead of recursing
+          # into them. This will let us match container-only elements
+          # such as <li> by type without considering the type of its children,
+          # for situation where its children are really what we want.
+          matched.push(el)
+        else
+          # Otherwise keep looking down the tree.
+          unless el.children.empty?
+            el.children.each {
+              |child| matched.push(*children(child, type))
+            }
+          end
         end
-        unless el.children.empty?
-          el.children.each {|child| imgs.push(*extract_imgs(child)) }
-        end
-        imgs
+        matched
       end
 
+      def attrs(el, type = :img)
+        matched = []
+
+        if el.is_a? Enumerable
+          # Support an Array of elements...
+          el.each {
+            |child| matched.push(*attrs(child, type))
+          }
+        else
+          # ...or a tree of elements.
+          if el.type.equal? type
+            # Images won't have a `:value` — only `:attr`s — and the only
+            # important things in their `:options` (e.g. IAL contents)
+            # will be duplicated in `class` or some other `:attr` anyway.
+            # Those things should be added here if this is ever used in a
+            # more generic context than just parsing the image tags.
+            matched << el.attr unless el.attr.empty?
+          end
+          unless el.children.empty?
+            # Keep looking even if this element was one we are looking for.
+            el.children.each {
+              |child| matched.push(*attrs(child, type))
+            }
+          end
+        end
+        matched
+      end
+
+      # Convert Markdown element attributes to a string key=value,
+      # except for `src` (DD-specific)
       def to_attrs(k, v)
         # DistorteD expects the media filename as a positional argument,
         # not a named kwarg.
@@ -186,14 +233,42 @@ module Kramdown
 
       # Kramdown entry point
       def convert(el)
-        imgs = extract_imgs(el)
+        # The parsed "images" may also be audio, video, or some other
+        # media type. There is only one Markdown image tag, however.
+        imgs = children(el, :img)
+
+        # Enable conceptual-grouping (BLOCKS) mode if the count of list item
+        # elements matches the count of image elements in our
+        # chunk of Markdown. Technically I should check to make sure each
+        # image is the child of one of those list items,
+        # but this is way easier until I (hopefully never) find a parsing
+        # corner-case where this doesn't hold up.
+        lists = children(el, :li)
+        list_imgs = lists.map{|li| children(li, :img)}.flatten
+
         case imgs.count
         when 0
+          # How did we even get here? This probably means a bug in our regex.
+          # Good luck :)
           raise "Attempted to render zero images as DistorteD Liquid tags."
         when 1
-          distorted(imgs.first)
+          # Render one (1) image/video/whatever.
+          distorted(*attrs(imgs.first))
         else
-          "{% distort %}\n#{imgs.map{|img| distorted(img)}.join("\n")}{% enddistort %}"
+          # Render a conceptual group (DD::BLOCKS)
+
+          if imgs.count != list_imgs.count
+            # Sanity check :img count vs :img-in-:li count.
+            # We should support the corner case where the regex matches
+            # multiple consecutive lines, but with mixed list item status,
+            # e.g. a solo image abuts a conceptual group and gets globbed
+            # into a single match.
+            # For now, however:
+            raise "MD->img regex returned an unequal number of listed and unlisted tags."
+          end
+
+          # For now just assume all images are list images if we get here.
+          "{% distort -%}\n#{list_imgs.map{|img| distorted(*attrs(img))}.join("\n")}\n{% enddistort %}"
         end
       end
 
