@@ -11,4 +11,8 @@ Liquid::Template.register_tag('distort', Jekyll::BLOCKS)
 
 # Transform Markdown image syntax ![alt](url.jpg "title")
 # to instances of our liquid tag {% distorted %}
-Jekyll::Hooks.register(:documents, :pre_render, &distort_markdown)
+# Available hooks can be seen here:
+#   https://github.com/jekyll/jekyll/blob/master/lib/jekyll/hooks.rb
+# `:documents` does not seem to include `_pages` but does include `_posts`.
+Jekyll::Hooks.register(:pages, :pre_render, &distort_markdown)
+Jekyll::Hooks.register(:posts, :pre_render, &distort_markdown)
