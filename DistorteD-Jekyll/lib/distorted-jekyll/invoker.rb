@@ -36,7 +36,17 @@ module Jekyll
 
       # Filename is the only non-keyword argument our tag should ever get.
       # It's spe-shul and gets its own definition outside the attr loop.
-      @name = parsed_arguments[:argv1]
+      if parsed_arguments.key?(:src)
+        @name = parsed_arguments[:src]
+      else
+        @name = parsed_arguments[:argv1]
+      end
+
+      # If we didn't get one of the two above options there is nothing we
+      # can do but bail.
+      unless @name
+        raise "Failed to get a usable filename from #{arguments}"
+      end
 
       # Guess MIME Magic from the filename. For example:
       # `distorted IIDX-Readers-Unboxing.jpg: [#<MIME::Type: image/jpeg>]`
@@ -44,7 +54,13 @@ module Jekyll
       # Types#type_for can return multiple possibilities for a filename.
       # For example, an XML file: [application/xml, text/xml].
       @mime = MIME::Types.type_for(@name)
-      Jekyll.logger.debug(@tag_name, "#{@name}: #{@mime}")
+
+      # We can't proceed without a usable media type.
+      if @mime
+        Jekyll.logger.debug(@tag_name, "#{@name}: #{@mime}")
+      else
+        raise "Failed to get a MIME type for #{@name}!"
+      end
 
       # Activate media handler based on union of detected MIME Types and
       # the supported types declared in each handler.
