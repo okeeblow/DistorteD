@@ -1,6 +1,39 @@
 require 'kramdown'
 
-# Replace standard Markdown images to instances of DistorteD via its Liquid tag.
+# Replace standard Markdown image syntax with instances of DistorteD
+# via its Liquid tag.
+#
+#
+### SYNTAX
+#
+# I'm calling individual media elements "images" here because I'm overloading
+# the Markdown image syntax to express them. There is no dedicated
+# syntax for other media types in any flavor of Markdown as of 2019,
+# so that seemed like the cleanest and sanest way to deal
+# with non-images in DistorteD.
+#
+# DistorteD::Invoker will do the media type inspection and handling
+# once we get into Liquid Land. This is the approach suggested by
+# CommonMark: https://talk.commonmark.org/t/embedded-audio-and-video/441/15
+#
+# Media elements will display as a visibly related group when
+# two or more Markdown image tags exist in consecutive Markdown
+# unordered (e.g. *-+) list item or ordered (e.g. 1.) list item lines.
+# Their captions should be hidden until opened in a lightbox or as a tooltip
+# on desktop browsers via ::hover state.
+#
+# The inspiration for this display can be seen in the handling
+# of two, three, or four images in any single post on Tw*tter.
+# DistorteD expands on the concept by supporting things such as groups
+# of more than four media elements and elements of heterogeneous media types.
+#
+# Standalone image elements (not contained in list item) should be displayed
+# as single solo elements spanning the entire usable width of the
+# container element, whatever that happens to be at the point where
+# our regex excised a block of Markdown for us to work with.
+#
+#
+### TECHNICAL CONSIDERATIONS
 #
 # Jekyll processes Liquid templates before processing page/post Markdown,
 # so we can't rely on customizing the Markdown renderer's `:img` element
@@ -8,9 +41,12 @@ require 'kramdown'
 # https://jekyllrb.com/tutorials/orderofinterpretation/
 #
 # Prefer the POSIX-style bracket expressions (e.g. [[:digit:]]) over
-# basic character classes (e.g. \d) because they match Unicode
+# basic character classes (e.g. \d) in regex because they match Unicode
 # instead of just ASCII.
 # https://ruby-doc.org/core/Regexp.html#class-Regexp-label-Character+Classes
+#
+#
+### INLINE ATTRIBUTE LISTS
 #
 # Support additional arguments passed to DistorteD via Kramdown-style
 # inline attribute lists.
@@ -25,10 +61,28 @@ require 'kramdown'
 #
 # This page provides a regex for parsing IALs, Section 5.3:
 # https://golem.ph.utexas.edu/~distler/maruku/proposal.html
+#
+#
+### SOLUTION
+#
+# A `pre_render` hook uses this regex to process Markdown source files
+# and replace instances of the Markdown image syntax with instances of
+# DistorteD's Liquid tags.
+# Single images will be replaced with {% distorted %}.
+# Multiple list-item images will be replaced with a {% distort %} block.
+#
+# High-level explanation of what we intend to match:
+#
+# {:optional_ial => line_before_image}  # Iff preceded by a blank line!
+# (optional_list_item)? ![alt](image){:optional_ial => same_line}
+# {:optional_ial => next_consecutive_line}
+# Repeat both preceding matches (together) any number of times to parse
+# a {% distort %} block.
+# See inline comments below for more detail.
 MD_IMAGE_REGEX = %r&
-  # Image container
+  # Matching group of a single image tag.
   (
-    # Preceding-line attribute list
+    # Optional preceding-line attribute list.
     (
       # One blank line with newline via :space:
       ^$[[:space:]]
@@ -54,23 +108,25 @@ MD_IMAGE_REGEX = %r&
     )?  # List items are optional!
     # Match Markdown image syntax:
     #   ![alt text](/some/path/to/image.png 'title text'){:other="options"}
+    #   beginning with the alt tag:
     !\[(?<alt>(\\\]|[^\]])*)\]
-    # Match img src as anything after the '(' and before ')' or
-    # anything that could be a title.
+    # Continuing with img src as anything after the '(' and before ')' or
+    # before anything that could be a title.
     # Assume titles will be quoted.
     \((?<src>[^'")]+)
     # Title is optional.
-    # Don't including the opening or closing quotes in the capture.
+    # Don't including the title's opening or closing quotes in the capture.
     (['"](?<title>[^'"]*)['"])?
-    # The closing ')' will always be present.
+    # The closing ')' will always be present, title or no.
     \)
-    # IALs may be on the same line as the image after some amount of whitespace.
+    # Optional IAL on the same line as the image after any whitespace.
     ([[:blank:]]*(?<inline_al>\{:(\\\}|[^\}])*\}))*
     # Also support optional IALs on the line following the image.
-    # :space: matches newlines regardless of encoding.
+    # :space: matches newlines regardless of file encoding!
     ([[:space:]][[:blank:]]*(?<post_al>\{:(\\\}|[^\}])*\})*)?
   )+  # Capture multiple images together for block display.
 &x
+
 
 def distort_markdown
   Proc.new { |document, payload|
@@ -92,6 +148,10 @@ def distort_markdown
   }
 end
 
+
+# Kramdown implementation of Markdown AST -> Liquid converter.
+# Renders Markdown element attributes as key=value, also under the assumption
+# of using gem 'liquid-tag-parser': https://github.com/dmalan/liquid-tag-parser
 module Kramdown
   module Converter
     class Liquid < Base
@@ -124,6 +184,7 @@ module Kramdown
         "{% distorted #{attrs.map{|k,v| to_attrs(k, v)}.join(' ')} %}"
       end
 
+      # Kramdown entry point
       def convert(el)
         imgs = extract_imgs(el)
         case imgs.count
