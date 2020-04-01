@@ -127,7 +127,11 @@ module Jekyll
       # Our subclass' additional args:
       # dest - The String path to the generated `url` folder of the page HTML output
       base = site.source
-      dir = File.dirname(page_data['relative_path'])
+
+      # `relative_path` doesn't seem to always exist, but `path` does? idk.
+      # I was testing with `relative_path` only with `_posts`, but it broke
+      # when I invoked DD on a _page. Both have `path`.
+      dir = File.dirname(page_data['path'])
       @url = page_data['url']
 
       # Instantiate the appropriate StaticFile subclass for any handler.
