@@ -3,13 +3,12 @@
 begin
   require 'gst'
 rescue LoadError => le
-  # Only match libvips.so load failure
-  raise unless le.message =~ /libvips.so/
+  raise unless le.message =~ /libgst/
 
   # Multiple OS help
   help = <<~INSTALL
 
-  Please install the library.
+  Please install the GStreamer library for your system.
   INSTALL
 
   # Re-raise with install message
