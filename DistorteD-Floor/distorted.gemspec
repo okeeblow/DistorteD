@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.summary       = "Media thumbnailing, embedding, and linking tag for Liquid."
   spec.description   = "Cooltrainer::DistorteD is a Liquid tag developed for using images in my Jekyll blog with automatic thumbnailing."
   spec.homepage      = "https://cooltrainer.org"
-  spec.license       = "MIT"
+  spec.license       = 'AGPL-3.0'
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
