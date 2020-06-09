@@ -1,4 +1,4 @@
-require 'distorted/floor'
+require 'distorted-jekyll/floor'
 
 module Jekyll
   class BLOCKS < Liquid::Block

@@ -1,4 +1,4 @@
-require 'distorted/floor'
+require 'distorted-jekyll/floor'
 require 'formats/image'
 require 'mime/types'
 

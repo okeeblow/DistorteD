@@ -1,6 +1,6 @@
-require 'distorted/floor'
-require 'distorted/image'
-require 'distorted/video'
+require 'distorted-jekyll/floor'
+require 'distorted-jekyll/image'
+require 'distorted-jekyll/video'
 require 'liquid/tag'
 require 'liquid/tag/parser'
 require 'mime/types'
@@ -88,7 +88,7 @@ module Jekyll
         self.class::ATTRS.merge(Jekyll::DistorteD::Image::ATTRS)
         @media_type = Jekyll::DistorteD::Image::MEDIA_TYPE
         (class <<self; prepend Jekyll::DistorteD::Image; end)
-    elsif not (@mime & Jekyll::DistorteD::Video::MIME_TYPES).empty?
+      elsif not (@mime & Jekyll::DistorteD::Video::MIME_TYPES).empty?
         Jekyll.logger.debug(@tag_name, @mime & Jekyll::DistorteD::Video::MIME_TYPES)
         self.class::ATTRS.merge(Jekyll::DistorteD::Video::ATTRS)
         @media_type = Jekyll::DistorteD::Video::MEDIA_TYPE

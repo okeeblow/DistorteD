@@ -1,4 +1,4 @@
-require 'distorted/floor'
+require 'distorted-jekyll/floor'
 require 'formats/video'
 require 'mime/types'
 
