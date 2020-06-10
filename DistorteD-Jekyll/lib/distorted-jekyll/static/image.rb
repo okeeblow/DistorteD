@@ -48,8 +48,8 @@ module Jekyll
       end
 
       distorted.dimensions = dimensions
+        distorted.generate
 
-      distorted.write
 
       true
     end
