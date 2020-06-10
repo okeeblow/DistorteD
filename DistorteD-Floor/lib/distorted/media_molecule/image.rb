@@ -24,9 +24,14 @@ rescue LoadError => le
   raise $!, "#{help}\n#{$!}", $!.backtrace
 end
 
+require 'mime/types'
+
 module Cooltrainer
   class DistorteD
     class Image
+
+      MEDIA_TYPE = 'image'
+      MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
 
       attr_accessor :dimensions
 
