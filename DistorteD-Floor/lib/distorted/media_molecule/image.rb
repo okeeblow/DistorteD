@@ -45,7 +45,7 @@ module Cooltrainer
         @image.get_fields.grep(/exif-ifd/).each {|field| @image.remove field}
       end
 
-      def write
+      def generate
         for d in @dimensions
           if d[:tag] == :full
             @image.write_to_file(d[:dest])
