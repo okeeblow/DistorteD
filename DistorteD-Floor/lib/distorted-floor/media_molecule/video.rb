@@ -15,9 +15,14 @@ rescue LoadError => le
   raise $!, "#{help}\n#{$!}", $!.backtrace
 end
 
+require 'mime/types'
+
 module Cooltrainer
   class DistorteD
     class Video
+
+      MEDIA_TYPE = 'video'
+      MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
 
       def initialize(src, dest, basename)
         @src = src
