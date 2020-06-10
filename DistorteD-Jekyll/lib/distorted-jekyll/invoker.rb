@@ -84,6 +84,10 @@ module Jekyll
         # Mix in known media_type handlers by prepending our singleton class
         # with the handler module, so module methods override ones defined here.
         # Also combine the handler module's tag attributes with the global ones.
+        #
+        # Note to self:
+        # If you end up implementing some meta bullshit here do it with Module#const_get
+        # http://blog.sidu.in/2008/02/loading-classes-from-strings-in-ruby.html
 
         if not (@mime & Jekyll::DistorteD::Image::MIME_TYPES).empty?
           Jekyll.logger.debug(@tag_name, @mime & Jekyll::DistorteD::Image::MIME_TYPES)
