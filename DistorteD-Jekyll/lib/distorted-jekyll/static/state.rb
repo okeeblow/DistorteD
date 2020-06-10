@@ -37,7 +37,7 @@ module Jekyll
 
     # site_dest: string realpath to `_site_` directory
     def destination(dest, suffix = nil)
-      File.join(dest, @url, DistorteD::Floor::image_name(@name, suffix))
+      File.join(dest, @url, Jekyll::DistorteD::Floor::image_name(@name))
     end
 
     def modified?
