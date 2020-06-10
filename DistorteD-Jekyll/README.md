@@ -1,19 +1,16 @@
-# Cooltrainer::DistorteD
+# Jekyll::DistorteD
 
-`DistorteD` is a multimedia framework for Jekyll websites.
-
-Right now this repo contains two Gems:
-- `DistorteD-Jekyll` contains anything and everything that depends on Jekyll.
-- `DistorteD-Ruby` contains just the abstract media file format handling code. It's separate so I can use those functions in other contexts and/or easily replace the Ruby core if necessary.
+`DistorteD-Jekyll` is a multimedia framework for Jekyll websites.
 
 ## Motivation
 
-DD is my solution for displaying photos, videos, and other types of media on [cooltrainer.org](https://cooltrainer.org) due to my dissatisfaction with every other solution I could find.
+DistorteD is my solution for displaying photos, videos, and other types of media on [cooltrainer.org](https://cooltrainer.org) due to my dissatisfaction with every other solution I could find.
 
 My previous approach was similar to what's [described here](https://eduardoboucas.com/blog/2014/12/07/including-and-managing-images-in-jekyll.html), with small/medium/large image size variations generated with [Jekyll-MiniMagick](https://github.com/MattKevan/Jekyll-MiniMagick-new).
 
 Here are some already-existing ways to put pictures on your Jekyll site that are worth your consideration before choosing DistorteD:
 
+- Octopress' [image_tag](https://github.com/imathis/octopress/blob/master/plugins/image_tag.rb) plugin.
 - [jekyll-responsive-image](https://github.com/wildlyinaccurate/jekyll-responsive-image)
 - [jekyll_picture_tag](https://rbuchberger.github.io/jekyll_picture_tag/)
 - [jekyll-gallery-generator](https://github.com/ggreer/jekyll-gallery-generator)
@@ -92,7 +89,7 @@ will be transformed into.
 %}
 ```
 
-Or, for a DD grid:
+or, for a DD grid:
 
 ```
 {% distort %}
@@ -109,11 +106,10 @@ Clone the DistorteD repository and modify your Jekyll `Gemfile` to refer to your
 
 ```
 gem 'distorted-jekyll', :path => '~/repos/DistorteD/DistorteD-Jekyll/'[, :branch => 'NEW-SENSATION']
-gem 'distorted', :path => '~/repos/DistorteD/DistorteD-Ruby/'[, :branch => 'NEW-SENSATION']
 ```
 
 The `DistorteD-Jekyll` Gem will automatically use its local sibling `DistorteD-Ruby` Gem if used in this way.
 
 ## License
 
-DistorteD is available as open source under the terms of the [GNU Affero General Public License version 3](https://opensource.org/licenses/AGPL-3.0).
+The gem is available as open source under the terms of the [GNU Affero General Public License version 3](https://opensource.org/licenses/AGPL-3.0).
