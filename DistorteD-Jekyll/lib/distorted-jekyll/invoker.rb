@@ -14,9 +14,9 @@ module Jekyll
       # The built-in NotImplementedError is for "when a feature is not implemented
       # on the current platform", so make our own more appropriate one.
       class MediaTypeNotImplementedError < StandardError
-        attr_reader :media_type
-        def initialize(media_type)
-          super("The media type '#{media_type}' is not supported")
+        attr_reader :media_type, :name
+        def initialize(name)
+          super("No supported media type for #{name}")
         end
       end
 
@@ -181,7 +181,7 @@ module Jekyll
 
       # Bail out if this is not handled by the module we just mixed in.
       def static_file(site, base, dir, name, url)
-        raise MediaTypeNotImplementedError.new(@media_type)
+        raise MediaTypeNotImplementedError.new(name)
       end
     end
   end
