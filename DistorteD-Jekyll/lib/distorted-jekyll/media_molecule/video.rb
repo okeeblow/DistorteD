@@ -15,7 +15,7 @@ module Jekyll
         begin
           parse_template.render({
             'name' => @name,
-            'basename' => File.basename(@name, '.*'),
+            'basename' => @basename,
             'path' => @url,
             'alt' => @alt,
             'title' => @title,
