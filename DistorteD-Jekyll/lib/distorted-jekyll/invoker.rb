@@ -19,6 +19,12 @@ module Jekyll
           super("No supported media type for #{name}")
         end
       end
+      class MediaTypeNotFoundError < StandardError
+        attr_reader :media_type, :name
+        def initialize(name)
+          super("Failed to detect media type for #{name}")
+        end
+      end
 
       # This list should contain global attributes only, as symbols.
       # The final attribute set will be this + the media-type-specific set.
@@ -60,7 +66,7 @@ module Jekyll
         if @mime
           Jekyll.logger.debug(@tag_name, "#{@name}: #{@mime}")
         else
-          raise "Failed to get a MIME type for #{@name}!"
+          raise MediaTypeNotFoundError.new(@name)
         end
 
         # Activate media handler based on union of detected MIME Types and
