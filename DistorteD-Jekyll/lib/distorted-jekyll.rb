@@ -9,7 +9,7 @@ raise 'DistorteD depends on some features introduced in Ruby 2.3' unless RUBY_VE
 Liquid::Template.register_tag('distorted', Jekyll::DistorteD::Invoker)
 
 # Register a block version for arranging multiple pieces of media.
-Liquid::Template.register_tag('distort', Jekyll::BLOCKS)
+Liquid::Template.register_tag('distort', Jekyll::DistorteD::BLOCKS)
 
 # Transform Markdown image syntax ![alt](url.jpg "title")
 # to instances of our liquid tag {% distorted %}
