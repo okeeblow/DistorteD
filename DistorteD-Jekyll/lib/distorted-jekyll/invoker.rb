@@ -1,6 +1,6 @@
 require 'distorted-jekyll/floor'
-require 'distorted-jekyll/image'
-require 'distorted-jekyll/video'
+require 'distorted-jekyll/molecule/image'
+require 'distorted-jekyll/molecule/video'
 require 'liquid/tag'
 require 'liquid/tag/parser'
 require 'mime/types'
@@ -203,7 +203,7 @@ module Jekyll
         begin
           # Template filename is based on the MEDIA_TYPE declared in the driver,
           # which will be set as an instance variable upon successful auto-plugging.
-          template = File.join(File.dirname(__FILE__), 'templates', "#{@media_type}.liquid")
+          template = File.join(File.dirname(__FILE__), 'template', "#{@media_type}.liquid")
 
           # Jekyll's Liquid renderer caches in 4.0+.
           # Make this a config option or get rid of it and always cache

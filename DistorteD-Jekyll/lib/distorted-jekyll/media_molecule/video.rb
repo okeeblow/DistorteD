@@ -1,4 +1,4 @@
-require 'formats/video'
+require 'distorted-jekyll/static/video'
 
 module Jekyll
   module DistorteD
