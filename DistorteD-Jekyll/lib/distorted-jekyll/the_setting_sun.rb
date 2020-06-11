@@ -38,6 +38,10 @@ module Jekyll
           orig
         end
       end
+
+      def basename
+        File.basename(@name, '.*')
+      end
     end
   end
 end
