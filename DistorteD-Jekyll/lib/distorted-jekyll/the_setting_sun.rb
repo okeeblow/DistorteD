@@ -9,7 +9,9 @@ module Jekyll
       DEFAULT_CONFIG_FILE_NAME = '_config_default.yml'
 
       def config(media_type, site = nil)
-        self.config_site(media_type, site=site) || self.config_default(media_type) || {}
+        # Memoize media_type config to avoid multiple YAML file loads
+        @@config ||= Hash.new { |hash, media_type| hash[media_type] = {} }
+        @@config[media_type] ||= self.config_site(media_type, site=site) || self.config_default(media_type) || {}
       end
 
       def config_site(media_type, site = nil)
