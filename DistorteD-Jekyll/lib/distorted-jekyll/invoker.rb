@@ -9,10 +9,14 @@ module Jekyll
   module DistorteD
     class Invoker < Liquid::Tag
 
+      # Mix in config-loading methods.
       include Jekyll::DistorteD::Floor
 
+      # Enabled media_type drivers. These will be attempted back to front.
+      MEDIA_MOLECULES = [Jekyll::DistorteD::Video, Jekyll::DistorteD::Image]
+
       # The built-in NotImplementedError is for "when a feature is not implemented
-      # on the current platform", so make our own more appropriate one.
+      # on the current platform", so make our own more appropriate ones.
       class MediaTypeNotImplementedError < StandardError
         attr_reader :media_type, :name
         def initialize(name)
@@ -69,14 +73,23 @@ module Jekyll
           raise MediaTypeNotFoundError.new(@name)
         end
 
-        # Activate media handler based on union of detected MIME Types and
-        # the supported types declared in each handler.
-        # Handlers will likely declare their Types with a regex:
+        # Array of drivers to try auto-plugging. Take a shallow copy first because
+        # these will get popped off the end for plug attempts.
+        media_molecules = MEDIA_MOLECULES.dup
+
+        ## Media Driver Autoplugging
+        #
+        # Take the union of this file's detected MIME::Types and
+        # the supported MEDIA_TYPES declared in each molecule.
+        # Molecules will likely declare their Types with a regex:
         # https://rdoc.info/gems/mime-types/MIME%2FTypes:[]
         #
+        #
+        # Still-Image Mime::Types Example:
         # MIME::Types.type_for('IIDX-Readers-Unboxing.jpg')
         # => [#<MIME::Type: image/jpeg>]
         #
+        # Video MIME::Types Example:
         # MIME::Types.type_for('play.mp4') => [
         #   #<MIME::Type: application/mp4>,
         #   #<MIME::Type: audio/mp4>,
@@ -84,34 +97,55 @@ module Jekyll
         #   #<MIME::Type: video/vnd.objectvideo>
         # ]
         #
+        #
+        # Molecule declared-supported MIME::Types Example:
+        # (huge list)
+        #   MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
+        #
+        #
+        # Detected & Declared MIME::Types Union Example:
         # MIME::Types.type_for('play.mp4') & MIME::Types[/^video/, :complete => true]
         # => [#<MIME::Type: video/mp4>, #<MIME::Type: video/vnd.objectvideo>]
         #
-        # Mix in known media_type handlers by prepending our singleton class
-        # with the handler module, so module methods override ones defined here.
-        # Also combine the handler module's tag attributes with the global ones.
+        # ^ This non-empty example union means we sould try this driver for this file.
         #
-        # Note to self:
-        # If you end up implementing some meta bullshit here do it with Module#const_get
-        # http://blog.sidu.in/2008/02/loading-classes-from-strings-in-ruby.html
+        #
+        # Loop until we've found a match or tried all available drivers.
+        loop do
+          # Attempt to plug the last driver in the array of enabled drivers.
+          molecule = media_molecules.pop
 
-        if not (@mime & Jekyll::DistorteD::Image::MIME_TYPES).empty?
-          Jekyll.logger.debug(@tag_name, @mime & Jekyll::DistorteD::Image::MIME_TYPES)
-          self.class::ATTRS.merge(Jekyll::DistorteD::Image::ATTRS)
-          @media_type = Jekyll::DistorteD::Image::MEDIA_TYPE
-          (class <<self; prepend Jekyll::DistorteD::Image; end)
-        elsif not (@mime & Jekyll::DistorteD::Video::MIME_TYPES).empty?
-          Jekyll.logger.debug(@tag_name, @mime & Jekyll::DistorteD::Video::MIME_TYPES)
-          self.class::ATTRS.merge(Jekyll::DistorteD::Video::ATTRS)
-          @media_type = Jekyll::DistorteD::Video::MEDIA_TYPE
-          (class <<self; prepend Jekyll::DistorteD::Video; end)
-        else
-          raise MediaTypeNotImplementedError.new(@media_type)
+          # This will be nil once we've tried them all and run out and are on the last loop.
+          # TODO: Support optional fall-through when plugging fails.
+          if molecule == nil
+            raise MediaTypeNotImplementedError.new(@name)
+          end
+
+          Jekyll.logger.debug(@tag_name, "Trying #{molecule} for #{@name}")
+
+          # We found a potentially-compatible driver iff the union set is non-empty.
+          if not (@mime & molecule::MIME_TYPES).empty?
+            Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime & molecule::MIME_TYPES}")
+
+            # Merge the base set of attributes with the molecule attributes.
+            self.class::ATTRS.merge(molecule::ATTRS)
+
+            # Redeclare the media_type from the driver over what was detected.
+            @media_type = molecule::MEDIA_TYPE
+
+            # Override Invoker's stubs by prepending the driver's methods to our DD instance's singleton class.
+            self.singleton_class.instance_variable_set(:@media_molecule, molecule)
+            (class <<self; prepend @media_molecule; end)
+
+            # Break out of the `loop`, a.k.a. stop auto-plugging!
+            break
+          end
+
         end
-        Jekyll.logger.debug(@tag_name, "Handling #{@name} as a(n) #{@media_type}")
 
-        # Set instance variables for the combined set of global+handler tag
-        # attributes used by this media_type.
+        # Set instance variables for the combined set of HTML element
+        # attributes used for this media_type. The global set is defined in this file
+        # (Invoker), and the media_type-specific set is appended to that during auto-plug.
         # TODO: Handle missing/malformed tag arguments.
         for attr in self.class::ATTRS
           Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{parsed_arguments[attr]}")
@@ -149,9 +183,10 @@ module Jekyll
         # Instantiate the appropriate StaticFile subclass for any handler.
         static_file = self.static_file(site, base, dir, @name, @url)
 
+        # Don't force the StaticFile to re-detect the MIME::Types of its own file.
         static_file.instance_variable_set('@mime', instance_variable_get('@mime'))
 
-        # Copy the media attribute instance variable contents to the StaticFile.
+        # Copy the merged Global + MEDIA_TYPE-appropriate attributes to the StaticFile.
         for attr in self.class::ATTRS
           Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{instance_variable_get('@' + attr.to_s)}")
           static_file.instance_variable_set('@' + attr.to_s, instance_variable_get('@' + attr.to_s))
@@ -159,11 +194,15 @@ module Jekyll
 
         # Add our new file to the list that will be handled
         # by Jekyll's built-in StaticFile generator.
+        # Our StaticFile children implement a write() that invokes DistorteD,
+        # but this lets us avoid writing our own Generator.
         site.static_files << static_file
       end
 
       def parse_template(site)
         begin
+          # Template filename is based on the MEDIA_TYPE declared in the driver,
+          # which will be set as an instance variable upon successful auto-plugging.
           template = File.join(File.dirname(__FILE__), 'templates', "#{@media_type}.liquid")
 
           # Jekyll's Liquid renderer caches in 4.0+.
@@ -177,6 +216,7 @@ module Jekyll
             # `/home/okeeblow/Works/DistorteD/lib/image.liquid`
             site.liquid_renderer.file(template).parse(File.read(template))
           else
+            # Re-read the template just for this piece of media.
             Liquid::Template.parse(File.read(template))
           end
 
