@@ -13,14 +13,14 @@ module Jekyll
       def render(context)
         super
         begin
-          parse_template(context.registers[:site]).render({
+          parse_template.render({
             'name' => @name,
             'path' => @url,
             'alt' => @alt,
             'title' => @title,
             'href' => @href,
             'caption' => @caption,
-            'sources' => sources(context.registers[:site]),
+            'sources' => sources,
           })
         rescue Liquid::SyntaxError => l
           # TODO: Only in dev
@@ -28,8 +28,8 @@ module Jekyll
         end
       end
 
-      def sources(site)
-        config(site, :image).map { |d| {
+      def sources
+        config(:image).map { |d| {
           'name' => name(d['tag']),
           'media' => d['media']
         }}

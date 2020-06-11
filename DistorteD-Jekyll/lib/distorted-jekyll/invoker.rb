@@ -4,6 +4,7 @@ require 'distorted-jekyll/molecule/video'
 require 'liquid/tag'
 require 'liquid/tag/parser'
 require 'mime/types'
+require 'jekyll'
 
 module Jekyll
   module DistorteD
@@ -199,7 +200,8 @@ module Jekyll
         site.static_files << static_file
       end
 
-      def parse_template(site)
+      def parse_template(site = nil)
+        site = site || Jekyll.sites.first
         begin
           # Template filename is based on the MEDIA_TYPE declared in the driver,
           # which will be set as an instance variable upon successful auto-plugging.
