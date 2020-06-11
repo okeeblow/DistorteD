@@ -1,6 +1,6 @@
-require 'blocks'
-require 'injection_of_love'
-require 'invoker'
+require 'distorted-jekyll/blocks'
+require 'distorted-jekyll/injection_of_love'
+require 'distorted-jekyll/invoker'
 
 # Register DistorteD's entrypoint class with Liquid.
 # `Invoker` will mix in the proper handler module for the given media.

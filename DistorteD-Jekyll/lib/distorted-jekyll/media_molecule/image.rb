@@ -1,4 +1,4 @@
-require 'formats/image'
+require 'distorted-jekyll/static/image'
 
 module Jekyll
   module DistorteD

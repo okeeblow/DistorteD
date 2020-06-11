@@ -1,5 +1,5 @@
 require 'distorted/video'
-require 'formats/static_state'
+require 'distorted-jekyll/static/state'
 
 module Jekyll
   module DistorteD
