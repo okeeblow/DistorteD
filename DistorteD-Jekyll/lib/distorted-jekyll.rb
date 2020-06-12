@@ -2,6 +2,7 @@ require 'distorted-jekyll/blocks'
 require 'distorted-jekyll/injection_of_love'
 require 'distorted-jekyll/invoker'
 
+# I want to be able to use Hash#dig
 raise 'DistorteD depends on some features introduced in Ruby 2.3' unless RUBY_VERSION.to_f > 2.3
 
 # Register DistorteD's entrypoint class with Liquid.
