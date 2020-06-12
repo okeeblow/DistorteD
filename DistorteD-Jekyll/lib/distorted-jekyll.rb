@@ -2,8 +2,13 @@ require 'distorted-jekyll/blocks'
 require 'distorted-jekyll/injection_of_love'
 require 'distorted-jekyll/invoker'
 
-# I want to be able to use Hash#dig
-raise 'DistorteD depends on some features introduced in Ruby 2.3' unless RUBY_VERSION.to_f > 2.3
+# I want to be able to use:
+# - Array#dig and Hash#dig (Ruby 2.3) https://bugs.ruby-lang.org/issues/11643
+# - Lonely operator (Ruby 2.3) https://bugs.ruby-lang.org/issues/11537
+# - Hash#transform_keys (Ruby 2.5) https://bugs.ruby-lang.org/issues/13583
+unless Hash.method_defined? :dig and Hash.method_defined? :transform_keys
+  raise RuntimeError.new('Please use DistorteD with Ruby 2.5.0 or newer.')
+end
 
 # Register DistorteD's entrypoint class with Liquid.
 # `Invoker` will mix in the proper handler module for the given media.
