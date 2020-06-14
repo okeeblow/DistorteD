@@ -55,7 +55,7 @@ module Jekyll
 
         # We can't proceed without a usable media type.
         if @mime
-          Jekyll.logger.debug(@tag_name, "#{@name}: #{@mime}")
+          Jekyll.logger.debug(@tag_name, "Detected #{@name} media types: #{@mime}")
         else
           raise MediaTypeNotFoundError.new(@name)
         end
@@ -108,7 +108,7 @@ module Jekyll
             raise MediaTypeNotImplementedError.new(@name)
           end
 
-          Jekyll.logger.debug(@tag_name, "Trying #{molecule} for #{@name}")
+          Jekyll.logger.debug(@tag_name, "Trying to plug #{@name} into #{molecule}")
 
           # We found a potentially-compatible driver iff the union set is non-empty.
           if not (@mime & molecule::MIME_TYPES).empty?
@@ -121,6 +121,7 @@ module Jekyll
             @media_type = molecule::MEDIA_TYPE
 
             # Override Invoker's stubs by prepending the driver's methods to our DD instance's singleton class.
+            # https://devalot.com/articles/2008/09/ruby-singleton
             self.singleton_class.instance_variable_set(:@media_molecule, molecule)
             (class <<self; prepend @media_molecule; end)
 
@@ -135,8 +136,11 @@ module Jekyll
         # (Invoker), and the media_type-specific set is appended to that during auto-plug.
         # TODO: Handle missing/malformed tag arguments.
         for attr in self.class::ATTRS
-          Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{parsed_arguments[attr]}")
-          instance_variable_set('@' + attr.to_s, parsed_arguments[attr])
+          attr_v = parsed_arguments[attr]
+          if attr_v and not attr_v.empty? and not attr_v.nil?
+            Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{attr_v}")
+            instance_variable_set('@' + attr.to_s, parsed_arguments[attr])
+          end
         end
       end
 
