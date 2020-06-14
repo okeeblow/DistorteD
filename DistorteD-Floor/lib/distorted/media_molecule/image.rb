@@ -55,7 +55,7 @@ module Cooltrainer
           if d[:tag] == :full
             @image.write_to_file(d[:dest])
           else
-            ver = @image.thumbnail_image(d[:width], {:crop => d[:crop]})
+            ver = @image.thumbnail_image(d[:width], **{:crop => d[:crop]})
             ver.write_to_file(d[:dest])
           end
         end
