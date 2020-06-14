@@ -7,6 +7,7 @@ module Jekyll
       MEDIA_TYPE = Cooltrainer::DistorteD::Image::MEDIA_TYPE
       MIME_TYPES = Cooltrainer::DistorteD::Image::MIME_TYPES
       ATTRS = Set[:alt, :caption, :href, :crop]
+      CONFIG_SUBKEY = :image
 
       # This will become render_to_output_buffer(context, output) some day,
       # according to upstream Liquid tag.rb.
@@ -28,10 +29,14 @@ module Jekyll
         end
       end
 
+      def dimensions
+        config(CONFIG_SUBKEY)
+      end
+
       def sources
-        config(:image).map { |d| {
-          'name' => name(d['tag']),
-          'media' => d['media']
+        dimensions.map { |d| {
+          'name' => name(d[:tag]),
+          'media' => d[:media]
         }}
       end
 

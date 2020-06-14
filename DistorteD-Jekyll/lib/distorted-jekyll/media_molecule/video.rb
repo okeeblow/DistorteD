@@ -7,6 +7,7 @@ module Jekyll
       MEDIA_TYPE = Cooltrainer::DistorteD::Video::MEDIA_TYPE
       MIME_TYPES = Cooltrainer::DistorteD::Video::MIME_TYPES
       ATTRS = Set[:caption]
+      CONFIG_SUBKEY = :video
 
       # This will become render_to_output_buffer(context, output) some day,
       # according to upstream Liquid tag.rb.
