@@ -3,57 +3,34 @@ require 'distorted-jekyll/static/state'
 
 module Jekyll
   module DistorteD
-    class ImageFile < Jekyll::StaticState
+    module Static
+      class Image < Jekyll::DistorteD::Static::State
 
-      def initialize(
-        site,
-        base,
-        dir,
-        name,
-        url,
-        collection = nil
-      )
-        super
+        # dest: string realpath to `_site_` directory
+        def write(dest)
+          fullres_dest = destination(dest)
+          return false if File.exist?(src_path) && !modified?
+          self.class.mtimes[path] = mtime
 
-        @dimensions = site.config['distorted']['image']
-      end
+          # Create any directories to the depth of the intended destination.
+          FileUtils.mkdir_p(File.dirname(fullres_dest))
 
-      # dest: string realpath to `_site_` directory
-      def write(dest)
-        fullres_dest = destination(dest)
-        return false if File.exist?(orig_path) && !modified?
+          distorted = Cooltrainer::DistorteD::Image.new(src_path)
 
-        self.class.mtimes[path] = mtime
+          Jekyll.logger.debug(@tag_name, "Rotating #{@name} if tagged.")
+          distorted.rotate(angle: :auto)
 
-        FileUtils.mkdir_p(File.dirname(fullres_dest))
-        FileUtils.rm(fullres_dest) if File.exist?(fullres_dest)
+          distorted.types = @types
+          distorted.dimensions = @dimensions
 
-        distorted = Cooltrainer::DistorteD::Image.new(orig_path)
+          Jekyll.logger.debug(@tag_name, "Adding dimensions #{distorted.dimensions}")
 
-        Jekyll.logger.debug(@tag_name, "Rotating #{@name} if tagged.")
-        distorted.rotate(:auto)
+          distorted.generate
 
-
-        dimensions = [{:tag => :full, :dest => fullres_dest}]
-
-        for d in @dimensions
-          dimension = {
-            :width => d['width'],  # Convert to AR-aware height-fit
-            :crop => @crop&.to_sym || :attention,
-            :tag => d['tag'].to_sym,
-            :dest => destination(dest, d['tag'].to_sym),
-          }
-          Jekyll.logger.debug(@tag_name, "Adding dimension #{dimension}")
-          dimensions.append(dimension)
+          true
         end
 
-        distorted.dimensions = dimensions
-
-        distorted.generate
-
-        true
-      end
-
-    end  # Image
+      end  # Image
+    end  # Static
   end  # DistorteD
 end  # Jekyll
