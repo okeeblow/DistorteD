@@ -2,48 +2,47 @@ require 'distorted-jekyll/static/video'
 
 module Jekyll
   module DistorteD
-    module Video
     module Molecule
       module Video
+
+        # Spice up our singleton.
         include Jekyll::DistorteD::Molecule::C18H27NO3;
 
-      MEDIA_TYPE = Cooltrainer::DistorteD::Video::MEDIA_TYPE
-      MIME_TYPES = Cooltrainer::DistorteD::Video::MIME_TYPES
-      ATTRS = Set[:caption]
-      CONFIG_SUBKEY = :video
+        # Reference these instead of reassigning them. Consistency is mandatory.
+        MEDIA_TYPE = Cooltrainer::DistorteD::Video::MEDIA_TYPE
+        MIME_TYPES = Cooltrainer::DistorteD::Video::MIME_TYPES
 
-      # This will become render_to_output_buffer(context, output) some day,
-      # according to upstream Liquid tag.rb.
-      def render(context)
-        super
-        begin
-          parse_template.render({
-            'name' => @name,
-            'basename' => @basename,
-            'path' => @url,
-            'alt' => @alt,
-            'title' => @title,
-            'href' => @href,
-            'caption' => @caption,
-            'sources' => sources,
-          })
-        rescue Liquid::SyntaxError => l
-          # TODO: Only in dev
-          l.message
+        ATTRS = Cooltrainer::DistorteD::Video::ATTRS
+        ATTRS_DEFAULT = Cooltrainer::DistorteD::Video::ATTRS_DEFAULT
+        ATTRS_VALUES = Cooltrainer::DistorteD::Video::ATTRS_VALUES
+
+        CONFIG_SUBKEY = :video
+
+        # This will become render_to_output_buffer(context, output) some day,
+        # according to upstream Liquid tag.rb.
+        def render(context)
+          super
+          begin
+            parse_template.render({
+              'name' => @name,
+              'basename' => File.basename(@name, '.*'),
+              'path' => @url,
+              'alt' => @alt,
+              'title' => @title,
+              'href' => @href,
+              'caption' => @caption,
+            })
+          rescue Liquid::SyntaxError => l
+            # TODO: Only in dev
+            l.message
+          end
         end
-      end
 
-      def sources
-        config(:video).map { |d| {
-          'name' => name(d['tag']),
-          'media' => d['media']
-        }}
-      end
+        def static_file(*args)
+          Jekyll::DistorteD::Static::Video.new(*args)
+        end
 
-      def static_file(site, base, dir, name, url)
-        Jekyll::DistorteD::VideoFile.new(site, base, dir, name, url)
       end
-
     end
   end
 end
