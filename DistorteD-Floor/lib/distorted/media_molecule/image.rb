@@ -33,9 +33,26 @@ module Cooltrainer
       MEDIA_TYPE = 'image'
       MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
 
-      attr_accessor :dimensions
+      # Attributes for our <picture>/<img>.
+      # Automatically enabled as attrs for DD Liquid Tag.
+      # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/picture#Attributes
+      # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#Attributes
+      # https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
+      # :crop is a Vips-only attr
+      ATTRS = Set[:alt, :caption, :href, :crop, :loading]
 
-      def initialize(src)
+      # Defaults for HTML Element attributes.
+      # Not every attr has to be listed here.
+      # Many need no default and just won't render.
+      ATTRS_DEFAULT = Hash.new {|h,k| h[k] = nil} [
+        :loading => :eager,
+      ]
+      ATTRS_VALUES = Hash.new {|h,k| h[k] = h.class.new(&h.default_proc)} [
+        :loading => Set[:ATTRS_DEFAULT[:loading.to_s], :lazy],
+      ]
+
+      attr_accessor :dest, :dimensions, :types
+
         @image = Vips::Image.new_from_file(src)
       end
 
