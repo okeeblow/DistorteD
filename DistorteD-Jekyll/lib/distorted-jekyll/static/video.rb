@@ -3,31 +3,24 @@ require 'distorted-jekyll/static/state'
 
 module Jekyll
   module DistorteD
-    class VideoFile < Jekyll::StaticState
+    module Static
+      class Video < Jekyll::DistorteD::Static::State
 
-      def initialize(
-        site,
-        base,
-        dir,
-        name,
-        url,
-        collection = nil
-      )
-        super 
+        # dest: string realpath to `_site_` directory
+        def write(dest)
+          orig_dest = destination(dest)
+
+          # TODO: Make this smarter. Need to see if there's an easy way to
+          # get a list of would-be-generated filenames from GStreamer.
+          return false if File.exist?(src_path) && !modified?
+          self.class.mtimes[path] = mtime
+
+          distorted = Cooltrainer::DistorteD::Video.new(src_path, orig_dest, basename)
+
+          distorted.generate
+        end
+
       end
-
-
-      # dest: string realpath to `_site_` directory
-      def write(dest)
-        orig_dest = destination(dest)
-        return false if File.exist?(orig_path) && !modified?
-        self.class.mtimes[path] = mtime
-
-        distorted = Cooltrainer::DistorteD::Video.new(orig_path, orig_dest, @basename)
-
-				distorted.generate
-      end
-
     end
   end
 end
