@@ -164,6 +164,20 @@ module Jekyll
         end
       end
 
+      # I would prefer to have this live in the StaticFile class(es),
+      # since those classes get the type and dimension structs too, but we
+      # need to be able to give filenames to the Liquid templates, so we
+      # need to have this out here. Boo-urns.
+      def gen_filenames
+        Proc.new {
+          types.map{ |types, dimensions|
+            dimensions&.map{ |d| [
+              filename(@name, d[:tag], t.preferred_extension)]
+            }
+          }.to_set
+        }
+      end
+
       def render(context)
         # Get Jekyll Site object back from tag rendering context registers so we
         # can get configuration data and path information from it and
