@@ -137,10 +137,8 @@ module Jekyll
         # TODO: Handle missing/malformed tag arguments.
         for attr in self.class::ATTRS
           attr_v = parsed_arguments[attr]
-          if attr_v and not attr_v.empty? and not attr_v.nil?
-            Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{attr_v}")
-            instance_variable_set('@' + attr.to_s, parsed_arguments[attr])
-          end
+          Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{attr_v}")
+          instance_variable_set('@' + attr.to_s, parsed_arguments[attr])
         end
       end
 
