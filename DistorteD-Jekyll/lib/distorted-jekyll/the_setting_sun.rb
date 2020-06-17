@@ -11,10 +11,12 @@ module Jekyll
       CONFIG_KEY = :distorted
 
       # Filename for default config YAML. Should be a sibling of this file.
-      DEFAULT_CONFIG_FILE_NAME = '_config_default.yml'
+      # Don't move this file or the YAML defaults without changing this.
+      DEFAULT_CONFIG_FILE_NAME = '_config_default.yml'.to_sym
+      DEFAULT_CONFIG_PATH = File.join(File.dirname(__FILE__), DEFAULT_CONFIG_FILE_NAME.to_s).to_sym
 
       # Separator character for pretty-printing config hierarchy.
-      PP_SEPARATOR = "\u21e2 ".encode('utf-8')
+      PP_SEPARATOR = "\u21e2 ".encode('utf-8').to_sym
 
       # Generic main config-loading function that will search, in order:
       # - The memoized pre-transformed config data store in-memory.
@@ -24,107 +26,104 @@ module Jekyll
       # Config data from Jekyll or the DD Defaults is transformed to symbol-ify
       # struct keys where possible and to minimize redundant struct layers.
       def config(*keys, **kw)
-        # I might forget and use a string key somewhere instead of symbols,
-        # and I'd rather it be less efficient than just die. Handle that.
-        config_keys = keys.compact.map{|c| symbolic(c)}
+        # Symbolize for our internal representation of the config path.
+        # The Jekyll config and default config are both YAML, so we want string
+        # keys for them. Go ahead and prepend the top-level search key here too.
+        memo_keys = keys.map(&:to_sym).to_set
+        search_keys = [CONFIG_KEY].concat(keys).map(&:to_s)
+        # Pretty print the config path for logging.
+        log_key = search_keys.join(PP_SEPARATOR.to_s).freeze
         # Initialize memoization class variable as a Hash that will return another
         # new empty Hash for any key access that doesn't already contain something.
-        @@memories ||= Hash.new {|h,k| h[k] = h.class.new(&h.default_proc) }
+        @@memories ||= Hash.new { |h,k| h[k] = h.class.new(&h.default_proc) }
         # Try to load a memoized config if we can, to skip any filesystem
         # access and data transformation steps.
-        config = @@memories.dig(*config_keys)
+        config = @@memories.dig(*memo_keys)
+        # I want to be able to disable molecules with `sub_type: false` in YAML
+        # Check true as well for completeness. Check for TrueClass and FalseClass
+        # directly instead of relying on truthiness/falsiness.
+        if config.is_a?(false.class) or config.is_a?(true.class)
+          config = Set[]
+        end
         # Hash#dig usually returns nil for missing keys, but our memoization
         # Hash will also return another new empty Hash.
         unless config.empty? or config.nil?
           # Boom.
-          Jekyll.logger.debug(@tag_name, "Using memoized config for key '#{config_keys.join(PP_SEPARATOR)}': #{config}")
+          Jekyll.logger.debug(log_key, "Using memoized config: #{config}")
           config
         else
           # The key isn't memoized. Look for it first in Jekyll's Site config,
           # then in the _config_default.yml file contained here in this Gem.
-          # Floor#config_site also takes a `site` kwarg that will be passed along.
-          new = self.config_site(*config_keys, **kw) || self.config_default(*config_keys) || {}
-          @@memories.bury(*config_keys, new)
-          new
+          # Is it even possible to have more than one Site? Support being passed
+          # a `site` object just in case, but taking the first one should be fine.
+          site = kw[:site] || Jekyll.sites.first
+          # Get the config, or nil if the queried config path doesn't exist.
+          loaded_config = site.config.dig(*search_keys)
+            Jekyll.logger.debug(log_key, "Trying Jekyll _config key: #{loaded_config}")
+          if loaded_config.nil?
+            # This will always be small enough for a one-shot read.
+            default_config = YAML.load(File.read(DEFAULT_CONFIG_PATH.to_s))
+            loaded_config = default_config.dig(*search_keys)
+            Jekyll.logger.debug(log_key, "Trying default config: #{loaded_config}")
+          end
+          # Duplicate this again here for false in the default config.
+          if loaded_config.is_a?(false.class) or loaded_config.is_a?(true.class) or loaded_config.nil?
+            Jekyll.logger.debug(log_key, 'Using failsafe config')
+            loaded_config = {}
+          end
+          # Minimize and symbolize any output.
+          # Returning a Set instead of an Array should be fine since none of our
+          # configs can (read: should) contain duplicate values for any reason.
+          loaded_config = symbolic(set_me_free(loaded_config))
+          # Memoize it!
+          @@memories.bury(*memo_keys, loaded_config)
+          # And return a config to the caller. Don't return the `new`ly fetched
+          # data directly to ensure consistency between this first fetch and
+          # subsequent memoized fetches, and to let callers take advantage of
+          # the memo Hash's `default_proc` setup.
+          @@memories.dig(*memo_keys)
         end
       end
 
-      # This helper is used by Floor#config to load Jekyll Site config but
-      # can be used directly to bypass memoization.
-      def config_site(*keys, **kw)
-        # Is it even possible to have more than one Site? Support being passed
-        # a `site` object just in case, but taking the first one should be fine.
-        site = kw[:site] || Jekyll.sites.first
-        # Jekyll's YAML config will only ever give us string keys. Look for that.
-        config_keys = [CONFIG_KEY].concat(keys).map(&:to_s)
-        # Get the config, or nil if the queried config path doesn't exist.
-        # Minimize and symbolize any output.
-        site_config = symbolic(minimalian(site.config.dig(*config_keys)))
-        Jekyll.logger.debug(@tag_name, "Loading Jekyll _config key '#{config_keys.join(PP_SEPARATOR)}': #{site_config}")
-        site_config
-      end
-
-      # This helper is used by Floor#config to load DD Default config data
-      # can be used directly to bypass memoization.
-      def config_default(*keys)
-        # Don't move this file or the YAML defaults without changing this.
-        config_path = File.join(File.dirname(__FILE__), DEFAULT_CONFIG_FILE_NAME)
-        # This will always be small enough for a one-shot read.
-        default_config = YAML.load(File.read(config_path))
-        # Default YAML config will only ever give us string keys. Look for that.
-        config_keys = [CONFIG_KEY].concat(keys).map(&:to_s)
-        # Get the config, or nil if the queried config path doesn't exist.
-        # Minimize and symbolize any output.
-        default_config = symbolic(minimalian(default_config.dig(*config_keys)))
-        Jekyll.logger.debug(@tag_name, "Loading default config from #{config_path}: #{default_config}")
-        default_config
+      # AFAICT Ruby::YAML will not give me a Ruby Set[] for a YAML Set,
+      # just a Hash with all-nil-values which is what it is internally.
+      # distorted⇢ image Trying Jekyll _config key: {"(max-width: 400px)"=>nil, "(min-width: 800px)"=>nil, "(min-width: 1500px)"=>nil}
+      # It is possible with some sugar in the YAML files, but I don't
+      # want to ask anyone to do that :)
+      # https://rhnh.net/2011/01/31/yaml-tutorial/
+      def set_me_free(dunno)
+        if dunno.class == Array
+          return set_me_free(dunno&.to_set)
+        elsif dunno.class == Hash
+          if dunno&.values.all?{|v| v.nil?}
+            return dunno&.keys.to_set
+          else
+            return dunno&.transform_values!{|v| set_me_free(v)}
+          end
+        end
+        dunno
       end
 
       # Transform arbitrary configuration data structure keys from
       # strings to symbols before memoization.
       # https://stackoverflow.com/a/8189435
-      def symbolic(c)
+      def symbolic(dunno)
         # Check message-handling responses to gauge emptiness since classes that
         # don't respond to `:empty?` might not respond to `:method_exists?` either.
-        if c.nil?# or c.respond_to?(:empty?) != true
+        if dunno.nil?# or c.respond_to?(:empty?) != true
           return c
-        elsif c.class.method_defined?(:transform_keys)
+        elsif dunno.respond_to?(:transform_keys)
           # Hashes
-          return c.transform_keys(&:to_sym)
-        elsif c.class.method_defined?(:to_sym)
+          return dunno.transform_keys!(&:to_sym)
+        elsif dunno.respond_to?(:to_sym)
           # Plain types
-          return c.to_sym
-        elsif c.is_a?(Enumerable)
+          return dunno.to_sym
+        elsif dunno.is_a?(Enumerable)
           # Mostly Arrays. This is after Hashes and other more-specific
           # Enumerables on purpose. Don't rearrange.
-          return c.map{|r| symbolic(r)}
+          return dunno.map{|r| symbolic(r)}
         end
-        return c
-      end
-
-      # Minimize configuration data structures where possible.
-      def minimalian(c)
-        # Check message-handling responses to gauge emptiness since classes that
-        # don't respond to `:empty?` might not respond to `:method_exists?` either.
-        if c.nil? or c.respond_to?(:empty?) != true
-          return c
-        # Look for work based on capability instead of ancestry.
-        elsif c.class.method_defined?(:all?) and c.class.method_defined?(:map)
-          if c.class.method_defined?(:count) and c.class.method_defined?(:pop)
-            # Don't allow any Arrays of single items.
-            if c.count == 1
-              return c.pop
-            end
-          end
-          # Combine an Array of Hashes into a single Hash iff none of
-          # those Hashes have overlapping keys.
-          if c.all?{|i| i.class.method_defined?(:keys)}
-            if c.map(&:keys).reduce(:&).empty?
-              return c.reduce(&:merge!)
-            end
-          end
-        end
-        return c
+        dunno
       end
 
     end
