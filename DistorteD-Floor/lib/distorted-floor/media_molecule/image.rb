@@ -53,10 +53,17 @@ module Cooltrainer
 
       attr_accessor :dest, :dimensions, :types
 
+      def initialize(src, dest: nil, types: nil, dimentions: nil, filenames: nil)
         @image = Vips::Image.new_from_file(src)
+        @src = src
+        @dest = dest || File.dirname(src)
+        @basename = File.basename(src, '.*')
+        @dimensions = dimensions || Set[{:tag => :full}]
+        @types = types || Set[MIME::Types.type_for(src)]
+        @filenames = filenames || Set[@basename]
       end
 
-      def rotate(angle=nil)
+      def rotate(angle: nil)
         if angle == :auto
           @image = @image.autorot
         end
