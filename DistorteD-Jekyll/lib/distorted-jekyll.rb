@@ -30,12 +30,14 @@ end
 # - Array#dig and Hash#dig (Ruby 2.3): https://bugs.ruby-lang.org/issues/11643
 # - Lonely operator (Ruby 2.3): https://bugs.ruby-lang.org/issues/11537
 # - Hash#transform_keys (Ruby 2.5): https://bugs.ruby-lang.org/issues/13583
+# - Enumerable#filter_map (Ruby 2.7): https://bugs.ruby-lang.org/issues/5663
+#     https://blog.saeloun.com/2019/05/25/ruby-2-7-enumerable-filter-map.html
 # - 'Real' kwargs in preparation for Ruby 3: https://bugs.ruby-lang.org/issues/14183
 #     https://www.ruby-lang.org/en/news/2019/12/12/separation-of-positional-and-keyword-arguments-in-ruby-3-0/
 if [
   Hash.method_defined?(:dig),  # 2.3
   Hash.method_defined?(:transform_keys),  # 2.5
-  Enumerable.method_defined?(:tally),  # 2.7
+  Enumerable.method_defined?(:filter_map),  # 2.7
 ].all?
 
   # Register DistorteD's entrypoint class with Liquid.
