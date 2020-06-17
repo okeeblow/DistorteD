@@ -3,6 +3,9 @@ require 'distorted-jekyll/static/video'
 module Jekyll
   module DistorteD
     module Video
+    module Molecule
+      module Video
+        include Jekyll::DistorteD::Molecule::C18H27NO3;
 
       MEDIA_TYPE = Cooltrainer::DistorteD::Video::MEDIA_TYPE
       MIME_TYPES = Cooltrainer::DistorteD::Video::MIME_TYPES

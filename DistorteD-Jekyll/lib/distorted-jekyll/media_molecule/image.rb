@@ -1,3 +1,4 @@
+require 'distorted-jekyll/molecule/C18H27NO3'
 require 'distorted-jekyll/static/image'
 
 module Jekyll
