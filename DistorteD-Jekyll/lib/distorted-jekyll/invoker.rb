@@ -206,7 +206,8 @@ module Jekyll
         @url = page_data['url']
 
         # Instantiate the appropriate StaticFile subclass for any handler.
-        static_file = self.static_file(site, base, dir, @name, @url)
+        @filenames = gen_filenames.call(dimensions, types)
+        static_file = self.static_file(site, base, dir, @name, @url, dimensions, types, @filenames)
 
         # Don't force the StaticFile to re-detect the MIME::Types of its own file.
         static_file.instance_variable_set('@mime', instance_variable_get('@mime'))
@@ -252,7 +253,7 @@ module Jekyll
       end
 
       # Bail out if this is not handled by the module we just mixed in.
-      def static_file(site, base, dir, name, url)
+      def static_file(site, base, dir, name, url, dimensions, types, filenames)
         raise MediaTypeNotImplementedError.new(name)
       end
     end

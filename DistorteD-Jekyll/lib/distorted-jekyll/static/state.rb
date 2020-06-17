@@ -10,6 +10,9 @@ module Jekyll
           dir,
           name,
           url,
+          dimensions,
+          types,
+          filenames,
           collection = nil
         )
           @tag_name = self.class.name.split('::').drop(1).join('::').to_sym.freeze
@@ -19,6 +22,10 @@ module Jekyll
           @dir = dir
           @name = name
           @url = url
+
+          @dimensions = dimensions
+          @types = types
+          @filenames = filenames
 
           # Constructor args for Jekyll::StaticFile:
           # site - The Jekyll Site object
@@ -44,6 +51,10 @@ module Jekyll
         # site_dest: string realpath to `_site_` directory
         def destination(dest, tag = nil, extension = nil)
           File.join(dest, @url, filename(basename, tag, extension))
+        end
+
+        def filename(name, tag = nil, extension = nil)
+          "#{name}#{if tag ; '-' << tag.to_s; else ''; end}.#{if extension; extension.to_s; else extname; end}"
         end
 
         def modified?
