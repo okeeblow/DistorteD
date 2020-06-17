@@ -58,6 +58,14 @@ module Jekyll
         end
 
         def modified?
+          if Dir.exist?(@dir)
+            # TODO: Make this smarter. It's not enough that all the generated
+            # filenames should exist. Try a few more ways to detect subtler
+            # "changes to the source file since generation of variations?
+            # - atime? (not all filesystems will support)
+            Jekyll.logger.debug("#{@name} modified?",  @filenames.subset?(Dir.entries(@dir).to_set))
+            return @filenames.subset?(Dir.entries(@dir).to_set)
+          end
           return true
         end
 
