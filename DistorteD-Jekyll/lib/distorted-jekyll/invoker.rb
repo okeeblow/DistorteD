@@ -15,7 +15,8 @@ module Jekyll
       include Jekyll::DistorteD::Floor
 
       # Enabled media_type drivers. These will be attempted back to front.
-      MEDIA_MOLECULES = [Jekyll::DistorteD::Video, Jekyll::DistorteD::Image]
+      # TODO: Make this configurable.
+      MEDIA_MOLECULES = [Jekyll::DistorteD::Molecule::Video, Jekyll::DistorteD::Molecule::Image]
 
       # This list should contain global attributes only, as symbols.
       # The final attribute set will be this + the media-type-specific set.
