@@ -139,6 +139,31 @@ module Jekyll
         end
       end
 
+      # Top-level media-type config will contain onformation about what variations in
+      # output resolution, "pretty" name for those, CSS media query for
+      # that variation, etc.
+      def dimensions
+        config(self.singleton_class.const_get(:MEDIA_TYPE))
+      end
+
+      # `changes` media-type[sub_type] config will contain information about
+      # what variations output format are desired for what input format,
+      # e.g. {:image => {:jpeg => Set['image/jpeg', 'image/webp']}}
+      # It is not automatically implied that the source format is also
+      # an output format!
+      def types
+        media_config = config(:changes, self.singleton_class.const_get(:CONFIG_SUBKEY))
+        # The default config suggests disabling media_types by setting their
+        # config key to `false`.
+        if media_config.respond_to?(:empty?) and media_config.respond_to?(:key?)
+          @mime.map { |m|
+            media_config.dig(m.sub_type.to_sym)&.map { |d| MIME::Types[d] }
+          }.flatten.to_set
+        else
+          Set[]
+        end
+      end
+
       def render(context)
         # Get Jekyll Site object back from tag rendering context registers so we
         # can get configuration data and path information from it and
