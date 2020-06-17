@@ -27,7 +27,7 @@ module Jekyll
         super
         # Tag name as given to Liquid::Template.register_tag().
         # Yes, this is redundant considering this same file defines the name.
-        @tag_name = tag_name
+        @tag_name = tag_name.to_sym
 
         # Liquid leaves argument parsing totally up to us.
         # Use the envygeeks/liquid-tag-parser library to wrangle them.
