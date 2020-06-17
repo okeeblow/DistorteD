@@ -52,7 +52,7 @@ module Jekyll
         #
         # Types#type_for can return multiple possibilities for a filename.
         # For example, an XML file: [application/xml, text/xml].
-        @mime = MIME::Types.type_for(@name)
+        @mime = MIME::Types.type_for(@name).to_set
 
         # We can't proceed without a usable media type.
         if @mime
@@ -112,17 +112,13 @@ module Jekyll
           Jekyll.logger.debug(@tag_name, "Trying to plug #{@name} into #{molecule}")
 
           # We found a potentially-compatible driver iff the union set is non-empty.
-          if not (@mime & molecule::MIME_TYPES).empty?
-            Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime & molecule::MIME_TYPES}")
-
-            # Merge the base set of attributes with the molecule attributes.
-            self.class::ATTRS.merge(molecule::ATTRS)
-
-            # Redeclare the media_type from the driver over what was detected.
-            @media_type = molecule::MEDIA_TYPE
+          Jekyll.logger.debug(@tag_name, @mime)
+          if not (@mime & molecule.const_get(:MIME_TYPES)).empty?
+            Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime & molecule.const_get(:MIME_TYPES)}")
 
             # Override Invoker's stubs by prepending the driver's methods to our DD instance's singleton class.
             # https://devalot.com/articles/2008/09/ruby-singleton
+            # `self.singleton_class.extend(molecule)` doesn't work in this context.
             self.singleton_class.instance_variable_set(:@media_molecule, molecule)
             (class <<self; prepend @media_molecule; end)
 
@@ -194,7 +190,7 @@ module Jekyll
         begin
           # Template filename is based on the MEDIA_TYPE declared in the driver,
           # which will be set as an instance variable upon successful auto-plugging.
-          template = File.join(File.dirname(__FILE__), 'template', "#{@media_type}.liquid")
+          template = File.join(File.dirname(__FILE__), 'template', "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid")
 
           # Jekyll's Liquid renderer caches in 4.0+.
           # Make this a config option or get rid of it and always cache
