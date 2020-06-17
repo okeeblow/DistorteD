@@ -12,6 +12,9 @@ module Jekyll
           url,
           collection = nil
         )
+          @tag_name = self.class.name.split('::').drop(1).join('::').to_sym.freeze
+          Jekyll.logger.debug(@tag_name, "#{base}/#{dir}/#{name} -> #{url}")
+
           @base = base
           @dir = dir
           @name = name
