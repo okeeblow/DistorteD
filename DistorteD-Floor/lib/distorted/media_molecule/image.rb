@@ -75,12 +75,15 @@ module Cooltrainer
       end
 
       def generate
-        for d in @dimensions
-          if d[:tag] == :full
-            @image.write_to_file(d[:dest])
-          else
-            ver = @image.thumbnail_image(d[:width], **{:crop => d[:crop]})
-            ver.write_to_file(d[:dest])
+        # Generate every variation for every intended format.
+        for t in @types
+          for d in @dimensions
+            if d[:tag] == :full
+              @image.write_to_file(d[:dest])
+            else
+              ver = @image.thumbnail_image(d[:width], **{:crop => d[:crop]})
+              ver.write_to_file(File.join(@dest, "#{@basename}-#{d[:tag]&.to_s}.#{t.preferred_extension}"))
+            end
           end
         end
       end
