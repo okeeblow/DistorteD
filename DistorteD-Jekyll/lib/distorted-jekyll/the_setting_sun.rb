@@ -127,21 +127,6 @@ module Jekyll
         return c
       end
 
-      def name(suffix = nil)
-        Floor::image_name(@name, suffix)
-      end
-
-      def self.image_name(orig, suffix = nil)
-        if suffix
-          File.basename(orig, '.*') + '-' + suffix.to_s + File.extname(orig)
-        else
-          orig
-        end
-      end
-
-      def basename
-        File.basename(@name, '.*')
-      end
     end
   end
 end
