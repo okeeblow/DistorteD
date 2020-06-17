@@ -218,7 +218,7 @@ module Kramdown
       # Convert Markdown element attributes to a string key=value,
       # except for `src` (DD-specific)
       def to_attrs(k, v)
-        # DistorteD expects the media filename as a positional argument,
+        # DistorteD prefers the media filename as a positional argument,
         # not a named kwarg.
         if k == 'src'
           v.to_s
