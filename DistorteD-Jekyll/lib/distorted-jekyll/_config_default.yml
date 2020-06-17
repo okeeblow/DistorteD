@@ -1,6 +1,30 @@
 # Override any or all of this default configuration in your Jekyll site's `_config.yml`!
 
 distorted:
+
+  # Configure DistorteD format changes by media_type, then by sub_type.
+  # The list of target formats is plain text, media_type/sub_type.
+  # These are mostly based on IANA's official Media Types list:
+  # https://www.iana.org/assignments/media-types/media-types.xhtml
+  # but with some custom additions like using 'gif-sequence' for
+  # animated GIF and leaving 'image/gif' to refer to single-frame GIFs.
+  changes:
+    image:
+      jpeg:
+        ? image/jpeg
+        ? image/webp
+      png:
+        ? image/png
+        ? image/webp
+      gif:
+        ? image/gif
+        ? image/png
+        ? image/webp
+      gif-sequence:
+        ? image/gif-sequence
+
+  # Is it possible to do a Set of Hashes using the Set syntax?
+  # It works with the Array syntax.
   image:
     - tag: small
       width: 400
