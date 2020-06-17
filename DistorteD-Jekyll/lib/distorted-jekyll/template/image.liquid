@@ -10,7 +10,7 @@
       <source srcset="{{ path }}{{ source.name }}" media="{{ source.media }}"/>
         {%- endfor %}
       {%- endif %}
-      <img src="{{ path }}{{ name }}" alt="{{ alt }}" title="{{ title }}"/>
+      <img src="{{ path }}{{ name }}" alt="{{ alt }}" title="{{ title }}" loading="{{ loading }}"/>
     </picture>
   </a>
     {%- if caption %}
