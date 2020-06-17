@@ -24,6 +24,20 @@ module Cooltrainer
       MEDIA_TYPE = 'video'
       MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
 
+      # Attributes for our <video>.
+      # Automatically enabled as attrs for DD Liquid Tag.
+      # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#Attributes
+      ATTRS = Set[]
+
+      # Defaults for HTML Element attributes.
+      # Not every attr has to be listed here.
+      # Many need no default and just won't render.
+      ATTRS_DEFAULT = Hash.new {|h,k| h[k] = nil}
+      ATTRS_VALUES = Hash.new {|h,k| h[k] = h.class.new(&h.default_proc)}
+
+      attr_accessor :dest
+
+
       def initialize(src, dest, basename)
         @src = src
         @dest = dest
@@ -43,7 +57,7 @@ module Cooltrainer
         begin
           self.generate_dash
         rescue Gst::ParseError::NoSuchElement
-          # lol
+          # This is going away once the new dashsink2 lands in Gst so :effort:
         end
       end
 
