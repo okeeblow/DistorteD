@@ -39,6 +39,8 @@ module Jekyll
         def render(context)
           super
           begin
+            path = File.dirname(@url)
+
             # Liquid doesn't seem able to reference symbolic keys.
             # Convert everything to string for template.
             filez = files.map{ |f|
@@ -47,7 +49,7 @@ module Jekyll
 
             parse_template.render({
               'name' => @name,
-              'path' => @url,
+              'path' => path,
               'alt' => @alt,
               'title' => @title,
               'href' => @href,
