@@ -8,14 +8,18 @@ module Jekyll
 
         # dest: string realpath to `_site_` directory
         def write(dest)
-          fullres_dest = destination(dest)
           return false if File.exist?(src_path) && !modified?
           self.class.mtimes[path] = mtime
 
           # Create any directories to the depth of the intended destination.
-          FileUtils.mkdir_p(File.dirname(fullres_dest))
+          fullres_dest = @dest
+          FileUtils.mkdir_p(fullres_dest)
 
-          distorted = Cooltrainer::DistorteD::Image.new(src_path)
+          distorted = Cooltrainer::DistorteD::Image.new(
+            src_path,
+            dest: fullres_dest,
+            filenames: @filenames,
+          )
 
           Jekyll.logger.debug(@tag_name, "Rotating #{@name} if tagged.")
           distorted.rotate(angle: :auto)
