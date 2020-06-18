@@ -100,6 +100,45 @@ or, for a DD grid:
 {% enddistort %}
 ```
 
+## Example
+
+Here's an example of embedding an example image in a Jekyll demo site's first post. No site configuration was changed aside from installing the Gem.
+
+The log output:
+
+```
+ DistorteD Writing: /home/okeeblow/Works/DDDemo/jekyll/update/2020/06/17/DistorteD-full.png
+ DistorteD Writing: /home/okeeblow/Works/DDDemo/jekyll/update/2020/06/17/DistorteD-small.png
+ DistorteD Writing: /home/okeeblow/Works/DDDemo/jekyll/update/2020/06/17/DistorteD-medium.png
+ DistorteD Writing: /home/okeeblow/Works/DDDemo/jekyll/update/2020/06/17/DistorteD-large.png
+ DistorteD Writing: /home/okeeblow/Works/DDDemo/jekyll/update/2020/06/17/DistorteD-full.webp
+ DistorteD Writing: /home/okeeblow/Works/DDDemo/jekyll/update/2020/06/17/DistorteD-small.webp
+ DistorteD Writing: /home/okeeblow/Works/DDDemo/jekyll/update/2020/06/17/DistorteD-medium.webp
+ DistorteD Writing: /home/okeeblow/Works/DDDemo/jekyll/update/2020/06/17/DistorteD-large.webp
+           Writing: /home/okeeblow/Works/DDDemo/_site/jekyll/update/2020/06/17/welcome-to-jekyll.html
+```
+
+And the actual template output that ends up in the final page:
+
+```
+<div class="distorted">
+  <a href="/jekyll/update/2020/06/17/DistorteD.png" target="_blank">
+    <picture>
+      <source srcset="/jekyll/update/2020/06/17/DistorteD-full.png" />
+      <source srcset="/jekyll/update/2020/06/17/DistorteD-small.png" media="(max-width: 400px)" />
+      <source srcset="/jekyll/update/2020/06/17/DistorteD-medium.png" media="(min-width: 800px)" />
+      <source srcset="/jekyll/update/2020/06/17/DistorteD-large.png" media="(min-width: 1500px)" />
+      <source srcset="/jekyll/update/2020/06/17/DistorteD-full.webp" />
+      <source srcset="/jekyll/update/2020/06/17/DistorteD-small.webp" media="(max-width: 400px)" />
+      <source srcset="/jekyll/update/2020/06/17/DistorteD-medium.webp" media="(min-width: 800px)" />
+      <source srcset="/jekyll/update/2020/06/17/DistorteD-large.webp" media="(min-width: 1500px)" />
+      <img src="/jekyll/update/2020/06/17/DistorteD.png" alt="DistorteD logo" title="DistorteD Demo!" loading="eager" />
+    </picture>
+  </a>
+  <span style="clear: left;"></span>
+</div>
+```
+
 ## Development
 
 Clone the DistorteD repository and modify your Jekyll `Gemfile` to refer to your local path instead of to the newest published version of the gem:
