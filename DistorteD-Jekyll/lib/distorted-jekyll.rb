@@ -3,7 +3,7 @@ require 'distorted-jekyll/injection_of_love'
 require 'distorted-jekyll/invoker'
 
 
-FATAL_FURY =true
+FATAL_FURY = true
 UPDATE_RUBY = "Please use DistorteD with Ruby 2.7.0 or later"
 def update_ruby
   if defined? RUBY_PLATFORM
@@ -60,9 +60,13 @@ if [
   Jekyll::Hooks.register(:posts, :pre_render, &distort_markdown)
 
 else
+  # Example of how this looks with the outdated Ruby 2.5 on my Mint 19 laptop:
+  #
+  # Bundler::GemRequireError: There was an error while trying to load the gem 'distorted-jekyll'.
+  # Gem Load Error is: Please use DistorteD with Ruby 2.7.0 or later: https://www.brightbox.com/docs/ruby/ubuntu/#installation
   if FATAL_FURY
     raise RuntimeError.new("#{UPDATE_RUBY}: #{update_ruby}")
   else
-    Jekyll.logger.warn('DistorteD', "#{UPDATE_RUBY}: #{update_ruby}")
+    Jekyll.logger.info('DistorteD', "#{UPDATE_RUBY}: #{update_ruby}")
   end
 end
