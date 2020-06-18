@@ -64,15 +64,6 @@ module Jekyll
           File.extname(@name)
         end
 
-        # site_dest: string realpath to `_site_` directory
-        def destination(dest, tag = nil, extension = nil)
-          File.join(dest, @url, filename(basename, tag, extension))
-        end
-
-        def filename(name, tag = nil, extension = nil)
-          "#{name}#{if tag ; '-' << tag.to_s; else ''; end}.#{if extension; extension.to_s; else extname; end}"
-        end
-
         def modified?
           if Dir.exist?(@dir)
             # TODO: Make this smarter. It's not enough that all the generated
