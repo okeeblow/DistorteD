@@ -78,11 +78,13 @@ module Cooltrainer
         # Generate every variation for every intended format.
         for t in @types
           for d in @dimensions
+            ver_path = File.join(@dest, "#{@basename}-#{d[:tag]&.to_s}.#{t.preferred_extension}")
+            Jekyll.logger.debug('DistorteD Writing:', ver_path)
             if d[:tag] == :full
-              @image.write_to_file(d[:dest])
-            else
-              ver = @image.thumbnail_image(d[:width], **{:crop => d[:crop]})
-              ver.write_to_file(File.join(@dest, "#{@basename}-#{d[:tag]&.to_s}.#{t.preferred_extension}"))
+              @image.write_to_file(ver_path)
+            elsif d[:width].respond_to?(:to_i)
+              ver = @image.thumbnail_image(d[:width].to_i, **{:crop => d[:crop]})
+              ver.write_to_file(ver_path)
             end
           end
         end
