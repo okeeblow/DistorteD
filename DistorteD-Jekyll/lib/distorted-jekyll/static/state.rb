@@ -16,16 +16,32 @@ module Jekyll
           collection = nil
         )
           @tag_name = self.class.name.split('::').drop(1).join('::').to_sym.freeze
-          Jekyll.logger.debug(@tag_name, "#{base}/#{dir}/#{name} -> #{url}")
 
+          # Path to Jekyll site root
           @base = base
-          @dir = dir
-          @name = name
-          @url = url
 
+          # Container dir of original file
+          @dir = dir
+
+          # Filename of original file
+          @name = name
+
+          # Destination URL for the post/page on which the media appears.
+          @url = url
+          @dest = File.join(base, File.dirname(url))
+
+          # Config struct data down
           @dimensions = dimensions
           @types = types
-          @filenames = filenames
+
+          # Pre-generated list of desired filenames.
+          # I would prefer to generate this here in StaticFile land,
+          # but Liquid needs them too for the templates.
+          @files = files
+          @filenames = files.map{|f| f[:name]}.to_set
+
+          # Hello yes
+          Jekyll.logger.debug(@tag_name, "#{base}/#{dir}/#{name} -> #{url} (#{@dest})")
 
           # Constructor args for Jekyll::StaticFile:
           # site - The Jekyll Site object
@@ -63,8 +79,11 @@ module Jekyll
             # filenames should exist. Try a few more ways to detect subtler
             # "changes to the source file since generation of variations?
             # - atime? (not all filesystems will support)
-            Jekyll.logger.debug("#{@name} modified?",  @filenames.subset?(Dir.entries(@dir).to_set))
-            return @filenames.subset?(Dir.entries(@dir).to_set)
+            if @filenames.subset?(Dir.entries(@dir).to_set)
+              return false
+            else
+              return true
+            end
           end
           return true
         end
