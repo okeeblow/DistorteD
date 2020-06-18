@@ -107,6 +107,12 @@ or, for a DD grid:
 
 Here's an example of embedding an example image in a Jekyll demo site's first post. No site configuration was changed aside from installing the Gem.
 
+The Markdown:
+
+```
+![DistorteD logo](DistorteD.png 'This is so cool')
+```
+
 The log output:
 
 ```
@@ -135,7 +141,7 @@ And the actual template output that ends up in the final page:
       <source srcset="/jekyll/update/2020/06/17/DistorteD-small.webp" media="(max-width: 400px)" />
       <source srcset="/jekyll/update/2020/06/17/DistorteD-medium.webp" media="(min-width: 800px)" />
       <source srcset="/jekyll/update/2020/06/17/DistorteD-large.webp" media="(min-width: 1500px)" />
-      <img src="/jekyll/update/2020/06/17/DistorteD.png" alt="DistorteD logo" title="DistorteD Demo!" loading="eager" />
+      <img src="/jekyll/update/2020/06/17/DistorteD.png" alt="DistorteD logo" title="This is so cool" loading="eager" />
     </picture>
   </a>
   <span style="clear: left;"></span>
