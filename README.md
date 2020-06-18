@@ -37,10 +37,13 @@ Images are fairly well supported and are enabled by default. Video support is ve
 
 ## Installation
 
-Add this line to your site's Gemfile:
+Add to your site's Gemfile:
 
 ```ruby
-gem 'distorted-jekyll'
+group :jekyll_plugins do
+  gem 'distorted-jekyll'
+  gem 'distorted'
+end
 ```
 
 And then execute:
