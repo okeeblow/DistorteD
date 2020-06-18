@@ -1,16 +1,16 @@
 <div class="distorted" >
   {%- if href != true %}
-      {%- capture href %}{{ path }}{{ name }}{%- endcapture -%}
+      {%- capture href %}{{ path }}/{{ name }}{%- endcapture -%}
   {%- endif %}
   <a href="{{ href }}" title="{{ title }}" target="_blank">
     <picture>
       {%- if sources %}
         {%- for source in sources %}
       {%- comment %} TODO: Add `type` attribute to <source>s{%- endcomment %}
-      <source srcset="{{ path }}{{ source.name }}" media="{{ source.media }}"/>
+      <source srcset="{{ path }}/{{ source.name }}" media="{{ source.media }}"/>
         {%- endfor %}
       {%- endif %}
-      <img src="{{ path }}{{ name }}" alt="{{ alt }}" title="{{ title }}" loading="{{ loading }}"/>
+      <img src="{{ path }}/{{ name }}" alt="{{ alt }}" title="{{ title }}" loading="{{ loading }}"/>
     </picture>
   </a>
     {%- if caption %}
