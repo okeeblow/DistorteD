@@ -39,6 +39,12 @@ module Jekyll
         def render(context)
           super
           begin
+            # Liquid doesn't seem able to reference symbolic keys.
+            # Convert everything to string for template.
+            filez = files.map{ |f|
+              f.transform_values(&:to_s).transform_keys(&:to_s)
+            }
+
             parse_template.render({
               'name' => @name,
               'path' => @url,
@@ -47,7 +53,7 @@ module Jekyll
               'href' => @href,
               'caption' => @caption,
               'loading' => loading,
-              'filenames' => @filenames,
+              'sources' => filez,
             })
           rescue Liquid::SyntaxError => l
             # TODO: Only in dev
@@ -55,8 +61,8 @@ module Jekyll
           end
         end
 
-        def static_file(site, base, dir, name, url, dimensions, types, filenames)
-          Jekyll::DistorteD::Static::Image.new(site, base, dir, name, url, dimensions, types, filenames)
+        def static_file(site, base, dir, name, url, dimensions, types, files)
+          Jekyll::DistorteD::Static::Image.new(site, base, dir, name, url, dimensions, types, files)
         end
 
       end
