@@ -7,6 +7,7 @@ require 'liquid/tag/parser'
 require 'mime/types'
 require 'jekyll'
 
+
 module Jekyll
   module DistorteD
     class Invoker < Liquid::Tag
@@ -164,18 +165,33 @@ module Jekyll
         end
       end
 
-      # I would prefer to have this live in the StaticFile class(es),
-      # since those classes get the type and dimension structs too, but we
-      # need to be able to give filenames to the Liquid templates, so we
-      # need to have this out here. Boo-urns.
-      def gen_filenames
-        Proc.new {
-          types.map{ |types, dimensions|
-            dimensions&.map{ |d| [
-              filename(@name, d[:tag], t.preferred_extension)]
-            }
-          }.to_set
+      def variations
+        types.map{ |t| [t, full_dimensions.each{ |d| d }] }.to_h
+      end
+
+      def files
+        filez = Set[]
+        variations.each_pair{ |t,v|
+          v.each{ |d|
+            filez.add(d.merge({:name => "#{File.basename(@name, '.*')}-#{d[:tag]}.#{t.preferred_extension}"}))
+          }
         }
+        filez
+      end
+
+      #def filename(name, tag: nil, extension: nil)
+      #  "#{File.basename(name)}#{if tag ; '-' << tag.to_s; else ''; end}.#{if extension; extension.to_s; else File.extname(name); end}"
+      #end
+
+      def full_dimensions
+        Set[
+          # There should be no problem with the position of this item in the
+          # variations list since Vips#thumbnail_image doesn't modify
+          # the original in place, but it makes the most sense to go
+          # biggest (original) to smallest, so put this first.
+          # TODO: Make this configurable.
+          {:tag => :full, :width => :full, :height => :full, :media => nil}
+        ].merge(dimensions)
       end
 
       def render(context)
@@ -205,9 +221,8 @@ module Jekyll
         dir = File.dirname(page_data['path'])
         @url = page_data['url']
 
-        # Instantiate the appropriate StaticFile subclass for any handler.
-        @filenames = gen_filenames.call(dimensions, types)
-        static_file = self.static_file(site, base, dir, @name, @url, dimensions, types, @filenames)
+        @files = files
+        static_file = self.static_file(site, base, dir, @name, @url, full_dimensions, types, @files)
 
         # Don't force the StaticFile to re-detect the MIME::Types of its own file.
         static_file.instance_variable_set('@mime', instance_variable_get('@mime'))
@@ -253,7 +268,7 @@ module Jekyll
       end
 
       # Bail out if this is not handled by the module we just mixed in.
-      def static_file(site, base, dir, name, url, dimensions, types, filenames)
+      def static_file(site, base, dir, name, url, dimensions, types, files)
         raise MediaTypeNotImplementedError.new(name)
       end
     end

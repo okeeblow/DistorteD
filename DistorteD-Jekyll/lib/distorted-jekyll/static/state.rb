@@ -12,7 +12,7 @@ module Jekyll
           url,
           dimensions,
           types,
-          filenames,
+          files,
           collection = nil
         )
           @tag_name = self.class.name.split('::').drop(1).join('::').to_sym.freeze
