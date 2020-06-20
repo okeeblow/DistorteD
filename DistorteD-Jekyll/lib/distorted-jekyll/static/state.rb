@@ -9,6 +9,7 @@ module Jekyll
           base,
           dir,
           name,
+          dd_dest,
           url,
           dimensions,
           types,
@@ -27,8 +28,8 @@ module Jekyll
           @name = name
 
           # Destination URL for the post/page on which the media appears.
+          @dd_dest = dd_dest
           @url = url
-          @dest = File.join(base, File.dirname(url))
 
           # Config struct data down
           @dimensions = dimensions
@@ -41,7 +42,7 @@ module Jekyll
           @filenames = files.map{|f| f[:name]}.to_set
 
           # Hello yes
-          Jekyll.logger.debug(@tag_name, "#{base}/#{dir}/#{name} -> #{url} (#{@dest})")
+          Jekyll.logger.debug(@tag_name, "#{base}/#{dir}/#{name} -> #{url}})")
 
           # Constructor args for Jekyll::StaticFile:
           # site - The Jekyll Site object
@@ -79,8 +80,12 @@ module Jekyll
           return true
         end
 
-        def src_path
-          File.join(@base, @dir, @name)
+        # Return the absolute path to the top-level destination directory
+        # of the currently-working media. This will usually be the same path
+        # as the Jekyll post/page's generated HTML output.
+        def dd_dest(dest)
+          File.join(dest, @dd_dest)
+        end
         end
 
       end  # state

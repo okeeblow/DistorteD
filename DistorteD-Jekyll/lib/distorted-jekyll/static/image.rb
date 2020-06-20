@@ -8,16 +8,15 @@ module Jekyll
 
         # dest: string realpath to `_site_` directory
         def write(dest)
-          return false if File.exist?(src_path) && !modified?
+          return false if File.exist?(path) && !modified?
           self.class.mtimes[path] = mtime
 
           # Create any directories to the depth of the intended destination.
-          fullres_dest = @dest
-          FileUtils.mkdir_p(fullres_dest)
+          FileUtils.mkdir_p(dd_dest(dest))
 
           distorted = Cooltrainer::DistorteD::Image.new(
-            src_path,
-            dest: fullres_dest,
+            path,
+            dest: dd_dest(dest),
             filenames: @filenames,
           )
 
