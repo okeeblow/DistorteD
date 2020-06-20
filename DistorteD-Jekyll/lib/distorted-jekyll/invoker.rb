@@ -230,11 +230,11 @@ module Jekyll
         # (or other extension) like the default Jekyll config.
         # Get the dirname if the url is not a dir itself.
         @dd_dest = @url = page_data['url']
-        unless @dd_dest[-1] == '/'
+        unless @dd_dest[-1] == PATH_SEPARATOR
           @dd_dest = File.dirname(@dd_dest)
           # Append the trailing slash so we don't have to do it
           # in the Liquid templates.
-          @dd_dest << '/'
+          @dd_dest << PATH_SEPARATOR
         end
 
         @files = files
