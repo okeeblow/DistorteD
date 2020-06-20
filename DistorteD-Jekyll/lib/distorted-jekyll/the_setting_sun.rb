@@ -18,6 +18,16 @@ module Jekyll
       # Separator character for pretty-printing config hierarchy.
       PP_SEPARATOR = "\u21e2 ".encode('utf-8').to_sym
 
+      # Path separator is almost always '/' internally., but support
+      # ALT_SEPARATOR platforms too.
+      # On Lunix - Ruby 2.7:
+      # irb(main):003:0> File::ALT_SEPARATOR
+      # => nil
+      # irb(main):004:0> File::SEPARATOR
+      # => "/"
+      PATH_SEPARATOR = File::ALT_SEPARATOR || File::SEPARATOR
+
+
       # Generic main config-loading function that will search, in order:
       # - The memoized pre-transformed config data store in-memory.
       # - Jekyll's Site config, for a passed-in site or for the default site.
