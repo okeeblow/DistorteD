@@ -44,6 +44,10 @@ if [
   # but my JPEGs coming out with a '.jpeg' file extension just annoys me so much.
   require 'distorted/monkey_business/mnemoniq'
 
+  # Monkey-patch Jekyll::Cleaner to not nuke DistorteD-generated variations
+  # for our media files. This makes DistorteD fast!
+  require 'distorted-jekyll/monkey_business/jekyll/cleaner'
+
   # Register DistorteD's entrypoint class with Liquid.
   # `Invoker` will mix in the proper handler module for the given media.
   Liquid::Template.register_tag('distorted', Jekyll::DistorteD::Invoker)
