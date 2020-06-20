@@ -39,8 +39,6 @@ module Jekyll
         def render(context)
           super
           begin
-            path = File.dirname(@url)
-
             # Liquid doesn't seem able to reference symbolic keys.
             # Convert everything to string for template.
             filez = files.map{ |f|
@@ -49,7 +47,7 @@ module Jekyll
 
             parse_template.render({
               'name' => @name,
-              'path' => path,
+              'path' => @dd_dest,
               'alt' => @alt,
               'title' => @title,
               'href' => @href,
@@ -63,8 +61,8 @@ module Jekyll
           end
         end
 
-        def static_file(site, base, dir, name, url, dimensions, types, files)
-          Jekyll::DistorteD::Static::Image.new(site, base, dir, name, url, dimensions, types, files)
+        def static_file(site, base, dir, name, dd_dest, url, dimensions, types, files)
+          Jekyll::DistorteD::Static::Image.new(site, base, dir, name, dd_dest, url, dimensions, types, files)
         end
 
       end

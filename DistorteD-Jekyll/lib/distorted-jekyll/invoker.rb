@@ -219,10 +219,26 @@ module Jekyll
         # I was testing with `relative_path` only with `_posts`, but it broke
         # when I invoked DD on a _page. Both have `path`.
         dir = File.dirname(page_data['path'])
-        @url = page_data['url']
+
+        # Every one of Ruby's `File.directory?` / `Pathname.directory?` /
+        # `FileTest.directory?` methods actually tests that path on the
+        # real filesystem, but we shouldn't look at the FS here because
+        # this function gets called when the Site.dest directory does
+        # not exist yet!
+        # Hackily look at the last character to see if the URL is a
+        # directory (like configured on cooltrainer) or a `.html`
+        # (or other extension) like the default Jekyll config.
+        # Get the dirname if the url is not a dir itself.
+        @dd_dest = @url = page_data['url']
+        unless @dd_dest[-1] == '/'
+          @dd_dest = File.dirname(@dd_dest)
+          # Append the trailing slash so we don't have to do it
+          # in the Liquid templates.
+          @dd_dest << '/'
+        end
 
         @files = files
-        static_file = self.static_file(site, base, dir, @name, @url, full_dimensions, types, @files)
+        static_file = self.static_file(site, base, dir, @name, @dd_dest, @url, full_dimensions, types, @files)
 
         # Don't force the StaticFile to re-detect the MIME::Types of its own file.
         static_file.instance_variable_set('@mime', instance_variable_get('@mime'))
@@ -268,7 +284,7 @@ module Jekyll
       end
 
       # Bail out if this is not handled by the module we just mixed in.
-      def static_file(site, base, dir, name, url, dimensions, types, files)
+      def static_file(site, base, dir, name, dd_dest, url, dimensions, types, files)
         raise MediaTypeNotImplementedError.new(name)
       end
     end

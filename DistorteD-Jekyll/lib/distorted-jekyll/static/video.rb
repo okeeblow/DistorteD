@@ -12,10 +12,10 @@ module Jekyll
 
           # TODO: Make this smarter. Need to see if there's an easy way to
           # get a list of would-be-generated filenames from GStreamer.
-          return false if File.exist?(src_path) && !modified?
+          return false if File.exist?(path) && !modified?
           self.class.mtimes[path] = mtime
 
-          distorted = Cooltrainer::DistorteD::Video.new(src_path, orig_dest, basename)
+          distorted = Cooltrainer::DistorteD::Video.new(path, orig_dest, basename)
 
           distorted.generate
         end
