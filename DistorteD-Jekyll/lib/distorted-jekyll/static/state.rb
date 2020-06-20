@@ -65,12 +65,24 @@ module Jekyll
           File.extname(@name)
         end
 
+        # Returns the to-be-written path of a single standard StaticFile.
+        # The value returned by this method is only the 'main' or 'original'
+        # (even if modified somehow) file and does not include the
+        # path/filenames of any variations.
+        # This method will be called by jekyll/lib/cleaner#new_files
+        # to generate the list of files that need to be build or rebuilt
+        # for a site. For this reason, this method shouldn't do any kind
+        # of checking the real filesystem, since e.g. its URL-based
+        # destdir might not exist yet if the Site.dest is completely blank.
+        def destination(dest)
+          File.join(dest, @dd_dest, @name)
+        end
+
         # Return the absolute path to the top-level destination directory
         # of the currently-working media. This will usually be the same path
         # as the Jekyll post/page's generated HTML output.
         def dd_dest(dest)
           File.join(dest, @dd_dest)
-        end
         end
 
       end  # state
