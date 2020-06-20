@@ -85,6 +85,15 @@ module Jekyll
           File.join(dest, @dd_dest)
         end
 
+        # This method will be called by our monkey-patched Jekyll::Cleaner#new_files
+        # in place of the single-destination method usually used.
+        # This allows us to tell Jekyll about more than a single file
+        # that should be kept when regenerating the site.
+        # This makes DistorteD fast!
+        def destinations(dest)
+          @filenames.map{|f| File.join(dd_dest(dest), f)}
+        end
+
       end  # state
     end  # Static
   end  # DistorteD
