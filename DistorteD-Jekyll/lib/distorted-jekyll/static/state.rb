@@ -65,21 +65,6 @@ module Jekyll
           File.extname(@name)
         end
 
-        def modified?
-          if Dir.exist?(@dir)
-            # TODO: Make this smarter. It's not enough that all the generated
-            # filenames should exist. Try a few more ways to detect subtler
-            # "changes to the source file since generation of variations?
-            # - atime? (not all filesystems will support)
-            if @filenames.subset?(Dir.entries(@dir).to_set)
-              return false
-            else
-              return true
-            end
-          end
-          return true
-        end
-
         # Return the absolute path to the top-level destination directory
         # of the currently-working media. This will usually be the same path
         # as the Jekyll post/page's generated HTML output.
