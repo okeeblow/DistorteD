@@ -12,24 +12,34 @@ module Jekyll
         # to-be-generated files already exist.
         # Take advantage of the fact the destdir will be `_site` 99% of the time.
         def modified?
+          # Assume modified for the sake of freshness :)
           modified = true
+
           # TODO: Support more than one Site
           site_dest = File.join(@base, '_site')
           if Dir.exist?(site_dest)
+
             dd_dest = dd_dest(site_dest)
             if Dir.exist?(dd_dest)
-              existing_files = Dir.entries(dd_dest).to_set
-              if @filenames - existing_files
-                Jekyll.logger.debug(@name, "Missing variations: #{@filenames - existing_files}")
-              end
+
+              # TODO: Make outputting the original file conditional.
+              # Doing that will require changing the default href handling
+              # in the template, Jekyll::DistorteD::Static::State.destinations,
+              # as well as Cooltrainer::DistorteD::Image.generate
+              wanted_files = Set[@name].merge(@filenames)
+              extant_files = Dir.entries(dd_dest).to_set
+
               # TODO: Make this smarter. It's not enough that all the generated
               # filenames should exist. Try a few more ways to detect subtler
               # "changes to the source file since generation of variations.
-              if @filenames.subset?(existing_files)
+              if wanted_files.subset?(extant_files)
                 modified = false
+              else
+                Jekyll.logger.debug(@name, "Missing variations: #{wanted_files - extant_files}")
               end
-            end
-          end
+
+            end  # dd_dest.exists?
+          end  # site_dest.exists?
           Jekyll.logger.debug("#{@name} modified?",  modified)
           return modified
         end

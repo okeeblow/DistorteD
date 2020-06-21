@@ -58,6 +58,7 @@ module Cooltrainer
         @src = src
         @dest = dest || File.dirname(src)
         @basename = File.basename(src, '.*')
+        @extname = File.extname(src)
         @dimensions = dimensions || Set[{:tag => :full}]
         @types = types || Set[MIME::Types.type_for(src)]
         @filenames = filenames || Set[@basename]
@@ -75,6 +76,17 @@ module Cooltrainer
       end
 
       def generate
+        # Output a cleaned/rotated copy of the original file.
+        # I might want to make this conditional since I won't always want the
+        # input format to also be an output format.
+        # Doing that will require some more smarts in the template for
+        # default href.
+        # Don't forget to change the Static::Image.modified? method too!
+        # extname has a leading dot, e.g. File.extname("fart.jpg") => ".jpg"
+        only_one_dest = File.join(@dest, "#{@basename}#{@extname}")
+        Jekyll.logger.debug('DistorteD Writing:', only_one_dest)
+        @image.write_to_file(only_one_dest)
+
         # Generate every variation for every intended format.
         for t in @types
           for d in @dimensions

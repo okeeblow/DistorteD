@@ -91,7 +91,9 @@ module Jekyll
         # that should be kept when regenerating the site.
         # This makes DistorteD fast!
         def destinations(dest)
-          @filenames.map{|f| File.join(dd_dest(dest), f)}
+          # TODO: Make outputting the original file optional. Will need to change
+          # templates, `modified?`s, and `generate`s to do that.
+          @filenames.map{|f| File.join(dd_dest(dest), f)} << destination(dest)
         end
 
       end  # state
