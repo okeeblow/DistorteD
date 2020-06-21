@@ -1,6 +1,8 @@
+HYPE_THE_CORE = Gem::Specification::load(File.join(File.dirname(__FILE__), '..', 'DistorteD-Ruby', 'distorted.gemspec'))
+
 Gem::Specification.new do |spec|
   spec.name          = 'distorted-jekyll'
-  spec.version       = '0.4.0'
+  spec.version       = HYPE_THE_CORE.version
   spec.authors       = ['Allison Reid']
   spec.email         = ['root@cooltrainer.org']
 
@@ -19,7 +21,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'liquid', '~> 4.0'
   spec.add_dependency 'liquid-tag-parser', '~> 1.9'
-  spec.add_dependency 'distorted', '~> 0.4'
+  spec.add_dependency 'distorted', "~> #{HYPE_THE_CORE.version}"
   spec.add_dependency 'mime-types', '~> 3.0'
   spec.add_dependency 'kramdown', '~> 2.0'
 end

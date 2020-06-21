@@ -1,8 +1,5 @@
-source "https://rubygems.org"
-
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+gemspec
 
 # Depend on the DistorteD core in the same repo as us.
-gem 'distorted', :path => '../DistorteD-Ruby'
+gem 'distorted', :path => File.join(File.dirname(__FILE__), '..', 'DistorteD-Ruby')
 
-gemspec
