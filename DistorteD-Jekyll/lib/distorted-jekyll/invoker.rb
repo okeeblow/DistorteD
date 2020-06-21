@@ -1,10 +1,24 @@
+# Our custom Exceptions
 require 'distorted-jekyll/error_code'
+
+# Configuration-handling code
 require 'distorted-jekyll/floor'
+
+# Media-type drivers
 require 'distorted-jekyll/molecule/image'
 require 'distorted-jekyll/molecule/video'
+
+# Slip in and out of phenomenon
 require 'liquid/tag'
 require 'liquid/tag/parser'
+
+# Explicitly required for l/t/parser since a1cfa27c27cf4d4c308da2f75fbae88e9d5ae893
+require 'shellwords'
+
+# MIME Magic 🧙‍♀️
 require 'mime/types'
+
+# I mean, this is why we're here, right?
 require 'jekyll'
 
 
