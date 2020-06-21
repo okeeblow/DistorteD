@@ -59,7 +59,6 @@ module Jekyll
         # Hash will also return another new empty Hash.
         unless config.empty? or config.nil?
           # Boom.
-          Jekyll.logger.debug(log_key, "Using memoized config: #{config}")
           config
         else
           # The key isn't memoized. Look for it first in Jekyll's Site config,
@@ -87,6 +86,7 @@ module Jekyll
           loaded_config = symbolic(set_me_free(loaded_config))
           # Memoize it!
           @@memories.bury(*memo_keys, loaded_config)
+          Jekyll.logger.debug(log_key, "Memoizing config: #{@@memories.dig(*memo_keys)}")
           # And return a config to the caller. Don't return the `new`ly fetched
           # data directly to ensure consistency between this first fetch and
           # subsequent memoized fetches, and to let callers take advantage of
