@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'minitest', '~> 5.0'
 
   spec.add_dependency 'liquid', '~> 4.0'
-  spec.add_dependency 'liquid-tag-parser', '~> 1.9'
+  spec.add_dependency 'liquid-tag-parser', '~> 2.0'
   spec.add_dependency 'distorted', "~> #{HYPE_THE_CORE.version}"
   spec.add_dependency 'mime-types', '~> 3.0'
   spec.add_dependency 'kramdown', '~> 2.0'
