@@ -28,6 +28,39 @@ module Jekyll
           end
         end
 
+        # Returns the filename we should use in the oldschool <img> tag
+        # as a fallback for <picture> sources. This file should be a cropped
+        # variation, the same MIME::Type as the input media, with the largest
+        # resolution possible.
+        # Failing that, use the filename of the original media.
+        # TODO: Handle situations when the input media_type is not in the
+        # Set of output media_types. We should pick the largest cropped variation
+        # of any type in that case.
+        def fallback_img
+          biggest_ver = nil
+
+          # Computes a Set of non-nil MIME::Type.sub_types for all MIME::Types
+          # detected for the original media file.
+          sub_types = @mime.keep_if{ |m|
+            m.media_type == self.singleton_class.const_get(:MEDIA_TYPE)
+          }.map { |m|
+            m.sub_type
+          }.compact.to_set
+          files.keep_if{|f| f.dig(:tag) != :full}.each{ |f|
+            if sub_types.include?(f[:type]&.sub_type)
+              if biggest_ver
+                if f[:width] > biggest_ver[:width]
+                  biggest_ver = f
+                end
+              else
+                biggest_ver = f
+              end
+            end
+          }
+          # Return the filename of the biggest matched variation,
+          # otherwise use the original filename.
+          biggest_ver&.dig(:name) || @name
+        end
 
         # This will become render_to_output_buffer(context, output) some day,
         # according to upstream Liquid tag.rb.
@@ -51,6 +84,7 @@ module Jekyll
               'caption' => @caption,
               'loading' => loading,
               'sources' => filez,
+              'fallback_img' => fallback_img,
             })
           rescue Liquid::SyntaxError => l
             # TODO: Only in dev
