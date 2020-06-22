@@ -43,21 +43,15 @@ module Jekyll
         search_keys = [CONFIG_KEY].concat(keys).map(&:to_s)
         # Pretty print the config path for logging.
         log_key = search_keys.join(PP_SEPARATOR.to_s).freeze
-        # Initialize memoization class variable as a Hash that will return another
-        # new empty Hash for any key access that doesn't already contain something.
-        @@memories ||= Hash.new { |h,k| h[k] = h.class.new(&h.default_proc) }
+        # Initialize memoization class variable as a Hash that will return nil
+        # for any key access that doesn't already contain something.
+        @@memories ||= Hash.new { |h,k| h[k] = nil }
         # Try to load a memoized config if we can, to skip any filesystem
         # access and data transformation steps.
         config = @@memories.dig(*memo_keys)
-        # I want to be able to disable molecules with `sub_type: false` in YAML
-        # Check true as well for completeness. Check for TrueClass and FalseClass
-        # directly instead of relying on truthiness/falsiness.
-        if config.is_a?(false.class) or config.is_a?(true.class)
-          config = Set[]
-        end
         # Hash#dig usually returns nil for missing keys, but our memoization
         # Hash will also return another new empty Hash.
-        unless config.empty? or config.nil?
+        unless config.nil?
           # Boom.
           config
         else
@@ -76,7 +70,7 @@ module Jekyll
             Jekyll.logger.debug(log_key, "Trying default config: #{loaded_config}")
           end
           # Duplicate this again here for false in the default config.
-          if loaded_config.is_a?(false.class) or loaded_config.is_a?(true.class) or loaded_config.nil?
+          if loaded_config.nil?
             Jekyll.logger.debug(log_key, 'Using failsafe config')
             loaded_config = {}
           end
