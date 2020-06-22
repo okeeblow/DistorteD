@@ -1,13 +1,9 @@
-require 'distorted-jekyll/molecule/C18H27NO3'
 require 'distorted-jekyll/static/image'
 
 module Jekyll
   module DistorteD
     module Molecule
       module Image
-
-        # Spice up our singleton.
-        include Jekyll::DistorteD::Molecule::C18H27NO3;
 
         # Reference these instead of reassigning them. Consistency is mandatory.
         MEDIA_TYPE = Cooltrainer::DistorteD::Image::MEDIA_TYPE

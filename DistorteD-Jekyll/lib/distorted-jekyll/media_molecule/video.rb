@@ -5,9 +5,6 @@ module Jekyll
     module Molecule
       module Video
 
-        # Spice up our singleton.
-        include Jekyll::DistorteD::Molecule::C18H27NO3;
-
         # Reference these instead of reassigning them. Consistency is mandatory.
         MEDIA_TYPE = Cooltrainer::DistorteD::Video::MEDIA_TYPE
         MIME_TYPES = Cooltrainer::DistorteD::Video::MIME_TYPES
