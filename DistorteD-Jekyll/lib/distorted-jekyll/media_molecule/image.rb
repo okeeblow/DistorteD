@@ -18,14 +18,13 @@ module Jekyll
 
         # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#attr-loading
         def loading
-          # These have been mixed in to the singleton class already for us to be able to get here.
-          values = ATTRS_VALUES
-
-          # The instance var is set in Invoker when the molecule is mixed in.
-          if values[:loading].include?(@loading)
-            @loading
+          # The instance var is set on the StaticFile in Invoker,
+          # based on attrs provided to DD's Liquid tag.
+          # It will be nil if there is no e.g. {:loading => 'lazy'} IAL on our tag.
+          if ATTRS_VALUES[:loading].include?(@loading)
+            @loading.to_s
           else
-            values[:loading].to_s
+            ATTRS_DEFAULT[:loading].to_s
           end
         end
 
