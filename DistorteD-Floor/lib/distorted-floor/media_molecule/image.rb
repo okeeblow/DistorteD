@@ -44,12 +44,15 @@ module Cooltrainer
       # Defaults for HTML Element attributes.
       # Not every attr has to be listed here.
       # Many need no default and just won't render.
-      ATTRS_DEFAULT = Hash.new {|h,k| h[k] = nil} [
+      ATTRS_DEFAULT = {
+        :crop => :attention,
         :loading => :eager,
-      ]
-      ATTRS_VALUES = Hash.new {|h,k| h[k] = h.class.new(&h.default_proc)} [
-        :loading => Set[:ATTRS_DEFAULT[:loading.to_s], :lazy],
-      ]
+      }
+      ATTRS_VALUES = {
+        # https://www.rubydoc.info/gems/ruby-vips/Vips/Interesting
+        :crop => Set[:none, :centre, :entropy, :attention],
+        :loading => Set[:eager, :lazy],
+      }
 
       attr_accessor :dest, :dimensions, :types
 
@@ -95,7 +98,12 @@ module Cooltrainer
             if d[:tag] == :full
               @image.write_to_file(ver_path)
             elsif d[:width].respond_to?(:to_i)
-              ver = @image.thumbnail_image(d[:width].to_i, **{:crop => d[:crop]})
+              ver = @image.thumbnail_image(
+                d[:width].to_i,
+                **{
+                  :crop => (d.dig(:crop) || ATTRS_DEFAULT[:crop]),
+                },
+              )
               ver.write_to_file(ver_path)
             end
           end

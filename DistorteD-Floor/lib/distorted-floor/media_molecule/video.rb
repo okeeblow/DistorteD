@@ -32,8 +32,8 @@ module Cooltrainer
       # Defaults for HTML Element attributes.
       # Not every attr has to be listed here.
       # Many need no default and just won't render.
-      ATTRS_DEFAULT = Hash.new {|h,k| h[k] = nil}
-      ATTRS_VALUES = Hash.new {|h,k| h[k] = h.class.new(&h.default_proc)}
+      ATTRS_DEFAULT = {}
+      ATTRS_VALUES = {}
 
       attr_accessor :dest
 

@@ -8,6 +8,9 @@ require 'distorted-jekyll/floor'
 require 'distorted-jekyll/molecule/image'
 require 'distorted-jekyll/molecule/video'
 
+# Set.to_h
+require 'distorted/monkey_business/set'
+
 # Slip in and out of phenomenon
 require 'liquid/tag'
 require 'liquid/tag/parser'
@@ -36,7 +39,7 @@ module Jekyll
       # This list should contain global attributes only, as symbols.
       # The final attribute set will be this + the media-type-specific set.
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
-      ATTRS = Set[:title]
+      GLOBAL_ATTRS = Set[:title]
 
       def initialize(tag_name, arguments, liquid_options)
         super
@@ -135,6 +138,31 @@ module Jekyll
             # https://devalot.com/articles/2008/09/ruby-singleton
             # `self.singleton_class.extend(molecule)` doesn't work in this context.
             self.singleton_class.instance_variable_set(:@media_molecule, molecule)
+
+            # Set instance variables for the combined set of HTML element
+            # attributes used for this media_type. The global set is defined in this file
+            # (Invoker), and the media_type-specific set is appended to that during auto-plug.
+            # TODO: Handle missing/malformed tag arguments.
+            # NOTE: Relying on our own implementation of Set.to_h here.
+            attrs = (self.class::GLOBAL_ATTRS + molecule.const_get(:ATTRS)).to_h
+            attrs.each_pair do |attr, val|
+              # An attr supplied to the Liquid tag should override any from the config
+              liquid_val = parsed_arguments&.dig(attr)&.to_sym
+
+              # Does this attribute have a Molecule-defined list of acceptable values?
+              if molecule.const_get(:ATTRS_VALUES).key?(attr)
+                # And if so, is the given value valid?
+                if molecule.const_get(:ATTRS_VALUES)&.dig(attr).include?(liquid_val)
+                  attrs[attr] = liquid_val
+                  Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{liquid_val}")
+                end
+              else
+                # This Molecule doesn't define a list of accepted values for this attr,
+                # so directly use what was supplied.
+                attrs[attr] = liquid_val
+              end
+            end
+            self.singleton_class.const_set(:ATTRS, attrs)
             (class <<self; prepend @media_molecule; end)
 
             # Break out of the `loop`, a.k.a. stop auto-plugging!
@@ -142,23 +170,15 @@ module Jekyll
           end
 
         end
-
-        # Set instance variables for the combined set of HTML element
-        # attributes used for this media_type. The global set is defined in this file
-        # (Invoker), and the media_type-specific set is appended to that during auto-plug.
-        # TODO: Handle missing/malformed tag arguments.
-        for attr in self.class::ATTRS
-          attr_v = parsed_arguments[attr]
-          Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{attr_v}")
-          instance_variable_set('@' + attr.to_s, parsed_arguments[attr])
-        end
       end
 
       # Top-level media-type config will contain onformation about what variations in
       # output resolution, "pretty" name for those, CSS media query for
       # that variation, etc.
       def dimensions
-        config(self.singleton_class.const_get(:MEDIA_TYPE))
+        # Override the variation's attributes with any given to the Liquid tag.
+        # Add a generated filename key in the form of e.g. 'somefile-large.png'.
+        config(self.singleton_class.const_get(:MEDIA_TYPE)).map{ |d| d.merge(attrs) }
       end
 
       # `changes` media-type[sub_type] config will contain information about
@@ -179,23 +199,34 @@ module Jekyll
         end
       end
 
-      def variations
-        types.map{ |t| [t, full_dimensions.each{ |d| d }] }.to_h
+      # Returns a Hash of any attribute provided to DD's Liquid tag.
+      def attrs
+        self.singleton_class.const_get(:ATTRS).keep_if{|attr,val| val != nil}
       end
 
+      # Returns a Hash of Media-types to be generated and the Set of variations
+      # to be generated for that Type.
+      # Mix any attributes provided to the Liquid tag in to every Variation
+      # in every Type.
+      def variations
+        types.map{ |t|
+          [t, full_dimensions.map{ |d|
+            d.merge({
+              :name => "#{File.basename(@name, '.*')}-#{d[:tag]}.#{t.preferred_extension}",
+            })
+          }]
+        }.to_h
+      end
+
+      # Returns a Set of every filename that will be generated.
+      # Used for things like `StaticFile.modified?`
       def files
         filez = Set[]
         variations.each_pair{ |t,v|
-          v.each{ |d|
-            filez.add(d.merge({:name => "#{File.basename(@name, '.*')}-#{d[:tag]}.#{t.preferred_extension}"}))
-          }
+          v.each{ |d| filez.add(d) }
         }
         filez
       end
-
-      #def filename(name, tag: nil, extension: nil)
-      #  "#{File.basename(name)}#{if tag ; '-' << tag.to_s; else ''; end}.#{if extension; extension.to_s; else File.extname(name); end}"
-      #end
 
       def full_dimensions
         Set[
@@ -258,9 +289,9 @@ module Jekyll
         static_file.instance_variable_set('@mime', instance_variable_get('@mime'))
 
         # Copy the merged Global + MEDIA_TYPE-appropriate attributes to the StaticFile.
-        for attr in self.class::ATTRS
-          Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{instance_variable_get('@' + attr.to_s)}")
-          static_file.instance_variable_set('@' + attr.to_s, instance_variable_get('@' + attr.to_s))
+        attrs.each_pair do |attr, val|
+          Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{val}")
+          static_file.instance_variable_set('@' + attr.to_s, val)
         end
 
         # Add our new file to the list that will be handled
