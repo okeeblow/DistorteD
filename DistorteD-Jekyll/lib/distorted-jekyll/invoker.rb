@@ -309,10 +309,7 @@ module Jekyll
           template = File.join(File.dirname(__FILE__), 'template', "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid")
 
           # Jekyll's Liquid renderer caches in 4.0+.
-          # Make this a config option or get rid of it and always cache
-          # once I have more experience with it.
-          cache_templates = true
-          if cache_templates
+          if config(:cache_templates)
             # file(path) is the caching function, with path as the cache key.
             # The `template` here will be the full path, so no versions of this
             # gem should ever conflict. For example, right now during dev it's:
