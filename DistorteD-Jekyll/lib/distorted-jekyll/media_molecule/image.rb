@@ -35,9 +35,11 @@ module Jekyll
         def render(context)
           super
           begin
-            # Liquid doesn't seem able to reference symbolic keys.
-            # Convert everything to string for template.
-            filez = files.map{ |f|
+            # Liquid doesn't seem able to reference symbolic keys,
+            # so convert everything to string for template.
+            # Remove full-size images from <sources> list before generating.
+            # Those should only be linked to, not displayed.
+            filez = files.keep_if{|f| f.dig(:tag) != :full}.map{ |f|
               f.transform_values(&:to_s).transform_keys(&:to_s)
             }
 
