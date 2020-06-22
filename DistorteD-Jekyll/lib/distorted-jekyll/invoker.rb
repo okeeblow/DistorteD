@@ -154,7 +154,7 @@ module Jekyll
                 # And if so, is the given value valid?
                 if molecule.const_get(:ATTRS_VALUES)&.dig(attr).include?(liquid_val)
                   attrs[attr] = liquid_val
-                  Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{liquid_val}")
+                  Jekyll.logger.debug(@tag_name, "Setting attr '#{attr.to_s}' to '#{liquid_val}' from Liquid tag.")
                 end
               else
                 # This Molecule doesn't define a list of accepted values for this attr,
@@ -162,7 +162,7 @@ module Jekyll
                 attrs[attr] = liquid_val
               end
             end
-            self.singleton_class.const_set(:ATTRS, attrs)
+            @attrs = attrs
             (class <<self; prepend @media_molecule; end)
 
             # Break out of the `loop`, a.k.a. stop auto-plugging!
@@ -178,7 +178,15 @@ module Jekyll
       def dimensions
         # Override the variation's attributes with any given to the Liquid tag.
         # Add a generated filename key in the form of e.g. 'somefile-large.png'.
-        config(self.singleton_class.const_get(:MEDIA_TYPE)).map{ |d| d.merge(attrs) }
+        dimensions = config(self.singleton_class.const_get(:MEDIA_TYPE), failsafe: Set)
+
+        if dimensions.is_a?(Enumerable)
+          out = dimensions.map{ |d| d.merge(attrs) }
+        else
+          # This handles boolean values of media_type keys, e.g. `video: false`.
+          out = Set[]
+        end
+        out
       end
 
       # `changes` media-type[sub_type] config will contain information about
@@ -187,21 +195,23 @@ module Jekyll
       # It is not automatically implied that the source format is also
       # an output format!
       def types
-        media_config = config(:changes, self.singleton_class.const_get(:CONFIG_SUBKEY))
-        # The default config suggests disabling media_types by setting their
-        # config key to `false`.
-        if media_config.respond_to?(:empty?) and media_config.respond_to?(:key?)
+        media_config = config(:changes, self.singleton_class.const_get(:CONFIG_SUBKEY), failsafe: Set)
+        if media_config.empty?
+          @mime.keep_if{ |m|
+            m.media_type == self.singleton_class.const_get(:MEDIA_TYPE)
+          }
+        else
           @mime.map { |m|
             media_config.dig(m.sub_type.to_sym)&.map { |d| MIME::Types[d] }
           }.flatten.to_set
-        else
-          Set[]
         end
       end
 
       # Returns a Hash of any attribute provided to DD's Liquid tag.
       def attrs
-        self.singleton_class.const_get(:ATTRS).keep_if{|attr,val| val != nil}
+        # We only need to care about attrs that were set in the tag,
+        # a.k.a. those that are non-nil in value.
+        @attrs.keep_if{|attr,val| val != nil}
       end
 
       # Returns a Hash of Media-types to be generated and the Set of variations
