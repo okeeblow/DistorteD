@@ -80,8 +80,8 @@ module Jekyll
           end
         end
 
-        def static_file(site, base, dir, name, dd_dest, url, dimensions, types, files)
-          Jekyll::DistorteD::Static::Image.new(site, base, dir, name, dd_dest, url, dimensions, types, files)
+        def static_file(*args)
+          Jekyll::DistorteD::Static::Image.new(*args)
         end
 
       end
