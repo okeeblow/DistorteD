@@ -2,7 +2,16 @@
   {%- if href != true %}
       {%- capture href %}{{ path }}{{ name }}{%- endcapture -%}
   {%- endif %}
-  <a href="{{ href }}" title="{{ title }}" target="_blank">
+  {%- if alt != nil and alt != "" %}
+    {%- capture attr_alt %} alt="{{ alt }}"{%- endcapture -%}
+  {%- endif %}
+  {%- if title != nil and title != "" %}
+    {%- capture attr_title %} title="{{ title }}"{%- endcapture -%}
+  {%- endif %}
+  {%- if loading != nil and loading != "" %}
+    {%- capture attr_loading %} loading="{{ loading }}"{%- endcapture -%}
+  {%- endif %}
+  <a href="{{ href }}"{{ attr_title }} target="_blank">
     <picture>
       {%- if sources %}
         {%- for source in sources %}
@@ -10,7 +19,7 @@
       <source srcset="{{ path }}{{ source.name }}" media="{{ source.media }}"/>
         {%- endfor %}
       {%- endif %}
-      <img src="{{ path }}{{ fallback_img }}" alt="{{ alt }}" title="{{ title }}" loading="{{ loading }}"/>
+      <img src="{{ path }}{{ fallback_img }}"{{ attr_alt }}{{ attr_title }}{{ attr_loading }}/>
     </picture>
   </a>
     {%- if caption %}
