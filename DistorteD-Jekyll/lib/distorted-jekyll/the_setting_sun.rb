@@ -35,7 +35,7 @@ module Jekyll
       #
       # Config data from Jekyll or the DD Defaults is transformed to symbol-ify
       # struct keys where possible and to minimize redundant struct layers.
-      def config(*keys, **kw)
+      def config(*keys, failsafe: Set, **kw)
         # Symbolize for our internal representation of the config path.
         # The Jekyll config and default config are both YAML, so we want string
         # keys for them. Go ahead and prepend the top-level search key here too.
@@ -72,7 +72,7 @@ module Jekyll
           # Duplicate this again here for false in the default config.
           if loaded_config.nil?
             Jekyll.logger.debug(log_key, 'Using failsafe config')
-            loaded_config = {}
+            loaded_config = failsafe.new
           end
           # Minimize and symbolize any output.
           # Returning a Set instead of an Array should be fine since none of our
