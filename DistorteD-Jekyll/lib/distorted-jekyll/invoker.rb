@@ -323,12 +323,6 @@ module Jekyll
         # Don't force the StaticFile to re-detect the MIME::Types of its own file.
         static_file.instance_variable_set('@mime', instance_variable_get('@mime'))
 
-        # Copy the merged Global + MEDIA_TYPE-appropriate attributes to the StaticFile.
-        attrs.each_pair do |attr, val|
-          Jekyll.logger.debug(@tag_name, "Setting attr #{attr.to_s} to #{val}")
-          static_file.instance_variable_set('@' + attr.to_s, val)
-        end
-
         # Add our new file to the list that will be handled
         # by Jekyll's built-in StaticFile generator.
         # Our StaticFile children implement a write() that invokes DistorteD,
