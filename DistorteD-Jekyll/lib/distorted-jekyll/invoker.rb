@@ -214,6 +214,31 @@ module Jekyll
         @attrs.keep_if{|attr,val| val != nil}
       end
 
+      # Returns the value for an attribute as given to the Liquid tag,
+      # the default value if the given value is not in the accepted Set,
+      # or nil for unset attrs with no default defined.
+      def attr_or_default(attribute)
+        # The instance var is set on the StaticFile in Invoker,
+        # based on attrs provided to DD's Liquid tag.
+        # It will be nil if there is no e.g. {:loading => 'lazy'} IAL on our tag.
+        accepted_attrs = self.class::GLOBAL_ATTRS + self.singleton_class.const_get(:ATTRS)
+        accepted_vals = self.singleton_class.const_get(:ATTRS_VALUES)&.dig(attribute)
+        liquid_val = attrs&.dig(attribute)
+        if accepted_attrs.include?(attribute.to_sym)
+          if accepted_vals
+            if accepted_vals.include?(liquid_val)
+              liquid_val.to_s
+            else
+              self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute).to_s
+            end
+          else
+            liquid_val.to_s
+          end
+        else
+          nil
+        end
+      end
+
       # Returns a Hash of Media-types to be generated and the Set of variations
       # to be generated for that Type.
       # Mix any attributes provided to the Liquid tag in to every Variation
