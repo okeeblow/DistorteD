@@ -2,6 +2,11 @@
 
 distorted:
 
+  # Template caching is default as of Jekyll 4.0,
+  # but it can be disabled if needed.
+  # I just can't think of when it would be needed :)
+  cache_templates: true
+
   # Configure DistorteD format changes by media_type, then by sub_type.
   # The list of target formats is plain text, media_type/sub_type.
   # These are mostly based on IANA's official Media Types list:
