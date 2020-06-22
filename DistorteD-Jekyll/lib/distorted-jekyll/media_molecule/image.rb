@@ -16,18 +16,6 @@ module Jekyll
         CONFIG_SUBKEY = :image
 
 
-        # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#attr-loading
-        def loading
-          # The instance var is set on the StaticFile in Invoker,
-          # based on attrs provided to DD's Liquid tag.
-          # It will be nil if there is no e.g. {:loading => 'lazy'} IAL on our tag.
-          if ATTRS_VALUES[:loading].include?(@loading)
-            @loading.to_s
-          else
-            ATTRS_DEFAULT[:loading].to_s
-          end
-        end
-
         # Returns the filename we should use in the oldschool <img> tag
         # as a fallback for <picture> sources. This file should be a cropped
         # variation, the same MIME::Type as the input media, with the largest
@@ -78,11 +66,11 @@ module Jekyll
             parse_template.render({
               'name' => @name,
               'path' => @dd_dest,
-              'alt' => @alt,
-              'title' => @title,
+              'alt' => attr_or_default(:alt),
+              'title' => attr_or_default(:title),
               'href' => @href,
               'caption' => @caption,
-              'loading' => loading,
+              'loading' => attr_or_default(:loading),
               'sources' => filez,
               'fallback_img' => fallback_img,
             })
