@@ -233,7 +233,7 @@ module Jekyll
       def files
         filez = Set[]
         variations.each_pair{ |t,v|
-          v.each{ |d| filez.add(d) }
+          v.each{ |d| filez.add(d.merge({:type => t})) }
         }
         filez
       end
