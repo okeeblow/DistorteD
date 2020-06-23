@@ -40,8 +40,7 @@ if [
   Enumerable.method_defined?(:filter_map),  # 2.7
 ].all?
   # Monkey-patch preferred_extensions iff we're going to load.
-  # This is the only state-modifying import I hope to ever write for this project,
-  # but my JPEGs coming out with a '.jpeg' file extension just annoys me so much.
+  # My JPEGs coming out with a '.jpeg' file extension just annoys me so much.
   require 'distorted/monkey_business/mnemoniq'
 
   # Monkey-patch Jekyll::Cleaner to not nuke DistorteD-generated variations
