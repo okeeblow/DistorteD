@@ -7,7 +7,7 @@ module Jekyll
   module DistorteD
     module Floor
 
-      # Top-level config key (stringified) for Jekyll and Default YAML.
+      # Top-level config key (once stringified) for Jekyll and Default YAML.
       CONFIG_KEY = :distorted
 
       # Filename for default config YAML. Should be a sibling of this file.
@@ -18,7 +18,7 @@ module Jekyll
       # Separator character for pretty-printing config hierarchy.
       PP_SEPARATOR = "\u21e2 ".encode('utf-8').to_sym
 
-      # Path separator is almost always '/' internally., but support
+      # Path separator is almost always '/' internally, but support
       # ALT_SEPARATOR platforms too.
       # On Lunix - Ruby 2.7:
       # irb(main):003:0> File::ALT_SEPARATOR
@@ -33,8 +33,7 @@ module Jekyll
       # - Jekyll's Site config, for a passed-in site or for the default site.
       # - DistorteD's Gem-internal default config YAML.
       #
-      # Config data from Jekyll or the DD Defaults is transformed to symbol-ify
-      # struct keys where possible and to minimize redundant struct layers.
+      # Optionally provide a class to be used as a fallback for missing keys.
       def config(*keys, failsafe: Set, **kw)
         # Symbolize for our internal representation of the config path.
         # The Jekyll config and default config are both YAML, so we want string
@@ -49,14 +48,11 @@ module Jekyll
         # Try to load a memoized config if we can, to skip any filesystem
         # access and data transformation steps.
         config = @@memories.dig(*memo_keys)
-        # Hash#dig usually returns nil for missing keys, but our memoization
-        # Hash will also return another new empty Hash.
         unless config.nil?
           # Boom.
           config
         else
-          # The key isn't memoized. Look for it first in Jekyll's Site config,
-          # then in the _config_default.yml file contained here in this Gem.
+          # The key isn't memoized. Look for it first in Jekyll's Site config.
           # Is it even possible to have more than one Site? Support being passed
           # a `site` object just in case, but taking the first one should be fine.
           site = kw[:site] || Jekyll.sites.first
@@ -64,17 +60,21 @@ module Jekyll
           loaded_config = site.config.dig(*search_keys)
             Jekyll.logger.debug(log_key, "Trying Jekyll _config key: #{loaded_config}")
           if loaded_config.nil?
-            # This will always be small enough for a one-shot read.
+            # The wanted config key didn't exist in the Site config, so let's
+            # try our defaults!
+            # This file will always be small enough for a one-shot read.
             default_config = YAML.load(File.read(DEFAULT_CONFIG_PATH.to_s))
             loaded_config = default_config.dig(*search_keys)
             Jekyll.logger.debug(log_key, "Trying default config: #{loaded_config}")
           end
-          # Duplicate this again here for false in the default config.
+          # Was the desired config key found in the Gem defaults?
           if loaded_config.nil?
+            # Nope.
             Jekyll.logger.debug(log_key, 'Using failsafe config')
             loaded_config = failsafe.new
           end
-          # Minimize and symbolize any output.
+          # Symbolize any output keys and values, and convert Arrays and Ruby::YAML
+          # Sets-as-Hashes to Ruby stdlib Sets.
           # Returning a Set instead of an Array should be fine since none of our
           # configs can (read: should) contain duplicate values for any reason.
           loaded_config = symbolic(set_me_free(loaded_config))
@@ -114,7 +114,7 @@ module Jekyll
       def symbolic(dunno)
         # Check message-handling responses to gauge emptiness since classes that
         # don't respond to `:empty?` might not respond to `:method_exists?` either.
-        if dunno.nil?# or c.respond_to?(:empty?) != true
+        if dunno.nil?
           return c
         elsif dunno.respond_to?(:transform_keys)
           # Hashes
