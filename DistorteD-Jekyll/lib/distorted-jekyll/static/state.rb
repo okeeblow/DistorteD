@@ -9,33 +9,42 @@ module Jekyll
           base,
           dir,
           name,
+          mime,
           dd_dest,
           url,
           dimensions,
           types,
           files,
-          collection = nil
+          collection: nil
         )
+          # e.g. 'DistorteD::Static::Image' or 'DistorteD::Static::Video'
           @tag_name = self.class.name.split('::').drop(1).join('::').to_sym.freeze
 
-          # Path to Jekyll site root
+          # String path to Jekyll site root
           @base = base
 
-          # Container dir of original file
+          # String container dir (under `base`) of original file
           @dir = dir
 
-          # Filename of original file
+          # String filename of original file
           @name = name
 
-          # Destination URL for the post/page on which the media appears.
+          # Set of MIME::Types of the original media file.
+          @mime = mime
+
+          # String path to media generation output dir
+          # under Site.dest (which is currently unknown)
           @dd_dest = dd_dest
+
+          # String destination URL for the post/page on which the media appears.
           @url = url
 
           # Config struct data down
           @dimensions = dimensions
           @types = types
 
-          # Pre-generated list of desired filenames.
+          # Pre-generated Set of Hashes describing wanted files,
+          # and a Set of just the String filenames to be generated.
           # I would prefer to generate this here in StaticFile land,
           # but Liquid needs them too for the templates.
           @files = files
@@ -44,16 +53,12 @@ module Jekyll
           # Hello yes
           Jekyll.logger.debug(@tag_name, "#{base}/#{dir}/#{name} -> #{url}})")
 
-          # Constructor args for Jekyll::StaticFile:
-          # site - The Jekyll Site object
-          # base - The String path to the generated `_site` directory.
-          # dir  - The String path for generated images, aka the page URL.
-          # name - The String filename for one generated or original image.
+          # Construct Jekyll::StaticFile with only the args it takes:
           super(
             site,
             base,
             dir,
-            name
+            name,
           )
         end
 
