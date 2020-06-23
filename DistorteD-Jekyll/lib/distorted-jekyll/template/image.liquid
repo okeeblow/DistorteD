@@ -15,8 +15,7 @@
     <picture>
       {%- if sources %}
         {%- for source in sources %}
-      {%- comment %} TODO: Add `type` attribute to <source>s{%- endcomment %}
-      <source srcset="{{ path }}{{ source.name }}" media="{{ source.media }}"/>
+      <source srcset="{{ path }}{{ source.name }}" type="{{ source.type }}" media="{{ source.media }}"/>
         {%- endfor %}
       {%- endif %}
       <img src="{{ path }}{{ fallback_img }}"{{ attr_alt }}{{ attr_title }}{{ attr_loading }}/>
