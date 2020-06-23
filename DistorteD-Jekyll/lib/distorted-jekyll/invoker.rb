@@ -41,10 +41,10 @@ module Jekyll
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
       GLOBAL_ATTRS = Set[:title]
 
+      # 𝘏𝘖𝘞 𝘈𝘙𝘌 𝘠𝘖𝘜 𝘎𝘌𝘕𝘛𝘓𝘌𝘔𝘌𝘕 ！！
       def initialize(tag_name, arguments, liquid_options)
         super
         # Tag name as given to Liquid::Template.register_tag().
-        # Yes, this is redundant considering this same file defines the name.
         @tag_name = tag_name.to_sym
 
         # Liquid leaves argument parsing totally up to us.
@@ -130,7 +130,6 @@ module Jekyll
           Jekyll.logger.debug(@tag_name, "Trying to plug #{@name} into #{molecule}")
 
           # We found a potentially-compatible driver iff the union set is non-empty.
-          Jekyll.logger.debug(@tag_name, @mime)
           if not (@mime & molecule.const_get(:MIME_TYPES)).empty?
             Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime & molecule.const_get(:MIME_TYPES)}")
 
@@ -263,6 +262,9 @@ module Jekyll
         filez
       end
 
+      # Returns a version of `dimensions` that includes instructions to
+      # generate an unadulterated (e.g. by cropping) version of the
+      # input media file.
       def full_dimensions
         Set[
           # There should be no problem with the position of this item in the
@@ -274,6 +276,9 @@ module Jekyll
         ].merge(dimensions)
       end
 
+      # Called by Jekyll::Renderer
+      # https://github.com/jekyll/jekyll/blob/HEAD/lib/jekyll/renderer.rb
+      # https://jekyllrb.com/tutorials/orderofinterpretation/
       def render(context)
         # Get Jekyll Site object back from tag rendering context registers so we
         # can get configuration data and path information from it and
@@ -283,13 +288,6 @@ module Jekyll
         # The rendering context's `first` page will be the one that invoked us.
         page_data = context.environments.first['page']
 
-        # Create an instance of the media-appropriate Jekyll::StaticFile subclass.
-        #
-        # StaticFile args:
-        # site - The Jekyll Site object.
-        # base - The String path to the Jekyll::Site#source - /home/okeeblow/cooltrainer
-        # dir  - The String path between <base> and the file - _posts/2018-10-15-super-cool-post
-        # name - The String filename - cool.jpg
         #
         # Our subclass' additional args:
         # dest - The String path to the generated `url` folder of the page HTML output
@@ -317,11 +315,33 @@ module Jekyll
           @dd_dest << PATH_SEPARATOR
         end
 
-        @files = files
-        static_file = self.static_file(site, base, dir, @name, @dd_dest, @url, full_dimensions, types, @files)
-
-        # Don't force the StaticFile to re-detect the MIME::Types of its own file.
-        static_file.instance_variable_set('@mime', instance_variable_get('@mime'))
+        # Create an instance of the media-appropriate Jekyll::StaticFile subclass.
+        #
+        # StaticFile args:
+        # site        - The Jekyll Site object.
+        # base        - The String path to the Jekyll::Site.source, e.g. /home/okeeblow/Works/cooltrainer
+        # dir         - The String path between <base> and the source file, e.g. _posts/2018-10-15-super-cool-post
+        # name        - The String filename of the original media, e.g. cool.jpg
+        # mime        - The Set of MIME::Types of the original media.
+        # dd_dest     - The String path under Site.dest to DD's top-level media output directory.
+        # url         - The URL of the page this tag is on.
+        # dimensions  - The Set of Hashes describing size variations to generate.
+        # types       - The Set of MIME::Types to generate.
+        # files       - The Set of Hashes describing files to be generated;
+        #               a combination of `types` and `dimensions` but passed in
+        #               instead of generated so Liquid template can share it too.
+        static_file = self.static_file(
+          site,
+          base,
+          dir,
+          @name,
+          @mime,
+          @dd_dest,
+          @url,
+          full_dimensions,
+          types,
+          files,
+        )
 
         # Add our new file to the list that will be handled
         # by Jekyll's built-in StaticFile generator.
@@ -330,7 +350,9 @@ module Jekyll
         site.static_files << static_file
       end
 
-      def parse_template(site = nil)
+      # Called by a Molecule-specific render() method since they will
+      # all load their Liquid template files in the same way.
+      def parse_template(site: nil)
         site = site || Jekyll.sites.first
         begin
           # Template filename is based on the MEDIA_TYPE declared in the driver,
@@ -350,11 +372,15 @@ module Jekyll
           end
 
         rescue Liquid::SyntaxError => l
+          # This shouldn't ever happen unless a new version of Liquid
+          # breaks syntax compatibility with our templates somehow.
           l.message
         end
       end
 
       # Bail out if this is not handled by the module we just mixed in.
+      # Any media Molecule must override this to return an instance of
+      # their media-type-appropriate StaticFile subclass.
       def static_file(site, base, dir, name, dd_dest, url, dimensions, types, files)
         raise MediaTypeNotImplementedError.new(name)
       end
