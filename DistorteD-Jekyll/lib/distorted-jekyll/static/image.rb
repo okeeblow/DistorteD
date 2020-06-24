@@ -16,7 +16,7 @@ module Jekyll
           modified = true
 
           # TODO: Support more than one Site
-          site_dest = File.join(@base, '_site')
+          site_dest = File.join(@base, '_site'.freeze)
           if Dir.exist?(site_dest)
 
             dd_dest = dd_dest(site_dest)

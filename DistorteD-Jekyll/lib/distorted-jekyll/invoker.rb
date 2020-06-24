@@ -286,7 +286,7 @@ module Jekyll
         site = context.registers[:site]
 
         # The rendering context's `first` page will be the one that invoked us.
-        page_data = context.environments.first['page']
+        page_data = context.environments.first['page'.freeze]
 
         #
         # Our subclass' additional args:
@@ -296,7 +296,7 @@ module Jekyll
         # `relative_path` doesn't seem to always exist, but `path` does? idk.
         # I was testing with `relative_path` only with `_posts`, but it broke
         # when I invoked DD on a _page. Both have `path`.
-        dir = File.dirname(page_data['path'])
+        dir = File.dirname(page_data['path'.freeze])
 
         # Every one of Ruby's `File.directory?` / `Pathname.directory?` /
         # `FileTest.directory?` methods actually tests that path on the
@@ -307,7 +307,7 @@ module Jekyll
         # directory (like configured on cooltrainer) or a `.html`
         # (or other extension) like the default Jekyll config.
         # Get the dirname if the url is not a dir itself.
-        @dd_dest = @url = page_data['url']
+        @dd_dest = @url = page_data['url'.freeze]
         unless @dd_dest[-1] == PATH_SEPARATOR
           @dd_dest = File.dirname(@dd_dest)
           # Append the trailing slash so we don't have to do it
@@ -357,7 +357,11 @@ module Jekyll
         begin
           # Template filename is based on the MEDIA_TYPE declared in the driver,
           # which will be set as an instance variable upon successful auto-plugging.
-          template = File.join(File.dirname(__FILE__), 'template', "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid")
+          template = File.join(
+            File.dirname(__FILE__),
+            'template'.freeze,
+            "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid"
+          )
 
           # Jekyll's Liquid renderer caches in 4.0+.
           if config(:cache_templates)
