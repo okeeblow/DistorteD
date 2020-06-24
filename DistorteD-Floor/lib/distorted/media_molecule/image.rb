@@ -95,16 +95,25 @@ module Cooltrainer
           for d in @dimensions
             ver_path = File.join(@dest, "#{@basename}-#{d[:tag]&.to_s}.#{t.preferred_extension}")
             Jekyll.logger.debug('DistorteD Writing:', ver_path)
-            if d[:tag] == :full
-              @image.write_to_file(ver_path)
-            elsif d[:width].respond_to?(:to_i)
-              ver = @image.thumbnail_image(
-                d[:width].to_i,
-                **{
-                  :crop => (d.dig(:crop) || ATTRS_DEFAULT[:crop]),
-                },
-              )
-              ver.write_to_file(ver_path)
+            begin
+              if d[:tag] == :full
+                @image.write_to_file(ver_path)
+              elsif d[:width].respond_to?(:to_i)
+                ver = @image.thumbnail_image(
+                  d[:width].to_i,
+                  **{
+                    :crop => (d.dig(:crop) || ATTRS_DEFAULT[:crop]),
+                  },
+                )
+                ver.write_to_file(ver_path)
+              end
+            rescue Vips::Error => v
+              if v.message.include?('No known saver')
+                # TODO: Handle missing output formats. Replacements? Skip it? Die?
+                nil
+              else
+                raise
+              end
             end
           end
         end
