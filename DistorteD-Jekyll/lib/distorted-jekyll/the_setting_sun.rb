@@ -12,11 +12,11 @@ module Jekyll
 
       # Filename for default config YAML. Should be a sibling of this file.
       # Don't move this file or the YAML defaults without changing this.
-      DEFAULT_CONFIG_FILE_NAME = '_config_default.yml'.to_sym
-      DEFAULT_CONFIG_PATH = File.join(File.dirname(__FILE__), DEFAULT_CONFIG_FILE_NAME.to_s).to_sym
+      DEFAULT_CONFIG_FILE_NAME = '_config_default.yml'.freeze
+      DEFAULT_CONFIG_PATH = File.join(File.dirname(__FILE__), DEFAULT_CONFIG_FILE_NAME.to_s).freeze
 
       # Separator character for pretty-printing config hierarchy.
-      PP_SEPARATOR = "\u21e2 ".encode('utf-8').to_sym
+      PP_SEPARATOR = "\u21e2 ".encode('utf-8').freeze
 
       # Path separator is almost always '/' internally, but support
       # ALT_SEPARATOR platforms too.
@@ -25,7 +25,7 @@ module Jekyll
       # => nil
       # irb(main):004:0> File::SEPARATOR
       # => "/"
-      PATH_SEPARATOR = File::ALT_SEPARATOR || File::SEPARATOR
+      PATH_SEPARATOR = (File::ALT_SEPARATOR || File::SEPARATOR).freeze
 
 
       # Generic main config-loading function that will search, in order:
@@ -39,7 +39,7 @@ module Jekyll
         # The Jekyll config and default config are both YAML, so we want string
         # keys for them. Go ahead and prepend the top-level search key here too.
         memo_keys = keys.map(&:to_sym).to_set
-        search_keys = [CONFIG_KEY].concat(keys).map(&:to_s)
+        search_keys = [CONFIG_KEY].concat(keys).map(&:to_s).map(&:freeze)
         # Pretty print the config path for logging.
         log_key = search_keys.join(PP_SEPARATOR.to_s).freeze
         # Initialize memoization class variable as a Hash that will return nil
@@ -63,7 +63,7 @@ module Jekyll
             # The wanted config key didn't exist in the Site config, so let's
             # try our defaults!
             # This file will always be small enough for a one-shot read.
-            default_config = YAML.load(File.read(DEFAULT_CONFIG_PATH.to_s))
+            default_config = YAML.load(File.read(DEFAULT_CONFIG_PATH))
             loaded_config = default_config.dig(*search_keys)
             Jekyll.logger.debug(log_key, "Trying default config: #{loaded_config}")
           end

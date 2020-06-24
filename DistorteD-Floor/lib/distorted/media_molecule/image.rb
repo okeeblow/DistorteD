@@ -30,7 +30,7 @@ module Cooltrainer
   class DistorteD
     class Image
 
-      MEDIA_TYPE = 'image'
+      MEDIA_TYPE = 'image'.freeze
       MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
 
       # Attributes for our <picture>/<img>.

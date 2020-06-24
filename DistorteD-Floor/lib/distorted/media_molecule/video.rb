@@ -21,7 +21,7 @@ module Cooltrainer
   class DistorteD
     class Video
 
-      MEDIA_TYPE = 'video'
+      MEDIA_TYPE = 'video'.freeze
       MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
 
       # Attributes for our <video>.
