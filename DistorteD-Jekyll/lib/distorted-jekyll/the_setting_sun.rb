@@ -119,6 +119,10 @@ module Jekyll
         elsif dunno.respond_to?(:transform_keys)
           # Hashes
           return dunno.transform_keys!(&:to_sym)
+        elsif dunno.respond_to?(:to_str)
+          # Freeze string config values.
+          # Specifically :to_str, not :to_s. Usually implemented by actual Strings.
+          return dunno.to_str.freeze
         elsif dunno.respond_to?(:to_sym)
           # Plain types
           return dunno.to_sym
