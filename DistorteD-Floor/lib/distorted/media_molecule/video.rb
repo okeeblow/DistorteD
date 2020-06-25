@@ -15,6 +15,8 @@ rescue LoadError => le
   raise $!, "#{help}\n#{$!}", $!.backtrace
 end
 
+require 'set'
+
 require 'mime/types'
 
 module Cooltrainer

@@ -1,3 +1,4 @@
+require 'set'
 
 module Jekyll
   module DistorteD

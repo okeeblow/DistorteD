@@ -1,3 +1,5 @@
+require 'set'
+
 require 'distorted/image'
 require 'distorted-jekyll/static/state'
 
