@@ -31,7 +31,10 @@ module Cooltrainer
     class Image
 
       MEDIA_TYPE = 'image'.freeze
-      MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true].to_set
+
+      # SVG support is a sub-class and not directly supported here:
+      # `write_to_file': No known saver for '/home/okeeblow/Works/cooltrainer/_site/IIDX-turntable.svg'. (Vips::Error)
+      MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}\/(?!svg)/, :complete => true].to_set
 
       # Attributes for our <picture>/<img>.
       # Automatically enabled as attrs for DD Liquid Tag.
