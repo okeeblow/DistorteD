@@ -31,7 +31,7 @@ module Cooltrainer
     class Image
 
       MEDIA_TYPE = 'image'.freeze
-      MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
+      MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true].to_set
 
       # Attributes for our <picture>/<img>.
       # Automatically enabled as attrs for DD Liquid Tag.
