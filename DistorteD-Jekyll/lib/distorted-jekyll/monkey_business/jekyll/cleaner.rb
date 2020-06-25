@@ -1,3 +1,5 @@
+require 'set'
+
 module Jekyll
   # Handles the cleanup of a site's destination before it is built or re-built.
   class Cleaner

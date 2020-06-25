@@ -1,3 +1,5 @@
+require 'set'
+
 class Hash
 
   # Complement Ruby::YAML behavior, where usage of Set syntax

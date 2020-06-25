@@ -1,3 +1,5 @@
+require 'set'
+
 # Override Set.to_h? to complement Ruby::YAML's Set implementation,
 # where the YAML Set syntax returns a Hash with all-nil values,
 # at least without some decorator sugar in the YAML itself:

@@ -1,6 +1,7 @@
 require 'distorted/monkey_business/hash'
 require 'yaml'
 require 'jekyll'
+require 'set'
 
 
 module Jekyll

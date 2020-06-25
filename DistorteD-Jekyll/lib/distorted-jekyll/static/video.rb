@@ -1,3 +1,5 @@
+require 'set'
+
 require 'distorted/video'
 require 'distorted-jekyll/static/state'
 
