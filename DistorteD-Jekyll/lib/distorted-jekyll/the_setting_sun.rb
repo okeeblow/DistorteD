@@ -8,7 +8,7 @@ module Jekyll
     module Floor
 
       # Top-level config key (once stringified) for Jekyll and Default YAML.
-      CONFIG_KEY = :distorted
+      CONFIG_ROOT = :distorted
 
       # Filename for default config YAML. Should be a sibling of this file.
       # Don't move this file or the YAML defaults without changing this.
@@ -39,7 +39,7 @@ module Jekyll
         # The Jekyll config and default config are both YAML, so we want string
         # keys for them. Go ahead and prepend the top-level search key here too.
         memo_keys = keys.map(&:to_sym).to_set
-        search_keys = [CONFIG_KEY].concat(keys).map(&:to_s).map(&:freeze)
+        search_keys = keys.map(&:to_s).map(&:freeze)
         # Pretty print the config path for logging.
         log_key = search_keys.join(PP_SEPARATOR.to_s).freeze
         # Initialize memoization class variable as a Hash that will return nil

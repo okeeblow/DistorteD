@@ -177,7 +177,11 @@ module Jekyll
       def dimensions
         # Override the variation's attributes with any given to the Liquid tag.
         # Add a generated filename key in the form of e.g. 'somefile-large.png'.
-        dimensions = config(self.singleton_class.const_get(:MEDIA_TYPE), failsafe: Set)
+        dimensions = config(
+          self.singleton_class.const_get(:CONFIG_ROOT),
+          self.singleton_class.const_get(:MEDIA_TYPE),
+          failsafe: Set,
+        )
 
         if dimensions.is_a?(Enumerable)
           out = dimensions.map{ |d| d.merge(attrs) }
@@ -194,7 +198,12 @@ module Jekyll
       # It is not automatically implied that the source format is also
       # an output format!
       def types
-        media_config = config(:changes, self.singleton_class.const_get(:CONFIG_SUBKEY), failsafe: Set)
+        media_config = config(
+          self.singleton_class.const_get(:CONFIG_ROOT),
+          :changes,
+          self.singleton_class.const_get(:CONFIG_SUBKEY),
+          failsafe: Set,
+        )
         if media_config.empty?
           @mime.keep_if{ |m|
             m.media_type == self.singleton_class.const_get(:MEDIA_TYPE)
@@ -364,7 +373,7 @@ module Jekyll
           )
 
           # Jekyll's Liquid renderer caches in 4.0+.
-          if config(:cache_templates)
+          if config(self.singleton_class.const_get(:CONFIG_ROOT), :cache_templates)
             # file(path) is the caching function, with path as the cache key.
             # The `template` here will be the full path, so no versions of this
             # gem should ever conflict. For example, right now during dev it's:
