@@ -20,6 +20,7 @@ require 'shellwords'
 
 # MIME Magic 🧙‍♀️
 require 'mime/types'
+require 'ruby-filemagic'
 
 # I mean, this is why we're here, right?
 require 'jekyll'
@@ -73,10 +74,54 @@ module Jekyll
         @mime = MIME::Types.type_for(@name).to_set
 
         # We can't proceed without a usable media type.
-        if @mime
+        # Look at the actual file iff the filename wasn't enough to guess.
+        unless @mime.empty?
           Jekyll.logger.debug(@tag_name, "Detected #{@name} media types: #{@mime}")
         else
-          raise MediaTypeNotFoundError.new(@name)
+          # Did we fail to guess any MIME::Types from the given filename?
+          # We're going to have to look at the actual file
+          # (or at least its first four bytes).
+          # `@mime` will be readable/writable in the FileMagic.open block context
+          # since it was already defined in the outer scope.
+          FileMagic.open(:mime) do |fm|
+            # TODO: Support finding files in paths deeper than the Site source.
+            # There's no good way to get the path here of the Markdown file
+            # that included our Tag, so relative paths won't work if given
+            # as just a filename. It should work if supplied like:
+            #   ![The coolest image ever](/2020/04/20/some-post/hahanofileextension)
+            # This limitation is normally not a problem since we can guess
+            # the MIME::Types just based on the filename.
+            # It would be possible to supply the Markdown document's path
+            # as an additional argument to {% distorted %} when converting
+            # Markdown in `injection_of_love`, but I am resisting that
+            # approach because it would make DD's Liquid and Markdown entrypoints
+            # no longer exactly equivalent, and that's not okay with me.
+            test_path = File.join(
+              config(:source),
+              config(:collections_dir),
+              @name,
+            )
+            # The second argument makes fm.file return just the simple
+            # MIME::Type String, e.g.:
+            #
+            # irb(main):006:1*   fm.file('/home/okeeblow/IIDX-turntable.svg')
+            # => "image/svg+xml; charset=us-ascii"
+            # irb(main):009:1*   fm.file('/home/okeeblow/IIDX-turntable.svg', true)
+            # => "image/svg"
+            #
+            # However MIME::Types won't take short variants like 'image/svg',
+            # so explicitly have FM return long types and split it ourself
+            # on the semicolon:
+            #
+            # irb(main):038:0> "image/svg+xml; charset=us-ascii".split(';').first
+            # => "image/svg+xml"
+            @mime = Set[MIME::Types[fm.file(@name, false).split(';'.freeze).first]]
+          end
+
+          # Did we still not get a type from FileMagic?
+          unless @mime
+            raise MediaTypeNotFoundError.new(@name)
+          end
         end
 
         # Array of drivers to try auto-plugging. Take a shallow copy first because
