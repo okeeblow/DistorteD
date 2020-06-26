@@ -1,5 +1,6 @@
 require 'set'
 
+require 'distorted/image'
 require 'distorted-jekyll/static/image'
 
 module Jekyll

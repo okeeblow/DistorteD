@@ -1,3 +1,4 @@
+require 'fileutils'
 require 'set'
 
 require 'distorted/image'
@@ -12,7 +13,6 @@ module Jekyll
         # Jekyll does not pass this method a site.dest like it does write() and
         # others, but I want to be able to short-circuit here if all the
         # to-be-generated files already exist.
-        # Take advantage of the fact the destdir will be `_site` 99% of the time.
         def modified?
           # Assume modified for the sake of freshness :)
           modified = true
