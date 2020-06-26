@@ -458,7 +458,7 @@ module Jekyll
       # Bail out if this is not handled by the module we just mixed in.
       # Any media Molecule must override this to return an instance of
       # their media-type-appropriate StaticFile subclass.
-      def static_file(site, base, dir, name, dd_dest, url, dimensions, types, files)
+      def static_file(site, base, dir, name, mime, dd_dest, url, dimensions, types, files)
         raise MediaTypeNotImplementedError.new(name)
       end
     end
