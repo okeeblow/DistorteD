@@ -7,6 +7,7 @@ require 'distorted-jekyll/floor'
 # Media-type drivers
 require 'distorted-jekyll/molecule/image'
 require 'distorted-jekyll/molecule/video'
+require 'distorted-jekyll/molecule/last-resort'
 
 # Set.to_h
 require 'distorted/monkey_business/set'
@@ -38,7 +39,11 @@ module Jekyll
 
       # Enabled media_type drivers. These will be attempted back to front.
       # TODO: Make this configurable.
-      MEDIA_MOLECULES = [Jekyll::DistorteD::Molecule::Video, Jekyll::DistorteD::Molecule::Image]
+      MEDIA_MOLECULES = [
+        Jekyll::DistorteD::Molecule::LastResort,
+        Jekyll::DistorteD::Molecule::Video,
+        Jekyll::DistorteD::Molecule::Image,
+      ]
 
       # This list should contain global attributes only, as symbols.
       # The final attribute set will be this + the media-type-specific set.
@@ -123,7 +128,12 @@ module Jekyll
 
           # Did we still not get a type from FileMagic?
           unless @mime
-            raise MediaTypeNotFoundError.new(@name)
+            if config(self.class.const_get(:CONFIG_ROOT), :last_resort)
+              Jekyll.logger.debug(@tag_name, "Falling back to bare <img> for #{@name}")
+              @mime = Jekyll::DistorteD::Molecule::LastResort::MIME_TYPES
+            else
+              raise MediaTypeNotFoundError.new(@name)
+            end
           end
         end
 
@@ -172,7 +182,13 @@ module Jekyll
           # This will be nil once we've tried them all and run out and are on the last loop.
           # TODO: Support optional fall-through when plugging fails.
           if molecule == nil
-            raise MediaTypeNotImplementedError.new(@name)
+            if config(self.class.const_get(:CONFIG_ROOT), :last_resort)
+              Jekyll.logger.debug(@tag_name, "Falling back to a bare <img> for #{name}")
+              @mime = Jekyll::DistorteD::Molecule::LastResort::MIME_TYPES
+              molecule = Jekyll::DistorteD::Molecule::LastResort
+            else
+              raise MediaTypeNotImplementedError.new(@name)
+            end
           end
 
           Jekyll.logger.debug(@tag_name, "Trying to plug #{@name} into #{molecule}")
