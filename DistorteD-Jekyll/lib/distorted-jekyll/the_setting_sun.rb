@@ -14,7 +14,7 @@ module Jekyll
       # Filename for default config YAML. Should be a sibling of this file.
       # Don't move this file or the YAML defaults without changing this.
       DEFAULT_CONFIG_FILE_NAME = '_config_default.yml'.freeze
-      DEFAULT_CONFIG_PATH = File.join(File.dirname(__FILE__), DEFAULT_CONFIG_FILE_NAME.to_s).freeze
+      DEFAULT_CONFIG_PATH = File.join(File.dirname(__FILE__), DEFAULT_CONFIG_FILE_NAME).freeze
 
       # Separator character for pretty-printing config hierarchy.
       PP_SEPARATOR = "\u21e2 ".encode('utf-8').freeze
