@@ -96,7 +96,7 @@ module Jekyll
         # in every Type.
         def variations
           types.map{ |t|
-            [t, full_dimensions.map{ |d|
+            [t, dimensions.map{ |d|
               d.merge({
                 :name => "#{File.basename(@name, '.*')}-#{d[:tag]}.#{t.preferred_extension}",
               })
@@ -112,20 +112,6 @@ module Jekyll
             v.each{ |d| filez.add(d.merge({:type => t})) }
           }
           filez
-        end
-
-        # Returns a version of `dimensions` that includes instructions to
-        # generate an unadulterated (e.g. by cropping) version of the
-        # input media file.
-        def full_dimensions
-          Set[
-            # There should be no problem with the position of this item in the
-            # variations list since Vips#thumbnail_image doesn't modify
-            # the original in place, but it makes the most sense to go
-            # biggest (original) to smallest, so put this first.
-            # TODO: Make this configurable.
-            {:tag => :full, :width => :full, :height => :full, :media => nil}
-          ].merge(dimensions)
         end
 
         def parse_template(site: nil)

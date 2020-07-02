@@ -303,7 +303,7 @@ module Jekyll
           @mime,
           @dd_dest,
           @url,
-          full_dimensions,
+          dimensions,
           types,
           files,
         )
