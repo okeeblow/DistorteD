@@ -16,7 +16,7 @@ module Jekyll
         # Top-level media-type config will contain onformation about what variations in
         # output resolution, "pretty" name for those, CSS media query for
         # that variation, etc.
-        def dimensions
+        def outer_limits
           # Override the variation's attributes with any given to the Liquid tag.
           # Add a generated filename key in the form of e.g. 'somefile-large.png'.
           dimensions = config(
@@ -40,7 +40,7 @@ module Jekyll
         # e.g. {:image => {:jpeg => Set['image/jpeg', 'image/webp']}}
         # It is not automatically implied that the source format is also
         # an output format!
-        def types
+        def changes
           media_config = config(
             self.singleton_class.const_get(:CONFIG_ROOT),
             :changes,
@@ -95,8 +95,8 @@ module Jekyll
         # Mix any attributes provided to the Liquid tag in to every Variation
         # in every Type.
         def variations
-          types.map{ |t|
-            [t, dimensions.map{ |d|
+          changes.map{ |t|
+            [t, outer_limits.map{ |d|
               d.merge({
                 :name => "#{File.basename(@name, '.*')}-#{d[:tag]}.#{t.preferred_extension}",
               })

@@ -290,8 +290,8 @@ module Jekyll
         # mime        - The Set of MIME::Types of the original media.
         # dd_dest     - The String path under Site.dest to DD's top-level media output directory.
         # url         - The URL of the page this tag is on.
-        # dimensions  - The Set of Hashes describing size variations to generate.
-        # types       - The Set of MIME::Types to generate.
+        # outer_limits- The Set of Hashes describing size variations to generate.
+        # changes       - The Set of MIME::Types to generate.
         # files       - The Set of Hashes describing files to be generated;
         #               a combination of `types` and `dimensions` but passed in
         #               instead of generated so Liquid template can share it too.
@@ -303,8 +303,8 @@ module Jekyll
           @mime,
           @dd_dest,
           @url,
-          dimensions,
-          types,
+          outer_limits,
+          changes,
           files,
         )
 
@@ -320,7 +320,7 @@ module Jekyll
       # Bail out if this is not handled by the module we just mixed in.
       # Any media Molecule must override this to return an instance of
       # their media-type-appropriate StaticFile subclass.
-      def static_file(site, base, dir, name, mime, dd_dest, url, dimensions, types, files)
+      def static_file(site, base, dir, name, mime, dd_dest, url, outer_limits, changes, files)
         raise MediaTypeNotImplementedError.new(name)
       end
     end
