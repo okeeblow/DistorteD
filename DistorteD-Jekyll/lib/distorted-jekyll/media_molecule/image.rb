@@ -53,10 +53,10 @@ module Jekyll
           biggest_ver&.dig(:name) || @name
         end
 
-        # Returns a version of `dimensions` that includes instructions to
+        # Return a version of output configuration that includes instructions to
         # generate an unadulterated (e.g. by cropping) version of the
         # input media file.
-        def dimensions
+        def outer_limits
           Set[
             # There should be no problem with the position of this item in the
             # variations list since Vips#thumbnail_image doesn't modify

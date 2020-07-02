@@ -13,8 +13,8 @@ module Jekyll
           mime,
           dd_dest,
           url,
-          dimensions,
-          types,
+          outer_limits,
+          changes,
           files,
           collection: nil
         )
@@ -41,8 +41,8 @@ module Jekyll
           @url = url
 
           # Config struct data down
-          @dimensions = dimensions
-          @types = types
+          @outer_limits = outer_limits
+          @changes = changes
 
           # Pre-generated Set of Hashes describing wanted files,
           # and a Set of just the String filenames to be generated.

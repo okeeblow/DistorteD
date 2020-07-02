@@ -63,8 +63,8 @@ module Jekyll
           Jekyll.logger.debug(@tag_name, "Rotating #{@name} if tagged.")
           distorted.rotate(angle: :auto)
 
-          distorted.types = @types
-          distorted.dimensions = @dimensions
+          distorted.changes = @changes
+          distorted.outer_limits = @outer_limits
 
           Jekyll.logger.debug(@tag_name, "Adding dimensions #{distorted.dimensions}")
 

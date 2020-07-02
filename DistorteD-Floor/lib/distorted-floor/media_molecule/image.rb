@@ -59,16 +59,16 @@ module Cooltrainer
         :loading => Set[:eager, :lazy],
       }
 
-      attr_accessor :dest, :dimensions, :types
+      attr_accessor :dest, :outer_limits, :changes
 
-      def initialize(src, dest: nil, types: nil, dimentions: nil, filenames: nil)
+      def initialize(src, dest: nil, outer_limits: nil, changes: nil, filenames: nil)
         @image = Vips::Image.new_from_file(src)
         @src = src
         @dest = dest || File.dirname(src)
         @basename = File.basename(src, '.*')
         @extname = File.extname(src)
-        @dimensions = dimensions || Set[{:tag => :full}]
-        @types = types || Set[MIME::Types.type_for(src)]
+        @outer_limits = outer_limits || Set[{:tag => :full}]
+        @changes = changes || Set[MIME::Types.type_for(src)]
         @filenames = filenames || Set[@basename]
       end
 
@@ -96,8 +96,8 @@ module Cooltrainer
         @image.write_to_file(only_one_dest)
 
         # Generate every variation for every intended format.
-        for t in @types
-          for d in @dimensions
+        for t in @changes
+          for d in @outer_limits
             ver_path = File.join(@dest, "#{@basename}-#{d[:tag]&.to_s}.#{t.preferred_extension}")
             Jekyll.logger.debug('DistorteD Writing:', ver_path)
             begin
