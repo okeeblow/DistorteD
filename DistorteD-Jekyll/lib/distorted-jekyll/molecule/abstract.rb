@@ -21,6 +21,7 @@ module Jekyll
           # Add a generated filename key in the form of e.g. 'somefile-large.png'.
           dimensions = config(
             self.singleton_class.const_get(:CONFIG_ROOT),
+            :outer_limits,
             self.singleton_class.const_get(:MEDIA_TYPE),
             failsafe: Set,
           )
