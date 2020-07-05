@@ -36,9 +36,7 @@ module Jekyll
             end
           }
         end
-      rescue Exception
-        # Explicitly rescuing from Exception instead of StandardError because
-        # I want to catch SyntaxError and friends too.
+      rescue RuntimeError => e
         Jekyll.logger.warn('DistorteD', "Monkey-patching Jekyll::Cleaner#new_files failed: #{e.message}")
         Jekyll.logger.debug('DistorteD', "Monkey-patched Jekyll::Cleaner#new_files backtrace: #{e.backtrace}")
         the_old_new_thing.bind(self).()
