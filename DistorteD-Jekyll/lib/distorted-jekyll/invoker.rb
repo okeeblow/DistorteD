@@ -84,11 +84,11 @@ module Jekyll
         #
         # Types#type_for can return multiple possibilities for a filename.
         # For example, an XML file: [application/xml, text/xml].
-        @mime = MIME::Types.type_for(@name).to_set
+        mime = MIME::Types.type_for(@name).to_set
 
         # We can't proceed without a usable media type.
         # Look at the actual file iff the filename wasn't enough to guess.
-        unless @mime.empty?
+        unless mime.empty?
           Jekyll.logger.debug(@tag_name, "Detected #{@name} media types: #{@mime}")
         else
           # Did we fail to guess any MIME::Types from the given filename?
@@ -128,14 +128,14 @@ module Jekyll
             #
             # irb(main):038:0> "image/svg+xml; charset=us-ascii".split(';').first
             # => "image/svg+xml"
-            @mime = Set[MIME::Types[fm.file(@name, false).split(';'.freeze).first]]
+            mime = Set[MIME::Types[fm.file(@name, false).split(';'.freeze).first]]
           end
 
           # Did we still not get a type from FileMagic?
-          unless @mime
+          unless mime
             if Jekyll::DistorteD::Floor::config(self.class.const_get(:CONFIG_ROOT), :last_resort)
               Jekyll.logger.debug(@tag_name, "Falling back to bare <img> for #{@name}")
-              @mime = Jekyll::DistorteD::Molecule::LastResort::MIME_TYPES
+              mime = Jekyll::DistorteD::Molecule::LastResort::MIME_TYPES
             else
               raise MediaTypeNotFoundError.new(@name)
             end
@@ -199,8 +199,9 @@ module Jekyll
           Jekyll.logger.debug(@tag_name, "Trying to plug #{@name} into #{molecule}")
 
           # We found a potentially-compatible driver iff the union set is non-empty.
-          if not (@mime & molecule.const_get(:MIME_TYPES)).empty?
-            Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime & molecule.const_get(:MIME_TYPES)}")
+          if not (mime & molecule.const_get(:MIME_TYPES)).empty?
+            @mime = mime & molecule.const_get(:MIME_TYPES)
+            Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime}")
 
             # Override Invoker's stubs by prepending the driver's methods to our DD instance's singleton class.
             # https://devalot.com/articles/2008/09/ruby-singleton
