@@ -1,10 +1,7 @@
-require 'distorted-jekyll/floor'
 
 module Jekyll
   module DistorteD
     class BLOCKS < Liquid::Block
-
-      include Jekyll::DistorteD::Floor
 
       def initialize(tag_name, arguments, liquid_options)
         super
