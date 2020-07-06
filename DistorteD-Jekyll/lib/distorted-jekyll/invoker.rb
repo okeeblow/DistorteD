@@ -40,7 +40,6 @@ module Jekyll
       GEM_ROOT = File.dirname(__FILE__).freeze
 
       # Mix in config-loading methods.
-      include Jekyll::DistorteD::Floor
       include Jekyll::DistorteD::Molecule::Abstract
 
       # Enabled media_type drivers. These will be attempted back to front.
@@ -111,8 +110,8 @@ module Jekyll
             # approach because it would make DD's Liquid and Markdown entrypoints
             # no longer exactly equivalent, and that's not okay with me.
             test_path = File.join(
-              config(:source),
-              config(:collections_dir),
+              Jekyll::DistorteD::Floor::config(:source),
+              Jekyll::DistorteD::Floor::config(:collections_dir),
               @name,
             )
             # The second argument makes fm.file return just the simple
@@ -134,7 +133,7 @@ module Jekyll
 
           # Did we still not get a type from FileMagic?
           unless @mime
-            if config(self.class.const_get(:CONFIG_ROOT), :last_resort)
+            if Jekyll::DistorteD::Floor::config(self.class.const_get(:CONFIG_ROOT), :last_resort)
               Jekyll.logger.debug(@tag_name, "Falling back to bare <img> for #{@name}")
               @mime = Jekyll::DistorteD::Molecule::LastResort::MIME_TYPES
             else
@@ -188,7 +187,7 @@ module Jekyll
           # This will be nil once we've tried them all and run out and are on the last loop.
           # TODO: Support optional fall-through when plugging fails.
           if molecule == nil
-            if config(self.class.const_get(:CONFIG_ROOT), :last_resort)
+            if Jekyll::DistorteD::Floor::config(self.class.const_get(:CONFIG_ROOT), :last_resort)
               Jekyll.logger.debug(@tag_name, "Falling back to a bare <img> for #{name}")
               @mime = Jekyll::DistorteD::Molecule::LastResort::MIME_TYPES
               molecule = Jekyll::DistorteD::Molecule::LastResort
@@ -273,11 +272,11 @@ module Jekyll
         # (or other extension) like the default Jekyll config.
         # Get the dirname if the url is not a dir itself.
         @dd_dest = @url = page_data['url'.freeze]
-        unless @dd_dest[-1] == PATH_SEPARATOR
+        unless @dd_dest[-1] == Jekyll::DistorteD::Floor::PATH_SEPARATOR
           @dd_dest = File.dirname(@dd_dest)
           # Append the trailing slash so we don't have to do it
           # in the Liquid templates.
-          @dd_dest << PATH_SEPARATOR
+          @dd_dest << Jekyll::DistorteD::Floor::PATH_SEPARATOR
         end
 
         # Create an instance of the media-appropriate Jekyll::StaticFile subclass.

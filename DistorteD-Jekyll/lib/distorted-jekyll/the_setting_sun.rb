@@ -6,7 +6,7 @@ require 'set'
 
 module Jekyll
   module DistorteD
-    module Floor
+    class Floor
 
       # Top-level config key (once stringified) for Jekyll and Default YAML.
       CONFIG_ROOT = :distorted
@@ -35,59 +35,66 @@ module Jekyll
       # - DistorteD's Gem-internal default config YAML.
       #
       # Optionally provide a class to be used as a fallback for missing keys.
-      def config(*keys, failsafe: Set, **kw)
+      def self.config(*keys, **kw)
         # Symbolize for our internal representation of the config path.
         # The Jekyll config and default config are both YAML, so we want string
         # keys for them. Go ahead and prepend the top-level search key here too.
-        memo_keys = keys.map(&:to_sym).to_set
-        search_keys = keys.map(&:to_s).map(&:freeze)
+        memo_keys = keys.compact.map(&:to_sym).to_set
+        search_keys = keys.compact.map(&:to_s).map(&:freeze)
         # Pretty print the config path for logging.
         log_key = search_keys.join(PP_SEPARATOR.to_s).freeze
         # Initialize memoization class variable as a Hash that will return nil
         # for any key access that doesn't already contain something.
-        @@memories ||= Hash.new { |h,k| h[k] = nil }
+        @@memories ||= Hash.new { |h,k| h[k] = h.class.new(&h.default_proc) }
         # Try to load a memoized config if we can, to skip any filesystem
         # access and data transformation steps.
-        config = @@memories.dig(*memo_keys)
+        config = @@memories&.dig(*memo_keys)
         unless config.nil?
-          # Boom.
-          config
+          if config.is_a?(TrueClass) || config.is_a?(FalseClass)
+            return config
+          elsif config.is_a?(Enumerable)
+            unless config.empty?
+              # Can't check this at the top level because True/FalseClass
+              # don't respond to this message.
+              return config
+            end
+          end
+        end
+
+        # The key isn't memoized. Look for it first in Jekyll's Site config.
+        # Is it even possible to have more than one Site? Support being passed
+        # a `site` object just in case, but taking the first one should be fine.
+        site = kw[:site] || Jekyll.sites.first
+        # Get the config, or nil if the queried config path doesn't exist.
+        loaded_config = site.config.dig(*search_keys)
+        Jekyll.logger.debug(['_config', log_key].join(PP_SEPARATOR.to_s).concat(':'.freeze), loaded_config || 'No data'.freeze)
+        if loaded_config.nil?
+          # The wanted config key didn't exist in the Site config, so let's
+          # try our defaults!
+          # This file will always be small enough for a one-shot read.
+          default_config = YAML.load(File.read(DEFAULT_CONFIG_PATH))
+          loaded_config = default_config.dig(*search_keys)
+        Jekyll.logger.debug(['Default', log_key].join(PP_SEPARATOR.to_s).concat(':'.freeze), loaded_config || 'No data'.freeze)
+        end
+        # Was the desired config key found in the Gem defaults?
+        if loaded_config.nil?
+          # Nope.
+          return nil
         else
-          # The key isn't memoized. Look for it first in Jekyll's Site config.
-          # Is it even possible to have more than one Site? Support being passed
-          # a `site` object just in case, but taking the first one should be fine.
-          site = kw[:site] || Jekyll.sites.first
-          # Get the config, or nil if the queried config path doesn't exist.
-          loaded_config = site.config.dig(*search_keys)
-            Jekyll.logger.debug(log_key, "Trying Jekyll _config key: #{loaded_config}")
-          if loaded_config.nil?
-            # The wanted config key didn't exist in the Site config, so let's
-            # try our defaults!
-            # This file will always be small enough for a one-shot read.
-            default_config = YAML.load(File.read(DEFAULT_CONFIG_PATH))
-            loaded_config = default_config.dig(*search_keys)
-            Jekyll.logger.debug(log_key, "Trying default config: #{loaded_config}")
-          end
-          # Was the desired config key found in the Gem defaults?
-          if loaded_config.nil?
-            # Nope.
-            Jekyll.logger.debug(log_key, 'Using failsafe config')
-            loaded_config = failsafe.new
-          end
           # Symbolize any output keys and values, and convert Arrays and Ruby::YAML
           # Sets-as-Hashes to Ruby stdlib Sets.
           # Returning a Set instead of an Array should be fine since none of our
           # configs can (read: should) contain duplicate values for any reason.
           loaded_config = symbolic(set_me_free(loaded_config))
-          # Memoize it!
-          @@memories.bury(*memo_keys, loaded_config)
-          Jekyll.logger.debug(log_key, "Memoizing config: #{@@memories.dig(*memo_keys)}")
-          # And return a config to the caller. Don't return the `new`ly fetched
-          # data directly to ensure consistency between this first fetch and
-          # subsequent memoized fetches, and to let callers take advantage of
-          # the memo Hash's `default_proc` setup.
-          @@memories.dig(*memo_keys)
         end
+        # Memoize it!
+        @@memories.bury(*memo_keys, loaded_config)
+        Jekyll.logger.debug(log_key, "Memoizing config: #{@@memories.dig(*memo_keys)}")
+        # And return a config to the caller. Don't return the `new`ly fetched
+        # data directly to ensure consistency between this first fetch and
+        # subsequent memoized fetches, and to let callers take advantage of
+        # the memo Hash's `default_proc` setup.
+        return @@memories.dig(*memo_keys)
       end
 
       # AFAICT Ruby::YAML will not give me a Ruby Set[] for a YAML Set,
@@ -96,9 +103,9 @@ module Jekyll
       # It is possible with some sugar in the YAML files, but I don't
       # want to ask anyone to do that :)
       # https://rhnh.net/2011/01/31/yaml-tutorial/
-      def set_me_free(dunno)
+      def self.set_me_free(dunno)
         if dunno.class == Array
-          return set_me_free(dunno&.to_set)
+          return dunno&.to_set.map{|d| set_me_free(d)}
         elsif dunno.class == Hash
           if dunno&.values.all?{|v| v.nil?}
             return dunno&.keys.to_set
@@ -106,33 +113,30 @@ module Jekyll
             return dunno&.transform_values!{|v| set_me_free(v)}
           end
         end
-        dunno
+        return dunno
       end
 
       # Transform arbitrary configuration data structure keys from
       # strings to symbols before memoization.
       # https://stackoverflow.com/a/8189435
-      def symbolic(dunno)
+      def self.symbolic(dunno)
         # Check message-handling responses to gauge emptiness since classes that
         # don't respond to `:empty?` might not respond to `:method_exists?` either.
         if dunno.nil?
-          return c
-        elsif dunno.respond_to?(:transform_keys)
-          # Hashes
-          return dunno.transform_keys!(&:to_sym)
+          return dunno
+        elsif dunno.class == Hash
+          return dunno.transform_keys!(&:to_sym).transform_values!{|v| symbolic(v)}
+        elsif dunno.class == Array
+          return dunno.map{|r| symbolic(r)}
+        elsif dunno.respond_to?(:to_sym)
+          # Plain types
+          return dunno.to_sym
         elsif dunno.respond_to?(:to_str)
           # Freeze string config values.
           # Specifically :to_str, not :to_s. Usually implemented by actual Strings.
           return dunno.to_str.freeze
-        elsif dunno.respond_to?(:to_sym)
-          # Plain types
-          return dunno.to_sym
-        elsif dunno.is_a?(Enumerable)
-          # Mostly Arrays. This is after Hashes and other more-specific
-          # Enumerables on purpose. Don't rearrange.
-          return dunno.map{|r| symbolic(r)}
         end
-        dunno
+        return dunno
       end
 
     end
