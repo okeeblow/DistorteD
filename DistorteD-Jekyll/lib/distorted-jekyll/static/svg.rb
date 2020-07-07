@@ -35,6 +35,7 @@ module Jekyll
             end
           end
 
+          super  # Generate raster Image variations
           true
         end
         

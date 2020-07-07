@@ -52,6 +52,10 @@ distorted:
         ? image/webp
       gif-sequence:
         ? image/gif-sequence
+      svg:
+        ? image/svg+xml
+        ? image/png
+        ? image/webp
 
   outer_limits:
     image:
