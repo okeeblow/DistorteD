@@ -3,8 +3,8 @@
 `DistorteD` is a multimedia framework for Jekyll websites.
 
 Right now this repo contains two Gems:
-- `DistorteD-Jekyll` contains anything and everything that depends on Jekyll.
-- `DistorteD-Ruby` contains just the abstract media file format handling code. It's separate so I can use those functions in other contexts and/or easily replace the Ruby core if necessary.
+- [`DistorteD-Jekyll`](https://rubygems.org/gems/distorted-jekyll) contains anything and everything that depends on Jekyll.
+- [`DistorteD-Ruby`](https://rubygems.org/gems/distorted) contains just the abstract media file format handling code. It's separate so I can use those functions in other contexts and/or easily replace the Ruby core if necessary.
 
 ## Motivation
 
