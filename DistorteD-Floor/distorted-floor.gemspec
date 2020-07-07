@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = 'distorted'
-  spec.version       = '0.4.2'
+  spec.version       = '0.5.0'
   spec.authors       = ['Allison Reid']
   spec.email         = ['root@cooltrainer.org']
 
