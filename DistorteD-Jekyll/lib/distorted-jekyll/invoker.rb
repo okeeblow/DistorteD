@@ -97,7 +97,7 @@ module Jekyll
         # We can't proceed without a usable media type.
         # Look at the actual file iff the filename wasn't enough to guess.
         unless mime.empty?
-          Jekyll.logger.debug(@tag_name, "Detected #{@name} media types: #{@mime}")
+          Jekyll.logger.debug(@tag_name, "Detected #{@name} media types: #{mime}")
         else
           # Did we fail to guess any MIME::Types from the given filename?
           # We're going to have to look at the actual file
@@ -209,7 +209,7 @@ module Jekyll
           # We found a potentially-compatible driver iff the union set is non-empty.
           if not (mime & molecule.const_get(:MIME_TYPES)).empty?
             @mime = mime & molecule.const_get(:MIME_TYPES)
-            Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime}")
+            Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{mime}")
 
             # Override Invoker's stubs by prepending the driver's methods to our DD instance's singleton class.
             # https://devalot.com/articles/2008/09/ruby-singleton
