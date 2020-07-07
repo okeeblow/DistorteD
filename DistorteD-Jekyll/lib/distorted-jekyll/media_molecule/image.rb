@@ -69,11 +69,11 @@ module Jekyll
             parse_template.render({
               'name' => @name,
               'path' => @dd_dest,
-              'alt' => attr_or_default(:alt),
-              'title' => attr_or_default(:title),
+              'alt' => attr_value(:alt),
+              'title' => attr_value(:title),
               'href' => @href,
               'caption' => @caption,
-              'loading' => attr_or_default(:loading),
+              'loading' => attr_value(:loading),
               'sources' => filez,
               'fallback_img' => fallback_img,
             })
