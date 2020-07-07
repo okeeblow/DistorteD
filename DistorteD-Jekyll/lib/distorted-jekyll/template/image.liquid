@@ -15,7 +15,10 @@
     <picture>
       {%- if sources %}
         {%- for source in sources %}
-      <source srcset="{{ path }}{{ source.name }}" type="{{ source.type }}" media="{{ source.media }}"/>
+          {%- if source.media != nil and source.media != "" %}
+            {%- capture attr_media %} media="{{ source.media }}"{%- endcapture -%}
+          {%- endif %}
+      <source srcset="{{ path }}{{ source.name }}" type="{{ source.type }}"{{ attr_media }}/>
         {%- endfor %}
       {%- endif %}
       <img src="{{ path }}{{ fallback_img }}"{{ attr_alt }}{{ attr_title }}{{ attr_loading }}/>
