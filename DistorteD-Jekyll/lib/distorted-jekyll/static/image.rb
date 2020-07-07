@@ -66,9 +66,11 @@ module Jekyll
           # dimensions, attributes, etc of each output variation we want.
           # Full-size outputs will have the special tag `:full`.
           for variation in files
-            filename = File.join(dd_dest(dest), variation[:name])
-            Jekyll.logger.debug('DistorteD Writing:', filename)
-            distorted.save(filename, width: variation[:width], crop: variation[:crop])
+            if DRIVER::MIME_TYPES.include?(variation[:type])
+              filename = File.join(dd_dest(dest), variation[:name])
+              Jekyll.logger.debug('DistorteD Writing:', filename)
+              distorted.save(filename, width: variation[:width], crop: variation[:crop])
+            end
           end
 
           true
