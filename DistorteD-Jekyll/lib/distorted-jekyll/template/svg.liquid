@@ -12,7 +12,14 @@
     {%- capture attr_loading %} loading="{{ loading }}"{%- endcapture -%}
   {%- endif %}
   <a href="{{ href }}"{{ attr_title }} target="_blank">
-    <img src="{{ path }}{{ name }}"{{ attr_alt }}{{ attr_title }}{{ attr_loading }}/>
+    <picture>
+      {%- if sources %}
+        {%- for source in sources %}
+      <source srcset="{{ path }}{{ source.name }}" type="{{ source.type }}"{{ attr_media }}/>
+        {%- endfor %}
+      {%- endif %}
+      <img src="{{ path }}{{ fallback_img }}"{{ attr_alt }}{{ attr_title }}{{ attr_loading }}/>
+    </picture>
   </a>
     {%- if caption %}
   <p class="distorted-caption">{{ caption }}</p>
