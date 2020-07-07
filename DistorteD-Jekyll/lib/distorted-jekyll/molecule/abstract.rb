@@ -176,15 +176,16 @@ module Jekyll
           end
         end
 
-        # Returns a Hash of Media-types to be generated and the Set of variations
-        # to be generated for that Type.
-        # Mix any attributes provided to the Liquid tag in to every Variation
-        # in every Type.
+        # Returns a Hash keyed by MIME::Type objects with value as a Set of Hashes
+        # describing the media's output variations to be generated for each Type.
         def variations
           changes.map{ |t|
             [t, outer_limits.map{ |d|
               d.merge({
-                :name => "#{File.basename(@name, '.*')}-#{d[:tag]}.#{t.preferred_extension}",
+                # e.g. 'SomeImage-medium.jpg` but just `SomeImage.jpg` and not `SomeImage-full.jpg`
+                # for the full-resolution outputs.
+                # The default `.jpeg` preferred_extension is monkey-patched to `.jpg` because lol
+                :name => "#{File.basename(@name, '.*')}#{'-'.concat(d[:tag].to_s) if d[:tag] != :full}.#{t.preferred_extension}",
               })
             }]
           }.to_h
