@@ -88,6 +88,14 @@ module Jekyll
         # given type of file, or for an arbitrary key hierarchy.
         def outer_limits(*keys)
           out = Set[
+            # TODO: Make this configurable.
+            # For now everything should output a full-size.
+            {
+              :tag => :full,
+              :width => :full,
+              :height => :full,
+              :media => nil,
+            }.merge(attrs).merge({:crop => :none})  # Never let `full` get cropped
           ]
           # Construct an Array of Arrays of config keys to search
           # based on the MIME::Type union Set between the source media
