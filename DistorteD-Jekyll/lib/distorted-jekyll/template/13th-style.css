@@ -1,0 +1,21 @@
+div.distorted {text-align: center;}
+div.distorted-caption {
+    color: #8888888;
+    margin-top: 0.5em;
+}
+div.distorted-block {
+    width: 100%;
+}
+div.distorted-block > div.distorted {
+    display: block;
+    float: left;
+    margin-bottom: 8px;
+    margin-right: 8px;
+    width: calc(50% - 4px);
+}
+div.distorted-block > div.distorted:nth-of-type(2n) {margin-right: 0;}
+@media screen and (min-width: 50em) {
+  div.distorted-block > div.distorted {width: calc(25% - 6px);}
+  div.distorted-block > div.distorted:nth-of-type(2n) {margin-right: 8px;}
+  div.distorted-block > div.distorted:nth-of-type(4n) {margin-right: 0;}
+}
