@@ -55,6 +55,14 @@ module Jekyll
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
       GLOBAL_ATTRS = Set[:title]
 
+      # Any any attr value will get a to_sym if shorter than this
+      # totally arbitrary length, or if the attr key is in the plugged
+      # Molecule's set of attrs that take only a defined set of values.
+      # My chosen boundary length fits all of the outer-limit tag names I use,
+      # like 'medium'. It fits the longest value of Vips::Interesting too,
+      # though `crop` will be symbolized based on the other condition.
+      ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY = 10
+
       # 𝘏𝘖𝘞 𝘈𝘙𝘌 𝘠𝘖𝘜 𝘎𝘌𝘕𝘛𝘓𝘌𝘔𝘌𝘕 ！！
       def initialize(tag_name, arguments, liquid_options)
         super
@@ -216,7 +224,21 @@ module Jekyll
             attrs = (self.class::GLOBAL_ATTRS + molecule.const_get(:ATTRS)).to_h
             attrs.each_pair do |attr, val|
               # An attr supplied to the Liquid tag should override any from the config
-              liquid_val = parsed_arguments&.dig(attr)&.to_sym
+              liquid_val = parsed_arguments&.dig(attr)
+
+              if liquid_val.is_a?(String)
+                # Symbolize String values of any attr that has a Molecule-defined list
+                # of acceptable values, or — completely arbitrarily — any String value
+                # shorter than an arbitrarily-chosen constant.
+                # Otherwise freeze them.
+                if liquid_val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY or 
+                    molecule.const_get(:ATTRS_VALUES).key?(attr)
+                  liquid_val = liquid_val&.to_sym
+                elsif liquid_val.length > ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY
+                  # Will be default in Ruby 3.
+                  liquid_val = liquid_val&.freeze
+                end
+              end
 
               # Does this attribute have a Molecule-defined list of acceptable values?
               if molecule.const_get(:ATTRS_VALUES).key?(attr)
