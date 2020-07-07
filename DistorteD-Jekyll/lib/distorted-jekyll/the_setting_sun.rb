@@ -87,14 +87,18 @@ module Jekyll
           # configs can (read: should) contain duplicate values for any reason.
           loaded_config = symbolic(set_me_free(loaded_config))
         end
-        # Memoize it!
-        @@memories.bury(*memo_keys, loaded_config)
-        Jekyll.logger.debug(log_key, "Memoizing config: #{@@memories.dig(*memo_keys)}")
-        # And return a config to the caller. Don't return the `new`ly fetched
-        # data directly to ensure consistency between this first fetch and
-        # subsequent memoized fetches, and to let callers take advantage of
-        # the memo Hash's `default_proc` setup.
-        return @@memories.dig(*memo_keys)
+        # Memoize any of our own config, but just return anything outside our tree.
+        if keys.first == CONFIG_ROOT
+          @@memories.bury(*memo_keys, loaded_config)
+          Jekyll.logger.debug(log_key, "Memoizing config: #{@@memories.dig(*memo_keys)}")
+          # And return a config to the caller. Don't return the `new`ly fetched
+          # data directly to ensure consistency between this first fetch and
+          # subsequent memoized fetches, and to let callers take advantage of
+          # the memo Hash's `default_proc` setup.
+          return @@memories.dig(*memo_keys)
+        else
+          return loaded_config
+        end
       end
 
       # AFAICT Ruby::YAML will not give me a Ruby Set[] for a YAML Set,
