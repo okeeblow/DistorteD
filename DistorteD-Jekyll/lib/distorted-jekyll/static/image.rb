@@ -9,6 +9,8 @@ module Jekyll
     module Static
       class Image < Jekyll::DistorteD::Static::State
 
+        DRIVER = Cooltrainer::DistorteD::Image
+
         # HACK HACK HACK
         # Jekyll does not pass this method a site.dest like it does write() and
         # others, but I want to be able to short-circuit here if all the
@@ -54,7 +56,7 @@ module Jekyll
           # Create any directories to the depth of the intended destination.
           FileUtils.mkdir_p(dd_dest(dest))
 
-          distorted = Cooltrainer::DistorteD::Image.new(path)
+          distorted = DRIVER.new(path)
 
           Jekyll.logger.debug(@tag_name, "Rotating #{@name} if tagged.")
           distorted.rotate(angle: :auto)
