@@ -1,3 +1,4 @@
+require 'distorted-jekyll/13th-style'
 require 'distorted-jekyll/blocks'
 require 'distorted-jekyll/injection_of_love'
 require 'distorted-jekyll/invoker'
@@ -53,6 +54,9 @@ if [
 
   # Register a block version for arranging multiple pieces of media.
   Liquid::Template.register_tag('distort', Jekyll::DistorteD::BLOCKS)
+
+  # Register a tag for basic DistorteD CSS.
+  Liquid::Template.register_tag('13thStyle', Jekyll::DistorteD::ThirteenthStyle)
 
   # Transform Markdown image syntax ![alt](url.jpg "title")
   # to instances of our liquid tag {% distorted %}
