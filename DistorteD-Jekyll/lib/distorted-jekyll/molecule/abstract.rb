@@ -139,24 +139,39 @@ module Jekyll
         # Returns the value for an attribute as given to the Liquid tag,
         # the default value if the given value is not in the accepted Set,
         # or nil for unset attrs with no default defined.
-        def attr_or_default(attribute)
-          # The instance var is set on the StaticFile in Invoker,
-          # based on attrs provided to DD's Liquid tag.
-          # It will be nil if there is no e.g. {:loading => 'lazy'} IAL on our tag.
+        def attr_value(attribute)
+          # Set of all supported attributes both globally and Molecule-specific.
           accepted_attrs = self.class::GLOBAL_ATTRS + self.singleton_class.const_get(:ATTRS)
+
+          # Set of acceptable values for the given attribute, e.g. Image::loading => Set[:eager, :lazy]
+          # Will be empty if this attribute takes freeform input (like `title` or `alt`)
           accepted_vals = self.singleton_class.const_get(:ATTRS_VALUES)&.dig(attribute)
+
+          # The value, if any, provided to our Liquid tag for this attr.
           liquid_val = attrs&.dig(attribute)
+
+          # Is the requested attribute name defined as an accepted attribute
+          # either globally or within the plugged MediaMolecule?
           if accepted_attrs.include?(attribute.to_sym)
+
+            # Does this attr define a set of acceptable values?
             if accepted_vals
+              # Yes, it does. Is the Liquid-given value in that Set of acceptable values?
               if accepted_vals.include?(liquid_val)
+                # Yes, it is! Use it.
                 liquid_val.to_s
               else
+                # No, it isn't. Warn and return the default.
+                Jekyll.logger.warn('DistorteD', "#{liquid_val.to_s} is not an acceptable value for #{attribute.to_s}: #{accepted_vals}")
                 self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute).to_s
               end
             else
+              # No, this attribute does not define a Set of acceptable values.
+              # The freeform Liquid-given value is fine.
               liquid_val.to_s
             end
           else
+            Jekyll.logger.error('DistorteD', "#{attribute.to_s} is not a supported attribute")
             nil
           end
         end
