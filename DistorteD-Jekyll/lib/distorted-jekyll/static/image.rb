@@ -19,8 +19,7 @@ module Jekyll
           # Assume modified for the sake of freshness :)
           modified = true
 
-          # TODO: Support more than one Site
-          site_dest = File.join(@base, '_site'.freeze)
+          site_dest = Jekyll::DistorteD::Floor::config(:destination).to_s
           if Dir.exist?(site_dest)
 
             dd_dest = dd_dest(site_dest)
