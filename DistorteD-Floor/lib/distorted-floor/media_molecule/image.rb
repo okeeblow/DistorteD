@@ -61,15 +61,9 @@ module Cooltrainer
 
       attr_accessor :dest, :outer_limits, :changes
 
-      def initialize(src, dest: nil, outer_limits: nil, changes: nil, filenames: nil)
+      def initialize(src)
         @image = Vips::Image.new_from_file(src)
         @src = src
-        @dest = dest || File.dirname(src)
-        @basename = File.basename(src, '.*')
-        @extname = File.extname(src)
-        @outer_limits = outer_limits || Set[{:tag => :full}]
-        @changes = changes || Set[MIME::Types.type_for(src)]
-        @filenames = filenames || Set[@basename]
       end
 
       def rotate(angle: nil)
@@ -83,46 +77,26 @@ module Cooltrainer
         @image.get_fields.grep(/exif-ifd/).each {|field| @image.remove field}
       end
 
-      def generate
-        # Output a cleaned/rotated copy of the original file.
-        # I might want to make this conditional since I won't always want the
-        # input format to also be an output format.
-        # Doing that will require some more smarts in the template for
-        # default href.
-        # Don't forget to change the Static::Image.modified? method too!
-        # extname has a leading dot, e.g. File.extname("fart.jpg") => ".jpg"
-        only_one_dest = File.join(@dest, "#{@basename}#{@extname}")
-        Jekyll.logger.debug('DistorteD Writing:', only_one_dest)
-        @image.write_to_file(only_one_dest)
-
-        # Generate every variation for every intended format.
-        for t in @changes
-          for d in @outer_limits
-            ver_path = File.join(@dest, "#{@basename}-#{d[:tag]&.to_s}.#{t.preferred_extension}")
-            Jekyll.logger.debug('DistorteD Writing:', ver_path)
-            begin
-              if d[:tag] == :full
-                @image.write_to_file(ver_path)
-              elsif d[:width].respond_to?(:to_i)
-                ver = @image.thumbnail_image(
-                  d[:width].to_i,
-                  **{
-                    :crop => (d.dig(:crop) || ATTRS_DEFAULT[:crop]),
-                  },
-                )
-                ver.write_to_file(ver_path)
-              end
-            rescue Vips::Error => v
-              if v.message.include?('No known saver')
-                # TODO: Handle missing output formats. Replacements? Skip it? Die?
-                nil
-              else
-                raise
-              end
-            end
+      def save(dest, width: nil, crop: nil)
+        begin
+          if width.nil? or width == :full
+            return @image.write_to_file(dest)
+          elsif width.respond_to?(:to_i)
+            ver = @image.thumbnail_image(
+              width.to_i,
+              **{:crop => crop || ATTRS_DEFAULT[:crop]},
+            )
+            return ver.write_to_file(dest)
+          end
+        rescue Vips::Error => v
+          if v.message.include?('No known saver')
+            # TODO: Handle missing output formats. Replacements? Skip it? Die?
+            return nil
+          else
+            raise
           end
         end
-      end
+      end  # save
 
     end  # Image
   end  # DistorteD
