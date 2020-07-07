@@ -10,6 +10,7 @@ module Jekyll
 
         # Reference these instead of reassigning them. Consistency is mandatory.
         MEDIA_TYPE = Cooltrainer::DistorteD::SVG::MEDIA_TYPE
+        SUB_TYPE = Cooltrainer::DistorteD::SVG::SUB_TYPE
         MIME_TYPES = Cooltrainer::DistorteD::SVG::MIME_TYPES
 
         ATTRS = Cooltrainer::DistorteD::SVG::ATTRS
