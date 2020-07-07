@@ -162,7 +162,9 @@ module Jekyll
                 liquid_val.to_s
               else
                 # No, it isn't. Warn and return the default.
-                Jekyll.logger.warn('DistorteD', "#{liquid_val.to_s} is not an acceptable value for #{attribute.to_s}: #{accepted_vals}")
+                unless liquid_val.nil?
+                  Jekyll.logger.warn('DistorteD', "#{liquid_val.to_s} is not an acceptable value for #{attribute.to_s}: #{accepted_vals}")
+                end
                 self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute).to_s
               end
             else
