@@ -13,55 +13,118 @@ module Jekyll
     module Molecule
       module Abstract
 
-        # Top-level media-type config will contain onformation about what variations in
-        # output resolution, "pretty" name for those, CSS media query for
-        # that variation, etc.
-        def outer_limits
-          # Override the variation's attributes with any given to the Liquid tag.
-          # Add a generated filename key in the form of e.g. 'somefile-large.png'.
-          dimensions = config(
-            self.singleton_class.const_get(:CONFIG_ROOT),
-            :outer_limits,
-            self.singleton_class.const_get(:MEDIA_TYPE),
-            failsafe: Set,
-          )
-
-          if dimensions.is_a?(Enumerable)
-            out = dimensions.map{ |d| d.merge(attrs) }
-          else
-            # This handles boolean values of media_type keys, e.g. `video: false`.
-            out = Set[]
+        # Loads configuration data telling us how to open certain
+        # types of files.
+        def welcome(*keys)
+          # Construct an Array of Arrays of config keys to search
+          # based on the MIME::Type union Set between the source media
+          # and the MediaMolecule.
+          # Prepend the user-given search keys iff they aren't blank.
+          try_keys = @mime.map{ |t|
+            # Use only the first part of complex sub_types like 'svg+xml'
+            [t.media_type, t.sub_type.split('+').first].compact
+          }
+          unless keys.empty?
+            try_keys.unshift(keys)
           end
-          out
+
+          # Try each set of keys until we find a match
+          for try in try_keys
+            tried = Jekyll::DistorteD::Floor::config(
+              Jekyll::DistorteD::Floor::CONFIG_ROOT,
+              :welcome,
+              *try,
+            )
+            # Is the YAML config of the appropriate structure?
+            if tried.is_a?(Hash)
+              # Non-Hashes may not respond to `empty?`
+              unless tried.empty?
+                return tried
+              end
+            end
+          end
         end
 
-        # `changes` media-type[sub_type] config will contain information about
-        # what variations output format are desired for what input format,
-        # e.g. {:image => {:jpeg => Set['image/jpeg', 'image/webp']}}
-        # It is not automatically implied that the source format is also
-        # an output format!
+        # Load configuration telling us what media-types to generate
+        # for any given media-type input.
         def changes
-          media_config = config(
-            self.singleton_class.const_get(:CONFIG_ROOT),
-            :changes,
-            self.singleton_class.const_get(:CONFIG_SUBKEY),
-            failsafe: Set,
-          )
-          if media_config.empty?
-            @mime.keep_if{ |m|
-              m.media_type == self.singleton_class.const_get(:MEDIA_TYPE)
-            }
+          out = Set[]
+
+          # `changes` media-type[sub_type] config will contain information about
+          # what variations output format are desired for what input format,
+          # e.g. {:image => {:jpeg => Set['image/jpeg', 'image/webp']}}
+          # It is not automatically implied that the source format is also
+          # an output format!
+          for m in @mime
+            tried = Jekyll::DistorteD::Floor::config(
+            Jekyll::DistorteD::Floor::CONFIG_ROOT,
+              :changes,
+              m.media_type,
+              m.sub_type.split('+').first,
+            )
+            unless tried.nil?
+              tried.each{ |t|
+                # MIME::Type.new() won't give us a usable Type object:
+                #
+                # irb> MIME::Types['image/svg+xml'].first.preferred_extension
+                # => "svg"
+                # irb> MIME::Type.new('image/svg+xml').preferred_extension
+                # => nil
+                out.merge(MIME::Types[t])
+              }
+            end
+          end
+
+          # If the config didn't give us any MIME::Type changes
+          # then we will just output the same type we loaded.
+          if out.empty?
+            return @mime
           else
-            @mime.map { |m|
-              media_config.dig(m.sub_type.to_sym)&.map { |d| MIME::Types[d] }
-            }.flatten.to_set
+            return out
           end
         end
 
-        # Returns a Hash of any attribute provided to DD's Liquid tag.
+        # Loads configuration telling us what variations to generate for any
+        # given type of file, or for an arbitrary key hierarchy.
+        def outer_limits(*keys)
+          out = Set[
+          ]
+          # Construct an Array of Arrays of config keys to search
+          # based on the MIME::Type union Set between the source media
+          # and the MediaMolecule.
+          # Prepend the user-given search keys iff they aren't blank.
+          try_keys = @mime.map{ |t|
+            # Use only the first part of complex sub_types like 'svg+xml'
+            [t.media_type, t.sub_type.split('+').first].compact
+          }
+          unless keys.empty?
+            try_keys.unshift(keys)
+          end
+
+          # See if any config data exists for each given key hierarchy,
+          # but under the root DistorteD config key.
+          for try in try_keys
+            tried = Jekyll::DistorteD::Floor::config(
+              Jekyll::DistorteD::Floor::CONFIG_ROOT,
+              :outer_limits,
+              *try,
+            )
+
+            # Is the YAML config of the appropriate structure?
+            # Merge a shallow copy of it with the Liquid-given attrs.
+            # If we don't take a copy the attrs will be memoized into the config.
+            if tried.is_a?(Enumerable) and tried.all?{|t| t.is_a?(Hash)} and not tried.empty?
+              out.merge(tried.dup.map{ |d| d.merge(attrs) })
+            end
+          end
+
+          return out
+        end
+
+        # Returns a Hash of any attribute provided to DD's Liquid tag and its value.
         def attrs
-          # We only need to care about attrs that were set in the tag,
-          # a.k.a. those that are non-nil in value.
+          # Value of every Molecule-defined attr will be nil if that attr
+          # is not provided to our Liquid tag.
           @attrs.keep_if{|attr,val| val != nil}
         end
 
@@ -104,16 +167,27 @@ module Jekyll
           }.to_h
         end
 
-        # Returns a Set of every filename that will be generated.
-        # Used for things like `StaticFile.modified?`
+        # Returns a flat Set of Hashes that each describe one variant of
+        # media file output that should exist for a given input file.
         def files
           filez = Set[]
           variations.each_pair{ |t,v|
+            # Merge the type in to each variation Hash since we will no longer
+            # have it as the key to this Set in its container Hash.
             v.each{ |d| filez.add(d.merge({:type => t})) }
           }
           filez
         end
 
+        # Returns a Set of just the String filenames we want for this media.
+        # This will be used by `modified?` among others.
+        def filenames
+          files.map{|f| f[:name]}.to_set
+        end
+
+        # Generic Liquid template loader that will be used in every MediaMolecule.
+        # Callers will call `render(**{:template => vars})` on the Object returned
+        # by this method.
         def parse_template(site: nil)
           site = site || Jekyll.sites.first
           begin
@@ -126,7 +200,10 @@ module Jekyll
             )
 
             # Jekyll's Liquid renderer caches in 4.0+.
-            if config(self.singleton_class.const_get(:CONFIG_ROOT), :cache_templates)
+            if Jekyll::DistorteD::Floor::config(
+                Jekyll::DistorteD::Floor::CONFIG_ROOT,
+                :cache_templates,
+            )
               # file(path) is the caching function, with path as the cache key.
               # The `template` here will be the full path, so no versions of this
               # gem should ever conflict. For example, right now during dev it's:
@@ -146,6 +223,6 @@ module Jekyll
 
 
       end  # Abstract
-    end  # 
+    end  # Molecule
   end  # DistorteD
 end  # Jekyll
