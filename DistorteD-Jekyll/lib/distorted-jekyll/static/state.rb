@@ -1,9 +1,14 @@
 require 'set'
 
+require 'distorted-jekyll/molecule/abstract'
+
+
 module Jekyll
   module DistorteD
     module Static
       class State < Jekyll::StaticFile
+
+      include Jekyll::DistorteD::Molecule::Abstract
 
         def initialize(
           site,
@@ -11,11 +16,9 @@ module Jekyll
           dir,
           name,
           mime,
+          attrs,
           dd_dest,
           url,
-          outer_limits,
-          changes,
-          files,
           collection: nil
         )
           # e.g. 'DistorteD::Static::Image' or 'DistorteD::Static::Video'
@@ -30,8 +33,12 @@ module Jekyll
           # String filename of original file
           @name = name
 
-          # Set of MIME::Types of the original media file.
+          # Union Set of MIME::Types between the original media file
+          # and the plugged MediaMolecule.
           @mime = mime
+
+          # Attributes provided to our Liquid tag
+          @attrs = attrs
 
           # String path to media generation output dir
           # under Site.dest (which is currently unknown)
@@ -39,17 +46,6 @@ module Jekyll
 
           # String destination URL for the post/page on which the media appears.
           @url = url
-
-          # Config struct data down
-          @outer_limits = outer_limits
-          @changes = changes
-
-          # Pre-generated Set of Hashes describing wanted files,
-          # and a Set of just the String filenames to be generated.
-          # I would prefer to generate this here in StaticFile land,
-          # but Liquid needs them too for the templates.
-          @files = files
-          @filenames = files.map{|f| f[:name]}.to_set
 
           # Hello yes
           Jekyll.logger.debug(@tag_name, "#{base}/#{dir}/#{name} -> #{url}})")
@@ -99,7 +95,7 @@ module Jekyll
         def destinations(dest)
           # TODO: Make outputting the original file optional. Will need to change
           # templates, `modified?`s, and `generate`s to do that.
-          @filenames.map{|f| File.join(dd_dest(dest), f)} << destination(dest)
+          filenames.map{|f| File.join(dd_dest(dest), f)} << destination(dest)
         end
 
       end  # state
