@@ -21,14 +21,23 @@ module Jekyll
         def render(context)
           super
           begin
+            # Liquid doesn't seem able to reference symbolic keys,
+            # so convert everything to string for template.
+            # Not stripping :full tags like Image because all of our
+            # SVG variations will be full-res for now.
+            filez = files.map{ |f|
+              f.transform_values(&:to_s).transform_keys(&:to_s)
+            }
             parse_template.render({
               'name' => @name,
-              'basename' => File.basename(@name, '.*'),
-              'path' => @url,
-              'alt' => @alt,
-              'title' => @title,
+              'path' => @dd_dest,
+              'alt' => attr_value(:alt),
+              'title' => attr_value(:title),
               'href' => @href,
               'caption' => @caption,
+              'loading' => attr_value(:loading),
+              'sources' => filez,
+              'fallback_img' => @name,
             })
           rescue Liquid::SyntaxError => l
             # TODO: Only in dev
