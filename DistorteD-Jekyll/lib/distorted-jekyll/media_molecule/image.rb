@@ -16,8 +16,6 @@ module Jekyll
         ATTRS_DEFAULT = Cooltrainer::DistorteD::Image::ATTRS_DEFAULT
         ATTRS_VALUES = Cooltrainer::DistorteD::Image::ATTRS_VALUES
 
-        CONFIG_SUBKEY = :image
-
 
         # Returns the filename we should use in the oldschool <img> tag
         # as a fallback for <picture> sources. This file should be a cropped

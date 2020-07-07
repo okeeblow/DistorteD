@@ -14,8 +14,6 @@ module Jekyll
         ATTRS_DEFAULT = Cooltrainer::DistorteD::Video::ATTRS_DEFAULT
         ATTRS_VALUES = Cooltrainer::DistorteD::Video::ATTRS_VALUES
 
-        CONFIG_SUBKEY = :video
-
         # This will become render_to_output_buffer(context, output) some day,
         # according to upstream Liquid tag.rb.
         def render(context)

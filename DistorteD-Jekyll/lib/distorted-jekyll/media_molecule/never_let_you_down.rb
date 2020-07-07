@@ -7,7 +7,7 @@ module Jekyll
     module Molecule
       module LastResort
 
-        MEDIA_TYPE = CONFIG_SUBKEY = 'lastresort'.freeze
+        MEDIA_TYPE = 'lastresort'.freeze
 
         # HACK HACK HACK
         # Image Maps are a '90s Web relic, but I'm using this
