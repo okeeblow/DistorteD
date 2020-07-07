@@ -54,21 +54,20 @@ module Jekyll
           # Create any directories to the depth of the intended destination.
           FileUtils.mkdir_p(dd_dest(dest))
 
-          distorted = Cooltrainer::DistorteD::Image.new(
-            path,
-            dest: dd_dest(dest),
-            filenames: @filenames,
-          )
+          distorted = Cooltrainer::DistorteD::Image.new(path)
 
           Jekyll.logger.debug(@tag_name, "Rotating #{@name} if tagged.")
           distorted.rotate(angle: :auto)
 
-          distorted.changes = @changes
-          distorted.outer_limits = @outer_limits
-
-          Jekyll.logger.debug(@tag_name, "Adding dimensions #{distorted.dimensions}")
-
-          distorted.generate
+          # Save every desired variation of this image.
+          # This will be a Set of Hashes each describing the name, type,
+          # dimensions, attributes, etc of each output variation we want.
+          # Full-size outputs will have the special tag `:full`.
+          for variation in files
+            filename = File.join(dd_dest(dest), variation[:name])
+            Jekyll.logger.debug('DistorteD Writing:', filename)
+            distorted.save(filename, width: variation[:width], crop: variation[:crop])
+          end
 
           true
         end
