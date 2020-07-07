@@ -10,6 +10,8 @@ module Jekyll
     module Static
       class SVG < Jekyll::DistorteD::Static::Image
 
+        DRIVER = Cooltrainer::DistorteD::SVG
+
         # dest: string realpath to `_site_` directory
         def write(dest)
           return false if File.exist?(path) && !modified?

@@ -8,6 +8,8 @@ module Jekyll
     module Static
       class Video < Jekyll::DistorteD::Static::State
 
+        DRIVER = Cooltrainer::DistorteD::Video
+
         # dest: string realpath to `_site_` directory
         def write(dest)
           orig_dest = destination(dest)
@@ -17,7 +19,7 @@ module Jekyll
           return false if File.exist?(path) && !modified?
           self.class.mtimes[path] = mtime
 
-          distorted = Cooltrainer::DistorteD::Video.new(path, orig_dest, basename)
+          distorted = DRIVER.new(path, orig_dest, basename)
 
           distorted.generate
         end
