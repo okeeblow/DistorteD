@@ -217,12 +217,17 @@ module Jekyll
         def parse_template(site: nil)
           site = site || Jekyll.sites.first
           begin
-            # Template filename is based on the MEDIA_TYPE declared in the driver,
-            # which will be set as an instance variable upon successful auto-plugging.
+            # Template filename is based on the MEDIA_TYPE and/or SUB_TYPE declared
+            # in the plugged MediaMolecule for the given input file.
+            if self.singleton_class.const_defined?(:SUB_TYPE)
+              template_filename = "#{self.singleton_class.const_get(:SUB_TYPE)}.liquid".freeze
+            else
+              template_filename = "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid".freeze
+            end
             template = File.join(
               self.singleton_class.const_get(:GEM_ROOT),
               'template'.freeze,
-              "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid"
+              template_filename,
             )
 
             # Jekyll's Liquid renderer caches in 4.0+.
