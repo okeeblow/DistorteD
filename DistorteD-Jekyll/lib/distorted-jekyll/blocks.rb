@@ -8,7 +8,7 @@ module Jekyll
       end
 
       def render(context)
-        "<div class=\"distorted-grid\">#{super}</div>"
+        "<div class=\"distorted-block\">#{super}</div>"
       end
 
     end  # BLOCKS
