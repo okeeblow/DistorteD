@@ -5,6 +5,20 @@
 # but keep in mind any Arrays will be converted to Sets when loaded,
 # so duplicate Array values will be compacted!
 
+standard_image: &standard_image
+  - tag: small
+    width: 400
+    height: 400
+    media: "(max-width: 400px)"
+  - tag: medium
+    width: 800
+    height: 800
+    media: "(min-width: 800px)"
+  - tag: large
+    width: 1500
+    height: 1500
+    media: "(min-width: 1500px)"
+
 distorted:
 
   # Liquid template caching is default as of Jekyll 4.0,
@@ -41,15 +55,6 @@ distorted:
 
   outer_limits:
     image:
-      - tag: small
-        width: 400
-        height: 400
-        media: "(max-width: 400px)"
-      - tag: medium
-        width: 800
-        height: 800
-        media: "(min-width: 800px)"
-      - tag: large
-        width: 1500
-        height: 1500
-        media: "(min-width: 1500px)"
+      jpeg: *standard_image
+      png: *standard_image
+      webp: *standard_image
