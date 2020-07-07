@@ -231,7 +231,13 @@ module Jekyll
                 attrs[attr] = liquid_val
               end
             end
+
+            # Save attrs to our instance as the data source for Molecule::Abstract.attrs.
             @attrs = attrs
+
+            # Plug the chosen Media Molecule!
+            # Using Module#prepend puts the Molecule's ahead in the ancestor chain
+            # of any defined here, or any defined in an `include`d module.
             (class <<self; prepend @media_molecule; end)
 
             # Break out of the `loop`, a.k.a. stop auto-plugging!
@@ -288,24 +294,18 @@ module Jekyll
         # dir         - The String path between <base> and the source file, e.g. _posts/2018-10-15-super-cool-post
         # name        - The String filename of the original media, e.g. cool.jpg
         # mime        - The Set of MIME::Types of the original media.
+        # attrs       - The Set of attributes given to our Liquid tag, if any.
         # dd_dest     - The String path under Site.dest to DD's top-level media output directory.
         # url         - The URL of the page this tag is on.
-        # outer_limits- The Set of Hashes describing size variations to generate.
-        # changes       - The Set of MIME::Types to generate.
-        # files       - The Set of Hashes describing files to be generated;
-        #               a combination of `types` and `dimensions` but passed in
-        #               instead of generated so Liquid template can share it too.
         static_file = self.static_file(
           site,
           base,
           dir,
           @name,
           @mime,
+          @attrs,
           @dd_dest,
           @url,
-          outer_limits,
-          changes,
-          files,
         )
 
         # Add our new file to the list that will be handled
@@ -320,7 +320,7 @@ module Jekyll
       # Bail out if this is not handled by the module we just mixed in.
       # Any media Molecule must override this to return an instance of
       # their media-type-appropriate StaticFile subclass.
-      def static_file(site, base, dir, name, mime, dd_dest, url, outer_limits, changes, files)
+      def static_file(site, base, dir, name, mime, attrs, dd_dest, url)
         raise MediaTypeNotImplementedError.new(name)
       end
     end

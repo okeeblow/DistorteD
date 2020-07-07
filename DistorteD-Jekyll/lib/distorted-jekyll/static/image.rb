@@ -28,7 +28,7 @@ module Jekyll
               # Doing that will require changing the default href handling
               # in the template, Jekyll::DistorteD::Static::State.destinations,
               # as well as Cooltrainer::DistorteD::Image.generate
-              wanted_files = Set[@name].merge(@filenames)
+              wanted_files = Set[@name].merge(filenames)
               extant_files = Dir.entries(dd_dest).to_set
 
               # TODO: Make this smarter. It's not enough that all the generated
