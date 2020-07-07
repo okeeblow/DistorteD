@@ -53,21 +53,6 @@ module Jekyll
           biggest_ver&.dig(:name) || @name
         end
 
-        # Return a version of output configuration that includes instructions to
-        # generate an unadulterated (e.g. by cropping) version of the
-        # input media file.
-        def outer_limits
-          Set[
-            # There should be no problem with the position of this item in the
-            # variations list since Vips#thumbnail_image doesn't modify
-            # the original in place, but it makes the most sense to go
-            # biggest (original) to smallest, so put this first.
-            # TODO: Make this configurable.
-            {:tag => :full, :width => :full, :height => :full, :media => nil}
-          ].merge(super)
-        end
-
-
         # This will become render_to_output_buffer(context, output) some day,
         # according to upstream Liquid tag.rb.
         def render(context)
