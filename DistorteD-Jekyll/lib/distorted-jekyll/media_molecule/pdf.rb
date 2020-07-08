@@ -31,8 +31,11 @@ module Jekyll
               'caption' => attr_value(:caption),
             })
           rescue Liquid::SyntaxError => l
-            # TODO: Only in dev
-            l.message
+            unless Jekyll.env == 'production'.freeze
+              output << parse_template(name: 'error_code'.freeze).render({
+                'message' => l.message,
+              })
+            end
           end
           output
         end
