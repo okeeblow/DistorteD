@@ -169,8 +169,13 @@ module Jekyll
               end
             else
               # No, this attribute does not define a Set of acceptable values.
-              # The freeform Liquid-given value is fine.
-              liquid_val.to_s
+              # The freeform Liquid-given value is fine, but if it's nil
+              # we can still try for a default.
+              if liquid_val.nil?
+                self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute).to_s
+              else
+                liquid_val.to_s
+              end
             end
           else
             Jekyll.logger.error('DistorteD', "#{attribute.to_s} is not a supported attribute")
