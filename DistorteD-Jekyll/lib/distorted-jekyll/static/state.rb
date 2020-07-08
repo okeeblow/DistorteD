@@ -98,6 +98,42 @@ module Jekyll
           filenames.map{|f| File.join(dd_dest(dest), f)} << destination(dest)
         end
 
+        # HACK HACK HACK
+        # Jekyll does not pass this method a site.dest like it does write() and
+        # others, but I want to be able to short-circuit here if all the
+        # to-be-generated files already exist.
+        def modified?
+          # Assume modified for the sake of freshness :)
+          modified = true
+
+          site_dest = Jekyll::DistorteD::Floor::config(:destination).to_s
+          if Dir.exist?(site_dest)
+
+            dd_dest = dd_dest(site_dest)
+            if Dir.exist?(dd_dest)
+
+              # TODO: Make outputting the original file conditional.
+              # Doing that will require changing the default href handling
+              # in the template, Jekyll::DistorteD::Static::State.destinations,
+              # as well as Cooltrainer::DistorteD::Image.generate
+              wanted_files = Set[@name].merge(filenames)
+              extant_files = Dir.entries(dd_dest).to_set
+
+              # TODO: Make this smarter. It's not enough that all the generated
+              # filenames should exist. Try a few more ways to detect subtler
+              # "changes to the source file since generation of variations.
+              if wanted_files.subset?(extant_files)
+                modified = false
+              else
+                Jekyll.logger.debug(@name, "Missing variations: #{wanted_files - extant_files}")
+              end
+
+            end  # dd_dest.exists?
+          end  # site_dest.exists?
+          Jekyll.logger.debug("#{@name} modified?",  modified)
+          return modified
+        end
+
       end  # state
     end  # Static
   end  # DistorteD
