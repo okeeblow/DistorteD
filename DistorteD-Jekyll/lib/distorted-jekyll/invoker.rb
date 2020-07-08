@@ -350,20 +350,28 @@ module Jekyll
       # Generic Liquid template loader that will be used in every MediaMolecule.
       # Callers will call `render(**{:template => vars})` on the Object returned
       # by this method.
-      def parse_template(site: nil)
+      def parse_template(site: nil, name: nil)
         site = site || Jekyll.sites.first
         begin
-          # Template filename is based on the MEDIA_TYPE and/or SUB_TYPE declared
-          # in the plugged MediaMolecule for the given input file.
-          if self.singleton_class.const_defined?(:SUB_TYPE)
-            template_filename = "#{self.singleton_class.const_get(:SUB_TYPE)}.liquid".freeze
-          else
-            template_filename = "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid".freeze
+          # Use a given filename, or detect one based on media-type.
+          if name.nil?
+            # Template filename is based on the MEDIA_TYPE and/or SUB_TYPE declared
+            # in the plugged MediaMolecule for the given input file.
+            if self.singleton_class.const_defined?(:SUB_TYPE)
+              name = "#{self.singleton_class.const_get(:SUB_TYPE)}.liquid".freeze
+            else
+              name = "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid".freeze
+            end
+          elsif not name.include?('.liquid'.freeze)
+            # Support filename arguments with and without file extension.
+            # The given String might already be frozen, so concatenating
+            # the extension might fail. Just set a new version.
+            name = "#{name}.liquid"
           end
           template = File.join(
             self.singleton_class.const_get(:GEM_ROOT),
             'template'.freeze,
-            template_filename,
+            name,
           )
 
           # Jekyll's Liquid renderer caches in 4.0+.
