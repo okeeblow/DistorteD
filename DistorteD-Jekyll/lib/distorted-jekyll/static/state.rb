@@ -123,6 +123,7 @@ module Jekyll
               # filenames should exist. Try a few more ways to detect subtler
               # "changes to the source file since generation of variations.
               if wanted_files.subset?(extant_files)
+                Jekyll.logger.debug(@name, "All variations present: #{wanted_files}")
                 modified = false
               else
                 Jekyll.logger.debug(@name, "Missing variations: #{wanted_files - extant_files}")
