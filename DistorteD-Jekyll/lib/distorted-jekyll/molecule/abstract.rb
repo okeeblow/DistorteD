@@ -216,47 +216,6 @@ module Jekyll
           files.map{|f| f[:name]}.to_set
         end
 
-        # Generic Liquid template loader that will be used in every MediaMolecule.
-        # Callers will call `render(**{:template => vars})` on the Object returned
-        # by this method.
-        def parse_template(site: nil)
-          site = site || Jekyll.sites.first
-          begin
-            # Template filename is based on the MEDIA_TYPE and/or SUB_TYPE declared
-            # in the plugged MediaMolecule for the given input file.
-            if self.singleton_class.const_defined?(:SUB_TYPE)
-              template_filename = "#{self.singleton_class.const_get(:SUB_TYPE)}.liquid".freeze
-            else
-              template_filename = "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid".freeze
-            end
-            template = File.join(
-              self.singleton_class.const_get(:GEM_ROOT),
-              'template'.freeze,
-              template_filename,
-            )
-
-            # Jekyll's Liquid renderer caches in 4.0+.
-            if Jekyll::DistorteD::Floor::config(
-                Jekyll::DistorteD::Floor::CONFIG_ROOT,
-                :cache_templates,
-            )
-              # file(path) is the caching function, with path as the cache key.
-              # The `template` here will be the full path, so no versions of this
-              # gem should ever conflict. For example, right now during dev it's:
-              # `/home/okeeblow/Works/DistorteD/lib/image.liquid`
-              site.liquid_renderer.file(template).parse(File.read(template))
-            else
-              # Re-read the template just for this piece of media.
-              Liquid::Template.parse(File.read(template))
-            end
-
-          rescue Liquid::SyntaxError => l
-            # This shouldn't ever happen unless a new version of Liquid
-            # breaks syntax compatibility with our templates somehow.
-            l.message
-          end
-        end
-
 
       end  # Abstract
     end  # Molecule
