@@ -1,5 +1,6 @@
 div.distorted {text-align: center;}
 div.distorted.svg {background-color: #fbfbf8;}
+div.distorted.pdf > object {display: block;}
 div.distorted-caption {
     color: #8888888;
     margin-top: 0.5em;
