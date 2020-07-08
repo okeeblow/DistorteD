@@ -9,6 +9,7 @@ require 'distorted-jekyll/molecule/abstract'
 
 # Media-type drivers
 require 'distorted-jekyll/molecule/image'
+require 'distorted-jekyll/molecule/pdf'
 require 'distorted-jekyll/molecule/svg'
 require 'distorted-jekyll/molecule/video'
 require 'distorted-jekyll/molecule/last-resort'
@@ -47,6 +48,7 @@ module Jekyll
       # TODO: Make this configurable.
       MEDIA_MOLECULES = [
         Jekyll::DistorteD::Molecule::LastResort,
+        Jekyll::DistorteD::Molecule::PDF,
         Jekyll::DistorteD::Molecule::SVG,
         Jekyll::DistorteD::Molecule::Video,
         Jekyll::DistorteD::Molecule::Image,
