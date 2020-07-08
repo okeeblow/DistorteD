@@ -1,7 +1,6 @@
 require 'fileutils'
 require 'set'
 
-require 'svg_optimizer'
 
 require 'distorted-jekyll/static/image'
 
@@ -26,8 +25,7 @@ module Jekyll
 
               if true  # TODO: Make this configurable
                 Jekyll.logger.debug(@tag_name, "Optimizing #{@name} and copying to #{dd_dest(dest)}")
-                # TODO: Make optimizations/plugins configurable
-                SvgOptimizer.optimize_file(path, svg_dest_path, SvgOptimizer::DEFAULT_PLUGINS)
+                DRIVER::optimize(path, svg_dest_path)
               else
                 Jekyll.logger.debug(@tag_name, "Copying #{@name} to #{dd_dest(dest)}")
                 FileUtils.cp(path, svg_dest_path)
