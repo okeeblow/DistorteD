@@ -9,14 +9,40 @@ div.distorted-block {
 }
 div.distorted-block > div.distorted {
     display: block;
+    box-sizing: border-box;
     float: left;
-    margin-bottom: 8px;
-    margin-right: 8px;
-    width: calc(50% - 4px);
+    border: 4px solid transparent;
+    margin: 0px;
+    text-align: center;
+    width: 100%;
 }
-div.distorted-block > div.distorted:nth-of-type(2n) {margin-right: 0;}
-@media screen and (min-width: 50em) {
-  div.distorted-block > div.distorted {width: calc(25% - 6px);}
-  div.distorted-block > div.distorted:nth-of-type(2n) {margin-right: 8px;}
-  div.distorted-block > div.distorted:nth-of-type(4n) {margin-right: 0;}
+@media screen and (min-width: 40em) {
+  div.distorted-block > div.distorted {
+    width: 50%;
+  }
+  div.distorted-block > div.distorted:only-child {
+    width: 100%;
+  }
+  div.distorted-block > div.distorted:first-child:nth-last-child(3),
+  div.distorted-block > div.distorted:first-child:nth-last-child(3) ~ div.distorted,
+  div.distorted-block > div.distorted:first-child:nth-last-child(6),
+  div.distorted-block > div.distorted:first-child:nth-last-child(6) ~ div.distorted,
+  div.distorted-block > div.distorted:first-child:nth-last-child(9),
+  div.distorted-block > div.distorted:first-child:nth-last-child(9) ~ div.distorted {
+    width: 33.3333%;
+  }
+}
+@media screen and (min-width: 76em) {
+  div.distorted-block > div.distorted:first-child:nth-last-child(4),
+  div.distorted-block > div.distorted:first-child:nth-last-child(4) ~ div.distorted,
+  div.distorted-block > div.distorted:first-child:nth-last-child(8),
+  div.distorted-block > div.distorted:first-child:nth-last-child(8) ~ div.distorted {
+    width: 25%;
+  }
+  div.distorted-block > div.distorted:first-child:nth-last-child(5),
+  div.distorted-block > div.distorted:first-child:nth-last-child(5) ~ div.distorted,
+  div.distorted-block > div.distorted:first-child:nth-last-child(10),
+  div.distorted-block > div.distorted:first-child:nth-last-child(10) ~ div.distorted {
+    width: 20%;
+  }
 }
