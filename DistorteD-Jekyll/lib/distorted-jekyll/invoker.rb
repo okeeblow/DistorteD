@@ -14,7 +14,7 @@ require 'distorted-jekyll/molecule/svg'
 require 'distorted-jekyll/molecule/video'
 require 'distorted-jekyll/molecule/last-resort'
 
-# Set.to_h
+# Set.to_hash
 require 'distorted/monkey_business/set'
 
 # Slip in and out of phenomenon
@@ -222,8 +222,7 @@ module Jekyll
             # Set instance variables for the combined set of HTML element
             # attributes used for this media_type. The global set is defined in this file
             # (Invoker), and the media_type-specific set is appended to that during auto-plug.
-            # NOTE: Relying on our own implementation of Set.to_h here.
-            attrs = (self.class::GLOBAL_ATTRS + molecule.const_get(:ATTRS)).to_h
+            attrs = (self.class::GLOBAL_ATTRS + molecule.const_get(:ATTRS)).to_hash
             attrs.each_pair do |attr, val|
               # An attr supplied to the Liquid tag should override any from the config
               liquid_val = parsed_arguments&.dig(attr)
