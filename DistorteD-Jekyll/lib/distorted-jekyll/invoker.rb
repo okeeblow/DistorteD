@@ -197,7 +197,6 @@ module Jekyll
           molecule = media_molecules.pop
 
           # This will be nil once we've tried them all and run out and are on the last loop.
-          # TODO: Support optional fall-through when plugging fails.
           if molecule == nil
             if Jekyll::DistorteD::Floor::config(self.class.const_get(:CONFIG_ROOT), :last_resort)
               Jekyll.logger.debug(@tag_name, "Falling back to a bare <img> for #{name}")
@@ -223,7 +222,6 @@ module Jekyll
             # Set instance variables for the combined set of HTML element
             # attributes used for this media_type. The global set is defined in this file
             # (Invoker), and the media_type-specific set is appended to that during auto-plug.
-            # TODO: Handle missing/malformed tag arguments.
             # NOTE: Relying on our own implementation of Set.to_h here.
             attrs = (self.class::GLOBAL_ATTRS + molecule.const_get(:ATTRS)).to_h
             attrs.each_pair do |attr, val|
