@@ -18,7 +18,7 @@ module Jekyll
         ATTRS_VALUES = Cooltrainer::DistorteD::SVG::ATTRS_VALUES
 
 
-        def render(context)
+        def render_to_output_buffer(context, output)
           super
           begin
             # Liquid doesn't seem able to reference symbolic keys,
@@ -28,7 +28,7 @@ module Jekyll
             filez = files.map{ |f|
               f.transform_values(&:to_s).transform_keys(&:to_s)
             }
-            parse_template.render({
+            output << parse_template.render({
               'name' => @name,
               'path' => @dd_dest,
               'alt' => attr_value(:alt),
@@ -43,6 +43,7 @@ module Jekyll
             # TODO: Only in dev
             l.message
           end
+          output
         end
 
         def static_file(*args)

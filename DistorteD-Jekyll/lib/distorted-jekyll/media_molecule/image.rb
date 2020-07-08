@@ -51,9 +51,7 @@ module Jekyll
           biggest_ver&.dig(:name) || @name
         end
 
-        # This will become render_to_output_buffer(context, output) some day,
-        # according to upstream Liquid tag.rb.
-        def render(context)
+        def render_to_output_buffer(context, output)
           super
           begin
             # Liquid doesn't seem able to reference symbolic keys,
@@ -64,7 +62,7 @@ module Jekyll
               f.transform_values(&:to_s).transform_keys(&:to_s)
             }
 
-            parse_template.render({
+            output << parse_template.render({
               'name' => @name,
               'path' => @dd_dest,
               'alt' => attr_value(:alt),
@@ -79,6 +77,7 @@ module Jekyll
             # TODO: Only in dev
             l.message
           end
+          output
         end
 
         def static_file(*args)

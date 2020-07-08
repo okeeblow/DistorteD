@@ -274,6 +274,12 @@ module Jekyll
       # https://github.com/jekyll/jekyll/blob/HEAD/lib/jekyll/renderer.rb
       # https://jekyllrb.com/tutorials/orderofinterpretation/
       def render(context)
+        render_to_output_buffer(context, '')
+      end
+
+      # A future Liquid version (5.0?) will call this function directly
+      # instead of calling render()
+      def render_to_output_buffer(context, output)
         # Get Jekyll Site object back from tag rendering context registers so we
         # can get configuration data and path information from it and
         # then pass it along to our StaticFile subclass.

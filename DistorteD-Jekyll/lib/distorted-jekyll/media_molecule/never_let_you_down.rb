@@ -23,10 +23,10 @@ module Jekyll
         ATTRS_DEFAULT = {}
         ATTRS_VALUES = {}
 
-        def render(context)
+        def render_to_output_buffer(context, output)
           super
           begin
-            parse_template.render({
+            output << parse_template.render({
               'name' => @name,
               'basename' => File.basename(@name, '.*'),
               'path' => @url,
@@ -39,6 +39,7 @@ module Jekyll
             # TODO: Only in dev
             l.message
           end
+          output
         end
 
         def static_file(*args)
