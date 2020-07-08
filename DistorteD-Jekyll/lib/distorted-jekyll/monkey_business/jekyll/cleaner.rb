@@ -31,8 +31,14 @@ module Jekyll
           site.each_site_file { |item|
             if item.respond_to?(:destinations)
               files.merge(item.destinations(site.dest))
-            else
+            elsif item.respond_to?(:destination)
               files << item.destination(site.dest)
+            else
+              # Something unrelated has gone wrong for us to end up sending
+              # `destination` to something that doesn't respond to it.
+              # We should fall back to the original implementation of `new_files`
+              # in this case so the failure doesn't appear to be here.
+              the_old_new_thing.bind(self).()
             end
           }
         end
