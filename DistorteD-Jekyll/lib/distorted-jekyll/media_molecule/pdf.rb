@@ -13,6 +13,7 @@ module Jekyll
         SUB_TYPE = Cooltrainer::DistorteD::PDF::SUB_TYPE
         MIME_TYPES = Cooltrainer::DistorteD::PDF::MIME_TYPES
 
+        PDF_OPEN_PARAMS = Cooltrainer::DistorteD::PDF::PDF_OPEN_PARAMS
         ATTRS = Cooltrainer::DistorteD::PDF::ATTRS
         ATTRS_DEFAULT = Cooltrainer::DistorteD::PDF::ATTRS_DEFAULT
         ATTRS_VALUES = Cooltrainer::DistorteD::PDF::ATTRS_VALUES
@@ -25,6 +26,38 @@ module Jekyll
             # showing only the first page with transparency and stretched to the
             # size of the container element.
             # We will need something like PDF.js in an <iframe> to handle this.
+
+            # Generate a Hash of our PDF Open Params based on any given to the Liquid tag
+            # and any loaded from the defaults.
+            # https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf
+            pdf_open_params = PDF_OPEN_PARAMS.map{ |p|
+              if ATTRS_VALUES.dig(p) == Cooltrainer::DistorteD::PDF::BOOLEAN_SET
+                # Support multiple ways people might want to express a boolean
+                if Set[0, '0'.freeze, false, 'false'.freeze].include?(attr_value(p))
+                  [p, '0'.freeze]
+                elsif Set[1, '1'.freeze, true, 'true'.freeze].include?(attr_value(p))
+                  [p, '1'.freeze]
+                end
+              else
+                [p, attr_value(p)]
+              end
+            }.to_h
+
+            # Generate the URL fragment version of the PDF Open Params.
+            # This would be difficult / impossible to construct within Liquid
+            # from the individual variables, so let's just do it out here.
+            pdf_open_params_url = pdf_open_params.keep_if{ |p,v|
+              v != nil && v != ""
+            }.map{ |k,v|
+              # The PDF Open Params docs specify `search` should be quoted.
+              if k == :search
+                "#{k}=\"#{v}\""
+              else
+                "#{k}=#{v}"
+              end
+            }.join('&')
+            Jekyll.logger.debug("#{@name} PDF Open Params:", "#{pdf_open_params} #{"\u21e8".encode('utf-8').freeze} #{pdf_open_params_url}")
+
             output << parse_template.render({
               'name' => @name,
               'path' => @dd_dest,
@@ -33,6 +66,7 @@ module Jekyll
               'height' => attr_value(:height),
               'width' => attr_value(:width),
               'caption' => attr_value(:caption),
+              'pdf_open_params' => pdf_open_params_url,
             })
           rescue Liquid::SyntaxError => l
             unless Jekyll.env == 'production'.freeze
