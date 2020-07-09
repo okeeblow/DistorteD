@@ -115,8 +115,10 @@ MD_IMAGE_REGEX = %r&
     # Assume titles will be quoted.
     \((?<src>[^'")]+)
     # Title is optional.
-    # Don't including the title's opening or closing quotes in the capture.
-    (['"](?<title>[^'"]*)['"])?
+    # Ignore double-quotes in single-quoted titles and single-quotes
+    # in double-quoted titles otherwise we can't use contractions.
+    # Don't include the title's opening or closing quotes in the capture.
+    ('(?<title>[^']*)'|"(?<title>[^"]*)")?
     # The closing ')' will always be present, title or no.
     \)
     # Optional IAL on the same line as the image after any whitespace.
