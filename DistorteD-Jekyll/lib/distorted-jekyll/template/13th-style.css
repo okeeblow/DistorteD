@@ -12,6 +12,7 @@ div.distorted-caption {
 }
 div.distorted-block {
     width: 100%;
+    clear: both;
 }
 div.distorted-block > div.distorted {
     display: block;
