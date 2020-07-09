@@ -5,6 +5,7 @@
     {%- capture pdf_link %}{{ alt }}{%- endcapture -%}
   {%- endif %}
   <object data="{{ path }}{{ name }}" type="application/pdf" width="{{ width }}" height="{{ height }}">
+    <embed src="{{ path }}{{ name }}" type="application/pdf" width="{{ width }}" height="{{ height }}"/>
     <a href="{{ path }}{{ name }}">{{ pdf_link }} [PDF]</a>
   </object>
     {%- if caption != nil and caption != "" %}
