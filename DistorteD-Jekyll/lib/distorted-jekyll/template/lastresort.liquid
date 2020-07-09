@@ -14,7 +14,7 @@
   <a href="{{ href }}"{{ attr_title }} target="_blank">
     <img src="{{ path }}{{ name }}"{{ attr_alt }}{{ attr_title }}{{ attr_loading }}/>
   </a>
-    {%- if caption %}
+    {%- if caption != nil and caption != "" %}
   <p class="distorted-caption">{{ caption }}</p>
     {%- endif %}
 </div>

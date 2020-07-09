@@ -24,7 +24,7 @@
       <img src="{{ path }}{{ fallback_img }}"{{ attr_alt }}{{ attr_title }}{{ attr_loading }}/>
     </picture>
   </a>
-    {%- if caption %}
+    {%- if caption != nil and caption != "" %}
   <p class="distorted-caption">{{ caption }}</p>
     {%- endif %}
 </div>
