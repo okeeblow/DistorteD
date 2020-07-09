@@ -29,7 +29,7 @@ module Cooltrainer
       # Attributes for our <video>.
       # Automatically enabled as attrs for DD Liquid Tag.
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#Attributes
-      ATTRS = Set[]
+      ATTRS = Set[:caption]
 
       # Defaults for HTML Element attributes.
       # Not every attr has to be listed here.
