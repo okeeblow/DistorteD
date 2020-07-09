@@ -1,4 +1,9 @@
 div.distorted {text-align: center;}
+div.distorted::after {
+    content: '';
+    display: block;
+    clear: left;
+}
 div.distorted.svg {background-color: #fbfbf8;}
 div.distorted.pdf > object {min-height: 76vh;}
 div.distorted-caption {
