@@ -38,6 +38,18 @@ div.distorted-block > div.distorted {
   div.distorted-block > div.distorted:first-child:nth-last-child(9) ~ div.distorted {
     width: 33.3333%;
   }
+  div.distorted-block > div.distorted:first-child:nth-last-child(5),
+  div.distorted-block > div.distorted:first-child:nth-last-child(5) ~ div.distorted:nth-child(2) {
+    width: 50%;
+  }
+  div.distorted-block > div.distorted:first-child:nth-last-child(5) ~ div.distorted {
+    width: 33.3333%;
+  }
+  div.distorted-block > div.distorted:first-child:nth-last-child(7) ~ div.distorted:nth-child(3),
+  div.distorted-block > div.distorted:first-child:nth-last-child(7) ~ div.distorted:nth-child(4),
+  div.distorted-block > div.distorted:first-child:nth-last-child(7) ~ div.distorted:nth-child(5) {
+    width: 33.3333%;
+  }
 }
 @media screen and (min-width: 76em) {
   div.distorted-block > div.distorted:first-child:nth-last-child(4),
@@ -47,9 +59,20 @@ div.distorted-block > div.distorted {
     width: 25%;
   }
   div.distorted-block > div.distorted:first-child:nth-last-child(5),
+  div.distorted-block > div.distorted:first-child:nth-last-child(5) ~ div.distorted:nth-child(2),
   div.distorted-block > div.distorted:first-child:nth-last-child(5) ~ div.distorted,
   div.distorted-block > div.distorted:first-child:nth-last-child(10),
   div.distorted-block > div.distorted:first-child:nth-last-child(10) ~ div.distorted {
     width: 20%;
+  }
+  div.distorted-block > div.distorted:first-child:nth-last-child(7),
+  div.distorted-block > div.distorted:first-child:nth-last-child(7) ~ div.distorted:nth-child(2),
+  div.distorted-block > div.distorted:first-child:nth-last-child(7) ~ div.distorted:nth-child(3) {
+    width: 33.3333%;
+  }
+  div.distorted-block > div.distorted:first-child:nth-last-child(7) ~ div.distorted,
+  div.distorted-block > div.distorted:first-child:nth-last-child(7) ~ div.distorted:nth-child(4),
+  div.distorted-block > div.distorted:first-child:nth-last-child(7) ~ div.distorted:nth-child(5) {
+    width: 25%;
   }
 }
