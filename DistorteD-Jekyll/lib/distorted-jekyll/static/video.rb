@@ -24,6 +24,22 @@ module Jekyll
           distorted.generate
         end
 
+        # Return a Set of extant video variations due to inability/unwillingness
+        # to exactly predict GStreamer's HLS/DASH segment output naming
+        # even if we are controlling all variables like segment length etc.
+        # This implementation may give stale segments but will at least speed
+        # up site generation by not having to regenerate the video every time.
+        def destinations(dest)
+          wanted = Set[]
+          if Dir.exist?(dd_dest(dest))
+            hls_dir = File.join(dd_dest(dest), "#{basename}.hls")
+            if Dir.exist?(hls_dir)
+              wanted.merge(Dir.entries(hls_dir).to_set.map{|f| File.join(hls_dir, f)})
+            end
+          end
+          wanted
+        end
+
         def modified?
           # We can't use the standard Static::State#modified? here until
           # I figure out how to cleanly get a duplicate of what would be
