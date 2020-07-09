@@ -21,10 +21,7 @@ module Jekyll
               'name' => @name,
               'basename' => File.basename(@name, '.*'),
               'path' => @url,
-              'alt' => @alt,
-              'title' => @title,
-              'href' => @href,
-              'caption' => @caption,
+              'caption' => attr_value(:caption),
             })
           rescue Liquid::SyntaxError => l
             unless Jekyll.env == 'production'.freeze

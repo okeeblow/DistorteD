@@ -19,7 +19,7 @@ module Jekyll
         # get an <img> tag anyway :)
         MIME_TYPES = MIME::Types['application/x-imagemap'].to_set
 
-        ATTRS = Set[]
+        ATTRS = Set[:alt, :title, :href, :caption]
         ATTRS_DEFAULT = {}
         ATTRS_VALUES = {}
 
@@ -30,10 +30,10 @@ module Jekyll
               'name' => @name,
               'basename' => File.basename(@name, '.*'),
               'path' => @url,
-              'alt' => @alt,
-              'title' => @title,
-              'href' => @href,
-              'caption' => @caption,
+              'alt' => attr_value(:alt),
+              'title' => attr_value(:title),
+              'href' => attr_value(:href),
+              'caption' => attr_value(:caption),
             })
           rescue Liquid::SyntaxError => l
             unless Jekyll.env == 'production'.freeze
