@@ -28,19 +28,36 @@ module Jekyll
           # We can't use the standard Static::State#modified? here until
           # I figure out how to cleanly get a duplicate of what would be
           # the generated filenames from GStreamer's sink.
+          #
           # For now for the sake of speeding up my site generation
           # I'll assume not-modified that if the output variant (e.g. DASH/HLS)
           # container dir exists and contains at least two files:
           # the playlist and at least one segment.
+          #
           # Hacky HLS-only right now until dashsink2 lands in upstream Gst.
-          var_dir = "#{@dir}.hls"
-          if Dir.exist?(@dir)
-            need_filez = Set["#{basename}.m3u8"]
-            var_filez = Dir.entries(@dir).to_set
-            mod = need_filez.subset?(var_filez) and var_filez.count > 2
-            Jekyll.logger.debug("#{@name} modified?",  mod)
-            return mod
+          #
+          # Assume modified for the sake of freshness :)
+          modified = true
+
+          site_dest = Jekyll::DistorteD::Floor::config(:destination).to_s
+          if Dir.exist?(site_dest)
+
+            dd_dest = dd_dest(site_dest)
+            if Dir.exist?(dd_dest)
+
+              hls_dir = File.join(dd_dest, "#{basename}.hls")
+              if Dir.exist?(hls_dir)
+                need_filez = Set["#{basename}.m3u8"]
+                var_filez = Dir.entries(hls_dir).to_set
+                if need_filez.subset?(var_filez) and var_filez.count > 2
+                  modified = false
+                end
+              end
+
+            end
           end
+          Jekyll.logger.debug("#{@name} modified?",  modified)
+          modified
         end
 
       end  # Video
