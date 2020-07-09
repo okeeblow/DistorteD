@@ -21,6 +21,10 @@ module Jekyll
         def render_to_output_buffer(context, output)
           super
           begin
+            # TODO: iOS treats our <object> like an <img>,
+            # showing only the first page with transparency and stretched to the
+            # size of the container element.
+            # We will need something like PDF.js in an <iframe> to handle this.
             output << parse_template.render({
               'name' => @name,
               'path' => @dd_dest,
