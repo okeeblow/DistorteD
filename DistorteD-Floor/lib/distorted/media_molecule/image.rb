@@ -59,7 +59,6 @@ module Cooltrainer
         :loading => Set[:eager, :lazy],
       }
 
-      attr_accessor :dest, :outer_limits, :changes
 
       def initialize(src)
         @image = Vips::Image.new_from_file(src)
