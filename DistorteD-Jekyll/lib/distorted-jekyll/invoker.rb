@@ -241,18 +241,7 @@ module Jekyll
                 end
               end
 
-              # Does this attribute have a Molecule-defined list of acceptable values?
-              if molecule.const_get(:ATTRS_VALUES).key?(attr)
-                # And if so, is the given value valid?
-                if molecule.const_get(:ATTRS_VALUES)&.dig(attr).include?(liquid_val)
-                  attrs[attr] = liquid_val
-                  Jekyll.logger.debug(@tag_name, "Setting attr '#{attr.to_s}' to '#{liquid_val}' from Liquid tag.")
-                end
-              else
-                # This Molecule doesn't define a list of accepted values for this attr,
-                # so directly use what was supplied.
-                attrs[attr] = liquid_val
-              end
+              attrs[attr] = liquid_val
             end
 
             # Save attrs to our instance as the data source for Molecule::Abstract.attrs.

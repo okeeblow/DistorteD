@@ -155,15 +155,25 @@ module Jekyll
           if accepted_attrs.include?(attribute.to_sym)
 
             # Does this attr define a set of acceptable values?
-            if accepted_vals
+            if accepted_vals.is_a?(Set)
               # Yes, it does. Is the Liquid-given value in that Set of acceptable values?
-              if accepted_vals.include?(liquid_val)
+              if accepted_vals.include?(liquid_val) or accepted_vals.include?(liquid_val&.to_sym) or accepted_vals.include?(liquid_val&.to_s)
+
                 # Yes, it is! Use it.
                 liquid_val.to_s
               else
                 # No, it isn't. Warn and return the default.
                 unless liquid_val.nil?
                   Jekyll.logger.warn('DistorteD', "#{liquid_val.to_s} is not an acceptable value for #{attribute.to_s}: #{accepted_vals}")
+                end
+                self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute).to_s
+              end
+            elsif accepted_vals.is_a?(Regexp)
+              if accepted_vals =~ liquid_val.to_s
+                liquid_val.to_s
+              else
+                unless liquid_val.nil?
+                  Jekyll.logger.warn('DistorteD', "#{liquid_val.to_s} is not a Regexp match for #{attribute.to_s}: #{accepted_vals}")
                 end
                 self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute).to_s
               end
