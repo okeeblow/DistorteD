@@ -23,7 +23,9 @@ module Jekyll
     # I'm defining my own separate method for multi-destinations for now,
     # but I also considered just overriding `destination` to return the Set and
     # then doing this as a one-liner that handles either case (single or
-    # multiple destinations) with `files.merge(Set[*(item.destination(site.dest))])`
+    # multiple destinations) with `files.merge(Set[*(item.destination(site.dest))])`.
+    # This is the safer choice though since we avoid changing the outout type of the
+    # regular `:destination` method.
     the_old_new_thing = instance_method(:new_files)
     define_method(:new_files) do
       begin
