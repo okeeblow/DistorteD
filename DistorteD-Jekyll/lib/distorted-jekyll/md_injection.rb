@@ -255,7 +255,11 @@ module Kramdown
           raise "Attempted to render zero images as DistorteD Liquid tags."
         when 1
           # Render one (1) image/video/whatever.
-          distorted(*attrs(imgs.first))
+          distorted(attrs(imgs.first)&.first&.merge({
+            # Images default to `attention` cropping for desktop/mobile versatility.
+            # Override this for single images unless a cropping value was already set.
+            'crop'.freeze => attrs(imgs.first)&.first&.dig('crop'.freeze) || 'none'.freeze,
+          }))
         else
           # Render a conceptual group (DD::BLOCKS)
 
