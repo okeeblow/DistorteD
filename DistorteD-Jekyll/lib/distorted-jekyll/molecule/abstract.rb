@@ -13,6 +13,12 @@ module Jekyll
     module Molecule
       module Abstract
 
+        # This list should contain global attributes only, as symbols.
+        # The final attribute set will be this + the media-type-specific set.
+        # https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
+        GLOBAL_ATTRS = Set[:title]
+
+
         # Loads configuration data telling us how to open certain
         # types of files.
         def welcome(*keys)
@@ -132,8 +138,11 @@ module Jekyll
         # the default value if the given value is not in the accepted Set,
         # or nil for unset attrs with no default defined.
         def attr_value(attribute)
-          # Set of all supported attributes both globally and Molecule-specific.
-          accepted_attrs = self.class::GLOBAL_ATTRS + self.singleton_class.const_get(:ATTRS)
+          # Set of all supported attributes:
+          # - Global output-element attributes
+          # - Molecule-specific output-element attributes
+          # - Filetype change and output-template config paths
+          accepted_attrs = self.singleton_class.const_get(:GLOBAL_ATTRS) + self.singleton_class.const_get(:ATTRS) + Set[:changes, :outer_limits]
 
           # Set of acceptable values for the given attribute, e.g. Image::loading => Set[:eager, :lazy]
           # Will be empty if this attribute takes freeform input (like `title` or `alt`)

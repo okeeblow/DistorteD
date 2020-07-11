@@ -54,11 +54,6 @@ module Jekyll
         Jekyll::DistorteD::Molecule::Image,
       ]
 
-      # This list should contain global attributes only, as symbols.
-      # The final attribute set will be this + the media-type-specific set.
-      # https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
-      GLOBAL_ATTRS = Set[:title]
-
       # Any any attr value will get a to_sym if shorter than this
       # totally arbitrary length, or if the attr key is in the plugged
       # Molecule's set of attrs that take only a defined set of values.
@@ -222,7 +217,7 @@ module Jekyll
             # Set instance variables for the combined set of HTML element
             # attributes used for this media_type. The global set is defined in this file
             # (Invoker), and the media_type-specific set is appended to that during auto-plug.
-            attrs = (self.class::GLOBAL_ATTRS + molecule.const_get(:ATTRS)).to_hash
+            attrs = (self.singleton_class.const_get(:GLOBAL_ATTRS) + molecule.const_get(:ATTRS)).to_hash
             attrs.each_pair do |attr, val|
               # An attr supplied to the Liquid tag should override any from the config
               liquid_val = parsed_arguments&.dig(attr)
