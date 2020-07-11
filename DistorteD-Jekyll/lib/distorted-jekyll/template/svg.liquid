@@ -17,6 +17,8 @@
         {%- for source in sources %}
           {%- if source.media != nil and source.media != "" %}
             {%- capture attr_media %} media="{{ source.media }}"{%- endcapture -%}
+          {%- else %}
+            {%- capture attr_media %}{%- endcapture -%}
           {%- endif %}
       <source srcset="{{ path }}{{ source.name }}" type="{{ source.type }}"{{ attr_media }}/>
         {%- endfor %}
