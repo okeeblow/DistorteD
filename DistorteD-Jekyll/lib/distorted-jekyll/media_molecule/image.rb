@@ -56,7 +56,7 @@ module Jekyll
           if config.empty?
             Set[{
               tag: :full,
-              cop: :none,
+              crop: :none,
             }]
           else
             config
