@@ -189,8 +189,8 @@ module Jekyll
         # Returns a Hash keyed by MIME::Type objects with value as a Set of Hashes
         # describing the media's output variations to be generated for each Type.
         def variations
-          changes.map{ |t|
-            [t, outer_limits.map{ |d|
+          changes(attr_value(:changes)).map{ |t|
+            [t, outer_limits(attr_value(:outer_limits)).map{ |d|
               d.merge({
                 # e.g. 'SomeImage-medium.jpg` but just `SomeImage.jpg` and not `SomeImage-full.jpg`
                 # for the full-resolution outputs.
