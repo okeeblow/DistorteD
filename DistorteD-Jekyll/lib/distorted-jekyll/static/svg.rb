@@ -11,6 +11,15 @@ module Jekyll
 
         DRIVER = Cooltrainer::DistorteD::SVG
 
+        MEDIA_TYPE = DRIVER::MEDIA_TYPE
+        SUB_TYPE = DRIVER::SUB_TYPE
+        MIME_TYPES = DRIVER::MIME_TYPES
+
+        ATTRS = DRIVER::ATTRS
+        ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
+        ATTRS_VALUES = DRIVER::ATTRS_VALUES
+
+
         # dest: string realpath to `_site_` directory
         def write(dest)
           return false if File.exist?(path) && !modified?
