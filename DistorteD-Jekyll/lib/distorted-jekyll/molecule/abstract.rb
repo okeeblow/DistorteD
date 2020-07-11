@@ -176,16 +176,16 @@ module Jekyll
                 unless liquid_val.nil?
                   Jekyll.logger.warn('DistorteD', "#{liquid_val.to_s} is not a Regexp match for #{attribute.to_s}: #{accepted_vals}")
                 end
-                self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute).to_s
+                self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute)
               end
             else
               # No, this attribute does not define a Set of acceptable values.
               # The freeform Liquid-given value is fine, but if it's nil
               # we can still try for a default.
               if liquid_val.nil?
-                self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute).to_s
+                self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute)
               else
-                liquid_val.to_s
+                liquid_val
               end
             end
           else
