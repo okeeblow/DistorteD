@@ -13,11 +13,11 @@ standard_image: &standard_image
   - tag: medium
     width: 800
     height: 800
-    media: "(min-width: 800px)"
+    media: "(min-width: 400px) and (max-width: 800px)"
   - tag: large
     width: 1500
     height: 1500
-    media: "(min-width: 1500px)"
+    media: "(min-width: 800px)"
 
 distorted:
 
