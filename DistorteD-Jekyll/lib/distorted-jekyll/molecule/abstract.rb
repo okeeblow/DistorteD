@@ -19,23 +19,30 @@ module Jekyll
         GLOBAL_ATTRS = Set[:title]
 
 
+        # Returns a Set of Arrays of search keys to try in config()
+        def search_keys(*keys)
+          # It's likely that we will get a default argument of [nil]
+          # here due to the output of attr_value(:whatever) for unset attrs.
+          keys = keys.compact
+          # If a search key path was given, construct one based
+          # on the MIME::Type union Set between the source media
+          # and the plugged MediaMolecule.
+          if keys.empty? or keys.all?{|k| k.nil?}
+            try_keys = @mime.map{ |t|
+              # Use only the first part of complex sub_types like 'svg+xml'
+              [t.media_type, t.sub_type.split('+').first].compact
+            }
+          else
+            # Or use a user-provided config path.
+            try_keys = Set[keys]
+          end
+        end
+
         # Loads configuration data telling us how to open certain
         # types of files.
         def welcome(*keys)
-          # Construct an Array of Arrays of config keys to search
-          # based on the MIME::Type union Set between the source media
-          # and the MediaMolecule.
-          # Prepend the user-given search keys iff they aren't blank.
-          try_keys = @mime.map{ |t|
-            # Use only the first part of complex sub_types like 'svg+xml'
-            [t.media_type, t.sub_type.split('+').first].compact
-          }
-          unless keys.empty?
-            try_keys.unshift(keys)
-          end
-
           # Try each set of keys until we find a match
-          for try in try_keys
+          for try in search_keys(*keys)
             tried = Jekyll::DistorteD::Floor::config(
               Jekyll::DistorteD::Floor::CONFIG_ROOT,
               :welcome,
@@ -53,22 +60,20 @@ module Jekyll
 
         # Load configuration telling us what media-types to generate
         # for any given media-type input.
-        def changes
+        def changes(*keys)
           out = Set[]
-
           # `changes` media-type[sub_type] config will contain information about
           # what variations output format are desired for what input format,
           # e.g. {:image => {:jpeg => Set['image/jpeg', 'image/webp']}}
           # It is not automatically implied that the source format is also
           # an output format!
-          for m in @mime
+          for try in search_keys(*keys)
             tried = Jekyll::DistorteD::Floor::config(
             Jekyll::DistorteD::Floor::CONFIG_ROOT,
               :changes,
-              m.media_type,
-              m.sub_type.split('+').first,
+              *try,
             )
-            unless tried.nil?
+            if tried.is_a?(Enumerable) and tried.all?{|t| t.is_a?(String)} and not tried.empty?
               tried.each{ |t|
                 # MIME::Type.new() won't give us a usable Type object:
                 #
@@ -94,22 +99,9 @@ module Jekyll
         # given type of file, or for an arbitrary key hierarchy.
         def outer_limits(*keys)
           out = Set[]
-          # Construct an Array of Arrays of config keys to search
-          # based on the MIME::Type union Set between the source media
-          # and the MediaMolecule.
-          # Prepend the user-given search keys iff they aren't blank.
-          if keys.empty?
-            try_keys = @mime.map{ |t|
-              # Use only the first part of complex sub_types like 'svg+xml'
-              [t.media_type, t.sub_type.split('+').first].compact
-            }
-          else
-            try_keys = Set[keys]
-          end
-
           # See if any config data exists for each given key hierarchy,
           # but under the root DistorteD config key.
-          for try in try_keys
+          for try in search_keys(*keys)
             tried = Jekyll::DistorteD::Floor::config(
               Jekyll::DistorteD::Floor::CONFIG_ROOT,
               :outer_limits,
