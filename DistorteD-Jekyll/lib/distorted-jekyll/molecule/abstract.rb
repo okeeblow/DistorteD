@@ -87,26 +87,18 @@ module Jekyll
         # Loads configuration telling us what variations to generate for any
         # given type of file, or for an arbitrary key hierarchy.
         def outer_limits(*keys)
-          out = Set[
-            # TODO: Make this configurable.
-            # For now everything should output a full-size.
-            {
-              :tag => :full,
-              :width => :full,
-              :height => :full,
-              :media => nil,
-            }.merge(attrs).merge({:crop => :none})  # Never let `full` get cropped
-          ]
+          out = Set[]
           # Construct an Array of Arrays of config keys to search
           # based on the MIME::Type union Set between the source media
           # and the MediaMolecule.
           # Prepend the user-given search keys iff they aren't blank.
-          try_keys = @mime.map{ |t|
-            # Use only the first part of complex sub_types like 'svg+xml'
-            [t.media_type, t.sub_type.split('+').first].compact
-          }
-          unless keys.empty?
-            try_keys.unshift(keys)
+          if keys.empty?
+            try_keys = @mime.map{ |t|
+              # Use only the first part of complex sub_types like 'svg+xml'
+              [t.media_type, t.sub_type.split('+').first].compact
+            }
+          else
+            try_keys = Set[keys]
           end
 
           # See if any config data exists for each given key hierarchy,

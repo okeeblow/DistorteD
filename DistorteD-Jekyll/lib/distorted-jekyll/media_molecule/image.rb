@@ -35,7 +35,7 @@ module Jekyll
           }.map { |m|
             m.sub_type
           }.compact.to_set
-          files.keep_if{|f| f.dig(:tag) != :full}.each{ |f|
+          files.keep_if{|f| f.key?(:width) or f.key?(:height)}.each{ |f|
             if sub_types.include?(f[:type]&.sub_type)
               if biggest_ver
                 if f[:width] > biggest_ver[:width]
@@ -58,7 +58,7 @@ module Jekyll
             # so convert everything to string for template.
             # Remove full-size images from <sources> list before generating.
             # Those should only be linked to, not displayed.
-            filez = files.keep_if{|f| f.dig(:tag) != :full}.map{ |f|
+            filez = files.keep_if{|f| f.key?(:width) or f.key?(:height)}.map{ |f|
               f.transform_values(&:to_s).transform_keys(&:to_s)
             }
 
