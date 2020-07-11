@@ -51,6 +51,18 @@ module Jekyll
           biggest_ver&.dig(:name) || @name
         end
 
+        def outer_limits(*keys)
+          config = super
+          if config.empty?
+            Set[{
+              tag: :full,
+              cop: :none,
+            }]
+          else
+            config
+          end
+        end
+
         def render_to_output_buffer(context, output)
           super
           begin
