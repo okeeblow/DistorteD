@@ -116,6 +116,18 @@ module Jekyll
             end
           end
 
+          # We should output something if the config didn't give us anything.
+          # This is kind of a mess right now with redundancies in the call sites
+          # of things like Molecule::Image. I'll come up with a better general-
+          # purpose fallback solution at some point, but for now this will get
+          # non-Image StaticFiles working with no config :)
+          if out.empty?
+            out << {
+              :tag => :full,
+              :crop => :none,
+            }
+          end
+
           return out
         end
 
