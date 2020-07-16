@@ -58,6 +58,11 @@ distorted:
         ? image/svg+xml
         ? image/png
         ? image/webp
+    text:
+      x-nfo:
+        ? text/x-nfo
+        ? image/png
+        ? image/webp
 
   outer_limits:
     image:
