@@ -221,13 +221,15 @@ module Jekyll
             attrs.each_pair do |attr, val|
               # An attr supplied to the Liquid tag should override any from the config
               liquid_val = parsed_arguments&.dig(attr)
+              # nil.to_s is '', so print 'nil' for readability.
+              Jekyll.logger.debug("Liquid #{attr}", liquid_val || 'nil')
 
               if liquid_val.is_a?(String)
                 # Symbolize String values of any attr that has a Molecule-defined list
                 # of acceptable values, or — completely arbitrarily — any String value
                 # shorter than an arbitrarily-chosen constant.
                 # Otherwise freeze them.
-                if liquid_val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY or 
+                if (liquid_val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY) or
                     molecule.const_get(:ATTRS_VALUES).key?(attr)
                   liquid_val = liquid_val&.to_sym
                 elsif liquid_val.length > ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY
@@ -373,9 +375,11 @@ module Jekyll
             # The `template` here will be the full path, so no versions of this
             # gem should ever conflict. For example, right now during dev it's:
             # `/home/okeeblow/Works/DistorteD/lib/image.liquid`
+            Jekyll.logger.debug('DistorteD', "Parsing #{template} with caching renderer.")
             site.liquid_renderer.file(template).parse(File.read(template))
           else
             # Re-read the template just for this piece of media.
+            Jekyll.logger.debug('DistorteD', "Parsing #{template} with fresh (uncached) renderer.")
             Liquid::Template.parse(File.read(template))
           end
 
