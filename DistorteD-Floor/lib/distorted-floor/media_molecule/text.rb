@@ -138,7 +138,9 @@ module Cooltrainer
       # Return the String absolute path to the TTF file
       def font_filename(font)
         File.join(
-          File.dirname(__FILE__),
+          File.dirname(__FILE__),  # distorted
+          '..'.freeze,  # lib
+          '..'.freeze,  # DistorteD-Ruby
           'font'.freeze,
           'IBM-PC'.freeze,
           FONT_FILENAME[font],
