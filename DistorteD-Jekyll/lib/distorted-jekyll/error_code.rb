@@ -3,6 +3,9 @@ require 'distorted/error_code'
 
 module Jekyll
   module DistorteD
+    class OutOfDateLibraryError < LoadError
+    end
+
     # The built-in NotImplementedError is for "when a feature is not implemented
     # on the current platform", so make our own more appropriate ones.
     class MediaTypeNotImplementedError < StandardDistorteDError
