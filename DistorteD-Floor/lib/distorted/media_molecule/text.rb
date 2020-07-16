@@ -1,5 +1,7 @@
 require 'set'
 
+require 'ttfunk'
+
 require 'distorted/monkey_business/string'
 
 require 'mime/types'
@@ -97,6 +99,22 @@ module Cooltrainer
         @contents = File.read(src, **{:encoding => encoding.to_s})
         @font = font
 
+        # Load font metadata directly from the file so we don't have to
+        # duplicate it here to feed to Vips/Pango.
+        #
+        # irb(main)> font_meta.name.font_name
+        # => ["Perfect DOS VGA 437", "\x00P\x00e\x00r\x00f\x00e\x00c\x00t\x00 \x00D\x00O\x00S\x00 \x00V\x00G\x00A\x00 \x004\x003\x007"]
+        # irb(main)> font_meta.name.font_family
+        # => ["Perfect DOS VGA 437", "\x00P\x00e\x00r\x00f\x00e\x00c\x00t\x00 \x00D\x00O\x00S\x00 \x00V\x00G\x00A\x00 \x004\x003\x007"]
+        # irb(main)> font_meta.name.font_subfamily
+        # => ["Regular", "\x00R\x00e\x00g\x00u\x00l\x00a\x00r"]
+        # irb(main)> font_meta.name.postscript_name
+        # => "PerfectDOSVGA437"
+        # irb(main)> font_meta.line_gap
+        # => 0
+        # 
+        font_meta = TTFunk::File.open(font_filename(@font))
+
         # https://libvips.github.io/libvips/API/current/libvips-create.html#vips-text
         @image = Vips::Image.text(
           # This string must be well-escaped Pango Markup:
@@ -109,9 +127,9 @@ module Cooltrainer
             :fontfile => font_filename(@font),
             # It's not enough to just specify the TTF path;
             # we must also specify a font family, subfamily, and size.
-            :font => 'Perfect DOS VGA 437 Regular 16',#'Perfect DOS VGA 437 Win Regular 16',
-            # Zero space between lines (in Points)
-            :spacing => 0,
+            :font => "#{font_meta.name.font_family.first} #{font_meta.name.font_subfamily.first} 16",
+            # Space between lines (in Points)
+            :spacing => font_meta.line_gap,
             # Requires libvips 8.8; is there a way to detect this?
             :justify => true,
           },

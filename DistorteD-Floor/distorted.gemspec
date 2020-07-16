@@ -24,4 +24,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'ruby-vips', '~> 2.0'
   spec.add_dependency 'svg_optimizer', '~> 0.2.5'
   spec.add_dependency 'hexapdf', '~> 0.11.9'
+  spec.add_dependency 'ttfunk', '~> 1.6'
 end
