@@ -195,7 +195,7 @@ module Jekyll
                 # e.g. 'SomeImage-medium.jpg` but just `SomeImage.jpg` and not `SomeImage-full.jpg`
                 # for the full-resolution outputs.
                 # The default `.jpeg` preferred_extension is monkey-patched to `.jpg` because lol
-                :name => "#{File.basename(@name, '.*')}#{'-'.concat(d[:tag].to_s) if d[:tag] != :full}.#{t.preferred_extension}",
+                :name => "#{File.basename(@name, '.*')}#{'-'.concat(d&.dig(:tag).to_s) if d&.dig(:tag) != :full}.#{t.preferred_extension}",
               })
             }]
           }.to_h
