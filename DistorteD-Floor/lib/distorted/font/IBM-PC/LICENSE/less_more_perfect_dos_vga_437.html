@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>LÆMEUR's Fonts (@SDF.org)</title>
+    <meta charset="utf-8">
+    <style>@import url("../laemeur_com.css");</style>
+  </head>
+  <body>
+    <article>
+      <h1>Fonts</h1>
+      <section>
+	<h1>More and Less Perfect DOS VGA</h1>
+	<p>
+	  <img src="img/Perfect_DOS_VGA.png" alt="[Zeh Fernando's Perfect DOS VGA 437]"><br>
+	</p>
+	<p>
+	  <a href="http://www.zehfernando.com/about" title="Zeh Fernando">Zeh Fernando</a> made <a href="http://www.dafont.com/perfect-dos-vga-437.font" title="Perfect DOS VGA 437 @ dafont">Perfect DOS VGA 437</a> back in 2003, and it is <em>almost</em> the best TrueType VGA font out there. To my eye it looks a bit too spaced-out horizontally; this is for a couple of reasons. I made the following alterations to his font to address them.</p>
+	<p>First, while his font is done on a proper 9x16 pixel matrix (VGA characters are stored as 8x16 matrices in ROM, but <a href="http://support.microsoft.com/kb/59953">the adapter displays them in a padded 9x16 cell</a>), none of his alphanumeric glyphs are more than 7 pixels wide, which is not as it should be. For <strong>More Perfect DOS VGA</strong> I fixed the capitals T and Z, both cases of M, V, X, and W, the zero, the ligatured AE, and a few other glyphs to better match IBM’s VGA ROM font. The result of this is that some glyphs lie a little closer to one another, which makes text look a little less spread-out.</p>
+	<p>
+	  <img src="img/More_Perfect_DOS_VGA.png" alt="[Laemeur's More Perfect DOS VGA]">
+	</p>
+	<p>The other reason things look spread-out is because they just are. Default VGA text mode is 720x400 pixels, and on a CRT monitor that would have filled a display area with an aspect ratio of roughly 3:4.  Those are non-square pixels.  Nowadays all of our displays have square pixels, though &ndash; so if you display a pixel-perfect VGA ROM font on modern displays, it's stretched-out horizontally<sup><a name="fnr.1" id="fnr.1" href="index.html#fn.1">1</a></sup>.</p>
+	<p>An aesthetic remedy to this is just to kern the TrueType font one “pixel” narrower, and that’s what I did for <strong>Less Perfect DOS VGA</strong>.  I left Zeh’s glyphs as he made them and just narrowed the width of the font definition. The result is more tightly packed, less perfect, but nicer as a screen font.</p>
+	<p>
+	  <img alt="[Laemeur's Less Perfect DOS VGA]" src="img/Less_Perfect_DOS_VGA.png">
+	</p>
+	<p>Zeh made Perfect DOS VGA 437 for a Flash ANSI viewer, so his font is available in code page 437 (DOS) and Windows encodings. I don’t care about viewing ANSI graphics, and I’m lazy, so there are no code page 437 versions of Less and More.</p>
+	<h2>Downloads</h2>
+	<ul>
+	  <li>
+	    <a href="../MorePerfectDOSVGA.ttf">More Perfect DOS VGA</a> (.ttf, ~80k)
+	  </li>
+	  <li>
+	    <a href="../LessPerfectDOSVGA.ttf">Less Perfect DOS VGA</a> (.ttf, ~80k)
+	  </li>
+	</ul>
+	
+	<h2>License</h2>
+	<p>More Perfect DOS VGA and Less Perfect DOS VGA are both free for all use, commercial and non-commercial.  IBM designed the glyphs and Zeh Fernando did most of the work converting them to TrueType, so I don't claim ownership of anything.</p>
+	<p>If you use either of the fonts in a project, I'd love to hear about it, and I'd be happy to put a hyperlink to your project on this page if you <a href="mailto:adam@laemeur.com?subject=More%20and%20Less%20Perfect%20DOS%20VGA">send me a note</a>.</p>
+	<hr>
+	<p>
+	  <a id="fn.1" name="fn.1" href="index.html#fnr.1">1</a>. To my knowledge, the best emulation of VGA fonts &ndash; that is, the best emulation of their visible geometry as it appeared on original hardware &ndash; is Arto Hatanpää’s <a href="http://www.dafont.com/nouveau-ibm.font">Nouveau IBM Stretch</a>.
+	</p>
+      </section>
+    </article>
+    <footer>
+Page text ©2014 <a href="http://laemeur.sdf.org">LÆMEUR</a>. <a href="http://laemeur.sdf.org/copyright.html">Most rights reserved</a>.
+</footer>
+
+
+</body></html>
