@@ -47,7 +47,10 @@ module Jekyll
           end
           output << line
         end
-        return output
+        # Remove CSS comments from output so I can leave notes there
+        # without bloating up my output.
+        # Based on C-shebang-style comment regex from MRE3
+        return output.gsub(/\/\*[^*]*\*+(?:[^*\/][^*]*\*+)*\//, '')
       end
 
     end  # ThirteenthStyle
