@@ -112,7 +112,6 @@ module Cooltrainer
         # => "PerfectDOSVGA437"
         # irb(main)> font_meta.line_gap
         # => 0
-        # 
         font_meta = TTFunk::File.open(font_filename(@font))
 
         # https://libvips.github.io/libvips/API/current/libvips-create.html#vips-text
@@ -130,7 +129,7 @@ module Cooltrainer
             :font => "#{font_meta.name.font_family.first} #{font_meta.name.font_subfamily.first} 16",
             # Space between lines (in Points)
             :spacing => font_meta.line_gap,
-            # Requires libvips 8.8; is there a way to detect this?
+            # Requires libvips 8.8
             :justify => true,
           },
         )
