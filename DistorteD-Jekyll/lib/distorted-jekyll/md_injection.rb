@@ -84,19 +84,21 @@ MD_IMAGE_REGEX = %r&
   (
     # Optional preceding-line attribute list.
     (
-      # One blank line with newline via :space:
-      ^$[[:space:]]
-      # Any amount of blank space before AL
+      # One blank line, because:
+      # "If a block IAL is directly after and before a block-level element,
+      #  it is applied to preceding element."  —Kramdown BAL docs
+      ^$
+      # Any amount of blank space on the line before block IAL
       [[:blank:]]*
       # IAL regex from Section 5.3:
       # https://golem.ph.utexas.edu/~distler/maruku/proposal.html
-      (?<pre_al>\{:(\\\}|[^\}])*\})
+      (?<block_ial_before>\{:(\\\}|[^\}])*\})
       # Any amount of trailing whitespace followed by a newline.
-      [[:blank:]]*[[:space:]]
+      [[:blank:]]*$
     )?  # Match all of that, or nothing.
     # Eat list items containing images since that's the syntax
     # I decided to use for media block arrangements.
-    (
+    (?<li>
       # Include both unordered (-+*) and ordered (\d\. like `1.`) lists.
       # Support any amount of leading whitespace and one space/tab
       # between list delimiter and the image.
@@ -109,28 +111,31 @@ MD_IMAGE_REGEX = %r&
     # Match Markdown image syntax:
     #   ![alt text](/some/path/to/image.png 'title text'){:other="options"}
     #   beginning with the alt tag:
-    !\[(?<alt>(\\\]|[^\]])*)\]
+    !\[(?<alt>(\\[[:print:]]|[^\]])*)\]
     # Continuing with img src as anything after the '(' and before ')' or
     # before anything that could be a title.
     # Assume titles will be quoted.
-    \((?<src>[^'")]+)
+    \((?<src>(\\[[:print:]]|[^'")]+))
     # Title is optional.
     # Ignore double-quotes in single-quoted titles and single-quotes
     # in double-quoted titles otherwise we can't use contractions.
     # Don't include the title's opening or closing quotes in the capture.
-    ('(?<title>[^']*)'|"(?<title>[^"]*)")?
+    ('(?<title>(\\[[:print:]]|[^']*))'|"(?<title>(\\[[:print:]]|[^"]*))")?
     # The closing ')' will always be present, title or no.
     \)
-    # Optional IAL on the same line as the image after any whitespace.
-    ([[:blank:]]*(?<inline_al>\{:(\\\}|[^\}])*\}))*
-    # Also support optional IALs on the line following the image.
-    # :space: matches newlines regardless of file encoding!
-    ([[:space:]][[:blank:]]*(?<post_al>\{:(\\\}|[^\}])*\})*)?
+    # Optional IAL on the same line as the :img element **with no space between them**:
+    # "A span IAL (or two or more span IALs) has to be put directly after
+    #  the span-level element to which it should be applied, no additional
+    #  character is allowed between, otherwise it is ignored and only
+    #  removed from the output.  —Kramdown IAL docs
+    ([[:blank:]]*(?<span_ial>\{:(\\\}|[^\}])*\}))*
+    # Also support optional BALs on the lines following the image.
+    ($^[[:blank:]]*(?<block_ial_after>\{:(\\\}|[^\}])*\})*$)*
   )+  # Capture multiple images together for block display.
 &x
 
 
-def distort_markdown
+def md_injection
   Proc.new { |document, payload|
     # Compare any given document's file extension to the list of enabled
     # Markdown file extensions in Jekyll's config.
@@ -143,6 +148,14 @@ def distort_markdown
       # effectively a bad idea lol) but it's the cleanest way I can come up
       # with right now for separating DistorteD-destined Markdown from
       # the rest of any given page.
+      # NOTE: Attribute List Definitions elsewhere in a Markdown document
+      # will be lost when converting this way. I might end up just parsing
+      # the entire document once with my own `to_liquid` converter, but I've been
+      # avoiding that as it seems wasteful because Jekyll then renders the entire
+      # Markdown document a second time immediately after our Liquid tag.
+      # It's fast enough that I should stop trying to prematurely optimize this :)
+      # TODO: Implement MD → DD love using only the #{CONFIGURED_MARKDOWN_ENGINE},
+      # searching for :img elements inside :li elements to build BLOCKS.
       document.content = document.content.gsub(MD_IMAGE_REGEX) { |match| 
         Kramdown::Document.new(match).to_liquid
       }
