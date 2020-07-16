@@ -63,8 +63,8 @@ if [
   # Available hooks can be seen here:
   #   https://github.com/jekyll/jekyll/blob/master/lib/jekyll/hooks.rb
   # `:documents` does not seem to include `_pages` but does include `_posts`.
-  Jekyll::Hooks.register(:pages, :pre_render, &distort_markdown)
-  Jekyll::Hooks.register(:posts, :pre_render, &distort_markdown)
+  Jekyll::Hooks.register(:pages, :pre_render, &md_injection)
+  Jekyll::Hooks.register(:posts, :pre_render, &md_injection)
 
 else
   # Example of how this looks with the outdated Ruby 2.5 on my Mint 19 laptop:
