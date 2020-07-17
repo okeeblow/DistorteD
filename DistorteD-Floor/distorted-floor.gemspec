@@ -25,4 +25,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'svg_optimizer', '~> 0.2.5'
   spec.add_dependency 'hexapdf', '~> 0.11.9'
   spec.add_dependency 'ttfunk', '~> 1.6'
+  spec.add_dependency 'charlock_holmes', '~> 0.7'
 end
