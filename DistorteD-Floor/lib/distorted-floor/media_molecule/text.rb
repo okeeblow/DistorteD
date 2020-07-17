@@ -159,7 +159,7 @@ module Cooltrainer
         # => "PerfectDOSVGA437"
         # irb(main)> font_meta.line_gap
         # => 0
-        font_meta = TTFunk::File.open(font_filename(@font))
+        @font_meta = TTFunk::File.open(font_path)
 
         # https://libvips.github.io/libvips/API/current/libvips-create.html#vips-text
         @image = Vips::Image.text(
@@ -170,12 +170,12 @@ module Cooltrainer
           to_pango,
           **{
             # String absolute path to TTF
-            :fontfile => font_filename(@font),
+            :fontfile => font_path,
             # It's not enough to just specify the TTF path;
             # we must also specify a font family, subfamily, and size.
-            :font => "#{font_meta.name.font_family.first} #{font_meta.name.font_subfamily.first} 16",
-            # Space between lines (in Points)
-            :spacing => font_meta.line_gap,
+            :font => "#{font_name} 16",
+            # Space between lines (in Points).
+            :spacing => @font_meta.line_gap,
             # Requires libvips 8.8
             :justify => true,
           },
@@ -183,14 +183,45 @@ module Cooltrainer
       end
 
       # Return the String absolute path to the TTF file
-      def font_filename(font)
+      def font_path
         File.join(
           File.dirname(__FILE__),  # distorted
           '..'.freeze,  # lib
           '..'.freeze,  # DistorteD-Ruby
           'font'.freeze,
-          FONT_FILENAME[font],
+          font_codepage,
+          font_filename,
         )
+      end
+
+      # Returns the numeric representation of the codepage
+      # covered by our font.
+      def font_codepage
+        FONT_CODEPAGE.dig(@font).to_s
+      end
+
+      # Returns the basename (with file extension) of our font.
+      def font_filename
+        FONT_FILENAME.dig(@font)
+      end
+
+      # Returns a boolean for whether or not this font is monospaced.
+      # true == monospace
+      # false == proportional
+      def spacing
+        # Monospace fonts will (read: should) have the same width
+        # for every glyph, so we can tell a monospace font by
+        # checking if a deduplicated widths table has size == 1:
+        # irb(main)> font.horizontal_metrics.widths.count
+        # => 256
+        # irb(main)> font.horizontal_metrics.widths.uniq.compact.length
+        # => 1
+        @font_meta.horizontal_metrics.widths.uniq.compact.length == 1 ? :monospace : :proportional
+      end
+
+      # Returns the Family and Subfamily as one string suitable for libvips
+      def font_name
+        "#{@font_meta.name.font_family.first} #{@font_meta.name.font_subfamily.first}"
       end
 
     end  # Text
