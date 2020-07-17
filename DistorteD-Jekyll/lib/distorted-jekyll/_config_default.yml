@@ -21,6 +21,10 @@ standard_image: &standard_image
     height: 1500
     media: "(min-width: 800px)"
 
+standard_text: &standard_text
+  ? image/png
+  ? image/webp
+
 distorted:
 
   # Liquid template caching is default as of Jekyll 4.0,
@@ -59,10 +63,8 @@ distorted:
         ? image/png
         ? image/webp
     text:
-      x-nfo:
-        ? text/x-nfo
-        ? image/png
-        ? image/webp
+      plain: *standard_text
+      x-nfo: *standard_text
 
   outer_limits:
     image:
