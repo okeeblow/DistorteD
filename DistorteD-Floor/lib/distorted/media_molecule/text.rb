@@ -38,6 +38,10 @@ module Cooltrainer
       # Numeric key for UTF-8 is codepage 65001 like Win32:
       # https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
       FONT_FILENAME = {
+        :anonpro => 'Anonymous Pro.ttf'.freeze,
+        :anonpro_b => 'Anonymous Pro B.ttf'.freeze,
+        :anonpro_bi => 'Anonymous Pro BI.ttf'.freeze,
+        :anonpro_i => 'Anonymous Pro I.ttf'.freeze,
         :lessperfectdosvga => 'LessPerfectDOSVGA.ttf'.freeze,
         :moreperfectdisvga => 'MorePerfectDOSVGA.ttf'.freeze,
         :perfectdosvgawin => 'Perfect DOS VGA 437 Win.ttf'.freeze,
@@ -47,6 +51,12 @@ module Cooltrainer
       # Certain fonts are more suitable for certain codepages,
       # so track each codepage's available fonts…
       CODEPAGE_FONT = {
+        65001 => [
+          :anonpro,
+          :anonpro_b,
+          :anonpro_bi,
+          :anonpro_i,
+        ],
         1252 => [
           :lessperfectdosvga,
           :moreperfectdosvga,
