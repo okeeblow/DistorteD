@@ -41,6 +41,7 @@ module Cooltrainer
         :lessperfectdosvga => 'LessPerfectDOSVGA.ttf'.freeze,
         :moreperfectdisvga => 'MorePerfectDOSVGA.ttf'.freeze,
         :perfectdosvgawin => 'Perfect DOS VGA 437 Win.ttf'.freeze,
+        :mona => 'mona.ttf'.freeze,
         :perfectdosvga => 'Perfect DOS VGA 437.ttf'.freeze,
       }
       # Certain fonts are more suitable for certain codepages,
@@ -50,6 +51,9 @@ module Cooltrainer
           :lessperfectdosvga,
           :moreperfectdosvga,
           :perfectdosvgawin,
+        ],
+        932 => [
+          :mona,
         ],
         437 => [
           :perfectdosvga,
@@ -125,6 +129,7 @@ module Cooltrainer
 
         @codepage = case encoding.to_s || detected[:encoding]
           when 'UTF-8'.freeze then 65001
+          when 'Shift_JIS'.freeze then 932
           when 'IBM437'.freeze then 437
           else 1252
         end
