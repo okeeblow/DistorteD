@@ -1,7 +1,9 @@
 require 'set'
 
+# Font metadata extraction
 require 'ttfunk'
 
+# String#map
 require 'distorted/monkey_business/string'
 
 require 'mime/types'
@@ -20,23 +22,43 @@ module Cooltrainer
         :encoding,
       ]
       ATTRS_VALUES = {
-        # Control font selection between the original "Perfect DOS VGA 437" font
-        # and the two "Less-" and "More-Perfect" variants:
-        # https://www.dafont.com/font-comment.php?file=perfect_dos_vga_437
-        # https://laemeur.sdf.org/fonts/
-        :font => Set[:less, :more, :perfect, :ansi],
       }
       ATTRS_DEFAULT = {
-        :font => :ansi,
-        :encoding => 'UTF-8'.freeze,
       }
 
+      # Track supported fonts by codepage.
       # Avoid renaming these from the original archives / websites.
+      # Try not to go nuts here bloating the size of our Gem for a
+      # very niche feature, but I want to ensure good coverage too.
+      #
+      # Treat codepage 8859 documents as codepage 1252 to avoid breaking smart-
+      # quotes and other printable chars in 1252 that are control chars in 8859.
+      # https://encoding.spec.whatwg.org/#names-and-labels
+      #
+      # Numeric key for UTF-8 is codepage 65001 like Win32:
+      # https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
       FONT_FILENAME = {
-        :less => 'LessPerfectDOSVGA.ttf'.freeze,
-        :more => 'MorePerfectDOSVGA.ttf'.freeze,
-        :perfect => 'Perfect DOS VGA 437 Win.ttf'.freeze,
-        :ansi => 'Perfect DOS VGA 437.ttf'.freeze,
+        :lessperfectdosvga => 'LessPerfectDOSVGA.ttf'.freeze,
+        :moreperfectdisvga => 'MorePerfectDOSVGA.ttf'.freeze,
+        :perfectdosvgawin => 'Perfect DOS VGA 437 Win.ttf'.freeze,
+        :perfectdosvga => 'Perfect DOS VGA 437.ttf'.freeze,
+      }
+      # Certain fonts are more suitable for certain codepages,
+      # so track each codepage's available fonts…
+      CODEPAGE_FONT = {
+        1252 => [
+          :lessperfectdosvga,
+          :moreperfectdosvga,
+          :perfectdosvgawin,
+        ],
+        437 => [
+          :perfectdosvga,
+        ],
+      }
+      # …as well as the inverse, the numeric codepage for each font:
+      FONT_CODEPAGE = CODEPAGE_FONT.reduce(Hash.new([])) { |memo, (key, values)|
+        values.each { |value| memo[value] = key }
+        memo
       }
 
 
@@ -92,12 +114,22 @@ module Cooltrainer
         } << "</tt>"
       end
 
-      def initialize(src, font: ATTRS_DEFAULT[:font], encoding: ATTRS_DEFAULT[:encoding])
+      def initialize(src, encoding: nil, font: nil, spacing: nil)
         @src = src
         # VIPS makes us provide the text content as a single variable,
         # so we may as well just one-shot File.read() it into memory.
-        @contents = File.read(src, **{:encoding => encoding.to_s})
-        @font = font
+        # https://kunststube.net/encoding/
+        @contents = File.read(src)
+        detected = CharlockHolmes::EncodingDetector.detect(@contents)
+        @encoding = (encoding || detected[:encoding]).to_s
+
+        @codepage = case encoding.to_s || detected[:encoding]
+          when 'UTF-8'.freeze then 65001
+          when 'IBM437'.freeze then 437
+          else 1252
+        end
+
+        @font = font&.to_sym || CODEPAGE_FONT[@codepage].first
 
         # Load font metadata directly from the file so we don't have to
         # duplicate it here to feed to Vips/Pango.
@@ -142,7 +174,6 @@ module Cooltrainer
           '..'.freeze,  # lib
           '..'.freeze,  # DistorteD-Ruby
           'font'.freeze,
-          'IBM-PC'.freeze,
           FONT_FILENAME[font],
         )
       end
