@@ -3,6 +3,9 @@ require 'set'
 # Font metadata extraction
 require 'ttfunk'
 
+# Text file charset detection
+require 'charlock_holmes'
+
 # String#map
 require 'distorted/monkey_business/string'
 
@@ -20,8 +23,10 @@ module Cooltrainer
         :alt,
         :font,
         :encoding,
+        :spacing,
       ]
       ATTRS_VALUES = {
+        :spacing => Set[:monospace, :proportional],
       }
       ATTRS_DEFAULT = {
       }
@@ -123,9 +128,14 @@ module Cooltrainer
       # Return a Pango Markup escaped version of the document.
       def to_pango
         # https://developer.gnome.org/glib/stable/glib-Simple-XML-Subset-Parser.html#g-markup-escape-text
-        "<tt>" << @contents.encode('utf-8', :invalid => :replace, :replace => '').map{ |c|
+        escaped = CharlockHolmes::Converter.convert(@contents, @encoding, 'UTF-8'.freeze).map{ |c|
           g_markup_escape_char(c)
-        } << "</tt>"
+        }
+        if spacing == :monospace
+          "<tt>" << escaped << "</tt>"
+        else
+          escaped
+        end
       end
 
       def initialize(src, encoding: nil, font: nil, spacing: nil)

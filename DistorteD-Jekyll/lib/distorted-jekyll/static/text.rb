@@ -25,7 +25,12 @@ module Jekyll
           #return false if File.exist?(path) && !modified?
           self.class.mtimes[path] = mtime
 
-          @distorted = DRIVER.new(path, encoding: attr_value(:encoding))
+          @distorted = DRIVER.new(
+            path,
+            encoding: attr_value(:encoding),
+            font: attr_value(:font),
+            spacing: attr_value(:spacing),
+          )
           # Write any actual-text output variations.
           # Images will be written by `super`.
           for variation in files
