@@ -62,7 +62,8 @@ module Jekyll
       # My chosen boundary length fits all of the outer-limit tag names I use,
       # like 'medium'. It fits the longest value of Vips::Interesting too,
       # though `crop` will be symbolized based on the other condition.
-      ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY = 10
+      ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY = 13
+
 
       # 𝘏𝘖𝘞 𝘈𝘙𝘌 𝘠𝘖𝘜 𝘎𝘌𝘕𝘛𝘓𝘌𝘔𝘌𝘕 ！！
       def initialize(tag_name, arguments, liquid_options)
