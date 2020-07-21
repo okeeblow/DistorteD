@@ -56,7 +56,7 @@ if [
   Liquid::Template.register_tag('distort', Jekyll::DistorteD::BLOCKS)
 
   # Register a tag for basic DistorteD CSS.
-  Liquid::Template.register_tag('13thStyle', Jekyll::DistorteD::ThirteenthStyle)
+  Liquid::Template.register_tag('13th_style', Jekyll::DistorteD::ThirteenthStyle)
 
   # Transform Markdown image syntax ![alt](url.jpg "title")
   # to instances of our liquid tag {% distorted %}
