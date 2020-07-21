@@ -52,6 +52,8 @@ module Cooltrainer
         :perfectdosvgawin => 'Perfect DOS VGA 437 Win.ttf'.freeze,
         :mona => 'mona.ttf'.freeze,
         :perfectdosvga => 'Perfect DOS VGA 437.ttf'.freeze,
+        :profont => 'ProFontWindows.ttf'.freeze,
+        :profont_b => 'ProFontWindows-Bold.ttf'.freeze,
       }
       # Certain fonts are more suitable for certain codepages,
       # so track each codepage's available fonts…
@@ -69,6 +71,10 @@ module Cooltrainer
         ],
         932 => [
           :mona,
+        ],
+        850 => [
+          :profont,
+          :profont_b,
         ],
         437 => [
           :perfectdosvga,
@@ -122,6 +128,15 @@ module Cooltrainer
           sprintf('&#x%x;', c.ord)
         else
           c
+      # Using a numeric key for things for simplicity.
+      # TODO: Replace this with Ruby's built-in Encoding class after I have
+      # a better idea what I want to do.
+      def codepage
+        case @encoding
+          when 'UTF-8'.freeze then 65001
+          when 'Shift_JIS'.freeze then 932
+          when 'IBM437'.freeze then 437
+          else 1252
         end
       end
 
@@ -147,12 +162,6 @@ module Cooltrainer
         detected = CharlockHolmes::EncodingDetector.detect(@contents)
         @encoding = (encoding || detected[:encoding]).to_s
 
-        @codepage = case encoding.to_s || detected[:encoding]
-          when 'UTF-8'.freeze then 65001
-          when 'Shift_JIS'.freeze then 932
-          when 'IBM437'.freeze then 437
-          else 1252
-        end
 
         @font = font&.to_sym || CODEPAGE_FONT[@codepage].first
 
