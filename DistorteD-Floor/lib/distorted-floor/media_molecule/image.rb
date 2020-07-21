@@ -85,7 +85,7 @@ module Cooltrainer
 
       def rotate(angle: nil)
         if angle == :auto
-          @image = @image.autorot
+          @image = @image&.autorot
         end
       end
 
