@@ -4,7 +4,7 @@ require 'mime/types'
 require 'svg_optimizer'
 
 module Cooltrainer
-  class DistorteD
+  module DistorteD
     class SVG < Image
 
       SUB_TYPE = 'svg'.freeze

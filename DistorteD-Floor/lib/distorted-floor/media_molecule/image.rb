@@ -47,7 +47,7 @@ require 'set'
 require 'mime/types'
 
 module Cooltrainer
-  class DistorteD
+  module DistorteD
     class Image
 
       MEDIA_TYPE = 'image'.freeze
