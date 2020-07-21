@@ -5,6 +5,7 @@ require 'ttfunk'
 
 # Text file charset detection
 require 'charlock_holmes'
+require 'distorted/modular_technology/pango'
 
 # String#map
 require 'distorted/monkey_business/string'
@@ -14,6 +15,9 @@ require 'mime/types'
 module Cooltrainer
   module DistorteD
     class Text < Image
+
+      include Cooltrainer::DistorteD::Tech::Pango;
+
 
       MEDIA_TYPE = 'text'.freeze
 
@@ -87,47 +91,6 @@ module Cooltrainer
       }
 
 
-      # Escape text as necessary for Pango Markup, which is what Vips::Image.text()
-      # expects for its argv. This code should be in GLib but is unimplemented in Ruby's:
-      #
-      # https://ruby-gnome2.osdn.jp/hiki.cgi?Gtk%3A%3ALabel#Markup+%28styled+text%29
-      # "The markup passed to Gtk::Label#set_markup() must be valid; for example,
-      # literal </>/& characters must be escaped as &lt;, &gt;, and &amp;.
-      # If you pass text obtained from the user, file, or a network to
-      # Gtk::Label#set_markup(), you'll want to escape it
-      # with GLib::Markup.escape_text?(not implemented yet)."
-      #
-      # Base my own implementation on the original C version found in gmarkup:
-      # https://gitlab.gnome.org/GNOME/glib/-/blob/master/glib/gmarkup.c
-      def g_markup_escape_text(text)
-        text.map{ |c| g_markup_escape_char(c) }
-      end
-
-      # The char-by-char actual function used by g_markup_escape_text
-      def g_markup_escape_char(c)
-        # I think a fully-working version of this function would
-        # be as simple `sprintf('&#x%x;', c.ord)`, but I want to copy
-        # the C implementation as closely as possible, which means using
-        # the named escape sequences for common characters and separating
-        # the Unicode control characters (> 0x7f) even though three's no
-        # need to in Ruby.
-        case c.ord
-        when '&'.ord
-          '&amp;'
-        when '<'.ord
-          '&lt;'
-        when '>'.ord
-          '&gt;'
-        when '\''.ord
-          '&apos;'
-        when '"'.ord
-          '&quot;'
-        when 0x1..0x8, 0xb..0xc, 0xe..0x1f, 0x7f
-          sprintf('&#x%x;', c.ord)
-        when 0x7f..0x84, 0x86..0x9f
-          sprintf('&#x%x;', c.ord)
-        else
-          c
       # Using a numeric key for things for simplicity.
       # TODO: Replace this with Ruby's built-in Encoding class after I have
       # a better idea what I want to do.
