@@ -1,7 +1,7 @@
 require 'set'
 
 require 'distorted/text'
-require 'distorted-jekyll/static/state'
+require 'distorted-jekyll/static/image'
 
 module Jekyll
   module DistorteD
@@ -25,12 +25,14 @@ module Jekyll
           #return false if File.exist?(path) && !modified?
           self.class.mtimes[path] = mtime
 
-          @distorted = DRIVER.new(
-            path,
-            encoding: attr_value(:encoding),
-            font: attr_value(:font),
-            spacing: attr_value(:spacing),
-          )
+          unless defined? @distorted
+            @distorted = DRIVER.new(
+              path,
+              encoding: attr_value(:encoding),
+              font: attr_value(:font),
+              spacing: attr_value(:spacing),
+            )
+          end
           # Write any actual-text output variations.
           # Images will be written by `super`.
           for variation in files
