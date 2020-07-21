@@ -1,16 +1,18 @@
 require 'set'
 
-# Font metadata extraction
-require 'ttfunk'
+require 'ttfunk'  # Font metadata extraction
+require 'charlock_holmes'  # Text file charset detection
 
-# Text file charset detection
-require 'charlock_holmes'
+require 'distorted/monkey_business/string'  # String#map
 require 'distorted/modular_technology/pango'
 
-# String#map
-require 'distorted/monkey_business/string'
+require 'distorted/image'
 
 require 'mime/types'
+
+# No need to do all the fancy library versioning in a subclass.
+require 'vips'
+
 
 module Cooltrainer
   module DistorteD
@@ -106,7 +108,7 @@ module Cooltrainer
       # Return a Pango Markup escaped version of the document.
       def to_pango
         # https://developer.gnome.org/glib/stable/glib-Simple-XML-Subset-Parser.html#g-markup-escape-text
-        escaped = CharlockHolmes::Converter.convert(@contents, @encoding, 'UTF-8'.freeze).map{ |c|
+        escaped = @contents.map{ |c|
           g_markup_escape_char(c)
         }
         if spacing == :monospace
@@ -118,15 +120,22 @@ module Cooltrainer
 
       def initialize(src, encoding: nil, font: nil, spacing: nil)
         @src = src
+        @liquid_spacing = spacing
+
         # VIPS makes us provide the text content as a single variable,
         # so we may as well just one-shot File.read() it into memory.
         # https://kunststube.net/encoding/
-        @contents = File.read(src)
-        detected = CharlockHolmes::EncodingDetector.detect(@contents)
-        @encoding = (encoding || detected[:encoding]).to_s
+        contents = File.read(@src)
 
+        # It's not easy or even possible in some cases to tell the "true" codepage
+        # we should use for any given text document, but using character detection
+        # is worth a shot if the user gave us nothing.
+        detected = CharlockHolmes::EncodingDetector.detect(contents)
+        @encoding = (encoding || detected[:encoding] || 'UTF-8'.freeze).to_s
+        @contents = CharlockHolmes::Converter.convert(contents, @encoding, 'UTF-8'.freeze)
 
-        @font = font&.to_sym || CODEPAGE_FONT[@codepage].first
+        # Set the shorthand symbol key for our chosen font.
+        @font = font&.to_sym || self::CODEPAGE_FONT[codepage].first
 
         # Load font metadata directly from the file so we don't have to
         # duplicate it here to feed to Vips/Pango.
@@ -164,6 +173,8 @@ module Cooltrainer
         )
       end
 
+      protected
+
       # Return the String absolute path to the TTF file
       def font_path
         File.join(
@@ -179,12 +190,12 @@ module Cooltrainer
       # Returns the numeric representation of the codepage
       # covered by our font.
       def font_codepage
-        FONT_CODEPAGE.dig(@font).to_s
+        self::FONT_CODEPAGE&.dig(@font).to_s
       end
 
       # Returns the basename (with file extension) of our font.
       def font_filename
-        FONT_FILENAME.dig(@font)
+        self::FONT_FILENAME&.dig(@font)
       end
 
       # Returns a boolean for whether or not this font is monospaced.
