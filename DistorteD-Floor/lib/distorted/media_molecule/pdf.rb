@@ -5,7 +5,7 @@ require 'mime/types'
 
 
 module Cooltrainer
-  class DistorteD
+  module DistorteD
     class PDF
 
       MEDIA_TYPE = 'application'.freeze

@@ -12,7 +12,7 @@ require 'distorted/monkey_business/string'
 require 'mime/types'
 
 module Cooltrainer
-  class DistorteD
+  module DistorteD
     class Text < Image
 
       MEDIA_TYPE = 'text'.freeze
