@@ -65,9 +65,15 @@ distorted:
     text:
       plain: *standard_text
       x-nfo: *standard_text
+    font:
+      ttf:
+        ? image/png
+        ? image/webp
 
   outer_limits:
     image:
       jpeg: *standard_image
       png: *standard_image
       webp: *standard_image
+    font:
+      ttf: *standard_image
