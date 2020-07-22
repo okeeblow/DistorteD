@@ -23,7 +23,7 @@ module Jekyll
         def write(dest)
           orig_dest = destination(dest)
 
-          #return false if File.exist?(path) && !modified?
+          return false if !modified?
           self.class.mtimes[path] = mtime
 
           unless defined? @distorted
