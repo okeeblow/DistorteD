@@ -219,17 +219,17 @@ module Cooltrainer
 
       # Returns the Pango-Markup-encoded UTF-8 String version + revision of the font
       def font_version
-        g_markup_escape_text(@font_meta.name.version.first.encode('UTF-8'))
+        g_markup_escape_text(@font_meta.name&.version&.first&.encode('UTF-8').to_s)
       end
 
       # Returns the Pango-Markup-encoded UTF-8 String font file description
       def font_description
-        g_markup_escape_text(@font_meta.name.description.first.encode('UTF-8'))
+        g_markup_escape_text(@font_meta.name&.description&.first&.encode('UTF-8').to_s)
       end
 
       # Returns the Pango-Markup-encoded UTF-8 String copyright information of the font
       def font_copyright
-        g_markup_escape_text(@font_meta.name.copyright.first.encode('UTF-8'))
+        g_markup_escape_text(@font_meta.name&.copyright&.first&.encode('UTF-8').to_s)
       end
 
     end  # Text
