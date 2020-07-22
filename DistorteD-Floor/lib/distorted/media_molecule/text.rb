@@ -27,6 +27,7 @@ module Cooltrainer
 
       ATTRS = Set[
         :alt,
+        :crop,
         :font,
         :encoding,
         :spacing,
@@ -35,6 +36,7 @@ module Cooltrainer
         :spacing => Set[:monospace, :proportional],
       }
       ATTRS_DEFAULT = {
+        :crop => :none,
       }
 
       # Track supported fonts by codepage.

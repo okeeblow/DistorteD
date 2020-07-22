@@ -101,7 +101,8 @@ module Cooltrainer
           elsif width.respond_to?(:to_i)
             ver = @image.thumbnail_image(
               width.to_i,
-              **{:crop => crop || ATTRS_DEFAULT[:crop]},
+              # Use `self` namespace for constants so subclasses can redefine
+              **{:crop => crop || self.singleton_class.const_get(:ATTRS_DEFAULT)[:crop]},
             )
             return ver.write_to_file(dest)
           end
