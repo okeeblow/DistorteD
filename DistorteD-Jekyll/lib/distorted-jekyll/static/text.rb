@@ -1,3 +1,4 @@
+require 'fileutils'
 require 'set'
 
 require 'distorted/text'
