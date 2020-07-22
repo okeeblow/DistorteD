@@ -8,6 +8,7 @@ require 'distorted-jekyll/floor'
 require 'distorted-jekyll/molecule/abstract'
 
 # Media-type drivers
+require 'distorted-jekyll/molecule/font'
 require 'distorted-jekyll/molecule/image'
 require 'distorted-jekyll/molecule/text'
 require 'distorted-jekyll/molecule/pdf'
@@ -49,6 +50,7 @@ module Jekyll
       # TODO: Make this configurable.
       MEDIA_MOLECULES = [
         Jekyll::DistorteD::Molecule::LastResort,
+        Jekyll::DistorteD::Molecule::Font,
         Jekyll::DistorteD::Molecule::Text,
         Jekyll::DistorteD::Molecule::PDF,
         Jekyll::DistorteD::Molecule::SVG,
