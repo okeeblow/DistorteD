@@ -21,8 +21,14 @@ module Jekyll
         def render_to_output_buffer(context, output)
           super
           begin
-            # Strip out all non-displayable media-types, e.g. the actual text/whatever.
-            filez = files.keep_if{|f| f.key?(:type) && f&.dig(:type)&.media_type == 'image'.freeze}.map{ |f|
+            filez = files.keep_if{ |f|
+              # Strip out all non-displayable media-types, e.g. the actual text/whatever.
+              f.key?(:type) && f&.dig(:type)&.media_type == 'image'.freeze
+            }.keep_if{ |f|
+              # Strip out full-size images (will have `nil`) — only display thumbnail vers
+              f.key?(:width) or f.key?(:height)
+            }.map{ |f|
+              # Stringify to make Liquid happy
               f.transform_values(&:to_s).transform_keys(&:to_s)
             }
             output << parse_template.render({
