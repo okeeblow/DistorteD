@@ -71,6 +71,10 @@ require 'kramdown'
 # Single images will be replaced with {% distorted %}.
 # Multiple list-item images will be replaced with a {% distort %} block.
 #
+# By doing with with a regex (sorry!!) I hope to avoid a hard dependency on
+# any one particular Markdown engine. Though I only support Kramdown for now,
+# any engine that supports IALs should be fine.
+#
 # High-level explanation of what we intend to match:
 #
 # {:optional_ial => line_before_image}  # Iff preceded by a blank line!
@@ -87,27 +91,36 @@ MD_IMAGE_REGEX = %r&
       # One blank line, because:
       # "If a block IAL is directly after and before a block-level element,
       #  it is applied to preceding element."  —Kramdown BAL docs
-      ^$
+      #
+      # /\R/ - A linebreak: \n, \v, \f, \r \u0085 (NEXT LINE),
+      #   \u2028 (LINE SEPARATOR), \u2029 (PARAGRAPH SEPARATOR) or \r\n.
+      ^$\R
       # Any amount of blank space on the line before block IAL
-      [[:blank:]]*
+      ^[[:blank:]]*
       # IAL regex from Section 5.3:
       # https://golem.ph.utexas.edu/~distler/maruku/proposal.html
       (?<block_ial_before>\{:(\\\}|[^\}])*\})
       # Any amount of trailing whitespace followed by a newline.
-      [[:blank:]]*$
+      [[:blank:]]*$\R
     )?  # Match all of that, or nothing.
-    # Eat list items containing images since that's the syntax
-    # I decided to use for media block arrangements.
-    (?<li>
+    # Begin matching the line that contains an image.
+    ^
+    # Match anything that might be between that start-of-line
+    # and the first character (!) of an image.
+    (
+      # From Gruber's original Markdown page:
+      # "List markers typically start at the left margin, but may be indented
+      # by up to three spaces."
       # Include both unordered (-+*) and ordered (\d\. like `1.`) lists.
-      # Support any amount of leading whitespace and one space/tab
-      # between list delimiter and the image.
-      [[:blank:]]*[-\*\+|\d\.][[:blank:]]
+      (?<li>[ ]{0,3}[-\*\+|\d\.]
       # Support an optional IAL for the list element as shown in Kramdown docs:
       # https://kramdown.gettalong.org/syntax.html#lists
       # Ctrl+F "{:.cls}"
-      (\{:(\\\}|[^\}])*\})?
-    )?  # List items are optional!
+      (?<li_ial>\{:(\\\}|[^\}])*\})?
+      # "List markers must be followed by one or more spaces or a tab."
+      # https://daringfireball.net/projects/markdown/syntax#list
+      ([ ]+|\t))
+    )?  # Although any preceding elements are optional!
     # Match Markdown image syntax:
     #   ![alt text](/some/path/to/image.png 'title text'){:other="options"}
     #   beginning with the alt tag:
@@ -127,10 +140,10 @@ MD_IMAGE_REGEX = %r&
     # "A span IAL (or two or more span IALs) has to be put directly after
     #  the span-level element to which it should be applied, no additional
     #  character is allowed between, otherwise it is ignored and only
-    #  removed from the output.  —Kramdown IAL docs
-    ([[:blank:]]*(?<span_ial>\{:(\\\}|[^\}])*\}))*
+    #  removed from the output."  —Kramdown IAL docs
+    (?<span_ial>\{:(\\\}|[^\}])*\})*[[:print:]]*$\R
     # Also support optional BALs on the lines following the image.
-    ($^[[:blank:]]*(?<block_ial_after>\{:(\\\}|[^\}])*\})*$)*
+    (^[[:blank:]]*(?<block_ial_after>\{:(\\\}|[^\}])*\})+$\R)*
   )+  # Capture multiple images together for block display.
 &x
 
