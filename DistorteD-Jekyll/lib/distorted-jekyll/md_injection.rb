@@ -274,13 +274,10 @@ module Kramdown
         lists = children(el, :li)
         list_imgs = lists.map{|li| children(li, :img)}.flatten
 
-        case imgs.count
-        when 0
-          # How did we even get here? This probably means a bug in our regex.
-          # Good luck :)
-          raise "Attempted to render zero images as DistorteD Liquid tags."
-        when 1
-          # Render one (1) image/video/whatever.
+        case lists.count
+        when 0..1
+          # Render one (1) image/video/whatever. This behavior is the same
+          # regardless if the image is in a single-item list or just by itself.
           distorted(attrs(imgs.first)&.first&.merge({
             # Images default to `attention` cropping for desktop/mobile versatility.
             # Override this for single images unless a cropping value was already set.
@@ -299,7 +296,6 @@ module Kramdown
             raise "MD->img regex returned an unequal number of listed and unlisted tags."
           end
 
-          # For now just assume all images are list images if we get here.
           "{% distort -%}\n#{list_imgs.map{|img| distorted(*attrs(img))}.join("\n")}\n{% enddistort %}"
         end
       end
