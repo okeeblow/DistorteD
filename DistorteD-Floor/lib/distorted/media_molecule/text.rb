@@ -31,12 +31,14 @@ module Cooltrainer
         :font,
         :encoding,
         :spacing,
+        :dpi,
       ]
       ATTRS_VALUES = {
         :spacing => Set[:monospace, :proportional],
       }
       ATTRS_DEFAULT = {
         :crop => :none,
+        :dpi => 144,
       }
 
       # Track supported fonts by codepage.
@@ -120,7 +122,7 @@ module Cooltrainer
         end
       end
 
-      def initialize(src, encoding: nil, font: nil, spacing: nil)
+      def initialize(src, encoding: nil, font: nil, spacing: nil, dpi: ATTRS_DEFAULT[:dpi])
         @src = src
         @liquid_spacing = spacing
 
@@ -169,8 +171,8 @@ module Cooltrainer
             :font => "#{font_name} 16",
             # Space between lines (in Points).
             :spacing => @font_meta.line_gap,
-            # Requires libvips 8.8
-            :justify => true,
+            :justify => true,  # Requires libvips 8.8
+            :dpi => dpi.to_i,
           },
         )
       end

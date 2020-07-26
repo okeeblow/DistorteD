@@ -32,6 +32,7 @@ module Jekyll
               encoding: attr_value(:encoding),
               font: attr_value(:font),
               spacing: attr_value(:spacing),
+              dpi: attr_value(:dpi),
             )
           end
           # Write any actual-text output variations.
