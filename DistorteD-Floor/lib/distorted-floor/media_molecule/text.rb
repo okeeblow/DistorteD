@@ -137,7 +137,7 @@ module Cooltrainer
         @contents = CharlockHolmes::Converter.convert(contents, @encoding, 'UTF-8'.freeze)
 
         # Set the shorthand symbol key for our chosen font.
-        @font = font&.to_sym || self::CODEPAGE_FONT[codepage].first
+        @font = font&.to_sym || self.singleton_class.const_get(:CODEPAGE_FONT)[codepage].first
 
         # Load font metadata directly from the file so we don't have to
         # duplicate it here to feed to Vips/Pango.
@@ -192,12 +192,12 @@ module Cooltrainer
       # Returns the numeric representation of the codepage
       # covered by our font.
       def font_codepage
-        self::FONT_CODEPAGE&.dig(@font).to_s
+        self.singleton_class.const_get(:FONT_CODEPAGE)&.dig(@font).to_s
       end
 
       # Returns the basename (with file extension) of our font.
       def font_filename
-        self::FONT_FILENAME&.dig(@font)
+        self.singleton_class.const_get(:FONT_FILENAME)&.dig(@font)
       end
 
       # Returns a boolean for whether or not this font is monospaced.
