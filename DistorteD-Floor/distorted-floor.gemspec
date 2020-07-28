@@ -1,15 +1,30 @@
+# Load version string from a shared constant in a subdir of this Gem root.
+# Only chdir for the Gem build after we've imported the version constant,
+# or `require_relative` will try to double up the root directory:
+# 'Invalid gemspec in [DistorteD-Ruby/distorted.gemspec]: cannot load such file
+#  -- /home/okeeblow/Works/DistorteD/DistorteD-Ruby/DistorteD-Ruby/lib/distorted/version'
+require_relative 'lib/distorted/version'
+
+# Change working directory to our Gem's root dir before building,
+# so paths in the Gem will be relative to that dir instead of
+# relative to the shared repository root.
+Dir.chdir(__dir__)
+
+
+# Do the thing.
 Gem::Specification.new do |spec|
   spec.name          = 'distorted'
-  spec.version       = '0.5.6'
-  spec.authors       = ['Allison Reid']
+  spec.version       = Cooltrainer::DistorteD::VERSION
+  spec.authors       = ['okeeblow']
   spec.email         = ['root@cooltrainer.org']
 
-  spec.summary       = 'Media transformation framework core functionality.'
+  spec.summary       = 'Multimedia toolkit core.'
   spec.description   = 'Ruby implementation of core file-format operations used by DistorteD-Jekyll.'
   spec.homepage      = 'https://cooltrainer.org'
   spec.license       = 'AGPL-3.0'
 
-  spec.files         = Dir['lib/**/*', 'LICENSE', 'README.md']
+  # "The optional base keyword argument specifies the base directory for interpreting relative pathnames instead of the current working directory. As the results are not prefixed with the base directory name in this case, you will need to prepend the base directory name if you want real paths."
+  spec.files         = Dir.glob('{font,lib}/**/*').keep_if { |file| File.file?(file) } + %w(LICENSE README.md)
   spec.test_files    = Dir['test/**/*']
   spec.require_paths = ['lib']
 

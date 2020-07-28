@@ -1,18 +1,28 @@
-HYPE_THE_CORE = Gem::Specification::load(File.join(File.dirname(__FILE__), '..', 'DistorteD-Ruby', 'distorted.gemspec'))
+# Change working directory to our Gem's root dir before building,
+# so paths in the Gem will be relative to that dir instead of
+# relative to the shared repository root.
+Dir.chdir(__dir__)
 
+
+# Tie this Gem's version number directly to that of the core Gem
+# since they share this repository.
+require_relative '../../DistorteD-Ruby/lib/distorted/version'
+
+
+# Do the thing.
 Gem::Specification.new do |spec|
   spec.name          = 'distorted-jekyll'
-  spec.version       = HYPE_THE_CORE.version
-  spec.authors       = ['Allison Reid']
+  spec.version       = Cooltrainer::DistorteD::VERSION
+  spec.authors       = ['okeeblow']
   spec.email         = ['root@cooltrainer.org']
 
-  spec.summary       = 'Media transformation and embedding framework for Jekyll.'
+  spec.summary       = 'Multimedia toolkit for Jekyll websites.'
   spec.description   = 'Jekyll::DistorteD is a Liquid tag for embedding media in a Jekyll site with automatic thumbnailing, cropping, and format conversion.'
   spec.homepage      = 'https://cooltrainer.org'
   spec.license       = 'AGPL-3.0'
 
-  spec.files         = Dir['lib/**/*', 'LICENSE', 'README.md']
-  spec.test_files    = Dir['spec/**/*']
+  spec.files         = Dir.glob('lib/**/*').keep_if { |file| File.file?(file) } + %w(LICENSE README.md)
+  spec.test_files    = Dir['test/**/*']
   spec.require_paths = ['lib']
 
   spec.add_development_dependency 'bundler', '~> 2.0'
@@ -23,7 +33,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'liquid', '~> 4.0'
   spec.add_dependency 'liquid-tag-parser', '~> 2.0'
-  spec.add_dependency 'distorted', "~> #{HYPE_THE_CORE.version}"
+  spec.add_dependency 'distorted', "~> #{Cooltrainer::DistorteD::VERSION}"
   spec.add_dependency 'mime-types', '~> 3.0'
   spec.add_dependency 'kramdown', '~> 2.0'
   spec.add_dependency 'ruby-filemagic', '~> 0.7'
