@@ -6,9 +6,8 @@ require 'charlock_holmes'  # Text file charset detection
 require 'distorted/monkey_business/string'  # String#map
 require 'distorted/modular_technology/pango'
 
+require 'distorted/checking_you_out'
 require 'distorted/image'
-
-require 'mime/types'
 
 # No need to do all the fancy library versioning in a subclass.
 require 'vips'
@@ -23,7 +22,7 @@ module Cooltrainer
 
       MEDIA_TYPE = 'text'.freeze
 
-      MIME_TYPES = MIME::Types[/^#{self::MEDIA_TYPE}\/(plain|x-nfo)/, :complete => true].to_set
+      MIME_TYPES = CHECKING::YOU::IN(/^#{self::MEDIA_TYPE}\/(plain|x-nfo)/)
 
       ATTRS = Set[
         :alt,

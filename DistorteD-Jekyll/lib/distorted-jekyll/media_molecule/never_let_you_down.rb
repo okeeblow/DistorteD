@@ -17,7 +17,7 @@ module Jekyll
         # so I'm just going to use this since it will never
         # be detected for a real file, and if it does then it will
         # get an <img> tag anyway :)
-        MIME_TYPES = MIME::Types['application/x-imagemap'].to_set
+        MIME_TYPES = CHECKING::YOU::IN('application/x-imagemap')
 
         ATTRS = Set[:alt, :title, :href, :caption]
         ATTRS_DEFAULT = {}

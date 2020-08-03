@@ -17,14 +17,15 @@ end
 
 require 'set'
 
-require 'mime/types'
+require 'distorted/checking_you_out'
+
 
 module Cooltrainer
   module DistorteD
     class Video
 
       MEDIA_TYPE = 'video'.freeze
-      MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true].to_set
+      MIME_TYPES = CHECKING::YOU::IN(/^#{MEDIA_TYPE}/)
 
       # Attributes for our <video>.
       # Automatically enabled as attrs for DD Liquid Tag.

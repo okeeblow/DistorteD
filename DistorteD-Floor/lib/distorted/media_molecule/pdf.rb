@@ -1,7 +1,8 @@
 require 'set'
 
 require 'hexapdf'
-require 'mime/types'
+
+require 'distorted/checking_you_out'
 
 
 module Cooltrainer
@@ -11,7 +12,7 @@ module Cooltrainer
       MEDIA_TYPE = 'application'.freeze
       SUB_TYPE = 'pdf'.freeze
 
-      MIME_TYPES = MIME::Types["#{MEDIA_TYPE}/#{SUB_TYPE}"].to_set
+      MIME_TYPES = CHECKING::YOU::IN("#{MEDIA_TYPE}/#{SUB_TYPE}")
 
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/object#Attributes
       # https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf

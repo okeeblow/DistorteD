@@ -3,11 +3,10 @@ require 'set'
 # Font metadata extraction
 require 'ttfunk'
 
-require 'mime/types'
-
 # No need to do all the fancy library versioning in a subclass.
 require 'vips'
 
+require 'distorted/checking_you_out'
 require 'distorted/text'
 
 
@@ -22,7 +21,7 @@ module Cooltrainer
       # and later switching to Harfbuzz from Freetype:
       # https://gitlab.gnome.org/GNOME/pango/-/issues/386
       # https://blogs.gnome.org/mclasen/2019/05/25/pango-future-directions/
-      MIME_TYPES = MIME::Types[/^#{self::MEDIA_TYPE}\/ttf/].to_set
+      MIME_TYPES = CHECKING::YOU::IN(/^#{self::MEDIA_TYPE}\/ttf/)
 
       ATTRS = Set[
         :alt,

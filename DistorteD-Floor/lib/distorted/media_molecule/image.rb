@@ -44,7 +44,8 @@ end
 
 require 'set'
 
-require 'mime/types'
+require 'distorted/checking_you_out'
+
 
 module Cooltrainer
   module DistorteD
@@ -54,7 +55,7 @@ module Cooltrainer
 
       # SVG support is a sub-class and not directly supported here:
       # `write_to_file': No known saver for '/home/okeeblow/Works/cooltrainer/_site/IIDX-turntable.svg'. (Vips::Error)
-      MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}\/(?!svg)/, :complete => true].to_set
+      MIME_TYPES = CHECKING::YOU::IN(/^#{MEDIA_TYPE}\/(?!svg)/)
 
       # Attributes for our <picture>/<img>.
       # Automatically enabled as attrs for DD Liquid Tag.

@@ -5,7 +5,8 @@ require 'distorted-jekyll/floor'
 require 'jekyll'
 require 'liquid/errors'
 require 'liquid/template'
-require 'mime/types'
+
+require 'distorted/checking_you_out'
 
 
 module Jekyll
@@ -81,7 +82,7 @@ module Jekyll
                 # => "svg"
                 # irb> MIME::Type.new('image/svg+xml').preferred_extension
                 # => nil
-                out.merge(MIME::Types[t])
+                out.merge(CHECKING::YOU::IN(t))
               }
             end
           end
