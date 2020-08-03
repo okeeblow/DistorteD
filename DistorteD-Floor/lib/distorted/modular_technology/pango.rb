@@ -38,6 +38,13 @@ module Cooltrainer
           cr << lf
         end
 
+        # "Modified UTF-8" uses a normally-illegal byte sequence
+        # to encode the NULL character so 0x00 can exclusively
+        # be a string terminator.
+        def overlong_null
+          [0xC0, 0x80].pack('C*').force_encoding('UTF-8')
+        end
+
         # The char-by-char actual function used by g_markup_escape_text
         def g_markup_escape_char(c)
           # I think a fully-working version of this function would
