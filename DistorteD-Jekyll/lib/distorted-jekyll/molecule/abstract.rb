@@ -210,9 +210,9 @@ module Jekyll
               # Don't change the filename of full-size variations
               tag = d&.dig(:tag) != :full ? '-'.concat(d&.dig(:tag).to_s) : ''.freeze
               # Use the original extname for LastResort
-              ext = t == CHECKING::YOU::OUT('application/x-imagemap') ? File.extname(@name) : t.preferred_extension
+              ext = t == CHECKING::YOU::OUT('application/x.distorted.last-resort') ? File.extname(@name) : t.preferred_extension
               # Handle LastResort for files that might be a bare name with no extension
-              dot = '.'.freeze unless ext.empty?
+              dot = '.'.freeze unless ext.nil? || ext&.empty?
 
               d.merge({
                 # e.g. 'SomeImage-medium.jpg` but just `SomeImage.jpg` and not `SomeImage-full.jpg`

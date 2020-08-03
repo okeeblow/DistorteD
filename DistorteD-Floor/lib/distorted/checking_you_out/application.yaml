@@ -1,0 +1,8 @@
+# Define our own type to trigger Last Resort instead of abusing application/x-imagemap :)
+- !ruby/object:MIME::Type
+  content-type: application/x.distorted.last-resort
+  encoding: 8bit
+  xrefs:
+    person:
+      - okeeblow
+  registered: false

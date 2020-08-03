@@ -9,15 +9,7 @@ module Jekyll
 
         MEDIA_TYPE = 'lastresort'.freeze
 
-        # HACK HACK HACK
-        # Image Maps are a '90s Web relic, but I'm using this
-        # MIME::Type here to represent the generic fallback state.
-        # The MIME::Types library doesn't let me register custom
-        # types without shipping an entire custom type database,
-        # so I'm just going to use this since it will never
-        # be detected for a real file, and if it does then it will
-        # get an <img> tag anyway :)
-        MIME_TYPES = CHECKING::YOU::IN('application/x-imagemap')
+        MIME_TYPES = CHECKING::YOU::IN('application/x.distorted.last-resort')
 
         ATTRS = Jekyll::DistorteD::Static::LastResort::ATTRS
         ATTRS_DEFAULT = {}
