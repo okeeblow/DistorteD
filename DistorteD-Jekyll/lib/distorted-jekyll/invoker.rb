@@ -1,5 +1,5 @@
 # Our custom Exceptions
-require 'distorted-jekyll/error_code'
+require 'distorted/error_code'
 
 # Configuration-loading code
 require 'distorted-jekyll/floor'
