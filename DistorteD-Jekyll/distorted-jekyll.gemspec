@@ -1,12 +1,6 @@
-# Change working directory to our Gem's root dir before building,
-# so paths in the Gem will be relative to that dir instead of
-# relative to the shared repository root.
-Dir.chdir(__dir__)
-
-
 # Tie this Gem's version number directly to that of the core Gem
 # since they share this repository.
-require_relative '../../DistorteD-Ruby/lib/distorted/version'
+require_relative '../DistorteD-Ruby/lib/distorted/version'
 
 
 # Do the thing.
