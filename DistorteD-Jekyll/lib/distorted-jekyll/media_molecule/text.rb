@@ -1,7 +1,8 @@
 require 'set'
 
-require 'distorted/text'
+require 'distorted/molecule/text'
 require 'distorted-jekyll/static/text'
+
 
 module Jekyll
   module DistorteD
