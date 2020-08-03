@@ -29,7 +29,7 @@ module Jekyll
             output << parse_template.render({
               'name' => @name,
               'basename' => File.basename(@name, '.*'),
-              'path' => @url,
+              'path' => @dd_dest,
               'alt' => attr_value(:alt),
               'title' => attr_value(:title),
               'href' => attr_value(:href),
