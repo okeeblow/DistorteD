@@ -19,7 +19,7 @@ module Jekyll
         # get an <img> tag anyway :)
         MIME_TYPES = CHECKING::YOU::IN('application/x-imagemap')
 
-        ATTRS = Set[:alt, :title, :href, :caption]
+        ATTRS = Jekyll::DistorteD::Static::LastResort::ATTRS
         ATTRS_DEFAULT = {}
         ATTRS_VALUES = {}
 

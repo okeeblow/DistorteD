@@ -205,12 +205,22 @@ module Jekyll
         def variations
           changes(attr_value(:changes)).map{ |t|
             [t, outer_limits(attr_value(:outer_limits)).map{ |d|
+
+              basename = File.basename(@name, '.*')
+              # Don't change the filename of full-size variations
+              tag = d&.dig(:tag) != :full ? '-'.concat(d&.dig(:tag).to_s) : ''.freeze
+              # Use the original extname for LastResort
+              ext = t == CHECKING::YOU::OUT('application/x-imagemap') ? File.extname(@name) : t.preferred_extension
+              # Handle LastResort for files that might be a bare name with no extension
+              dot = '.'.freeze unless ext.empty?
+
               d.merge({
                 # e.g. 'SomeImage-medium.jpg` but just `SomeImage.jpg` and not `SomeImage-full.jpg`
                 # for the full-resolution outputs.
                 # The default `.jpeg` preferred_extension is monkey-patched to `.jpg` because lol
-                :name => "#{File.basename(@name, '.*')}#{'-'.concat(d&.dig(:tag).to_s) if d&.dig(:tag) != :full}.#{t.preferred_extension}",
+                :name => "#{basename}#{tag}#{dot}#{ext}",
               })
+
             }]
           }.to_h
         end

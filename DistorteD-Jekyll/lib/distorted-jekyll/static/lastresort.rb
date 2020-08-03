@@ -9,6 +9,11 @@ module Jekyll
     module Static
       class LastResort < Jekyll::DistorteD::Static::State
 
+        ATTRS = Set[:alt, :title, :href, :caption]
+        ATTRS_DEFAULT = {}
+        ATTRS_VALUES = {}
+
+
         # dest: string realpath to `_site_` directory
         def write(dest)
           return false if File.exist?(path) && !modified?
