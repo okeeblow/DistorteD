@@ -1,0 +1,96 @@
+require 'set'
+
+require 'mime/types'
+require 'ruby-filemagic'
+
+module CHECKING
+  class YOU
+
+    # Returns a Set of MIME::Type for a given file path, by default only
+    # based on the file extension. If the file extension is unavailable—
+    # or if `so_deep` is enabled—the `path` will be used as an actual
+    # path to look at the magic bytes with ruby-filemagic.
+    def self.OUT(path, so_deep: false)
+      unless so_deep || types.type_for(path).empty?
+        # NOTE: `type_for`'s return order is supposed to be deterministic:
+        # https://github.com/mime-types/ruby-mime-types/issues/148
+        # My use case so far has never required order but has required
+        # many Set comparisons, so I am going to return a Set here
+        # and possibly throw the order away.
+        # In my experience the order is usually preserved anyway:
+        # irb(main)> MIME::Types.type_for(File.expand_path('lol.ttf'))
+        # => [#<MIME::Type: font/ttf>, #<MIME::Type: application/font-sfnt>, #<MIME::Type: application/x-font-truetype>, #<MIME::Type: application/x-font-ttf>]
+        # irb(main)> MIME::Types.type_for('lol.ttf')).to_set
+        # => #<Set: {#<MIME::Type: font/ttf>, #<MIME::Type: application/font-sfnt>, #<MIME::Type: application/x-font-truetype>, #<MIME::Type: application/x-font-ttf>}>
+        return types.type_for(path).to_set
+      else
+        # Did we fail to guess any MIME::Types from the given filename?
+        # We're going to have to look at the actual file
+        # (or at least its first four bytes).
+        FileMagic.open(:mime) do |fm|
+          # The second argument makes fm.file return just the simple
+          # MIME::Type String, e.g.:
+          #
+          # irb(main)>   fm.file('/home/okeeblow/IIDX-turntable.svg')
+          # => "image/svg+xml; charset=us-ascii"
+          # irb(main)>   fm.file('/home/okeeblow/IIDX-turntable.svg', true)
+          # => "image/svg"
+          #
+          # However MIME::Types won't take short variants like 'image/svg',
+          # so explicitly have FM return long types and split it ourself
+          # on the semicolon:
+          #
+          # irb(main)> "image/svg+xml; charset=us-ascii".split(';').first
+          # => "image/svg+xml"
+          mime = Set[MIME::Types[fm.file(path, false).split(';'.freeze).first]]
+        end
+      end
+    end
+
+    # Returns a Set of MIME::Type objects matching a String search key of the
+    # format MEDIA_TYPE/SUB_TYPE.
+    # This can return multiple Types, e.g. 'font/collection' TTC/OTC variations:
+    # [#<MIME::Type: font/collection>, #<MIME::Type: font/collection>]
+    def self.IN(type)
+      types[type, :complete => type.is_a?(Regexp)].to_set
+    end
+
+    # Returns the MIME::Types container or loads one
+    def self.types
+      @@types ||= types_loader
+    end
+
+    # Returns a loaded MIME::Types container containing both the upstream
+    # mime-types-data and our own local data.
+    def self.types_loader
+      container = MIME::Types.new
+
+      # Load the upstream mime-types-data by providing a nil `path`:
+      # path || ENV['RUBY_MIME_TYPES_DATA'] || MIME::Types::Data::PATH
+      loader = MIME::Types::Loader.new(nil, container)
+      loader.load_columnar
+
+      # Change default JPED file extension from .jpeg to .jpg
+      # because it pisses me off lol
+      container['image/jpeg'].last.preferred_extension = 'jpg'
+
+      # Override the loader's path with the path to our local data directory
+      # after we've loaded the upstream data.
+      # :@path is set up in Loader::initialize and only has an attr_reader
+      # but we can reach in and change it.
+      loader.instance_variable_set(:@path, File.join(__dir__, 'types'.freeze))
+
+      # Load our local types data. The YAML files are separated by type,
+      # and :load_yaml will load all of them in the :@path we just set.
+      # MAYBE: Integrate MIME::Types YAML conversion scripts and commit
+      # JSON/Columnar artifacts for SPEEEEEED, but YAML is probably fine
+      # since we will have so few custom types compared to upstream.
+      # Convert.from_yaml_to_json
+      # Convert::Columnar.from_yaml_to_columnar
+      loader.load_yaml
+
+      container
+    end
+
+  end
+end

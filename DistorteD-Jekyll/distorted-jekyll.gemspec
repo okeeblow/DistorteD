@@ -28,7 +28,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'liquid', '~> 4.0'
   spec.add_dependency 'liquid-tag-parser', '~> 2.0'
   spec.add_dependency 'distorted', "~> #{Cooltrainer::DistorteD::VERSION}"
-  spec.add_dependency 'mime-types', '~> 3.0'
   spec.add_dependency 'kramdown', '~> 2.0'
-  spec.add_dependency 'ruby-filemagic', '~> 0.7'
 end

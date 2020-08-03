@@ -1,0 +1,4 @@
+# Some of these custom MIME::Types will be just for DD, but
+# I will submit some others of these to the mime-types-data project
+# if and when it makes sense to do so. Here's how:
+# https://github.com/mime-types/mime-types-data/blob/master/Contributing.md

@@ -1,7 +1,9 @@
 require 'set'
 
-require 'mime/types'
 require 'svg_optimizer'
+
+require 'distorted/checking_you_out'
+
 
 module Cooltrainer
   module DistorteD
@@ -9,7 +11,7 @@ module Cooltrainer
 
       SUB_TYPE = 'svg'.freeze
 
-      MIME_TYPES = MIME::Types[/^#{self::MEDIA_TYPE}\/#{self::SUB_TYPE}/, :complete => true].to_set
+      MIME_TYPES = CHECKING::YOU::IN(/^#{self::MEDIA_TYPE}\/#{self::SUB_TYPE}/)
 
       def self.optimize(src, dest)
         # TODO: Make optimizations/plugins configurable
