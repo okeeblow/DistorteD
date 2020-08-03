@@ -1,5 +1,6 @@
-require 'distorted/video'
+require 'distorted/molecule/video'
 require 'distorted-jekyll/static/video'
+
 
 module Jekyll
   module DistorteD

@@ -7,7 +7,7 @@ require 'distorted/monkey_business/string'  # String#map
 require 'distorted/modular_technology/pango'
 
 require 'distorted/checking_you_out'
-require 'distorted/image'
+require 'distorted/molecule/image'
 
 # No need to do all the fancy library versioning in a subclass.
 require 'vips'

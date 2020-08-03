@@ -1,8 +1,9 @@
 require 'fileutils'
 require 'set'
 
-require 'distorted/image'
+require 'distorted/molecule/image'
 require 'distorted-jekyll/static/state'
+
 
 module Jekyll
   module DistorteD

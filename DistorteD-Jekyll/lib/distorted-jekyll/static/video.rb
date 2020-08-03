@@ -1,7 +1,8 @@
 require 'set'
 
-require 'distorted/video'
+require 'distorted/molecule/video'
 require 'distorted-jekyll/static/state'
+
 
 module Jekyll
   module DistorteD

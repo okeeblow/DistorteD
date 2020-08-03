@@ -7,7 +7,7 @@ require 'ttfunk'
 require 'vips'
 
 require 'distorted/checking_you_out'
-require 'distorted/text'
+require 'distorted/molecule/text'
 
 
 module Cooltrainer

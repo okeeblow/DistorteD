@@ -3,6 +3,7 @@ require 'set'
 
 require 'distorted-jekyll/static/state'
 
+
 module Jekyll
   module DistorteD
     module Static

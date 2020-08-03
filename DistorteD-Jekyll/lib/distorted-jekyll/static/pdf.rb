@@ -1,7 +1,7 @@
 require 'fileutils'
 require 'set'
 
-require 'distorted/pdf'
+require 'distorted/molecule/pdf'
 require 'distorted-jekyll/static/pdf'
 
 

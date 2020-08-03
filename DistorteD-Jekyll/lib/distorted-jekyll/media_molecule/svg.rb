@@ -1,7 +1,8 @@
 require 'set'
 
-require 'distorted/svg'
+require 'distorted/molecule/svg'
 require 'distorted-jekyll/static/svg'
+
 
 module Jekyll
   module DistorteD
