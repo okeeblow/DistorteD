@@ -48,9 +48,11 @@ module Cooltrainer
         # The char-by-char actual function used by g_markup_escape_text
         def g_markup_escape_char(c)
           # I think a fully-working version of this function would
-          # be as simple `sprintf('&#x%x;', c.ord)`, but I want to copy
-          # the C implementation as closely as possible, which means using
-          # the named escape sequences for common characters and separating
+          # be as simple as `sprintf('&#x%x;', c.ord)` ALL THE THINGS,
+          # but I want to copy the structure of the C implementation
+          # as closely as possible, which means using the named escape
+          # sequences for common characters and separating the
+          # Latin-1 Supplement range from the other
           # the Unicode control characters (> 0x7f) even though three's no
           # need to in Ruby.
           case c.ord
@@ -66,7 +68,13 @@ module Cooltrainer
             '&quot;'
           when 0x1..0x8, 0xb..0xc, 0xe..0x1f, 0x7f
             sprintf('&#x%x;', c.ord)
-          when 0x7f..0x84, 0x86..0x9f
+          when 0x80..0x84, 0x86..0x9f
+            # The original C implementation separates this range
+            # from the above range due to its need to handle the
+            # UTF control character bytes with gunichar:
+            # https://wiki.tcl-lang.org/page/UTF%2D8+bit+by+bit
+            # https://www.fileformat.info/info/unicode/utf8.htm
+            # Ruby has already done this for us here :)
             sprintf('&#x%x;', c.ord)
           when 0x0 # what's this…?
             # Avoid a `ArgumentError: string contains null byte`
