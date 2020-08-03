@@ -18,6 +18,7 @@ module Jekyll
         # The final attribute set will be this + the media-type-specific set.
         # https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
         GLOBAL_ATTRS = Set[:title]
+        CONFIG_ATTRS = Set[:lower_world, :changes, :outer_limits]
 
 
         # Returns a Set of Arrays of search keys to try in config()
@@ -147,7 +148,7 @@ module Jekyll
           # - Global output-element attributes
           # - Molecule-specific output-element attributes
           # - Filetype change and output-template config paths
-          accepted_attrs = self.singleton_class.const_get(:GLOBAL_ATTRS) + self.singleton_class.const_get(:ATTRS) + Set[:changes, :outer_limits]
+          accepted_attrs = self.singleton_class.const_get(:GLOBAL_ATTRS) + self.singleton_class.const_get(:ATTRS) + self.singleton_class.const_get(:CONFIG_ATTRS)
 
           # Set of acceptable values for the given attribute, e.g. Image::loading => Set[:eager, :lazy]
           # Will be empty if this attribute takes freeform input (like `title` or `alt`)
