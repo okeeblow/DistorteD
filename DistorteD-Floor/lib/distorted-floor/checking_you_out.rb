@@ -70,7 +70,7 @@ module CHECKING
       loader = MIME::Types::Loader.new(nil, container)
       loader.load_columnar
 
-      # Change default JPED file extension from .jpeg to .jpg
+      # Change default JPEG file extension from .jpeg to .jpg
       # because it pisses me off lol
       container['image/jpeg'].last.preferred_extension = 'jpg'
 
