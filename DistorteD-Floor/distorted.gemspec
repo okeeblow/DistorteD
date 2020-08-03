@@ -5,12 +5,6 @@
 #  -- /home/okeeblow/Works/DistorteD/DistorteD-Ruby/DistorteD-Ruby/lib/distorted/version'
 require_relative 'lib/distorted/version'
 
-# Change working directory to our Gem's root dir before building,
-# so paths in the Gem will be relative to that dir instead of
-# relative to the shared repository root.
-Dir.chdir(__dir__)
-
-
 # Do the thing.
 Gem::Specification.new do |spec|
   spec.name          = 'distorted'
