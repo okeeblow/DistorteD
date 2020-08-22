@@ -149,7 +149,7 @@ module Jekyll
           if molecule.nil? || mime.empty?
             if Jekyll::DistorteD::Floor::config(Jekyll::DistorteD::Floor::CONFIG_ROOT, :last_resort)
               Jekyll.logger.debug(@tag_name, "Falling back to a bare <img> for #{@name}")
-              mime = Jekyll::DistorteD::Molecule::LastResort::MIME_TYPES
+              mime = Jekyll::DistorteD::Molecule::LastResort::LOWER_WORLD
               molecule = Jekyll::DistorteD::Molecule::LastResort
             else
               raise MediaTypeNotImplementedError.new(@name)
@@ -157,8 +157,8 @@ module Jekyll
           end
 
           # We found a potentially-compatible driver iff the union set is non-empty.
-          if not (mime & molecule.const_get(:MIME_TYPES)).empty?
-            @mime = mime & molecule.const_get(:MIME_TYPES)
+          if not (mime & molecule.const_get(:LOWER_WORLD)).empty?
+            @mime = mime & molecule.const_get(:LOWER_WORLD)
             Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime}")
 
             # Override Invoker's stubs by prepending the driver's methods to our DD instance's singleton class.
@@ -303,7 +303,7 @@ module Jekyll
             # in the plugged MediaMolecule for the given input file.
             if self.singleton_class.const_defined?(:SUB_TYPE)
               name = "#{self.singleton_class.const_get(:SUB_TYPE)}.liquid".freeze
-            else
+            elsif self.singleton_class.const_defined?(:MEDIA_TYPE)
               name = "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid".freeze
             end
           elsif not name.include?('.liquid'.freeze)

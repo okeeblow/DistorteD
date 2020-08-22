@@ -9,15 +9,14 @@ module Jekyll
     module Molecule
       module PDF
 
-        # Reference these instead of reassigning them. Consistency is mandatory.
-        MEDIA_TYPE = Cooltrainer::DistorteD::PDF::MEDIA_TYPE
-        SUB_TYPE = Cooltrainer::DistorteD::PDF::SUB_TYPE
-        MIME_TYPES = Cooltrainer::DistorteD::PDF::MIME_TYPES
 
-        PDF_OPEN_PARAMS = Cooltrainer::DistorteD::PDF::PDF_OPEN_PARAMS
-        ATTRS = Cooltrainer::DistorteD::PDF::ATTRS
-        ATTRS_DEFAULT = Cooltrainer::DistorteD::PDF::ATTRS_DEFAULT
-        ATTRS_VALUES = Cooltrainer::DistorteD::PDF::ATTRS_VALUES
+        DRIVER = Cooltrainer::DistorteD::PDF
+        LOWER_WORLD = DRIVER::LOWER_WORLD
+
+        PDF_OPEN_PARAMS = DRIVER::PDF_OPEN_PARAMS
+        ATTRS = DRIVER::ATTRS
+        ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
+        ATTRS_VALUES = DRIVER::ATTRS_VALUES
 
 
         def render_to_output_buffer(context, output)
@@ -32,7 +31,7 @@ module Jekyll
             # and any loaded from the defaults.
             # https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf
             pdf_open_params = PDF_OPEN_PARAMS.map{ |p|
-              if ATTRS_VALUES.dig(p) == Cooltrainer::DistorteD::PDF::BOOLEAN_SET
+              if ATTRS_VALUES.dig(p) == DRIVER::BOOLEAN_SET
                 # Support multiple ways people might want to express a boolean
                 if Set[0, '0'.freeze, false, 'false'.freeze].include?(attr_value(p))
                   [p, '0'.freeze]

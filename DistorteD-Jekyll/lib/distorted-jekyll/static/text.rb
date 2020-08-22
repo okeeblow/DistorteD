@@ -10,10 +10,10 @@ module Jekyll
     module Static
       class Text < Image
 
+
         DRIVER = Cooltrainer::DistorteD::Text
 
-        MEDIA_TYPE = DRIVER::MEDIA_TYPE
-        MIME_TYPES = DRIVER::MIME_TYPES
+        LOWER_WORLD = DRIVER::LOWER_WORLD
 
         ATTRS = DRIVER::ATTRS
         ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
@@ -39,7 +39,7 @@ module Jekyll
           # Write any actual-text output variations.
           # Images will be written by `super`.
           for variation in files
-            if DRIVER::MIME_TYPES.include?(variation&.dig(:type))
+            if DRIVER::OUTER_LIMITS.include?(variation&.dig(:type))
               filename = File.join(dd_dest(dest), variation&.dig(:name) || @name)
               Jekyll.logger.debug('DistorteD Writing:', filename)
               # TODO: For now this is just copying the file, but we should

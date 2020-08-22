@@ -11,7 +11,7 @@ module Cooltrainer
 
       SUB_TYPE = 'svg'.freeze
 
-      MIME_TYPES = CHECKING::YOU::IN(/^#{self::MEDIA_TYPE}\/#{self::SUB_TYPE}/)
+      LOWER_WORLD = CHECKING::YOU::IN(/^image\/svg/)
 
       def self.optimize(src, dest)
         # TODO: Make optimizations/plugins configurable

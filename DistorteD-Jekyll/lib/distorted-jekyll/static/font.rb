@@ -12,8 +12,7 @@ module Jekyll
 
         DRIVER = Cooltrainer::DistorteD::Font
 
-        MEDIA_TYPE = DRIVER::MEDIA_TYPE
-        MIME_TYPES = DRIVER::MIME_TYPES
+        LOWER_WORLD = DRIVER::LOWER_WORLD
 
         ATTRS = DRIVER::ATTRS
         ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT

@@ -10,10 +10,10 @@ module Jekyll
     module Static
       class Image < Jekyll::DistorteD::Static::State
 
+
         DRIVER = Cooltrainer::DistorteD::Image
 
-        MEDIA_TYPE = DRIVER::MEDIA_TYPE
-        MIME_TYPES = DRIVER::MIME_TYPES
+        LOWER_WORLD = DRIVER::LOWER_WORLD
 
         ATTRS = DRIVER::ATTRS
         ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
@@ -40,7 +40,7 @@ module Jekyll
           # dimensions, attributes, etc of each output variation we want.
           # Full-size outputs will have the special tag `:full`.
           for variation in files
-            if DRIVER::MIME_TYPES.include?(variation&.dig(:type))
+            if DRIVER::OUTER_LIMITS.include?(variation&.dig(:type))
               filename = File.join(dd_dest(dest), variation&.dig(:name) || @name)
               Jekyll.logger.debug('DistorteD Writing:', filename)
               @distorted.save(filename, width: variation&.dig(:width), crop: variation&.dig(:crop))
