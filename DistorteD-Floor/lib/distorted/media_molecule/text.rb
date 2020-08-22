@@ -17,7 +17,7 @@ module Cooltrainer
   module DistorteD
     class Text < Image
 
-      include Cooltrainer::DistorteD::Tech::Pango;
+      include Cooltrainer::DistorteD::Technology::Pango;
 
 
       LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/)

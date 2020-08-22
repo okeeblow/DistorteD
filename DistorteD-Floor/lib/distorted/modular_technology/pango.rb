@@ -1,6 +1,6 @@
 module Cooltrainer
   module DistorteD
-    module Tech
+    module Technology
       module Pango
 
         # Escape text as necessary for Pango Markup, which is what Vips::Image.text()
