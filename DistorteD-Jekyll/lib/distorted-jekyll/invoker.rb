@@ -305,6 +305,9 @@ module Jekyll
               name = "#{self.singleton_class.const_get(:SUB_TYPE)}.liquid".freeze
             elsif self.singleton_class.const_defined?(:MEDIA_TYPE)
               name = "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid".freeze
+            else
+              # e.g. Jekyll::DistorteD::Molecule::Image -> 'image.liquid'
+              name = "#{self.singleton_class.instance_variable_get(:@media_molecule).name.gsub(/^.*::/, '').downcase}.liquid".freeze
             end
           elsif not name.include?('.liquid'.freeze)
             # Support filename arguments with and without file extension.
