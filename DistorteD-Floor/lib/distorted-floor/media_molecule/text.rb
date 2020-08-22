@@ -5,19 +5,19 @@ require 'charlock_holmes'  # Text file charset detection
 
 require 'distorted/monkey_business/string'  # String#map
 require 'distorted/modular_technology/pango'
+require 'distorted/modular_technology/vips'
 
 require 'distorted/checking_you_out'
 require 'distorted/molecule/image'
 
-# No need to do all the fancy library versioning in a subclass.
-require 'vips'
 
 
 module Cooltrainer
   module DistorteD
-    class Text < Image
+    class Text
 
       include Cooltrainer::DistorteD::Technology::Pango;
+      include Cooltrainer::DistorteD::Technology::Vips;
 
 
       LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/)
@@ -179,7 +179,8 @@ module Cooltrainer
       # Return the String absolute path to the TTF file
       def font_path
         File.join(
-          File.dirname(__FILE__),  # distorted
+          File.dirname(__FILE__),  # molecule
+          '..'.freeze,  # distorted
           '..'.freeze,  # lib
           '..'.freeze,  # DistorteD-Ruby
           'font'.freeze,

@@ -3,9 +3,7 @@ require 'set'
 # Font metadata extraction
 require 'ttfunk'
 
-# No need to do all the fancy library versioning in a subclass.
-require 'vips'
-
+require 'distorted/modular_technology/vips'
 require 'distorted/checking_you_out'
 require 'distorted/molecule/text'
 
