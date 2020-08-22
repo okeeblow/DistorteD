@@ -42,7 +42,7 @@ module CHECKING
           #
           # irb(main)> "image/svg+xml; charset=us-ascii".split(';').first
           # => "image/svg+xml"
-          mime = Set[MIME::Types[fm.file(path, false).split(';'.freeze).first]]
+          mime = types[fm.file(path, false).split(';'.freeze).first].to_set
         end
       end
     end
