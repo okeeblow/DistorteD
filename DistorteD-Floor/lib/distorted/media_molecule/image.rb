@@ -9,12 +9,13 @@ module Cooltrainer
   module DistorteD
     class Image
 
-      MEDIA_TYPE = 'image'.freeze
       include Cooltrainer::DistorteD::Technology::Vips
 
-      # SVG support is a sub-class and not directly supported here:
+      # TODO: Add support for all the types supported by Vips' optional Magick dependency.
+      # Don't include types like PDF and SVG that are supported by other molecules.
+      # e.g. SVGs are supported for loading via ImageMagick but if you try to save…
       # `write_to_file': No known saver for '/home/okeeblow/Works/cooltrainer/_site/IIDX-turntable.svg'. (Vips::Error)
-      MIME_TYPES = CHECKING::YOU::IN(/^#{MEDIA_TYPE}\/(?!svg)/)
+      LOWER_WORLD = Cooltrainer::DistorteD::Technology::Vips::supported_types
 
       # Attributes for our <picture>/<img>.
       # Automatically enabled as attrs for DD Liquid Tag.

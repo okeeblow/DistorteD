@@ -20,9 +20,7 @@ module Cooltrainer
       include Cooltrainer::DistorteD::Tech::Pango;
 
 
-      MEDIA_TYPE = 'text'.freeze
-
-      MIME_TYPES = CHECKING::YOU::IN(/^#{self::MEDIA_TYPE}\/(plain|x-nfo)/)
+      LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/)
 
       ATTRS = Set[
         :alt,

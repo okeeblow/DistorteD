@@ -9,13 +9,12 @@ module Jekyll
     module Molecule
       module Image
 
-        # Reference these instead of reassigning them. Consistency is mandatory.
-        MEDIA_TYPE = Cooltrainer::DistorteD::Image::MEDIA_TYPE
-        MIME_TYPES = Cooltrainer::DistorteD::Image::MIME_TYPES
+        DRIVER = Cooltrainer::DistorteD::Image
+        LOWER_WORLD = DRIVER::LOWER_WORLD
 
-        ATTRS = Cooltrainer::DistorteD::Image::ATTRS
-        ATTRS_DEFAULT = Cooltrainer::DistorteD::Image::ATTRS_DEFAULT
-        ATTRS_VALUES = Cooltrainer::DistorteD::Image::ATTRS_VALUES
+        ATTRS = DRIVER::ATTRS
+        ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
+        ATTRS_VALUES = DRIVER::ATTRS_VALUES
 
 
         # Returns the filename we should use in the oldschool <img> tag
@@ -32,7 +31,7 @@ module Jekyll
           # Computes a Set of non-nil MIME::Type.sub_types for all MIME::Types
           # detected for the original media file.
           sub_types = @mime.keep_if{ |m|
-            m.media_type == self.singleton_class.const_get(:MEDIA_TYPE)
+            m.media_type == 'image'.freeze
           }.map { |m|
             m.sub_type
           }.compact.to_set

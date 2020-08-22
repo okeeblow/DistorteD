@@ -9,10 +9,8 @@ module Cooltrainer
   module DistorteD
     class PDF
 
-      MEDIA_TYPE = 'application'.freeze
-      SUB_TYPE = 'pdf'.freeze
 
-      MIME_TYPES = CHECKING::YOU::IN("#{MEDIA_TYPE}/#{SUB_TYPE}")
+      LOWER_WORLD = CHECKING::YOU::IN("application/pdf")
 
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/object#Attributes
       # https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf

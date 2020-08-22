@@ -9,10 +9,10 @@ module Jekyll
     module Molecule
       module Text
 
+
         DRIVER = Cooltrainer::DistorteD::Text
 
-        MEDIA_TYPE = DRIVER::MEDIA_TYPE
-        MIME_TYPES = DRIVER::MIME_TYPES
+        LOWER_WORLD = DRIVER::LOWER_WORLD
 
         ATTRS = DRIVER::ATTRS
         ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT

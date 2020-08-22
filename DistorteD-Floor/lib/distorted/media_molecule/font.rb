@@ -14,14 +14,13 @@ module Cooltrainer
   module DistorteD
     class Font < Text
 
-      MEDIA_TYPE = 'font'.freeze
 
       # TODO: Test OTF, OTB, and others.
       # NOTE: Traditional bitmap fonts won't be supported due to Pango 1.44
       # and later switching to Harfbuzz from Freetype:
       # https://gitlab.gnome.org/GNOME/pango/-/issues/386
       # https://blogs.gnome.org/mclasen/2019/05/25/pango-future-directions/
-      MIME_TYPES = CHECKING::YOU::IN(/^#{self::MEDIA_TYPE}\/ttf/)
+      LOWER_WORLD = CHECKING::YOU::IN(/^font\/ttf/)
 
       ATTRS = Set[
         :alt,

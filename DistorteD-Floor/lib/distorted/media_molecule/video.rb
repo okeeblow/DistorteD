@@ -24,8 +24,7 @@ module Cooltrainer
   module DistorteD
     class Video
 
-      MEDIA_TYPE = 'video'.freeze
-      MIME_TYPES = CHECKING::YOU::IN(/^#{MEDIA_TYPE}/)
+      LOWER_WORLD = CHECKING::YOU::IN(/video/)
 
       # Attributes for our <video>.
       # Automatically enabled as attrs for DD Liquid Tag.

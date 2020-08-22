@@ -7,13 +7,13 @@ module Jekyll
     module Molecule
       module Video
 
-        # Reference these instead of reassigning them. Consistency is mandatory.
-        MEDIA_TYPE = Cooltrainer::DistorteD::Video::MEDIA_TYPE
-        MIME_TYPES = Cooltrainer::DistorteD::Video::MIME_TYPES
 
-        ATTRS = Cooltrainer::DistorteD::Video::ATTRS
-        ATTRS_DEFAULT = Cooltrainer::DistorteD::Video::ATTRS_DEFAULT
-        ATTRS_VALUES = Cooltrainer::DistorteD::Video::ATTRS_VALUES
+        DRIVER = Cooltrainer::DistorteD::Video
+        LOWER_WORLD = DRIVER::LOWER_WORLD
+
+        ATTRS = DRIVER::ATTRS
+        ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
+        ATTRS_VALUES = DRIVER::ATTRS_VALUES
 
         def render_to_output_buffer(context, output)
           super

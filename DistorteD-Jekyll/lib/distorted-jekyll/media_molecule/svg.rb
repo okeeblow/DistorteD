@@ -9,14 +9,13 @@ module Jekyll
     module Molecule
       module SVG
 
-        # Reference these instead of reassigning them. Consistency is mandatory.
-        MEDIA_TYPE = Cooltrainer::DistorteD::SVG::MEDIA_TYPE
-        SUB_TYPE = Cooltrainer::DistorteD::SVG::SUB_TYPE
-        MIME_TYPES = Cooltrainer::DistorteD::SVG::MIME_TYPES
 
-        ATTRS = Cooltrainer::DistorteD::SVG::ATTRS
-        ATTRS_DEFAULT = Cooltrainer::DistorteD::SVG::ATTRS_DEFAULT
-        ATTRS_VALUES = Cooltrainer::DistorteD::SVG::ATTRS_VALUES
+        DRIVER = Cooltrainer::DistorteD::SVG
+        LOWER_WORLD = DRIVER::LOWER_WORLD
+
+        ATTRS = DRIVER::ATTRS
+        ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
+        ATTRS_VALUES = DRIVER::ATTRS_VALUES
 
 
         def render_to_output_buffer(context, output)

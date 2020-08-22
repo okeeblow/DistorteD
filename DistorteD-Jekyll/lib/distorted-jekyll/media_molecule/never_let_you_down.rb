@@ -7,9 +7,8 @@ module Jekyll
     module Molecule
       module LastResort
 
-        MEDIA_TYPE = 'lastresort'.freeze
 
-        MIME_TYPES = CHECKING::YOU::IN('application/x.distorted.last-resort')
+        LOWER_WORLD = CHECKING::YOU::IN('application/x.distorted.last-resort')
 
         ATTRS = Jekyll::DistorteD::Static::LastResort::ATTRS
         ATTRS_DEFAULT = {}
