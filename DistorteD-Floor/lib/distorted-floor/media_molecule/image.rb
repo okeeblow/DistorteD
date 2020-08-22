@@ -1,50 +1,8 @@
-# Requiring libvips 8.8 for HEIC/HEIF (moo) support, `justify` support in the
-# Vips::Image text operator, animated WebP support, and more:
-# https://libvips.github.io/libvips/2019/04/22/What's-new-in-8.8.html
-VIPS_MINIMUM_VER = [8, 8, 0]
-
-# Tell the user to install the shared library if it's missing.
-begin
-  require 'vips'
-
-  we_good = false
-  if Vips::version(0) >= VIPS_MINIMUM_VER[0]
-    if Vips::version(1) >= VIPS_MINIMUM_VER[1]
-      if Vips::version(2) >= VIPS_MINIMUM_VER[2]
-        we_good = true
-      end
-    end
-  end
-  unless we_good
-    raise LoadError.new("libvips is older than DistorteD's minimum requirement: needed #{VIPS_MINIMUM_VER.join('.'.freeze)} vs available '#{Vips::version_string}'")
-  end
-
-rescue LoadError => le
-  # Only match libvips.so load failure
-  raise unless le.message =~ /libvips.so/
-
-  # Multiple OS help
-  help = <<~INSTALL
-
-  Please install the libvips image processing library.
-
-  FreeBSD:
-    pkg install graphics/vips
-
-  macOS:
-    brew install vips
-
-  Debian/Ubuntu/Mint:
-    apt install libvips libvips-dev
-  INSTALL
-
-  # Re-raise with install message
-  raise $!, "#{help}\n#{$!}", $!.backtrace
-end
 
 require 'set'
 
 require 'distorted/checking_you_out'
+require 'distorted/modular_technology/vips'
 
 
 module Cooltrainer
@@ -52,6 +10,7 @@ module Cooltrainer
     class Image
 
       MEDIA_TYPE = 'image'.freeze
+      include Cooltrainer::DistorteD::Technology::Vips
 
       # SVG support is a sub-class and not directly supported here:
       # `write_to_file': No known saver for '/home/okeeblow/Works/cooltrainer/_site/IIDX-turntable.svg'. (Vips::Error)
