@@ -11,30 +11,21 @@ module Cooltrainer
 
       include Cooltrainer::DistorteD::Technology::Vips
 
-      # TODO: Add support for all the types supported by Vips' optional Magick dependency.
-      # Don't include types like PDF and SVG that are supported by other molecules.
-      # e.g. SVGs are supported for loading via ImageMagick but if you try to save…
-      # `write_to_file': No known saver for '/home/okeeblow/Works/cooltrainer/_site/IIDX-turntable.svg'. (Vips::Error)
-      LOWER_WORLD = Cooltrainer::DistorteD::Technology::Vips::supported_types
 
       # Attributes for our <picture>/<img>.
       # Automatically enabled as attrs for DD Liquid Tag.
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/picture#Attributes
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#Attributes
       # https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
-      # :crop is a Vips-only attr
-      ATTRS = Set[:alt, :caption, :href, :crop, :loading]
+      ATTRS = Set[:alt, :caption, :href, :loading]
 
       # Defaults for HTML Element attributes.
       # Not every attr has to be listed here.
       # Many need no default and just won't render.
       ATTRS_DEFAULT = {
-        :crop => :attention,
         :loading => :eager,
       }
       ATTRS_VALUES = {
-        # https://www.rubydoc.info/gems/ruby-vips/Vips/Interesting
-        :crop => Set[:none, :centre, :entropy, :attention],
         :loading => Set[:eager, :lazy],
       }
 
