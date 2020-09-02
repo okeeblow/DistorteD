@@ -4,6 +4,7 @@ require 'set'
 require 'ttfunk'
 
 require 'distorted/modular_technology/vips'
+require 'distorted/modular_technology/ttfunk'
 require 'distorted/checking_you_out'
 require 'distorted/molecule/text'
 
@@ -27,6 +28,8 @@ module Cooltrainer
       }
       ATTRS_DEFAULT = {
       }
+
+      include Cooltrainer::DistorteD::Technology::TTFunk
 
 
       # irb(main):089:0> chars.take(5)
@@ -67,7 +70,7 @@ module Cooltrainer
         # => 3
         # irb(main):175:0> font_meta.cmap.unicode.count
         # => 2
-        @font_meta.cmap.tables.each do |table|
+        to_ttfunk.cmap.tables.each do |table|
           next if !table.unicode?
           # Each subtable's `code_map` is a Hash map of character codes (the Hash keys)
           # to the glyph IDs from the original font (the Hash's values).
@@ -154,7 +157,7 @@ module Cooltrainer
             # we must also specify a font family, subfamily, and size.
             :font => "#{font_name}",
             # Space between lines (in Points).
-            :spacing => @font_meta.line_gap,
+            :spacing => to_ttfunk.line_gap,
             # Requires libvips 8.8
             :justify => false,
             :dpi => 144,
