@@ -1,11 +1,11 @@
 require 'set'
 
-require 'ttfunk'  # Font metadata extraction
 require 'charlock_holmes'  # Text file charset detection
 
 require 'distorted/monkey_business/string'  # String#map
 require 'distorted/modular_technology/pango'
 require 'distorted/modular_technology/vips'
+require 'distorted/modular_technology/ttfunk'
 
 require 'distorted/checking_you_out'
 require 'distorted/molecule/image'
@@ -94,11 +94,13 @@ module Cooltrainer
       }
 
 
+      include Cooltrainer::DistorteD::Technology::TTFunk
+
       # Using a numeric key for things for simplicity.
       # TODO: Replace this with Ruby's built-in Encoding class after I have
       # a better idea what I want to do.
       def codepage
-        case @encoding
+        case text_file_encoding
           when 'UTF-8'.freeze then 65001
           when 'Shift_JIS'.freeze then 932
           when 'IBM437'.freeze then 437
@@ -109,10 +111,10 @@ module Cooltrainer
       # Return a Pango Markup escaped version of the document.
       def to_pango
         # https://developer.gnome.org/glib/stable/glib-Simple-XML-Subset-Parser.html#g-markup-escape-text
-        escaped = @contents.map{ |c|
+        escaped = text_file_utf8_content.map{ |c|
           g_markup_escape_char(c)
         }
-        if spacing == :monospace
+        if font_spacing == :monospace
           "<tt>" << escaped << "</tt>"
         else
           escaped
@@ -123,20 +125,35 @@ module Cooltrainer
         @src = src
         @liquid_spacing = spacing
 
+      protected
+
+      def text_file_content
         # VIPS makes us provide the text content as a single variable,
         # so we may as well just one-shot File.read() it into memory.
         # https://kunststube.net/encoding/
-        contents = File.read(@src)
+        @text_file_content ||= File.read(path)
+      end
 
+      def text_file_utf8_content
+        CharlockHolmes::Converter.convert(text_file_content, text_file_encoding, 'UTF-8'.freeze)
+      end
+
+      def text_file_encoding
         # It's not easy or even possible in some cases to tell the "true" codepage
         # we should use for any given text document, but using character detection
         # is worth a shot if the user gave us nothing.
-        detected = CharlockHolmes::EncodingDetector.detect(contents)
-        @encoding = (encoding || detected[:encoding] || 'UTF-8'.freeze).to_s
-        @contents = CharlockHolmes::Converter.convert(contents, @encoding, 'UTF-8'.freeze)
+        #
+        # TODO: Figure out if/how we can get IBM437 files to not be detected as ISO-8859-1
+        detected = CharlockHolmes::EncodingDetector.detect(text_file_content)
+        encoding = @text_file_encoding ||= (abstract(:encoding) || detected[:encoding] || 'UTF-8'.freeze).to_s
+        Jekyll.logger.warn(@name, "detected encoding: #{encoding}")
+        encoding
+      end
 
-        # Set the shorthand symbol key for our chosen font.
-        @font = font&.to_sym || self.singleton_class.const_get(:CODEPAGE_FONT)[codepage].first
+      def vips_font
+        # Set the shorthand Symbol key for our chosen font.
+        abstract(:font)&.to_sym || self.singleton_class.const_get(:CODEPAGE_FONT)[codepage].first
+      end
 
         # Load font metadata directly from the file so we don't have to
         # duplicate it here to feed to Vips/Pango.
@@ -174,8 +191,6 @@ module Cooltrainer
         )
       end
 
-      protected
-
       # Return the String absolute path to the TTF file
       def font_path
         File.join(
@@ -192,46 +207,12 @@ module Cooltrainer
       # Returns the numeric representation of the codepage
       # covered by our font.
       def font_codepage
-        self.singleton_class.const_get(:FONT_CODEPAGE)&.dig(@font).to_s
+        self.singleton_class.const_get(:FONT_CODEPAGE)&.dig(vips_font).to_s
       end
 
       # Returns the basename (with file extension) of our font.
       def font_filename
-        self.singleton_class.const_get(:FONT_FILENAME)&.dig(@font)
-      end
-
-      # Returns a boolean for whether or not this font is monospaced.
-      # true == monospace
-      # false == proportional
-      def spacing
-        # Monospace fonts will (read: should) have the same width
-        # for every glyph, so we can tell a monospace font by
-        # checking if a deduplicated widths table has size == 1:
-        # irb(main)> font.horizontal_metrics.widths.count
-        # => 256
-        # irb(main)> font.horizontal_metrics.widths.uniq.compact.length
-        # => 1
-        @font_meta.horizontal_metrics.widths.uniq.compact.length == 1 ? :monospace : :proportional
-      end
-
-      # Returns the Family and Subfamily as one string suitable for libvips
-      def font_name
-        "#{@font_meta.name.font_family.first.encode('UTF-8')} #{@font_meta.name.font_subfamily.first.encode('UTF-8')}"
-      end
-
-      # Returns the Pango-Markup-encoded UTF-8 String version + revision of the font
-      def font_version
-        g_markup_escape_text(@font_meta.name&.version&.first&.encode('UTF-8').to_s)
-      end
-
-      # Returns the Pango-Markup-encoded UTF-8 String font file description
-      def font_description
-        g_markup_escape_text(@font_meta.name&.description&.first&.encode('UTF-8').to_s)
-      end
-
-      # Returns the Pango-Markup-encoded UTF-8 String copyright information of the font
-      def font_copyright
-        g_markup_escape_text(@font_meta.name&.copyright&.first&.encode('UTF-8').to_s)
+        self.singleton_class.const_get(:FONT_FILENAME)&.dig(vips_font)
       end
 
     end  # Text
