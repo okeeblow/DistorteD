@@ -3,12 +3,15 @@ require 'set'
 require 'hexapdf'
 
 require 'distorted/checking_you_out'
+require 'distorted/molecule/C18H27NO3'
 
 
 module Cooltrainer
   module DistorteD
     class PDF
 
+
+      include Cooltrainer::DistorteD::Molecule::C18H27NO3
 
       LOWER_WORLD = CHECKING::YOU::IN("application/pdf")
 
@@ -49,7 +52,6 @@ module Cooltrainer
 
       FLOAT_INT_FRAGMENT = '[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)'.freeze
       ZERO_TO_ONE_HUNDRED = /^(([1-9]\d?|1\d{1})([.,]\d{0,1})?|100([.,]0{1})?)$/
-      BOOLEAN_SET = Set[0, 1, false, true, '0'.freeze, '1'.freeze, 'false'.freeze, 'true'.freeze]
 
       ATTRS_DEFAULT = {
         :height => '100%'.freeze,
@@ -81,12 +83,12 @@ module Cooltrainer
         :view => /^Fit(H|V|B|BH|BV(,#{FLOAT_INT_FRAGMENT})?)?$/,
         :viewrect => /^#{FLOAT_INT_FRAGMENT},#{FLOAT_INT_FRAGMENT},#{FLOAT_INT_FRAGMENT},#{FLOAT_INT_FRAGMENT}$/,
         :pagemode => Set[:none, :thumbs, :bookmarks],
-        :scrollbar => BOOLEAN_SET,
+        :scrollbar => BOOLEAN_ATTR_VALUES,
         :search => /^#{RESERVED_CHARACTERS_FRAGMENT}(,\s#{RESERVED_CHARACTERS_FRAGMENT})*$/,
-        :toolbar => BOOLEAN_SET,
-        :statusbar => BOOLEAN_SET,
-        :messages => BOOLEAN_SET,
-        :navpanes => BOOLEAN_SET,
+        :toolbar => BOOLEAN_ATTR_VALUES,
+        :statusbar => BOOLEAN_ATTR_VALUES,
+        :messages => BOOLEAN_ATTR_VALUES,
+        :navpanes => BOOLEAN_ATTR_VALUES,
         :fdf => /^#{RESERVED_CHARACTERS_FRAGMENT}$/,
       }
 
