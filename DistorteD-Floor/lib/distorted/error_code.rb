@@ -13,13 +13,26 @@ class MediaTypeNotImplementedError < StandardDistorteDError
   attr_reader :name
   def initialize(name)
     super("No supported media type for #{name}")
+    super
+    @name = name
+  end
+
+  def message
+    "No supported media type for #{name}"
+  end
+end
   end
 end
 
 class MediaTypeNotFoundError < StandardDistorteDError
   attr_reader :name
   def initialize(name)
-    super("Failed to detect media type for #{name}")
+    super
+    @name = name
+  end
+
+  def message
+    "Failed to detect media type for #{name}"
   end
 end
 
