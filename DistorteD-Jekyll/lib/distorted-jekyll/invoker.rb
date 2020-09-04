@@ -6,6 +6,7 @@ require 'distorted/checking_you_out'
 
 # Configuration-loading code
 require 'distorted-jekyll/floor'
+require 'distorted-jekyll/static_state'
 
 # Configuration data manipulations
 require 'distorted-jekyll/molecule/abstract'
@@ -44,6 +45,7 @@ module Jekyll
 
       # Mix in config-loading methods.
       include Jekyll::DistorteD::Molecule::Abstract
+      include Jekyll::DistorteD::StaticState
 
       # Enabled media_type drivers. These will be attempted back to front.
       # TODO: Make this configurable.
