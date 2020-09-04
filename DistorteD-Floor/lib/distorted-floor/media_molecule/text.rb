@@ -19,6 +19,7 @@ module Cooltrainer
 
 
       LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/)
+      OUTER_LIMITS = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/)
 
       ATTRS = Set[
         :alt,
@@ -91,6 +92,11 @@ module Cooltrainer
         memo
       }
 
+      self::OUTER_LIMITS.each { |t|
+        define_method(t.distorted_method) { |*a, **k, &b|
+          copy_file(*a, **k, &b)
+        }
+      }
 
       include Cooltrainer::DistorteD::Technology::Pango
       include Cooltrainer::DistorteD::Technology::TTFunk

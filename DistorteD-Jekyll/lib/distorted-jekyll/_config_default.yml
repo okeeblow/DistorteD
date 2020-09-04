@@ -21,9 +21,6 @@ standard_image: &standard_image
     height: 1500
     media: "(min-width: 800px)"
 
-standard_text: &standard_text
-  ? image/png
-  ? image/webp
 
 distorted:
 
@@ -63,10 +60,17 @@ distorted:
         ? image/png
         ? image/webp
     text:
-      plain: *standard_text
-      x-nfo: *standard_text
+      plain:
+        ? text/plain
+        ? image/png
+        ? image/webp
+      x-nfo:
+        ? text/x-nfo
+        ? image/png
+        ? image/webp
     font:
       ttf:
+        ? font/ttf
         ? image/png
         ? image/webp
 
@@ -75,5 +79,3 @@ distorted:
       jpeg: *standard_image
       png: *standard_image
       webp: *standard_image
-    font:
-      ttf: *standard_image
