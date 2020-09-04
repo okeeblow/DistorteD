@@ -46,9 +46,8 @@ module Cooltrainer::DistorteD::InjectionOfLove
       (from.constants(inherit).to_set & DISTORTED_CONSTANTS) |
       (from.singleton_class.constants(inherit).to_set & DISTORTED_CONSTANTS)
     ).each { |invitation|
-      # Initialize :theirs to :ours since that will be the minimum set.
       ours = from.const_get(invitation)
-      theirs = from.const_get(invitation)
+      theirs = ours.dup
       # There's some redundancy here with Bundler's const_get_safely:
       # https://ruby-doc.org/stdlib/libdoc/bundler/rdoc/Bundler/SharedHelpers.html#method-i-const_get_safely
       #
@@ -58,8 +57,8 @@ module Cooltrainer::DistorteD::InjectionOfLove
       if to.singleton_class.const_defined?(invitation, false)
         self.combine(theirs, to.singleton_class.const_get(invitation))
         to.singleton_class.send(:remove_const, invitation)
-      end
-      if to.class.const_defined?(invitation, false)
+      elsif to.class.const_defined?(invitation, false)
+        theirs = ours.dup
         self.combine(theirs, to.class.const_get(invitation))
       end
       to.singleton_class.const_set(invitation, theirs)
@@ -67,7 +66,7 @@ module Cooltrainer::DistorteD::InjectionOfLove
 
     # Define methods in the including context to perpetuate the merging process :)
     # Avoid multiple injections to the same ancestry by leaving a receipt.
-    unless to.singleton_methods(false).include?(:invitation_from_mr_constant)
+    if invite and not to.singleton_methods(false).include?(:invitation_from_mr_constant)
       to.define_singleton_method(:append_features) do |otra|
         Cooltrainer::DistorteD::InjectionOfLove::AfterParty.call(otra)
         Cooltrainer::DistorteD::InjectionOfLove::Invitation.call(otra)
