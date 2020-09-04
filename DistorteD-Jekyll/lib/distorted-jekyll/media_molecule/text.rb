@@ -35,8 +35,8 @@ module Jekyll
             output << parse_template.render({
               'name' => @name,
               'path' => @dd_dest,
-              'alt' => attr_value(:alt),
-              'title' => attr_value(:title),
+              'alt' => abstract(:alt),
+              'title' => abstract(:title),
               'sources' => filez,
               'fallback_img' => fallback_img,
             })
