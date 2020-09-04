@@ -1,6 +1,6 @@
 require 'distorted-jekyll/13th-style'
 require 'distorted-jekyll/blocks'
-require 'distorted-jekyll/injection_of_love'
+require 'distorted-jekyll/md_injection'
 require 'distorted-jekyll/invoker'
 
 
