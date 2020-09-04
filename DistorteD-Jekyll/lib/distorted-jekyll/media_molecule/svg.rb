@@ -1,7 +1,6 @@
 require 'set'
 
 require 'distorted/molecule/svg'
-require 'distorted-jekyll/static/svg'
 
 
 module Jekyll
@@ -9,14 +8,7 @@ module Jekyll
     module Molecule
       module SVG
 
-
-        DRIVER = Cooltrainer::DistorteD::SVG
-        LOWER_WORLD = DRIVER::LOWER_WORLD
-
-        ATTRS = DRIVER::ATTRS
-        ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
-        ATTRS_VALUES = DRIVER::ATTRS_VALUES
-
+        include Cooltrainer::DistorteD::SVG
 
         def render_to_output_buffer(context, output)
           super
@@ -30,7 +22,7 @@ module Jekyll
             }
             output << parse_template.render({
               'name' => @name,
-              'path' => @dd_dest,
+              'path' => @relative_dest,
               'alt' => abstract(:alt),
               'title' => abstract(:title),
               'href' => abstract(:href),
@@ -47,10 +39,6 @@ module Jekyll
             end
           end
           output
-        end
-
-        def static_file(*args)
-          Jekyll::DistorteD::Static::SVG.new(*args)
         end
 
       end
