@@ -31,11 +31,11 @@ module Jekyll
             output << parse_template.render({
               'name' => @name,
               'path' => @dd_dest,
-              'alt' => attr_value(:alt),
-              'title' => attr_value(:title),
-              'href' => attr_value(:href),
-              'caption' => attr_value(:caption),
-              'loading' => attr_value(:loading),
+              'alt' => abstract(:alt),
+              'title' => abstract(:title),
+              'href' => abstract(:href),
+              'caption' => abstract(:caption),
+              'loading' => abstract(:loading),
               'sources' => filez,
               'fallback_img' => @name,
             })

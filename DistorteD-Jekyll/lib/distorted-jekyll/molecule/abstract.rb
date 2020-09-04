@@ -24,7 +24,7 @@ module Jekyll
         # Returns a Set of Arrays of search keys to try in config()
         def search_keys(*keys)
           # It's likely that we will get a default argument of [nil]
-          # here due to the output of attr_value(:whatever) for unset attrs.
+          # here due to the output of abstract(:whatever) for unset attrs.
           keys = keys.compact
           # If a search key path was given, construct one based
           # on the MIME::Type union Set between the source media
@@ -143,7 +143,7 @@ module Jekyll
         # Returns the value for an attribute as given to the Liquid tag,
         # the default value if the given value is not in the accepted Set,
         # or nil for unset attrs with no default defined.
-        def attr_value(attribute)
+        def abstract(attribute)
           # Set of all supported attributes:
           # - Global output-element attributes
           # - Molecule-specific output-element attributes
@@ -203,8 +203,8 @@ module Jekyll
         # Returns a Hash keyed by MIME::Type objects with value as a Set of Hashes
         # describing the media's output variations to be generated for each Type.
         def variations
-          changes(attr_value(:changes)).map{ |t|
-            [t, outer_limits(attr_value(:outer_limits)).map{ |d|
+          changes(abstract(:changes)).map{ |t|
+            [t, outer_limits(abstract(:outer_limits)).map{ |d|
 
               basename = File.basename(@name, '.*')
               # Don't change the filename of full-size variations

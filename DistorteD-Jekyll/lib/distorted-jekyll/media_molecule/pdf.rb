@@ -61,11 +61,11 @@ module Jekyll
             output << parse_template.render({
               'name' => @name,
               'path' => @dd_dest,
-              'alt' => attr_value(:alt),
-              'title' => attr_value(:title),
-              'height' => attr_value(:height),
-              'width' => attr_value(:width),
-              'caption' => attr_value(:caption),
+              'alt' => abstract(:alt),
+              'title' => abstract(:title),
+              'height' => abstract(:height),
+              'width' => abstract(:width),
+              'caption' => abstract(:caption),
               'pdf_open_params' => pdf_open_params_url,
             })
           rescue Liquid::SyntaxError => l
