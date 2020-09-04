@@ -1,7 +1,6 @@
 require 'set'
 
-require 'distorted-jekyll/molecule/text'
-require 'distorted-jekyll/static/font'
+require 'distorted/molecule/font'
 
 
 module Jekyll
@@ -9,21 +8,8 @@ module Jekyll
     module Molecule
       module Font
 
-        include Text
+        include Cooltrainer::DistorteD::Font
 
-
-        DRIVER = Cooltrainer::DistorteD::Font
-
-        LOWER_WORLD = DRIVER::LOWER_WORLD
-
-        ATTRS = DRIVER::ATTRS
-        ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
-        ATTRS_VALUES = DRIVER::ATTRS_VALUES
-
-
-        def static_file(*args)
-          Jekyll::DistorteD::Static::Font.new(*args)
-        end
       end  # Font
     end  # Molecule
   end  # DistorteD
