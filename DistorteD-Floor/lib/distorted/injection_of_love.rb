@@ -32,7 +32,7 @@ module Cooltrainer::DistorteD::InjectionOfLove
   end
 
   # Returns a block that performs the DistorteD attribute constant merge.
-  MrConstant = Proc.new { |from, to, inherit: false|
+  MrConstant = Proc.new { |from, to, inherit: false, invite: true|
     # Merge any attributes defined in our including scope /!\ *prior* to our inclusion /!\.
     # It's kind of silly to put these together and then split them back
     # apart again with :const_defined?, but the alternative is calling
@@ -123,7 +123,7 @@ module Cooltrainer::DistorteD::InjectionOfLove
     # at the singleton_class and can trust they got everything.
     ((Set[otra] | otra.included_modules.to_set | otra.singleton_class.included_modules) - Set[self]).each do |mod|
       unless mod.singleton_class.respond_to?(:invitation_from_mr_constant)
-        Cooltrainer::DistorteD::InjectionOfLove::MrConstant.call(mod, otra)
+        Cooltrainer::DistorteD::InjectionOfLove::MrConstant.call(mod, otra, invite: false)
       end
     end
   }
