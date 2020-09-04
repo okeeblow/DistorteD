@@ -150,7 +150,6 @@ module Cooltrainer
         # TODO: Figure out if/how we can get IBM437 files to not be detected as ISO-8859-1
         detected = CharlockHolmes::EncodingDetector.detect(text_file_content)
         encoding = @text_file_encoding ||= (abstract(:encoding) || detected[:encoding] || 'UTF-8'.freeze).to_s
-        Jekyll.logger.warn(@name, "detected encoding: #{encoding}")
         encoding
       end
 
