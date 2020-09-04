@@ -21,6 +21,7 @@ module Cooltrainer
       # https://gitlab.gnome.org/GNOME/pango/-/issues/386
       # https://blogs.gnome.org/mclasen/2019/05/25/pango-future-directions/
       LOWER_WORLD = CHECKING::YOU::IN(/^font\/ttf/)
+      OUTER_LIMITS = CHECKING::YOU::IN(/^font\/ttf/)
 
       ATTRS = Set[
         :alt,
@@ -28,6 +29,15 @@ module Cooltrainer
       ATTRS_VALUES = {
       }
       ATTRS_DEFAULT = {
+      }
+
+
+      # Maybe T0DO: Process output with TTFunk instead of only using it
+      # to generate images and metadata.
+      self::OUTER_LIMITS.each { |t|
+        define_method(t.distorted_method) { |*a, **k, &b|
+          copy_file(*a, **k, &b)
+        }
       }
 
       include Cooltrainer::DistorteD::Technology::TTFunk
