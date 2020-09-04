@@ -147,11 +147,17 @@ module Jekyll
           # - Global output-element attributes
           # - Molecule-specific output-element attributes
           # - Filetype change and output-template config paths
-          accepted_attrs = self.singleton_class.const_get(:GLOBAL_ATTRS) + self.singleton_class.const_get(:ATTRS) + self.singleton_class.const_get(:CONFIG_ATTRS)
+          accepted_attrs = Set[]
+          Set[:GLOBAL_ATTRS, :ATTRS, :CONFIG_ATTRS].each{ |a|
+            if self.singleton_class.const_defined?(a)
+              accepted_attrs.merge(self.singleton_class.const_get(a))
+            end
+          }
 
           # Set of acceptable values for the given attribute, e.g. Image::loading => Set[:eager, :lazy]
           # Will be empty if this attribute takes freeform input (like `title` or `alt`)
-          accepted_vals = self.singleton_class.const_get(:ATTRS_VALUES)&.dig(attribute)
+          accepted_vals = self.singleton_class.const_defined?(:ATTRS_VALUES) ?
+                          self.singleton_class.const_get(:ATTRS_VALUES)&.dig(attribute) : Set[]
 
           # The value, if any, provided to our Liquid tag for this attr.
           liquid_val = attrs&.dig(attribute)
@@ -172,7 +178,11 @@ module Jekyll
                 unless liquid_val.nil?
                   Jekyll.logger.warn('DistorteD', "#{liquid_val.to_s} is not an acceptable value for #{attribute.to_s}: #{accepted_vals}")
                 end
-                self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute).to_s
+                if self.singleton_class.const_defined?(:ATTRS_DEFAULT)
+                  self.singleton_class.const_get(:ATTRS_DEFAULT)&.dig(attribute).to_s
+                else
+                  # TODO: Raise custom error
+                end
               end
             elsif accepted_vals.is_a?(Regexp)
               if accepted_vals =~ liquid_val.to_s
