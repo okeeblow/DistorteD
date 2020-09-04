@@ -18,11 +18,12 @@ end
 require 'set'
 
 require 'distorted/checking_you_out'
+require 'distorted/injection_of_love'
 
 
 module Cooltrainer
   module DistorteD
-    class Video
+    module Video
 
       LOWER_WORLD = CHECKING::YOU::IN(/video/)
 
@@ -36,6 +37,7 @@ module Cooltrainer
       # Many need no default and just won't render.
       ATTRS_DEFAULT = {}
       ATTRS_VALUES = {}
+      include Cooltrainer::DistorteD::InjectionOfLove
 
       attr_accessor :dest
 
