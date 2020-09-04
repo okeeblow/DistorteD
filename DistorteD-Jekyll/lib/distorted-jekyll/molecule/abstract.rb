@@ -126,7 +126,6 @@ module Jekyll
           if out.empty?
             out << {
               :tag => :full,
-              :crop => :none,
             }
           end
 
