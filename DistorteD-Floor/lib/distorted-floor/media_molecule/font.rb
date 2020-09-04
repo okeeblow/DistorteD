@@ -3,15 +3,16 @@ require 'set'
 # Font metadata extraction
 require 'ttfunk'
 
-require 'distorted/modular_technology/vips'
+require 'distorted/modular_technology/pango'
 require 'distorted/modular_technology/ttfunk'
+require 'distorted/modular_technology/vips_save'
 require 'distorted/checking_you_out'
-require 'distorted/molecule/text'
+require 'distorted/injection_of_love'
 
 
 module Cooltrainer
   module DistorteD
-    class Font < Text
+    module Font
 
 
       # TODO: Test OTF, OTB, and others.
@@ -30,6 +31,9 @@ module Cooltrainer
       }
 
       include Cooltrainer::DistorteD::Technology::TTFunk
+      include Cooltrainer::DistorteD::Technology::Pango
+      include Cooltrainer::DistorteD::Technology::VipsSave
+      include Cooltrainer::DistorteD::InjectionOfLove
 
 
       # irb(main):089:0> chars.take(5)
@@ -92,7 +96,7 @@ module Cooltrainer
           encoded.each_pair { |c, (old, new)|
 
             begin
-              if glyph = @font_meta.glyph_outlines.for(c)
+              if glyph = to_ttfunk.glyph_outlines.for(c)
                 # Add a space on either side of the character so they aren't
                 # all smooshed up against each other and unreadable.
                 output << ' ' << g_markup_escape_char(c) << ' '
@@ -132,19 +136,12 @@ module Cooltrainer
       # Return the `src` as the font_path since we aren't using
       # any of the built-in fonts.
       def font_path
-        @src
+        path
       end
 
-      def initialize(src, demo: nil)
-        @src = src
-        @demo = demo
-
-        # TODO: Check that src exists, because TTFunk won't and will just
-        # give us an unusable object instead.
-        @font_meta = TTFunk::File.open(src)
-
+      def to_vips_image
         # https://libvips.github.io/libvips/API/current/libvips-create.html#vips-text
-        @image = Vips::Image.text(
+        Vips::Image.text(
           # This string must be well-escaped Pango Markup:
           # https://developer.gnome.org/pango/stable/pango-Markup.html
           # However the official function for escaping text is
