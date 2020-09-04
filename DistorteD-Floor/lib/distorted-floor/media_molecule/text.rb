@@ -4,20 +4,18 @@ require 'charlock_holmes'  # Text file charset detection
 
 require 'distorted/monkey_business/string'  # String#map
 require 'distorted/modular_technology/pango'
-require 'distorted/modular_technology/vips'
 require 'distorted/modular_technology/ttfunk'
+require 'distorted/modular_technology/vips_save'
 
 require 'distorted/checking_you_out'
+require 'distorted/injection_of_love'
 require 'distorted/molecule/image'
 
 
 
 module Cooltrainer
   module DistorteD
-    class Text
-
-      include Cooltrainer::DistorteD::Technology::Pango;
-      include Cooltrainer::DistorteD::Technology::Vips;
+    module Text
 
 
       LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/)
@@ -94,7 +92,10 @@ module Cooltrainer
       }
 
 
+      include Cooltrainer::DistorteD::Technology::Pango
       include Cooltrainer::DistorteD::Technology::TTFunk
+      include Cooltrainer::DistorteD::Technology::VipsSave
+      include Cooltrainer::DistorteD::InjectionOfLove
 
       # Using a numeric key for things for simplicity.
       # TODO: Replace this with Ruby's built-in Encoding class after I have
@@ -123,7 +124,10 @@ module Cooltrainer
 
       def initialize(src, encoding: nil, font: nil, spacing: nil, dpi: ATTRS_DEFAULT[:dpi])
         @src = src
+        @encoding = encoding
         @liquid_spacing = spacing
+        @dpi = dpi
+      end
 
       protected
 
@@ -155,6 +159,7 @@ module Cooltrainer
         abstract(:font)&.to_sym || self.singleton_class.const_get(:CODEPAGE_FONT)[codepage].first
       end
 
+      def to_vips_image
         # Load font metadata directly from the file so we don't have to
         # duplicate it here to feed to Vips/Pango.
         #
@@ -168,10 +173,9 @@ module Cooltrainer
         # => "PerfectDOSVGA437"
         # irb(main)> font_meta.line_gap
         # => 0
-        @font_meta = TTFunk::File.open(font_path)
 
         # https://libvips.github.io/libvips/API/current/libvips-create.html#vips-text
-        @image = Vips::Image.text(
+        Vips::Image.text(
           # This string must be well-escaped Pango Markup:
           # https://developer.gnome.org/pango/stable/pango-Markup.html
           # However the official function for escaping text is
@@ -184,9 +188,9 @@ module Cooltrainer
             # we must also specify a font family, subfamily, and size.
             :font => "#{font_name} 16",
             # Space between lines (in Points).
-            :spacing => @font_meta.line_gap,
+            :spacing => to_ttfunk.line_gap,
             :justify => true,  # Requires libvips 8.8
-            :dpi => dpi.to_i,
+            :dpi => abstract(:dpi)&.to_i,
           },
         )
       end
