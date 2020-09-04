@@ -163,10 +163,6 @@ module Jekyll
             @mime = mime & molecule.singleton_class.const_get(:LOWER_WORLD)
             Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime}")
 
-            # Override Invoker's stubs by prepending the driver's methods to our DD instance's singleton class.
-            # https://devalot.com/articles/2008/09/ruby-singleton
-            # `self.singleton_class.extend(molecule)` doesn't work in this context.
-            self.singleton_class.instance_variable_set(:@media_molecule, molecule)
 
             # Set instance variables for the combined set of HTML element
             # attributes used for this media_type. The global set is defined in this file
@@ -208,7 +204,8 @@ module Jekyll
             # Plug the chosen Media Molecule!
             # Using Module#prepend puts the Molecule's ahead in the ancestor chain
             # of any defined here, or any defined in an `include`d module.
-            (class <<self; prepend @media_molecule; end)
+            self.singleton_class.instance_variable_set(:@media_molecule, molecule)
+            self.singleton_class.prepend(molecule)
 
             # Break out of the `loop`, a.k.a. stop auto-plugging!
             break
