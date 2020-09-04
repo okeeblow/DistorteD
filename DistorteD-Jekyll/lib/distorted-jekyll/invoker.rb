@@ -183,7 +183,7 @@ module Jekyll
               # An attr supplied to the Liquid tag should override any from the config
               liquid_val = parsed_arguments&.dig(attr)
               # nil.to_s is '', so print 'nil' for readability.
-              Jekyll.logger.debug("Liquid #{attr}", liquid_val || 'nil')
+              Jekyll.logger.debug(@name, "Liquid #{attr}: #{liquid_val || 'nil'}")
 
               if liquid_val.is_a?(String)
                 # Symbolize String values of any attr that has a Molecule-defined list
