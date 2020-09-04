@@ -215,7 +215,6 @@ module Jekyll
           changes(abstract(:changes)).map{ |t|
             [t, outer_limits(abstract(:outer_limits)).map{ |d|
 
-              basename = File.basename(@name, '.*')
               # Don't change the filename of full-size variations
               tag = d&.dig(:tag) != :full ? '-'.concat(d&.dig(:tag).to_s) : ''.freeze
               # Use the original extname for LastResort
