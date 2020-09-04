@@ -128,25 +128,14 @@ module Cooltrainer::DistorteD::Technology::VipsSave
     t.media_type == 'image'
   }
 
-  # Add image types to supported outputs when including this module.
-  #def self.included(otra)
-    # Define a to_<mediatype>_<subtype> method for each MIME::Type supported by libvips,
-    # e.g. a supported Type 'image/png' will define a method :to_image_png in any
-    # context where this module is included.
-    self::OUTER_LIMITS.each { |t|
-      # TODO: NO JEKYLL LOGGER HERE
-      Jekyll.logger.warn(self, "defining #{t.distorted_method}")
-      # Replace the punctuation in complex subtypes (e.g. x-portable-bitmap -> x_portable_bitmap)
-      #self.send(:define_method, t.distorted_method) { |dest, **kw|
-      define_method(t.distorted_method) { |*a, **k, &b|
-        vips_save(*a, **k, &b)
-      }
-      #otra.send(:define_singleton_method, t.distorted_method) { |dest, **kw|
-      #  vips_save(dest, **kw)
-      #}
+  # Define a to_<mediatype>_<subtype> method for each MIME::Type supported by libvips,
+  # e.g. a supported Type 'image/png' will define a method :to_image_png in any
+  # context where this module is included.
+  self::OUTER_LIMITS.each { |t|
+    define_method(t.distorted_method) { |*a, **k, &b|
+      vips_save(*a, **k, &b)
     }
-  #end
-  extend self
+  }
 
   protected
 
