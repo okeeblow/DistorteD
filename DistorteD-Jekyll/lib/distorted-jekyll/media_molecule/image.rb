@@ -1,7 +1,6 @@
 require 'set'
 
 require 'distorted/molecule/image'
-require 'distorted-jekyll/static/image'
 
 
 module Jekyll
@@ -9,13 +8,7 @@ module Jekyll
     module Molecule
       module Image
 
-        DRIVER = Cooltrainer::DistorteD::Image
-        LOWER_WORLD = DRIVER::LOWER_WORLD
-
-        ATTRS = DRIVER::ATTRS
-        ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
-        ATTRS_VALUES = DRIVER::ATTRS_VALUES
-
+        include Cooltrainer::DistorteD::Image
 
         # Returns the filename we should use in the oldschool <img> tag
         # as a fallback for <picture> sources. This file should be a cropped
@@ -76,7 +69,7 @@ module Jekyll
 
             output << parse_template.render({
               'name' => @name,
-              'path' => @dd_dest,
+              'path' => @relative_dest,
               'alt' => abstract(:alt),
               'title' => abstract(:title),
               'href' => abstract(:href),
@@ -93,10 +86,6 @@ module Jekyll
             end
           end
           output
-        end
-
-        def static_file(*args)
-          Jekyll::DistorteD::Static::Image.new(*args)
         end
 
       end
