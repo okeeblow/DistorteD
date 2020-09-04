@@ -227,7 +227,7 @@ module Jekyll
         # Get Jekyll Site object back from tag rendering context registers so we
         # can get configuration data and path information from it and
         # then pass it along to our StaticFile subclass.
-        site = context.registers[:site]
+        @site = context.registers[:site]
 
         # The rendering context's `first` page will be the one that invoked us.
         page_data = context.environments.first['page'.freeze]
@@ -235,12 +235,12 @@ module Jekyll
         #
         # Our subclass' additional args:
         # dest - The String path to the generated `url` folder of the page HTML output
-        base = site.source
+        @base = @site.source
 
         # `relative_path` doesn't seem to always exist, but `path` does? idk.
         # I was testing with `relative_path` only with `_posts`, but it broke
         # when I invoked DD on a _page. Both have `path`.
-        dir = File.dirname(page_data['path'.freeze])
+        @dir = File.dirname(page_data['path'.freeze])
 
         # Every one of Ruby's `File.directory?` / `Pathname.directory?` /
         # `FileTest.directory?` methods actually tests that path on the
@@ -251,57 +251,24 @@ module Jekyll
         # directory (like configured on cooltrainer) or a `.html`
         # (or other extension) like the default Jekyll config.
         # Get the dirname if the url is not a dir itself.
-        @dd_dest = @url = page_data['url'.freeze]
-        unless @dd_dest[-1] == Jekyll::DistorteD::Floor::PATH_SEPARATOR
-          @dd_dest = File.dirname(@dd_dest)
+        @relative_dest = page_data['url'.freeze]
+        unless @relative_dest[-1] == Jekyll::DistorteD::Floor::PATH_SEPARATOR
+          @relative_dest = File.dirname(@relative_dest)
           # Append the trailing slash so we don't have to do it
           # in the Liquid templates.
-          @dd_dest << Jekyll::DistorteD::Floor::PATH_SEPARATOR
+          @relative_dest << Jekyll::DistorteD::Floor::PATH_SEPARATOR
         end
-
-        # Create an instance of the media-appropriate Jekyll::StaticFile subclass.
-        #
-        # StaticFile args:
-        # site        - The Jekyll Site object.
-        # base        - The String path to the Jekyll::Site.source, e.g. /home/okeeblow/Works/cooltrainer
-        # dir         - The String path between <base> and the source file, e.g. _posts/2018-10-15-super-cool-post
-        # name        - The String filename of the original media, e.g. cool.jpg
-        # mime        - The Set of MIME::Types of the original media.
-        # attrs       - The Set of attributes given to our Liquid tag, if any.
-        # dd_dest     - The String path under Site.dest to DD's top-level media output directory.
-        # url         - The URL of the page this tag is on.
-        static_file = self.static_file(
-          site,
-          base,
-          dir,
-          @name,
-          @mime,
-          @attrs,
-          @dd_dest,
-          @url,
-        )
 
         # Add our new file to the list that will be handled
         # by Jekyll's built-in StaticFile generator.
-        # Our StaticFile children implement a write() that invokes DistorteD,
-        # but this lets us avoid writing our own Generator.
-        site.static_files << static_file
-      end
-
-      # Called by a Molecule-specific render() method since they will
-      # all load their Liquid template files in the same way.
-      # Bail out if this is not handled by the module we just mixed in.
-      # Any media Molecule must override this to return an instance of
-      # their media-type-appropriate StaticFile subclass.
-      def static_file(site, base, dir, name, mime, attrs, dd_dest, url)
-        raise MediaTypeNotImplementedError.new(name)
+        @site.static_files << self
       end
 
       # Generic Liquid template loader that will be used in every MediaMolecule.
       # Callers will call `render(**{:template => vars})` on the Object returned
       # by this method.
       def parse_template(site: nil, name: nil)
-        site = site || Jekyll.sites.first
+        site = site || @site || Jekyll.sites.first
         begin
           # Use a given filename, or detect one based on media-type.
           if name.nil?
@@ -350,6 +317,7 @@ module Jekyll
           l.message
         end
       end  # parse_template
+
 
     end
   end
