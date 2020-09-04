@@ -1,6 +1,7 @@
 require 'set'
 
-require 'distorted-jekyll/static/lastresort'
+require 'distorted/checking_you_out'
+require 'distorted/injection_of_love'
 
 module Jekyll
   module DistorteD
@@ -10,9 +11,17 @@ module Jekyll
 
         LOWER_WORLD = CHECKING::YOU::IN('application/x.distorted.last-resort')
 
-        ATTRS = Jekyll::DistorteD::Static::LastResort::ATTRS
+        ATTRS = Set[:alt, :title, :href, :caption]
         ATTRS_DEFAULT = {}
         ATTRS_VALUES = {}
+
+        # This is one of the few render methods that will be defined in JekyllLand.
+        define_method(CHECKING::YOU::IN('application/x.distorted.last-resort').first.distorted_method) { |*a, **k, &b|
+          copy_file(*a, **k, &b)
+        }
+
+        include Cooltrainer::DistorteD::InjectionOfLove
+
 
         def render_to_output_buffer(context, output)
           super
@@ -20,7 +29,7 @@ module Jekyll
             output << parse_template.render({
               'name' => @name,
               'basename' => File.basename(@name, '.*'),
-              'path' => @dd_dest,
+              'path' => @relative_dest,
               'alt' => abstract(:alt),
               'title' => abstract(:title),
               'href' => abstract(:href),
@@ -36,9 +45,6 @@ module Jekyll
           output
         end
 
-        def static_file(*args)
-          Jekyll::DistorteD::Static::LastResort.new(*args)
-        end
       end
     end
   end
