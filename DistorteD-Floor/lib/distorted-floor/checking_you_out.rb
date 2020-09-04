@@ -3,6 +3,26 @@ require 'set'
 require 'mime/types'
 require 'ruby-filemagic'
 
+module MIME
+  class Type
+    # Give MIME::Type objects an easy way to get the DistorteD saver method name.
+    def distorted_method
+      # Standardize MIME::Types' media_type+sub_type to DistorteD method mapping
+      # by replacing all the combining characters with underscores (snake case)
+      # to match Ruby conventions:
+      # https://rubystyle.guide/#snake-case-symbols-methods-vars
+      #
+      # For the worst possible example, an intended outout Type of
+      # "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      # (a.k.a. a MSWord `docx` file) would map to a DistorteD saver method
+      # :to_application_vnd_openxmlformats_officedocument_wordprocessingml_document
+      # which would most likely be defined by the :included method of a library-specific
+      # module for handling OpenXML MS Office documents.
+      "to_#{self.media_type}_#{self.sub_type.gsub(/[-+\.]/, '_'.freeze)}".to_sym
+    end
+  end
+end
+
 module CHECKING
   class YOU
 
