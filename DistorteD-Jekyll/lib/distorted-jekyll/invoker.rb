@@ -18,7 +18,7 @@ require 'distorted-jekyll/molecule/text'
 require 'distorted-jekyll/molecule/pdf'
 require 'distorted-jekyll/molecule/svg'
 require 'distorted-jekyll/molecule/video'
-require 'distorted-jekyll/molecule/last-resort'
+require 'distorted-jekyll/molecule/lastresort'
 
 # Set.to_hash
 require 'distorted/monkey_business/set'
