@@ -159,8 +159,8 @@ module Jekyll
           end
 
           # We found a potentially-compatible driver iff the union set is non-empty.
-          if not (mime & molecule.const_get(:LOWER_WORLD)).empty?
-            @mime = mime & molecule.const_get(:LOWER_WORLD)
+          if not (mime & molecule.singleton_class.const_get(:LOWER_WORLD)).empty?
+            @mime = mime & molecule.singleton_class.const_get(:LOWER_WORLD)
             Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime}")
 
             # Override Invoker's stubs by prepending the driver's methods to our DD instance's singleton class.
@@ -171,7 +171,14 @@ module Jekyll
             # Set instance variables for the combined set of HTML element
             # attributes used for this media_type. The global set is defined in this file
             # (Invoker), and the media_type-specific set is appended to that during auto-plug.
-            attrs = (self.singleton_class.const_get(:GLOBAL_ATTRS) + molecule.const_get(:ATTRS)).to_hash
+            # NOTE: Relies on our Set.to_h
+            attrs = Hash[]
+            if self.singleton_class.const_defined?(:GLOBAL_ATTRS)
+              attrs.merge(self.singleton_class.const_get(:GLOBAL_ATTRS).to_hash)
+            end
+            if molecule.singleton_class.const_defined?(:ATTRS)
+              attrs.merge(molecule.singleton_class.const_get(:ATTRS).to_set.to_hash)
+            end
             attrs.each_pair do |attr, val|
               # An attr supplied to the Liquid tag should override any from the config
               liquid_val = parsed_arguments&.dig(attr)
@@ -184,7 +191,7 @@ module Jekyll
                 # shorter than an arbitrarily-chosen constant.
                 # Otherwise freeze them.
                 if (liquid_val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY) or
-                    molecule.const_get(:ATTRS_VALUES).key?(attr)
+                    molecule.singleton_class.const_get(:ATTRS_VALUES).key?(attr)
                   liquid_val = liquid_val&.to_sym
                 elsif liquid_val.length > ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY
                   # Will be default in Ruby 3.
