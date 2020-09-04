@@ -1,7 +1,6 @@
 require 'set'
 
 require 'distorted/molecule/text'
-require 'distorted-jekyll/static/text'
 
 
 module Jekyll
@@ -9,15 +8,7 @@ module Jekyll
     module Molecule
       module Text
 
-
-        DRIVER = Cooltrainer::DistorteD::Text
-
-        LOWER_WORLD = DRIVER::LOWER_WORLD
-
-        ATTRS = DRIVER::ATTRS
-        ATTRS_DEFAULT = DRIVER::ATTRS_DEFAULT
-        ATTRS_VALUES = DRIVER::ATTRS_VALUES
-
+        include Cooltrainer::DistorteD::Text
 
         def render_to_output_buffer(context, output)
           super
@@ -34,7 +25,7 @@ module Jekyll
             }
             output << parse_template.render({
               'name' => @name,
-              'path' => @dd_dest,
+              'path' => @relative_dest,
               'alt' => abstract(:alt),
               'title' => abstract(:title),
               'sources' => filez,
@@ -63,10 +54,6 @@ module Jekyll
           # Return the filename of the biggest matched variation,
           # otherwise use the original filename.
           best_ver&.dig(:name) || @name
-        end
-
-        def static_file(*args)
-          Jekyll::DistorteD::Static::Text.new(*args)
         end
 
       end  # Text
