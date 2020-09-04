@@ -3,12 +3,13 @@ require 'set'
 require 'hexapdf'
 
 require 'distorted/checking_you_out'
+require 'distorted/injection_of_love'
 require 'distorted/molecule/C18H27NO3'
 
 
 module Cooltrainer
   module DistorteD
-    class PDF
+    module PDF
 
 
       include Cooltrainer::DistorteD::Molecule::C18H27NO3
@@ -92,6 +93,9 @@ module Cooltrainer
         :fdf => /^#{RESERVED_CHARACTERS_FRAGMENT}$/,
       }
 
+      include Cooltrainer::DistorteD::InjectionOfLove
+
+      # TODO: Use MuPDF instead of libvips magick-based PDF loader.
 
       def self.optimize(src, dest)
         HexaPDF::Document.open(src) do |doc|
@@ -104,6 +108,10 @@ module Cooltrainer
           )
           doc.write(dest)
         end
+      end
+
+      def to_application_pdf(*a, **k, &b)
+        copy_file(*a, **k, &b)
       end
 
     end  # PDF
