@@ -186,6 +186,7 @@ module Jekyll
               end
             elsif accepted_vals.is_a?(Regexp)
               if accepted_vals =~ liquid_val.to_s
+                Jekyll.logger.warn('DistorteD', "#{liquid_val.to_s} is a Regexp match for #{attribute.to_s}: #{accepted_vals}")
                 liquid_val.to_s
               else
                 unless liquid_val.nil?
