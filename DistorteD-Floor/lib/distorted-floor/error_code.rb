@@ -20,6 +20,17 @@ class MediaTypeNotImplementedError < StandardDistorteDError
     "No supported media type for #{name}"
   end
 end
+
+class MediaTypeOutputNotImplementedError < MediaTypeNotImplementedError
+  attr_reader :type, :context
+  def initialize(name, type, context)
+    super(name)
+    @type = type
+    @context = context
+  end
+
+  def message
+    "Unable to save #{name} as #{type.to_s} from #{context}"
   end
 end
 
