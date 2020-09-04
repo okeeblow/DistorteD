@@ -67,14 +67,17 @@ module Jekyll
         site = kw[:site] || Jekyll.sites.first
         # Get the config, or nil if the queried config path doesn't exist.
         loaded_config = site.config.dig(*search_keys)
-        Jekyll.logger.debug(['_config', log_key].join(PP_SEPARATOR.to_s).concat(':'.freeze), loaded_config || 'No data'.freeze)
         if loaded_config.nil?
           # The wanted config key didn't exist in the Site config, so let's
           # try our defaults!
           # This file will always be small enough for a one-shot read.
           default_config = YAML.load(File.read(DEFAULT_CONFIG_PATH))
           loaded_config = default_config.dig(*search_keys)
-        Jekyll.logger.debug(['Default', log_key].join(PP_SEPARATOR.to_s).concat(':'.freeze), loaded_config || 'No data'.freeze)
+          unless loaded_config.nil?
+            Jekyll.logger.debug(['Default', log_key].join(PP_SEPARATOR.to_s).concat(':'.freeze), loaded_config)
+          end
+        else  # else Jekyll _config is not nil
+          Jekyll.logger.debug(['_config', log_key].join(PP_SEPARATOR.to_s).concat(':'.freeze), loaded_config)
         end
         # Was the desired config key found in the Gem defaults?
         if loaded_config.nil?
