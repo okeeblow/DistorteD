@@ -33,7 +33,7 @@ module Jekyll::DistorteD::StaticState
   # that should be kept when regenerating the site.
   # This makes DistorteD fast!
   def destinations(dest_root)
-    filenames.map{|f| File.join(dest_root, @relative_dest, f)}
+    wanted_files.map{|f| File.join(dest_root, @relative_dest, f)}
   end
 
   # HACK HACK HACK
@@ -46,14 +46,7 @@ module Jekyll::DistorteD::StaticState
 
     site_dest = Jekyll::DistorteD::Floor::config(:destination).to_s
     if Dir.exist?(site_dest)
-
       if Dir.exist?(File.join(site_dest, @relative_dest))
-
-        # TODO: Make outputting the original file conditional.
-        # Doing that will require changing the default href handling
-        # in the template, Jekyll::DistorteD::Static::State.destinations,
-        # as well as Cooltrainer::DistorteD::Image.generate
-        wanted_files = Set[@name].merge(filenames)
         extant_files = Dir.entries(File.join(site_dest, @relative_dest)).to_set
 
         # TODO: Make this smarter. It's not enough that all the generated

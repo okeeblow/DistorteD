@@ -248,7 +248,7 @@ module Jekyll
 
         # Returns a Set of just the String filenames we want for this media.
         # This will be used by `modified?` among others.
-        def filenames
+        def wanted_files
           files.map{|f| f[:name]}.to_set
         end
 
