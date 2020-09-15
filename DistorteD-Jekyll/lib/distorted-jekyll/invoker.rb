@@ -218,16 +218,8 @@ module Jekyll
         begin
           # Use a given filename, or detect one based on media-type.
           if name.nil?
-            # Template filename is based on the MEDIA_TYPE and/or SUB_TYPE declared
-            # in the plugged MediaMolecule for the given input file.
-            if self.singleton_class.const_defined?(:SUB_TYPE)
-              name = "#{self.singleton_class.const_get(:SUB_TYPE)}.liquid".freeze
-            elsif self.singleton_class.const_defined?(:MEDIA_TYPE)
-              name = "#{self.singleton_class.const_get(:MEDIA_TYPE)}.liquid".freeze
-            else
-              # e.g. Jekyll::DistorteD::Molecule::Image -> 'image.liquid'
-              name = "#{self.singleton_class.instance_variable_get(:@media_molecule).name.gsub(/^.*::/, '').downcase}.liquid".freeze
-            end
+            # e.g. Jekyll::DistorteD::Molecule::Image -> 'image.liquid'
+            name = "#{self.singleton_class.instance_variable_get(:@media_molecule).name.gsub(/^.*::/, '').downcase}.liquid".freeze
           elsif not name.include?('.liquid'.freeze)
             # Support filename arguments with and without file extension.
             # The given String might already be frozen, so concatenating
