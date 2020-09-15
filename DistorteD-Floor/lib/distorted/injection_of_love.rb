@@ -1,3 +1,15 @@
+require 'set'
+require 'distorted/monkey_business/set'
+
+
+# There's some general redundancy here with Bundler's const_get_safely:
+# https://ruby-doc.org/stdlib/libdoc/bundler/rdoc/Bundler/SharedHelpers.html#method-i-const_get_safely
+#
+# …but even though I use and enjoy using Bundler it feels Wrong™ to me to have
+# that method in stdlib and especially in Core but not as part of Module since
+# 'Bundler' still feels like a third-party namespace to me v(._. )v
+
+
 module Cooltrainer; end
 module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::InjectionOfLove
@@ -12,80 +24,41 @@ module Cooltrainer::DistorteD::InjectionOfLove
     :ATTRS_VALUES,
   ]
 
-
-  # Multiple-data-structure handler for DistorteD attribute combination.
-  def self.combine(to, from)
-    if from.respond_to?(:merge) and to.respond_to?(:merge)
-      # Set and Hash :merge — duplicate keys will be overwritten.
-      to.merge(from)
-    elsif from.respond_to?(:concat) and to.respond_to?(:concat)
-      # Array uses concat — duplicates stay duplicate.
-      to.concat(from)
-    else
-      # I don't currently use anything for an attribute in any MediaMolecule
-      # that would fall back to this, but I wanted to have some sort of
-      # `else` here lol.
-      # Relies on :to implementing :<<, but most things seem to.
-      from.each{|i| to << i}
-    end
-    to
-  end
-
   # Returns a block that performs the DistorteD attribute constant merge.
-  MrConstant = Proc.new { |from, to, inherit: false, invite: true|
-    # Merge any attributes defined in our including scope /!\ *prior* to our inclusion /!\.
-    # It's kind of silly to put these together and then split them back
-    # apart again with :const_defined?, but the alternative is calling
-    # this twice to handle the case of :from into :from's own
-    # singleton_class. That might seem even sillier, but that allows
-    # callers to only need to look in one place and easily handle
-    # items defined in the same layer as the caller, e.g. media-type
-    # rendering methods defined in the Jekyll layer being used in the
-    # Jekyll layer.
-    (
-      (from.constants(inherit).to_set & DISTORTED_CONSTANTS) |
-      (from.singleton_class.constants(inherit).to_set & DISTORTED_CONSTANTS)
-    ).each { |invitation|
-      ours = from.const_get(invitation)
-      theirs = ours.dup
-      # There's some redundancy here with Bundler's const_get_safely:
-      # https://ruby-doc.org/stdlib/libdoc/bundler/rdoc/Bundler/SharedHelpers.html#method-i-const_get_safely
-      #
-      # …but even though I use and enjoy using Bundler it feels Wrong™ to me to have
-      # that method in stdlib and especially in Core but not as part of Module since
-      # 'Bundler' still feels like a third-party namespace to me v(._. )v
-      if to.singleton_class.const_defined?(invitation, false)
-        self.combine(theirs, to.singleton_class.const_get(invitation))
-        to.singleton_class.send(:remove_const, invitation)
-      elsif to.class.const_defined?(invitation, false)
-        theirs = ours.dup
-        self.combine(theirs, to.class.const_get(invitation))
-      end
-      to.singleton_class.const_set(invitation, theirs)
-    }  # from.constants.each
+  # for attributes defined in our including scope /!\ *prior* to our inclusion /!\.
+  MrConstant = Proc.new { |from, to, inherit: false|
+    # Load the base Hash from an existing instance variable iff one is set.
+    out = from.instance_variable_get(:@DistorteD) || Hash[]
 
-    # Define methods in the including context to perpetuate the merging process :)
-    # Avoid multiple injections to the same ancestry by leaving a receipt.
-    if invite and not to.singleton_methods(false).include?(:invitation_from_mr_constant)
-      to.define_singleton_method(:append_features) do |otra|
-        Cooltrainer::DistorteD::InjectionOfLove::AfterParty.call(otra)
-        Cooltrainer::DistorteD::InjectionOfLove::Invitation.call(otra)
-        super(otra)
-      end
-      to.define_singleton_method(:prepend_features) do |otra|
-        Cooltrainer::DistorteD::InjectionOfLove::AfterParty.call(otra)
-        Cooltrainer::DistorteD::InjectionOfLove::Invitation.call(otra)
-        super(otra)
-      end
-      to.define_singleton_method(:extend_object) do |otra|
-        Cooltrainer::DistorteD::InjectionOfLove::AfterParty.call(otra)
-        Cooltrainer::DistorteD::InjectionOfLove::Invitation.call(otra)
-        super(otra)
-      end
-      to.define_singleton_method(:invitation_from_mr_constant) do
-        from.name
-      end
-    end
+    DISTORTED_CONSTANTS.each { |invitation|
+      merged = out.dig(invitation)
+      # Merge the included context, the includ_ing_ context, and any contexts
+      # already included in the including context.
+      [from, to].concat(to.included_modules).each { |m|
+        # Search constant set on the Object, on the Class, and on the singleton class.
+        [m, m.class, m.singleton_class].each { |c|
+          if c.const_defined?(invitation, false)
+            if merged.nil?
+              # We support multiple data structures (e.g. Set and Hash),
+              # so we won't know what type to instantiate until we've
+              # seen each constant for the first time.
+              merged = c.const_get(invitation).dup
+            else
+              # If we've already seen one instance of a certain constant
+              # we should instead merge the old contents with the new.
+              old = c.const_get(invitation)
+              unless old.nil?
+                merged.merge(old)
+              end
+            end
+          end
+        }
+      }
+      out[invitation] = merged
+    }
+    # return (without using the `return` keyword in a Block lol)
+    # the complete merged output.
+    out
   }
 
   # Returns a block that will define methods in a given context
@@ -96,36 +69,34 @@ module Cooltrainer::DistorteD::InjectionOfLove
   # The entire stack of attributes would still be accessible in
   # any layer by chaining :super there, but I want to merge them.
   Invitation = Proc.new { |otra|
-    otra.define_singleton_method(:append_features) do |winter|
-      Cooltrainer::DistorteD::InjectionOfLove::MrConstant.call(otra, winter)
-      super(winter)
-    end
-    otra.define_singleton_method(:prepend_features) do |winter|
-      Cooltrainer::DistorteD::InjectionOfLove::MrConstant.call(otra, winter)
-      super(winter)
-    end
-    otra.define_singleton_method(:extend_object) do |winter|
-      Cooltrainer::DistorteD::InjectionOfLove::MrConstant.call(otra, winter)
-      super(winter)
-    end
-  }
-
-  # Returns a block that will merge DistorteD attributes from a given context
-  # and its included_modules into its singleton_class.
-  AfterParty = Proc.new { |otra|
-    # The including context may have included other modules before us,
-    # and those modules may have constants we care about.
-    # Descend into any included modules besides ourself.
-    # :included_modules is automatically recursive downward, e.g. includes the
-    # :included_modules of all of :otra's :included_modules, and theirs,
-    # and theirs, etc.
-    # Also include :otra itself here so callers only need to look
-    # at the singleton_class and can trust they got everything.
-    ((Set[otra] | otra.included_modules.to_set | otra.singleton_class.included_modules) - Set[self]).each do |mod|
-      unless mod.singleton_class.respond_to?(:invitation_from_mr_constant)
-        Cooltrainer::DistorteD::InjectionOfLove::MrConstant.call(mod, otra, invite: false)
+    # These are the methods that actively perform the include/extend/prepend process.
+    [:append_features, :prepend_features, :extend_object].each { |m|
+      otra.define_singleton_method(m) do |winter|
+        # Get the merged attribute Hash
+        merged = Cooltrainer::DistorteD::InjectionOfLove::MrConstant.call(otra, winter)
+        # Perform the normal include/extend/prepend that will mask our constants.
+        super(winter)
+        # Assign each merged constant to the new context.
+        merged.each_pair{ |k, v|
+          # Since we are setting constants in the singleton_class
+          # we must remove any old ones first to avoid a warning.
+          if winter.singleton_class.const_defined?(k, false)
+            winter.singleton_class.send(:remove_const, k)
+          end
+          winter.singleton_class.const_set(k, v)
+        }
+        # Also save the complete Hash to an instance variable
+        winter.instance_variable_set(:@DistorteD, merged)
       end
-    end
+    }
+    # These are the callback methods called after the above methods fire.
+    # Use them to perpetuate our merge by calling the thing that calls us :)
+    [:included, :prepended, :extended].each { |m|
+      otra.define_singleton_method(m) do |winter|
+        Cooltrainer::DistorteD::InjectionOfLove::Invitation.call(winter)
+        super(winter)
+      end
+    }
   }
 
   # Activate this module when it's included.
@@ -134,7 +105,6 @@ module Cooltrainer::DistorteD::InjectionOfLove
   # then we will define methods in the including context to perpetuate
   # the merging process when that context is included/extended/prepended.
   def self.included(otra)
-    self::AfterParty.call(otra)
     self::Invitation.call(otra)
     super
   end
