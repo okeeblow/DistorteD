@@ -58,6 +58,17 @@ module Jekyll
         Jekyll::DistorteD::Molecule::Video,
         Jekyll::DistorteD::Molecule::Image,
       ]
+      # Reduce the above to a Hash of Sets of MediaMolecules-per-Type, keyed by Type.
+      TYPE_MOLECULES = MEDIA_MOLECULES.reduce(
+        Hash.new{|hash, key| hash[key] = Set[]}
+      ) { |types, molecule|
+        if molecule.const_defined?(:LOWER_WORLD)
+          molecule.const_get(:LOWER_WORLD).each { |t|
+            types.update(t => Set[molecule]) { |k,o,n| o.merge(n) }
+          }
+        end
+        types
+      }
 
       # Any any attr value will get a to_sym if shorter than this
       # totally arbitrary length, or if the attr key is in the plugged
