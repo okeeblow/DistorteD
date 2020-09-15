@@ -110,118 +110,53 @@ module Jekyll
         # Types#type_for can return multiple possibilities for a filename.
         # For example, an XML file: [application/xml, text/xml].
         # TODO: Provide realpath here instead of just the name
-        mime = CHECKING::YOU::OUT(@name)
-
-        # Array of drivers to try auto-plugging. Take a shallow copy first because
-        # these will get popped off the end for plug attempts.
-        media_molecules = MEDIA_MOLECULES.dup
-
-        ## Media Driver Autoplugging
-        #
-        # Take the union of this file's detected MIME::Types and
-        # the supported MEDIA_TYPES declared in each molecule.
-        # Molecules will likely declare their Types with a regex:
-        # https://rdoc.info/gems/mime-types/MIME%2FTypes:[]
-        #
-        #
-        # Still-Image Mime::Types Example:
-        # MIME::Types.type_for('IIDX-Readers-Unboxing.jpg')
-        # => [#<MIME::Type: image/jpeg>]
-        #
-        # Video MIME::Types Example:
-        # MIME::Types.type_for('play.mp4') => [
-        #   #<MIME::Type: application/mp4>,
-        #   #<MIME::Type: audio/mp4>,
-        #   #<MIME::Type: video/mp4>,
-        #   #<MIME::Type: video/vnd.objectvideo>
-        # ]
-        #
-        #
-        # Molecule declared-supported MIME::Types Example:
-        # (huge list)
-        #   MIME_TYPES = MIME::Types[/^#{MEDIA_TYPE}/, :complete => true]
-        #
-        #
-        # Detected & Declared MIME::Types Union Example:
-        # MIME::Types.type_for('play.mp4') & MIME::Types[/^video/, :complete => true]
-        # => [#<MIME::Type: video/mp4>, #<MIME::Type: video/vnd.objectvideo>]
-        #
-        # ^ This non-empty example union means we sould try this driver for this file.
-        #
-        #
-        # Loop until we've found a match or tried all available drivers.
-        loop do
-          # Attempt to plug the last driver in the array of enabled drivers.
-          molecule = media_molecules.pop
-
-          Jekyll.logger.debug(@tag_name, "Trying to plug #{@name} into #{molecule}")
-
-          # `molecule` will be nil once we've tried them all and run out and are on
-          # the last loop, so it's important that we break out of the loop either
-          # by enabling the fallback Molecule or by raising an exception.
-          if molecule.nil? || mime.empty?
-            if Jekyll::DistorteD::Floor::config(Jekyll::DistorteD::Floor::CONFIG_ROOT, :last_resort)
-              Jekyll.logger.debug(@tag_name, "Falling back to a bare <img> for #{@name}")
-              mime = Jekyll::DistorteD::Molecule::LastResort::LOWER_WORLD
-              molecule = Jekyll::DistorteD::Molecule::LastResort
-            else
-              raise MediaTypeNotImplementedError.new(@name)
-            end
+        @mime = CHECKING::YOU::OUT(@name)
+        if @mime.empty?
+          if Jekyll::DistorteD::Floor::config(Jekyll::DistorteD::Floor::CONFIG_ROOT, :last_resort)
+            @mime = Jekyll::DistorteD::Molecule::LastResort::LOWER_WORLD
           end
-
-          # We found a potentially-compatible driver iff the union set is non-empty.
-          if not (mime & molecule.singleton_class.const_get(:LOWER_WORLD)).empty?
-            @mime = mime & molecule.singleton_class.const_get(:LOWER_WORLD)
-            Jekyll.logger.debug(@tag_name, "Enabling #{molecule} for #{@name}: #{@mime}")
+        end
 
 
-            # Set instance variables for the combined set of HTML element
-            # attributes used for this media_type. The global set is defined in this file
-            # (Invoker), and the media_type-specific set is appended to that during auto-plug.
-            # NOTE: Relies on our Set.to_h
-            attrs = Hash[]
-            if self.singleton_class.const_defined?(:GLOBAL_ATTRS)
-              attrs.merge(self.singleton_class.const_get(:GLOBAL_ATTRS).to_hash)
-            end
-            if molecule.singleton_class.const_defined?(:ATTRS)
-              attrs.merge(molecule.singleton_class.const_get(:ATTRS).to_set.to_hash)
-            end
-            attrs.each_pair do |attr, val|
-              # An attr supplied to the Liquid tag should override any from the config
-              liquid_val = parsed_arguments&.dig(attr)
-              # nil.to_s is '', so print 'nil' for readability.
-              Jekyll.logger.debug(@name, "Liquid #{attr}: #{liquid_val || 'nil'}")
+        available_molecules = TYPE_MOLECULES.keys.to_set & @mime
+        # TODO: Handle multiple molecules for the same file
+        case available_molecules.length
+        when 0
+          raise MediaTypeNotImplementedError.new(@name)
+        when 1
+          molecule = TYPE_MOLECULES[available_molecules.first].first
 
-              if liquid_val.is_a?(String)
-                # Symbolize String values of any attr that has a Molecule-defined list
-                # of acceptable values, or — completely arbitrarily — any String value
-                # shorter than an arbitrarily-chosen constant.
-                # Otherwise freeze them.
-                if (liquid_val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY) or
-                    molecule.singleton_class.const_get(:ATTRS_VALUES).key?(attr)
-                  liquid_val = liquid_val&.to_sym
-                elsif liquid_val.length > ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY
-                  # Will be default in Ruby 3.
-                  liquid_val = liquid_val&.freeze
-                end
+          # Plug the chosen Media Molecule!
+          # NOTE: This is before attr-handling because most of our attribute definitions
+          # won't exist in the ancestor chain otherwise until we prepend!
+          self.singleton_class.instance_variable_set(:@media_molecule, molecule)
+          self.singleton_class.prepend(molecule)
+
+          liquid_liquid = self.singleton_class.instance_variable_get(:@DistorteD)&.dig(:ATTRS)&.dup.to_hash
+          liquid_liquid.each_pair do |attr, val|
+            liquid_val = parsed_arguments&.dig(attr)
+
+            if liquid_val.is_a?(String)
+              # Symbolize String values of any attr that has a Molecule-defined list
+              # of acceptable values, or — completely arbitrarily — any String value
+              # shorter than an arbitrarily-chosen constant.
+              # Otherwise freeze them.
+              if (liquid_val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY) or
+                  molecule.singleton_class.const_get(:ATTRS_VALUES).key?(attr)
+                liquid_val = liquid_val&.to_sym
+              elsif liquid_val.length > ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY
+                liquid_val = liquid_val&.freeze
               end
-
-              attrs[attr] = liquid_val
             end
 
-            # Save attrs to our instance as the data source for Molecule::Abstract.attrs.
-            @attrs = attrs
-
-            # Plug the chosen Media Molecule!
-            # Using Module#prepend puts the Molecule's ahead in the ancestor chain
-            # of any defined here, or any defined in an `include`d module.
-            self.singleton_class.instance_variable_set(:@media_molecule, molecule)
-            self.singleton_class.prepend(molecule)
-
-            # Break out of the `loop`, a.k.a. stop auto-plugging!
-            break
+            liquid_liquid[attr] = liquid_val
           end
 
+          # Save attrs to our instance as the data source for Molecule::Abstract.attrs.
+          @liquid_attrs = liquid_liquid
+
+        else
+          raise Exception.new('Currently unable to handle multiple possible molecules for a file.')
         end
       end
 
