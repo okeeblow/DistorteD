@@ -25,7 +25,7 @@ module Cooltrainer
   module DistorteD
     module Video
 
-      LOWER_WORLD = CHECKING::YOU::IN(/video/)
+      LOWER_WORLD = CHECKING::YOU::IN(/^video\/mp4/)
 
       # Attributes for our <video>.
       # Automatically enabled as attrs for DD Liquid Tag.
