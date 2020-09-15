@@ -19,6 +19,10 @@ module Cooltrainer
       LOWER_WORLD = CHECKING::YOU::IN(/^image\/svg/)
 
       ATTRS = Set[
+        :alt,
+        :caption,
+        :href,
+        :loading,
         :optimize,
       ]
       ATTRS_VALUES = {
