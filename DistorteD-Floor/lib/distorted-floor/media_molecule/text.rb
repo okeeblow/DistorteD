@@ -12,7 +12,6 @@ require 'distorted/injection_of_love'
 require 'distorted/molecule/image'
 
 
-
 module Cooltrainer
   module DistorteD
     module Text
@@ -20,22 +19,6 @@ module Cooltrainer
 
       LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/)
       OUTER_LIMITS = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/)
-
-      ATTRS = Set[
-        :alt,
-        :crop,
-        :font,
-        :encoding,
-        :spacing,
-        :dpi,
-      ]
-      ATTRS_VALUES = {
-        :spacing => Set[:monospace, :proportional],
-      }
-      ATTRS_DEFAULT = {
-        :crop => :none,
-        :dpi => 144,
-      }
 
       # Track supported fonts by codepage.
       # Avoid renaming these from the original archives / websites.
@@ -87,7 +70,7 @@ module Cooltrainer
         ],
       }
       # …as well as the inverse, the numeric codepage for each font:
-      FONT_CODEPAGE = CODEPAGE_FONT.reduce(Hash.new([])) { |memo, (key, values)|
+      FONT_CODEPAGE = self::CODEPAGE_FONT.reduce(Hash.new([])) { |memo, (key, values)|
         values.each { |value| memo[value] = key }
         memo
       }
@@ -98,8 +81,26 @@ module Cooltrainer
         }
       }
 
-      include Cooltrainer::DistorteD::Technology::Pango
+      ATTRIBUTES = Set[
+        :alt,
+        :crop,
+        :font,
+        :encoding,
+        :spacing,
+        :dpi,
+      ]
+      ATTRIBUTES_VALUES = {
+        :spacing => Set[:monospace, :proportional],
+        :font => self::FONT_FILENAME.keys.to_set,
+      }
+      ATTRIBUTES_DEFAULT = {
+        :crop => :none,
+        :dpi => 144,
+        :encoding => 'UTF-8'.freeze
+      }
+
       include Cooltrainer::DistorteD::Technology::TTFunk
+      include Cooltrainer::DistorteD::Technology::Pango
       include Cooltrainer::DistorteD::Technology::VipsSave
       include Cooltrainer::DistorteD::InjectionOfLove
 
@@ -208,7 +209,7 @@ module Cooltrainer
           '..'.freeze,  # lib
           '..'.freeze,  # DistorteD-Ruby
           'font'.freeze,
-          font_codepage,
+          font_codepage.to_s,
           font_filename,
         )
       end
@@ -216,12 +217,12 @@ module Cooltrainer
       # Returns the numeric representation of the codepage
       # covered by our font.
       def font_codepage
-        self.singleton_class.const_get(:FONT_CODEPAGE)&.dig(vips_font).to_s
+        FONT_CODEPAGE.dig(vips_font).to_s
       end
 
       # Returns the basename (with file extension) of our font.
       def font_filename
-        self.singleton_class.const_get(:FONT_FILENAME)&.dig(vips_font)
+        FONT_FILENAME.dig(vips_font)
       end
 
     end  # Text

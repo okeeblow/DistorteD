@@ -18,17 +18,17 @@ module Cooltrainer
       #  Example: RaphaëlJS — https://en.wikipedia.org/wiki/Rapha%C3%ABl_(JavaScript_library)
       LOWER_WORLD = CHECKING::YOU::IN(/^image\/svg/)
 
-      ATTRS = Set[
+      ATTRIBUTES = Set[
         :alt,
         :caption,
         :href,
         :loading,
         :optimize,
       ]
-      ATTRS_VALUES = {
+      ATTRIBUTES_VALUES = {
         :optimize => BOOLEAN_ATTR_VALUES,
       }
-      ATTRS_DEFAULT = {
+      ATTRIBUTES_DEFAULT = {
         :optimize => false,
       }
 

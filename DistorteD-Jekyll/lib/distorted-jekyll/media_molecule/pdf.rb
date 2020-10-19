@@ -16,7 +16,7 @@ module Jekyll
         # https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf
         def pdf_open_params
           PDF_OPEN_PARAMS.map{ |p|
-            if ATTRS_VALUES.dig(p) == BOOLEAN_ATTR_VALUES
+            if ATTRIBUTES_VALUES.dig(p) == BOOLEAN_ATTR_VALUES
               # Support multiple ways people might want to express a boolean
               if Set[0, '0'.freeze, false, 'false'.freeze].include?(abstract(p))
                 [p, '0'.freeze]

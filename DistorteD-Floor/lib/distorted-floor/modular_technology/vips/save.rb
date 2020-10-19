@@ -51,13 +51,14 @@ module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Technology; end
 module Cooltrainer::DistorteD::Technology::VipsSave
 
-  ATTRS = Set[
-    :crop,
-  ]
-  ATTRS_DEFAULT = {
+  ATTRIBUTES = {
+    :crop => nil,
+    :Q => Set[:quality],
+  }
+  ATTRIBUTES_DEFAULT = {
     :crop => :attention,
   }
-  ATTRS_VALUES = {
+  ATTRIBUTES_VALUES = {
     # https://www.rubydoc.info/gems/ruby-vips/Vips/Interesting
     :crop => Set[:none, :centre, :entropy, :attention],
   }

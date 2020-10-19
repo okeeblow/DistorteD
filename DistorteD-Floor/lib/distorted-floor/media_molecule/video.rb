@@ -30,13 +30,13 @@ module Cooltrainer
       # Attributes for our <video>.
       # Automatically enabled as attrs for DD Liquid Tag.
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#Attributes
-      ATTRS = Set[:caption]
+      ATTRIBUTES = Set[:caption]
 
       # Defaults for HTML Element attributes.
       # Not every attr has to be listed here.
       # Many need no default and just won't render.
-      ATTRS_DEFAULT = {}
-      ATTRS_VALUES = {}
+      ATTRIBUTES_DEFAULT = {}
+      ATTRIBUTES_VALUES = {}
       include Cooltrainer::DistorteD::InjectionOfLove
 
       attr_accessor :dest
