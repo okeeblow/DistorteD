@@ -89,10 +89,21 @@ module Jekyll
         # Filename is the only non-keyword argument our tag should ever get.
         # It's spe-shul and gets its own definition outside the attr loop.
         if parsed_arguments.key?(:src)
-          @name = parsed_arguments[:src]
+          @name = parsed_arguments.delete(:src)
         else
-          @name = parsed_arguments[:argv1]
+          @name = parsed_arguments.delete(:argv1)
         end
+        @liquid_liquid = parsed_arguments.select{ |attr, val|
+          not [nil, ''.freeze].include?(val)
+        }.transform_keys { |attr|
+          attr.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY ? attr.to_sym : attr.freeze
+        }.transform_values { |val|
+          if val.respond_to?(:length)
+            val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY ? val.to_sym : val.freeze
+          else
+            val
+          end
+        }
 
         # If we didn't get one of the two above options there is nothing we
         # can do but bail.
@@ -100,60 +111,46 @@ module Jekyll
           raise "Failed to get a usable filename from #{arguments}"
         end
 
-        # We can't proceed without a usable media type.
-        # Guess MIME Magic from the filename. For example:
-        # `distorted IIDX-Readers-Unboxing.jpg: [#<MIME::Type: image/jpeg>]`
-        #
-        # Types#type_for can return multiple possibilities for a filename.
-        # For example, an XML file: [application/xml, text/xml].
-        # TODO: Provide realpath here instead of just the name
-        @mime = CHECKING::YOU::OUT(@name)
-        if @mime.empty?
-          if Jekyll::DistorteD::Floor::config(Jekyll::DistorteD::Floor::CONFIG_ROOT, :last_resort)
-            @mime = Jekyll::DistorteD::Molecule::LastResort::LOWER_WORLD
+      end
+
+      # Returns a Set of DD MIME::Types descriving our file,
+      # optionally falling through to a plain file copy.
+      def type_mars
+        @type_mars ||= begin
+          mime = CHECKING::YOU::OUT(@name)
+          if mime.empty?
+            if Jekyll::DistorteD::Floor::config(Jekyll::DistorteD::Floor::CONFIG_ROOT, :last_resort)
+              mime = Jekyll::DistorteD::Molecule::LastResort::LOWER_WORLD
+            end
           end
+          mime
         end
+      end
 
+      # Return any arguments given by the user to our Liquid tag.
+      # This method name is generic across all DD entrypoints so it can be
+      # referenced from lower layers in the pile.
+      def user_arguments
+        @liquid_liquid || Hash[]
+      end
 
-        available_molecules = TYPE_MOLECULES.keys.to_set & @mime
+      # Decides which MediaMolecule is most appropriate for our file and returns it.
+      def media_molecule
+        available_molecules = TYPE_MOLECULES.keys.to_set & type_mars
         # TODO: Handle multiple molecules for the same file
         case available_molecules.length
         when 0
           raise MediaTypeNotImplementedError.new(@name)
         when 1
-          molecule = TYPE_MOLECULES[available_molecules.first].first
+          return TYPE_MOLECULES[available_molecules.first].first
+        end
+      end
 
-          # Plug the chosen Media Molecule!
-          # NOTE: This is before attr-handling because most of our attribute definitions
-          # won't exist in the ancestor chain otherwise until we prepend!
-          self.singleton_class.instance_variable_set(:@media_molecule, molecule)
-          self.singleton_class.prepend(molecule)
-
-          liquid_liquid = self.singleton_class.instance_variable_get(:@DistorteD)&.dig(:ATTRS)&.dup.to_hash
-          liquid_liquid.each_pair do |attr, val|
-            liquid_val = parsed_arguments&.dig(attr)
-
-            if liquid_val.is_a?(String)
-              # Symbolize String values of any attr that has a Molecule-defined list
-              # of acceptable values, or — completely arbitrarily — any String value
-              # shorter than an arbitrarily-chosen constant.
-              # Otherwise freeze them.
-              if (liquid_val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY) or
-                  molecule.singleton_class.const_get(:ATTRS_VALUES).key?(attr)
-                liquid_val = liquid_val&.to_sym
-              elsif liquid_val.length > ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY
-                liquid_val = liquid_val&.freeze
-              end
-            end
-
-            liquid_liquid[attr] = liquid_val
-          end
-
-          # Save attrs to our instance as the data source for Molecule::Abstract.attrs.
-          @liquid_attrs = liquid_liquid
-
-        else
-          raise Exception.new('Currently unable to handle multiple possible molecules for a file.')
+      def plug
+        unless self.singleton_class.instance_variable_defined?(:@media_molecule)
+          self.singleton_class.instance_variable_set(:@media_molecule, media_molecule)
+          self.singleton_class.prepend(media_molecule)
+          Jekyll.logger.info(@name, "Plugging #{media_molecule}")
         end
       end
 
@@ -161,12 +158,14 @@ module Jekyll
       # https://github.com/jekyll/jekyll/blob/HEAD/lib/jekyll/renderer.rb
       # https://jekyllrb.com/tutorials/orderofinterpretation/
       def render(context)
+        plug
         render_to_output_buffer(context, '')
       end
 
       # A future Liquid version (5.0?) will call this function directly
       # instead of calling render()
       def render_to_output_buffer(context, output)
+        plug
         # Get Jekyll Site object back from tag rendering context registers so we
         # can get configuration data and path information from it and
         # then pass it along to our StaticFile subclass.
@@ -205,6 +204,7 @@ module Jekyll
         # Add our new file to the list that will be handled
         # by Jekyll's built-in StaticFile generator.
         @site.static_files << self
+        output
       end
 
       # Generic Liquid template loader that will be used in every MediaMolecule.

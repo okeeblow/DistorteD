@@ -85,6 +85,7 @@ module Jekyll::DistorteD::StaticState
   #
   # Returns false if the file was not modified since last time (no-op).
   def write(dest_root)
+    plug
     return false if File.exist?(path) && !modified?
 
     # Create any directories to the depth of the intended destination.
