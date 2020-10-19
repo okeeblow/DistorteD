@@ -13,8 +13,10 @@
 #                       `/oooooooooooooo:`-+o+/.  `+oo+o++++ooo+oooooo-       `-+oo/`   :oooooooooooooo/                 
 #                                                                                                                        
 
+require_relative 'modular_technology/triple_counter'
+
 module Cooltrainer
   module DistorteD
-    VERSION = '0.5.7'.freeze
+    VERSION = TripleCounter.new(0, 6, 0)
   end
 end
