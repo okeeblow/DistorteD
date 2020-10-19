@@ -129,13 +129,6 @@ module Cooltrainer
         end
       end
 
-      def initialize(src, encoding: nil, font: nil, spacing: nil, dpi: ATTRS_DEFAULT[:dpi])
-        @src = src
-        @encoding = encoding
-        @liquid_spacing = spacing
-        @dpi = dpi
-      end
-
       protected
 
       def text_file_content
