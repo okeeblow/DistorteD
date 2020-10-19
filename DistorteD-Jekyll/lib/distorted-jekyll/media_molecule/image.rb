@@ -23,7 +23,7 @@ module Jekyll
 
           # Computes a Set of non-nil MIME::Type.sub_types for all MIME::Types
           # detected for the original media file.
-          sub_types = @mime.keep_if{ |m|
+          sub_types = type_mars.keep_if{ |m|
             m.media_type == 'image'.freeze
           }.map { |m|
             m.sub_type
