@@ -45,6 +45,7 @@ module Jekyll
 
       # Mix in config-loading methods.
       include Jekyll::DistorteD::Molecule::Abstract
+      include Jekyll::DistorteD::Floor
       include Jekyll::DistorteD::StaticState
 
       # Enabled media_type drivers. These will be attempted back to front.

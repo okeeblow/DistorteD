@@ -6,7 +6,7 @@ require 'set'
 
 module Jekyll
   module DistorteD
-    class Floor
+    module Floor
 
       # Top-level config key (once stringified) for Jekyll and Default YAML.
       CONFIG_ROOT = :distorted
