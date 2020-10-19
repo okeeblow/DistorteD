@@ -142,7 +142,7 @@ module Cooltrainer::DistorteD::Technology::VipsSave
 
   # Generic Vips saver method, optionally handling resizing and cropping.
   # NOTE: libvips chooses a saver (internally) based on the extname of the destination path.
-  def vips_save(dest, width: nil, crop: nil, **kw)
+  def vips_save(dest, width: nil, **kw)
     begin
       if width.nil? or width == :full
         return to_vips_image.write_to_file(dest)
@@ -150,7 +150,7 @@ module Cooltrainer::DistorteD::Technology::VipsSave
         ver = to_vips_image.thumbnail_image(
           width.to_i,
           # Use `self` namespace for constants so subclasses can redefine
-          **{:crop => crop || self.singleton_class.const_get(:ATTRS_DEFAULT)[:crop]},
+          **{:crop => abstract(:crop)},
         )
         return ver.write_to_file(dest)
       end
