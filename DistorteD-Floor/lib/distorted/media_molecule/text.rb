@@ -157,7 +157,7 @@ module Cooltrainer
 
       def vips_font
         # Set the shorthand Symbol key for our chosen font.
-        abstract(:font)&.to_sym || self.singleton_class.const_get(:CODEPAGE_FONT)[codepage].first
+        return abstract(:font)&.to_sym || CODEPAGE_FONT[codepage].first
       end
 
       def to_vips_image
