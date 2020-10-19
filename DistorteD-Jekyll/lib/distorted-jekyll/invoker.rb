@@ -8,9 +8,6 @@ require 'distorted/checking_you_out'
 require 'distorted-jekyll/floor'
 require 'distorted-jekyll/static_state'
 
-# Configuration data manipulations
-require 'distorted-jekyll/molecule/abstract'
-
 # Media-type drivers
 require 'distorted-jekyll/molecule/font'
 require 'distorted-jekyll/molecule/image'
@@ -44,7 +41,6 @@ module Jekyll
       GEM_ROOT = File.dirname(__FILE__).freeze
 
       # Mix in config-loading methods.
-      include Jekyll::DistorteD::Molecule::Abstract
       include Jekyll::DistorteD::Floor
       include Jekyll::DistorteD::StaticState
 
