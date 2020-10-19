@@ -40,7 +40,7 @@ module Cooltrainer
         :highlight,
         :fdf,
       ]
-      ATTRS = Set[
+      ATTRIBUTES = Set[
         :alt,
         :caption,
         :height,  #<object> viewer container height.
@@ -54,7 +54,7 @@ module Cooltrainer
       FLOAT_INT_FRAGMENT = '[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)'.freeze
       ZERO_TO_ONE_HUNDRED = /^(([1-9]\d?|1\d{1})([.,]\d{0,1})?|100([.,]0{1})?)$/
 
-      ATTRS_DEFAULT = {
+      ATTRIBUTES_DEFAULT = {
         :height => '100%'.freeze,
         :width => '100%'.freeze,
         # BEGIN PDF Open Parameters
@@ -75,7 +75,7 @@ module Cooltrainer
       # …but then goes on to show some examples (like `comment`)
       # that are clearly longer than 32 characters.
       # Dunno. I'll err on the side of giving you a footgun.
-      ATTRS_VALUES = {
+      ATTRIBUTES_VALUES = {
         :nameddest => /^#{RESERVED_CHARACTERS_FRAGMENT}$/,
         :page => /\d/,
         :comment => /^#{RESERVED_CHARACTERS_FRAGMENT}$/,

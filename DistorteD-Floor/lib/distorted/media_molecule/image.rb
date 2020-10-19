@@ -16,15 +16,15 @@ module Cooltrainer
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/picture#Attributes
       # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#Attributes
       # https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading
-      ATTRS = Set[:alt, :caption, :href, :loading]
+      ATTRIBUTES = Set[:alt, :caption, :href, :loading]
 
       # Defaults for HTML Element attributes.
       # Not every attr has to be listed here.
       # Many need no default and just won't render.
-      ATTRS_DEFAULT = {
+      ATTRIBUTES_DEFAULT = {
         :loading => :eager,
       }
-      ATTRS_VALUES = {
+      ATTRIBUTES_VALUES = {
         :loading => Set[:eager, :lazy],
       }
 

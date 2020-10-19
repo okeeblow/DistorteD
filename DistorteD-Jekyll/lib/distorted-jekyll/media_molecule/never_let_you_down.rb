@@ -11,9 +11,9 @@ module Jekyll
 
         LOWER_WORLD = CHECKING::YOU::IN('application/x.distorted.last-resort')
 
-        ATTRS = Set[:alt, :title, :href, :caption]
-        ATTRS_DEFAULT = {}
-        ATTRS_VALUES = {}
+        ATTRIBUTES = Set[:alt, :title, :href, :caption]
+        ATTRIBUTES_DEFAULT = {}
+        ATTRIBUTES_VALUES = {}
 
         # This is one of the few render methods that will be defined in JekyllLand.
         define_method(CHECKING::YOU::IN('application/x.distorted.last-resort').first.distorted_method) { |*a, **k, &b|

@@ -23,12 +23,12 @@ module Cooltrainer
       LOWER_WORLD = CHECKING::YOU::IN(/^font\/ttf/)
       OUTER_LIMITS = CHECKING::YOU::IN(/^font\/ttf/)
 
-      ATTRS = Set[
+      ATTRIBUTES = Set[
         :alt,
       ]
-      ATTRS_VALUES = {
+      ATTRIBUTES_VALUES = {
       }
-      ATTRS_DEFAULT = {
+      ATTRIBUTES_DEFAULT = {
       }
 
 
