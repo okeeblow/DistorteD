@@ -148,9 +148,11 @@ module Cooltrainer
         # is worth a shot if the user gave us nothing.
         #
         # TODO: Figure out if/how we can get IBM437 files to not be detected as ISO-8859-1
-        detected = CharlockHolmes::EncodingDetector.detect(text_file_content)
-        encoding = @text_file_encoding ||= (abstract(:encoding) || detected[:encoding] || 'UTF-8'.freeze).to_s
-        encoding
+        @text_file_encoding ||= (
+          abstract(:encoding).to_s ||
+          CharlockHolmes::EncodingDetector.detect(text_file_content)[:encoding] ||
+          'UTF-8'.freeze
+        ).to_s
       end
 
       def vips_font
