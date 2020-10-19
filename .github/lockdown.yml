@@ -8,7 +8,7 @@ skipCreatedBefore: false
 exemptLabels: []
 
 # Comment to post before closing or locking. Set to `false` to disable
-comment: This is a personal project for my personal website that I'm happy to share, but I want the code to be all mine. Please e-mail me with bug reports since directly accepting code fixes complicates the copyright situation of my code.
+comment: Please accept my apologies for your wasted effort in closing this pull request, but I am not prepared to accept changes on this project at this time, if ever. This is a personal project for my personal website that I'm happy to share, but I want the code to be all mine. I would not be able to mentally connect with my codebase as well if it were a reflection of anyone but myself, and accepting others' code complicates the copyright situation regardless of the software license used. Please e-mail me with any bug reports :)
 
 # Label to add before closing or locking. Set to `false` to disable
 label: false
