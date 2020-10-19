@@ -62,8 +62,8 @@ module Cooltrainer
         output << "<span size='24576'> #{font_version}</span>" << cr << cr
 
         # Print a preview String in using the loaded font. Or don't.
-        if @demo
-          output << cr << cr << "<span size='24576' foreground='grey'> #{g_markup_escape_text(@demo)}</span>" << cr << cr << cr
+        if abstract(:title)
+          output << cr << cr << "<span size='24576' foreground='grey'> #{g_markup_escape_text(abstract(:title))}</span>" << cr << cr << cr
         end
 
         #                        /!\ MANDATORY READING /!\
