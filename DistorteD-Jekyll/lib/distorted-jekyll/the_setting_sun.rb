@@ -1,12 +1,16 @@
-require 'distorted/monkey_business/hash'
 require 'yaml'
 require 'jekyll'
 require 'set'
+
+require 'distorted/monkey_business/hash'
+require 'distorted/checking_you_out'
 
 
 module Jekyll
   module DistorteD
     module Floor
+
+      ATTRIBUTES = Set[:lower_world, :changes, :outer_limits]
 
       # Top-level config key (once stringified) for Jekyll and Default YAML.
       CONFIG_ROOT = :distorted
@@ -144,6 +148,117 @@ module Jekyll
           return dunno.to_str.freeze
         end
         return dunno
+      end
+
+      # Returns a Set of Arrays of search keys to try in config()
+      def search_keys(*keys)
+        # It's likely that we will get a default argument of [nil]
+        # here due to the output of abstract(:whatever) for unset attrs.
+        keys = keys.compact
+        # If a search key path was given, construct one based
+        # on the MIME::Type union Set between the source media
+        # and the plugged MediaMolecule.
+        if keys.empty? or keys.all?{|k| k.nil?}
+          try_keys = type_mars.map{ |t|
+            # Use only the first part of complex sub_types like 'svg+xml'
+            [t.media_type, t.sub_type.split('+').first].compact
+          }
+        else
+          # Or use a user-provided config path.
+          try_keys = Set[keys]
+        end
+      end
+
+      # Loads configuration data telling us how to open certain
+      # types of files.
+      def lower_world(*keys)
+        # Try each set of keys until we find a match
+        for try in search_keys(*keys)
+          tried = Jekyll::DistorteD::Floor::config(
+            Jekyll::DistorteD::Floor::CONFIG_ROOT,
+            :welcome,
+            *try,
+          )
+          # Is the YAML config of the appropriate structure?
+          if tried.is_a?(Hash)
+            # Non-Hashes may not respond to `empty?`
+            unless tried.empty?
+              return tried
+            end
+          end
+        end
+      end
+
+      # Load configuration telling us what media-types to generate
+      # for any given media-type input.
+      def changes(*keys)
+        out = Set[]
+        # `changes` media-type[sub_type] config will contain information about
+        # what variations output format are desired for what input format,
+        # e.g. {:image => {:jpeg => Set['image/jpeg', 'image/webp']}}
+        # It is not automatically implied that the source format is also
+        # an output format!
+        for try in search_keys(*keys)
+          tried = Jekyll::DistorteD::Floor::config(
+            Jekyll::DistorteD::Floor::CONFIG_ROOT,
+            :changes,
+            *try,
+          )
+          if tried.is_a?(Enumerable) and tried.all?{|t| t.is_a?(String)} and not tried.empty?
+            tried.each{ |t|
+              # MIME::Type.new() won't give us a usable Type object:
+              #
+              # irb> MIME::Types['image/svg+xml'].first.preferred_extension
+              # => "svg"
+              # irb> MIME::Type.new('image/svg+xml').preferred_extension
+              # => nil
+              out.merge(CHECKING::YOU::IN(t))
+            }
+          end
+        end
+
+        # If the config didn't give us any MIME::Type changes
+        # then we will just output the same type we loaded.
+        if out.empty?
+          return type_mars
+        else
+          return out
+        end
+      end
+
+      # Loads configuration telling us what variations to generate for any
+      # given type of file, or for an arbitrary key hierarchy.
+      def outer_limits(*keys)
+        out = Set[]
+        # See if any config data exists for each given key hierarchy,
+        # but under the root DistorteD config key.
+        for try in search_keys(*keys)
+          tried = Jekyll::DistorteD::Floor::config(
+            Jekyll::DistorteD::Floor::CONFIG_ROOT,
+            :outer_limits,
+            *try,
+          )
+
+          # Is the YAML config of the appropriate structure?
+          # Merge a shallow copy of it with the Liquid-given attrs.
+          # If we don't take a copy the attrs will be memoized into the config.
+          if tried.is_a?(Enumerable) and tried.all?{|t| t.is_a?(Hash)} and not tried.empty?
+            out.merge(tried.dup.map{ |d| d.merge(@liquid_liquid) })
+          end
+        end
+
+        # We should output something if the config didn't give us anything.
+        # This is kind of a mess right now with redundancies in the call sites
+        # of things like Molecule::Image. I'll come up with a better general-
+        # purpose fallback solution at some point, but for now this will get
+        # non-Image StaticFiles working with no config :)
+        if out.empty?
+          out << {
+            :tag => :full,
+          }
+        end
+
+        return out
       end
 
     end

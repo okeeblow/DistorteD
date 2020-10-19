@@ -4,7 +4,6 @@ require 'set'
 
 require 'distorted/error_code'
 
-require 'distorted-jekyll/molecule/abstract'
 
 module Jekyll; end
 module Jekyll::DistorteD; end
@@ -13,6 +12,10 @@ module Jekyll::DistorteD; end
 # pretend to be a Jekyll::StaticFile so we don't need to
 # redundantly re-implement a Generator and Jekyll::Cleaner.
 module Jekyll::DistorteD::StaticState
+
+
+  ATTRIBUTES = Set[:title]
+
 
   # Returns the to-be-written path of a single standard StaticFile.
   # The value returned by this method is only the 'main' or 'original'
@@ -150,4 +153,48 @@ module Jekyll::DistorteD::StaticState
       end
     end
   end
+
+  # Returns a Hash keyed by MIME::Type objects with value as a Set of Hashes
+  # describing the media's output variations to be generated for each Type.
+  def variations
+    changes(abstract(:changes)).map{ |t|
+      [t, outer_limits(abstract(:outer_limits)).map{ |d|
+
+        # Don't change the filename of full-size variations
+        tag = d&.dig(:tag) != :full ? '-'.concat(d&.dig(:tag).to_s) : ''.freeze
+        # Use the original extname for LastResort
+        ext = t == CHECKING::YOU::OUT('application/x.distorted.last-resort') ? File.extname(@name) : t.preferred_extension
+        # Handle LastResort for files that might be a bare name with no extension
+        dot = '.'.freeze unless ext.nil? || ext&.empty?
+
+        d.merge({
+          # e.g. 'SomeImage-medium.jpg` but just `SomeImage.jpg` and not `SomeImage-full.jpg`
+          # for the full-resolution outputs.
+          # The default `.jpeg` preferred_extension is monkey-patched to `.jpg` because lol
+          :name => "#{basename}#{tag}#{dot}#{ext}",
+        })
+
+      }]
+    }.to_h
+  end
+
+  # Returns a flat Set of Hashes that each describe one variant of
+  # media file output that should exist for a given input file.
+  def files
+    filez = Set[]
+    variations.each_pair{ |t,v|
+      # Merge the type in to each variation Hash since we will no longer
+      # have it as the key to this Set in its container Hash.
+      v.each{ |d| filez.add(d.merge({:type => t})) }
+    }
+    filez
+  end
+
+  # Returns a Set of just the String filenames we want for this media.
+  # This will be used by `modified?` among others.
+  def wanted_files
+    files.map{|f| f[:name]}.to_set
+  end
+
+
 end
