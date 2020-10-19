@@ -60,7 +60,12 @@ module Cooltrainer::DistorteD::Technology::VipsSave
   }
   ATTRIBUTES_VALUES = {
     # https://www.rubydoc.info/gems/ruby-vips/Vips/Interesting
-    :crop => Set[:none, :centre, :entropy, :attention],
+    :crop => {
+      :none => nil,
+      :centre => Set[:center],  # America, FUCK YEAH!
+      :entropy => nil,
+      :attention => nil,
+    },
   }
 
   # Returns a Set of MIME::Types based on libvips VipsForeignSave capabilities.
