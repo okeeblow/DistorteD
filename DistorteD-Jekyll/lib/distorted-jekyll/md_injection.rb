@@ -215,13 +215,13 @@ module Kramdown
         matched
       end
 
-      def attrs(el, type = :img)
-        matched = []
+      def flatten_attributes(el, type = :img)
+        matched = {}
 
         if el.is_a? Enumerable
           # Support an Array of elements...
           el.each {
-            |child| matched.push(*attrs(child, type))
+            |child| matched.merge!(flatten_attributes(child, type))
           }
         else
           # ...or a tree of elements.
@@ -231,32 +231,36 @@ module Kramdown
             # will be duplicated in `class` or some other `:attr` anyway.
             # Those things should be added here if this is ever used in a
             # more generic context than just parsing the image tags.
-            matched << el.attr unless el.attr.empty?
+            matched.merge!(el.attr) unless el.attr.empty?
           end
           unless el.children.empty?
             # Keep looking even if this element was one we are looking for.
             el.children.each {
-              |child| matched.push(*attrs(child, type))
+              |child| matched.merge!(flatten_attributes(child, type))
             }
           end
         end
         matched
       end
 
-      # Convert Markdown element attributes to a string key=value,
-      # except for `src` (DD-specific)
-      def to_attrs(k, v)
-        # DistorteD prefers the media filename as a positional argument,
-        # not a named kwarg.
-        if k == 'src'
-          v.to_s
-        else
-          k.to_s + '="' + v.to_s + '"'
-        end
-      end
-
-      def distorted(attrs)
-        "{% distorted #{attrs.map{|k,v| to_attrs(k, v)}.join(' ')} %}"
+      # Geenerates a DistorteD Liquid tag String given a Hash of element attributes.
+      # Examples:
+      #   {% distorted rpg-ra11.nfo alt="HellMarch INTENSIFIES" title="C&C RA2:YR NoCD NFO" encoding="IBM437" crop="none" %}
+      #   {% distorted DistorteD.png alt="DistorteD logo" title="This is so cool" crop="none" loading="lazy" %}
+      # The :additional_defaults Hash contains attribute values to set
+      # iff those attributes have no user-given value.
+      def distorted(attributes, additional_defaults: {})
+        "{% distorted #{additional_defaults.transform_keys{ |k|
+          # We will end up with a Hash of String-keys and String-values,
+          # so make sure override-defaults are String-keyed too.
+          k.to_s
+        }.merge(attributes).select{ |k, v|
+          # Filter out empty values, e.g. from an unfilled title/alt field
+          # in a Markdown image.
+          not v.empty?
+        }.map{ |k, v|
+          k.to_s + '="'.freeze + v.to_s + '"'.freeze
+        }.join(' '.freeze)} %}"
       end
 
       # Kramdown entry point
@@ -278,11 +282,10 @@ module Kramdown
         when 0..1
           # Render one (1) image/video/whatever. This behavior is the same
           # regardless if the image is in a single-item list or just by itself.
-          distorted(attrs(imgs.first)&.first&.merge({
-            # Images default to `attention` cropping for desktop/mobile versatility.
-            # Override this for single images unless a cropping value was already set.
-            'crop'.freeze => attrs(imgs.first)&.first&.dig('crop'.freeze) || 'none'.freeze,
-          }))
+          distorted(
+            flatten_attributes(imgs.first),
+            additional_defaults: {:crop => 'none'.freeze},
+          )
         else
           # Render a conceptual group (DD::BLOCKS)
 
@@ -296,7 +299,9 @@ module Kramdown
             raise "MD->img regex returned an unequal number of listed and unlisted tags."
           end
 
-          "{% distort -%}\n#{list_imgs.map{|img| distorted(*attrs(img))}.join("\n")}\n{% enddistort %}"
+          "{% distort -%}\n#{list_imgs.map{ |img|
+            distorted(flatten_attributes(img))
+          }.join("\n")}\n{% enddistort %}"
         end
       end
 
