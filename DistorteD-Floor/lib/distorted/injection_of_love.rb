@@ -210,11 +210,13 @@ module Cooltrainer::DistorteD::InjectionOfLove
         user_value = user_arguments&.dig(argument)
 
         # Supported values may be declared as:
+        #   - nil for freeform input.
         #   - A Hash of values-and-their-aliases to values.
         #   - A Regex.
-        #   - nil for freeform input.
         valid_value = trip_machine.dig(:ATTRIBUTES_VALUES)&.dig(argument)
-        if valid_value.is_a?(Enumerable)
+        if valid_value.nil?
+          is_valid = true
+        elsif valid_value.is_a?(Enumerable)
           if valid_value.include?(user_value)
             is_valid = true
           end
