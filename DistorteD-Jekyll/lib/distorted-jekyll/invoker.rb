@@ -98,7 +98,7 @@ module Jekyll
         }.transform_keys { |attr|
           attr.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY ? attr.to_sym : attr.freeze
         }.transform_values { |val|
-          if val.respond_to?(:length)
+          if val.is_a?(String)
             val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY ? val.to_sym : val.freeze
           else
             val
