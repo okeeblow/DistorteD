@@ -95,6 +95,8 @@ module CHECKING
       # Load the upstream mime-types-data by providing a nil `path`:
       # path || ENV['RUBY_MIME_TYPES_DATA'] || MIME::Types::Data::PATH
       loader = MIME::Types::Loader.new(nil, container)
+      # TODO: Log this once I figure out a nice way to wrap Jekyll logger too.
+      #   irb> loader.load_columnar => #<MIME::Types: 2277 variants, 1195 extensions>
       loader.load_columnar
 
       # Change default JPEG file extension from .jpeg to .jpg
