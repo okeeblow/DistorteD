@@ -71,8 +71,15 @@ module CHECKING
     # format MEDIA_TYPE/SUB_TYPE.
     # This can return multiple Types, e.g. 'font/collection' TTC/OTC variations:
     # [#<MIME::Type: font/collection>, #<MIME::Type: font/collection>]
-    def self.IN(type)
-      types[type, :complete => type.is_a?(Regexp)].to_set
+    def self.IN(wanted_type_or_types)
+      if wanted_type_or_types.is_a?(Enumerable)
+        # Support taking a list of String types for Molecules whose Type support
+        # isn't easily expressable as a single Regexp.
+        types.select{ |type| wanted_type_or_types.include?(type.to_s) }
+      else
+        # Might be a single String or Regexp
+        types[wanted_type_or_types, :complete => wanted_type_or_types.is_a?(Regexp)].to_set
+      end
     end
 
     # Returns the MIME::Types container or loads one
