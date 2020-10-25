@@ -1,31 +1,16 @@
-#!/usr/bin/env ruby
-# Tell the user to install the shared library if it's missing.
-begin
-  require 'gst'
-rescue LoadError => le
-  raise unless le.message =~ /libgst/
-
-  # Multiple OS help
-  help = <<~INSTALL
-
-  Please install the GStreamer library for your system.
-  INSTALL
-
-  # Re-raise with install message
-  raise $!, "#{help}\n#{$!}", $!.backtrace
-end
-
 require 'set'
 
 require 'distorted/checking_you_out'
 require 'distorted/injection_of_love'
+
+require 'distorted/modular_technology/gstreamer'
 
 
 module Cooltrainer
   module DistorteD
     module Video
 
-      LOWER_WORLD = CHECKING::YOU::IN(/^video\/mp4/)
+      LOWER_WORLD = CHECKING::YOU::IN('video/mp4')
 
       # Attributes for our <video>.
       # Automatically enabled as attrs for DD Liquid Tag.
@@ -37,33 +22,6 @@ module Cooltrainer
       # Many need no default and just won't render.
       ATTRIBUTES_DEFAULT = {}
       ATTRIBUTES_VALUES = {}
-      include Cooltrainer::DistorteD::InjectionOfLove
-
-      attr_accessor :dest
-
-
-      def initialize(src, dest, basename)
-        @src = src
-        @dest = dest
-        @basename = basename
-      end
-
-      def rotate(angle=nil)
-        false
-      end
-
-      def clean
-        false
-      end
-
-      def generate
-        self.generate_hls
-        begin
-          self.generate_dash
-        rescue Gst::ParseError::NoSuchElement
-          # This is going away once the new dashsink2 lands in Gst so :effort:
-        end
-      end
 
       def generate_dash
         orig_dest = @dest
@@ -169,27 +127,9 @@ module Cooltrainer
         text = File.read(hls_playlist)
         File.write(hls_playlist, text.gsub(/^#EXT-X-ALLOW-CACHE:NO$/, '#EXT-X-ALLOW-CACHE:YES'))
       end
+      include Cooltrainer::DistorteD::Technology::GStreamer
+      include Cooltrainer::DistorteD::InjectionOfLove
 
-      def event_loop(pipeline)
-        running = true
-        bus = pipeline.bus
-
-        while running
-          message = bus.poll(Gst::MessageType::ANY, -1)
-
-          case message.type
-          when Gst::MessageType::EOS
-            running = false
-          when Gst::MessageType::WARNING
-            warning, _debug = message.parse_warning
-            Jekyll.logger.warning(@tag_name, warning)
-          when Gst::MessageType::ERROR
-            error, _debug = message.parse_error
-            Jekyll.logger.error(@tag_name, error)
-            running = false
-          end
-        end
-      end
-    end  # Image
+    end  # Video
   end  # DistorteD
 end  # Cooltrainer
