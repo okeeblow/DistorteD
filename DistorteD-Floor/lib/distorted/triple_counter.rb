@@ -1,7 +1,13 @@
 TripleCounter = Struct.new(:major, :minor, :micro) do
   attr_reader :major, :minor, :micro
 
-  def initialize(major = 0, minor = 0, micro = 0)
+  # Include a catch-all so we can splat Array-generating functions
+  # into TripleCounter.new(), e.g. Ruby/GStreamer's library version:
+  #   irb> require 'gst'
+  #   => true
+  #   irb> Gst.version
+  #   => [1, 19, 0, 1]
+  def initialize(major = 0, minor = 0, micro = 0, *_)
     @major = major
     @minor = minor
     @micro = micro
