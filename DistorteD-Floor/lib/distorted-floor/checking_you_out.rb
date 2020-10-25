@@ -103,6 +103,14 @@ module CHECKING
       # because it pisses me off lol
       container['image/jpeg'].last.preferred_extension = 'jpg'
 
+      # Add a missing extension to MPEG-DASH manifests:
+      #   irb> MIME::Types['application/dash+xml'].first
+      #   => #<MIME::Type: application/dash+xml>
+      #   irb> MIME::Types['application/dash+xml'].first.preferred_extension
+      #   => nil
+      # https://www.iana.org/assignments/media-types/application/dash+xml
+      container['application/dash+xml'].last.preferred_extension = 'mpd'
+
       # Override the loader's path with the path to our local data directory
       # after we've loaded the upstream data.
       # :@path is set up in Loader::initialize and only has an attr_reader
