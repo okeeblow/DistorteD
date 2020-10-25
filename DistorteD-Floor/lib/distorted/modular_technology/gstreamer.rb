@@ -39,6 +39,54 @@ module Cooltrainer::DistorteD::Technology::GStreamer
   ])
 
 
+  def to_application_dash_xml(dest, *a, **k)
+    begin
+      segment_dest = File.join(File.dirname(dest), "#{basename}.dash", '/')
+      #segment_dest = segment_dest.sub("#{@base}/", '')
+      FileUtils.mkdir_p(segment_dest)
+      Jekyll.logger.debug(@tag_name, "Re-muxing #{path} to #{segment_dest}")
+
+      # https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html?gi-language=c#pipeline-description
+      # TODO: Convert this from parse_launch() pipeline notation to Element objects
+      # TODO: Get source video duration/resolution/etc and use it to compute a
+      #  value for `target-duration`.
+      # TODO: Also support urldecodebin for remote media.
+      pipeline, error = Gst.parse_launch("dashsink name=mux  filesrc name=src ! decodebin name=demux ! audioconvert ! avenc_aac ! mux.audio_0 demux. ! videoconvert ! x264enc ! mux.video_0")
+
+      if pipeline.nil?
+        Jekyll.logger.error(@tag_name, "Parse error: #{error.message}")
+        return false
+      end
+
+      filesrc = pipeline.get_by_name('src')
+      filesrc.location = path
+
+      mux = pipeline.get_by_name('mux')
+      mux.mpd_filename = File.basename(dest)
+      mux.target_duration = 3
+      #mux.segment_tpl_path = "#{segment_dest}/#{basename}%05d.mp4"
+      mux.mpd_root_path = segment_dest
+      Jekyll.logger.warn('MPD ROOT PATH', mux.get_property('mpd-root-path'))
+
+      # typedef enum
+      # {
+      #   GST_DASH_SINK_MUXER_TS = 0,
+      #   GST_DASH_SINK_MUXER_MP4 = 1,
+      # } GstDashSinkMuxerType;
+      mux.muxer = 1
+
+      pipeline.play
+
+      # Play until End Of Stream
+      event_loop(pipeline)
+
+      pipeline.stop
+
+    rescue Gst::ParseError::NoSuchElement
+      raise
+    end
+  end
+
   def to_application_vnd_apple_mpegurl(dest, *a, **k)
     begin
       orig_dest = dest
