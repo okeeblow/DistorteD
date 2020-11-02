@@ -4,7 +4,7 @@
 
 Right now this repo contains two Gems:
 - [`DistorteD-Jekyll`](https://rubygems.org/gems/distorted-jekyll) contains anything and everything that depends on Jekyll.
-- [`DistorteD-Ruby`](https://rubygems.org/gems/distorted) contains just the abstract media file format handling code. It's separate so I can use those functions in other contexts and/or easily replace the Ruby core if necessary.
+- [`DistorteD-Core`](https://rubygems.org/gems/distorted) contains just the abstract media file format handling code.
 
 ## Motivation
 
@@ -158,10 +158,10 @@ Clone the DistorteD repository and modify your Jekyll `Gemfile` to refer to your
 
 ```
 gem 'distorted-jekyll', :path => '~/repos/DistorteD/DistorteD-Jekyll/'[, :branch => 'NEW-SENSATION']
-gem 'distorted', :path => '~/repos/DistorteD/DistorteD-Ruby/'[, :branch => 'NEW-SENSATION']
+gem 'distorted', :path => '~/repos/DistorteD/DistorteD-Core/'[, :branch => 'NEW-SENSATION']
 ```
 
-The `DistorteD-Jekyll` Gem will automatically use its local sibling `DistorteD-Ruby` Gem if used in this way.
+The `DistorteD-Jekyll` Gem will automatically use its local sibling `DistorteD-Core` Gem if used in this way.
 
 ## License
 

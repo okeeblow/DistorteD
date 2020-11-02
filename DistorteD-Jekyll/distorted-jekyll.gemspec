@@ -1,6 +1,6 @@
 # Tie this Gem's version number directly to that of the core Gem
 # since they share this repository.
-require_relative '../DistorteD-Ruby/lib/distorted/version'
+require_relative '../DistorteD-Core/lib/distorted/version'
 
 
 # Do the thing.

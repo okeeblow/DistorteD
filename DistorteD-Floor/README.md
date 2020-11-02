@@ -1,6 +1,6 @@
 # Cooltrainer::DistorteD
 
-`DistorteD-Ruby` is the core file-handling code for `DistorteD-Jekyll`.
+`DistorteD-Core` is the core file-handling code for `DistorteD-Jekyll`.
 
 ## Installation
 
@@ -24,7 +24,7 @@ Or install it yourself as:
 Clone the DistorteD repository and modify your Jekyll `Gemfile` to refer to your local path instead of to the newest published version of the gem:
 
 ```
-gem 'distorted', :path => '~/repos/DistorteD/DistorteD-Ruby/'[, :branch => 'NEW-SENSATION']
+gem 'distorted', :path => '~/repos/DistorteD/DistorteD-Core/'[, :branch => 'NEW-SENSATION']
 ```
 
 ## License

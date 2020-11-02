@@ -192,7 +192,7 @@ module Cooltrainer
           File.dirname(__FILE__),  # molecule
           '..'.freeze,  # distorted
           '..'.freeze,  # lib
-          '..'.freeze,  # DistorteD-Ruby
+          '..'.freeze,  # DistorteD-Core
           'font'.freeze,
           font_codepage.to_s,
           font_filename,

@@ -156,7 +156,7 @@ Clone the DistorteD repository and modify your Jekyll `Gemfile` to refer to your
 gem 'distorted-jekyll', :path => '~/repos/DistorteD/DistorteD-Jekyll/'[, :branch => 'NEW-SENSATION']
 ```
 
-The `DistorteD-Jekyll` Gem will automatically use its local sibling `DistorteD-Ruby` Gem if used in this way.
+The `DistorteD-Jekyll` Gem will automatically use its local sibling `DistorteD-Core` Gem if used in this way.
 
 ## License
 
