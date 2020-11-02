@@ -2,6 +2,7 @@ require 'set'
 
 require 'charlock_holmes'  # Text file charset detection
 
+require 'distorted/monkey_business/encoding'
 require 'distorted/monkey_business/string'  # String#map
 require 'distorted/modular_technology/pango'
 require 'distorted/modular_technology/ttfunk'
@@ -104,17 +105,6 @@ module Cooltrainer
       include Cooltrainer::DistorteD::Technology::VipsSave
       include Cooltrainer::DistorteD::InjectionOfLove
 
-      # Using a numeric key for things for simplicity.
-      # TODO: Replace this with Ruby's built-in Encoding class after I have
-      # a better idea what I want to do.
-      def codepage
-        case text_file_encoding
-          when 'UTF-8'.freeze then 65001
-          when 'Shift_JIS'.freeze then 932
-          when 'IBM437'.freeze then 437
-          else 1252
-        end
-      end
 
       # Return a Pango Markup escaped version of the document.
       def to_pango
@@ -139,7 +129,7 @@ module Cooltrainer
       end
 
       def text_file_utf8_content
-        CharlockHolmes::Converter.convert(text_file_content, text_file_encoding, 'UTF-8'.freeze)
+        CharlockHolmes::Converter.convert(text_file_content, text_file_encoding.to_s, 'UTF-8'.freeze)
       end
 
       def text_file_encoding
@@ -148,16 +138,16 @@ module Cooltrainer
         # is worth a shot if the user gave us nothing.
         #
         # TODO: Figure out if/how we can get IBM437 files to not be detected as ISO-8859-1
-        @text_file_encoding ||= (
+        @text_file_encoding ||= Encoding::find(
           abstract(:encoding).to_s ||
           CharlockHolmes::EncodingDetector.detect(text_file_content)[:encoding] ||
           'UTF-8'.freeze
-        ).to_s
+        )
       end
 
       def vips_font
         # Set the shorthand Symbol key for our chosen font.
-        return abstract(:font)&.to_sym || CODEPAGE_FONT[codepage].first
+        return abstract(:font)&.to_sym || CODEPAGE_FONT[text_file_encoding.code_page].first
       end
 
       def to_vips_image
