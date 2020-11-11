@@ -8,7 +8,7 @@ require 'distorted/checking_you_out'
 
 module Jekyll
   module DistorteD
-    module Floor
+    module Setting
 
       ATTRIBUTES = Set[:lower_world, :changes, :outer_limits]
 
@@ -174,8 +174,8 @@ module Jekyll
       def lower_world(*keys)
         # Try each set of keys until we find a match
         for try in search_keys(*keys)
-          tried = Jekyll::DistorteD::Floor::config(
-            Jekyll::DistorteD::Floor::CONFIG_ROOT,
+          tried = Jekyll::DistorteD::Setting::config(
+            Jekyll::DistorteD::Setting::CONFIG_ROOT,
             :welcome,
             *try,
           )
@@ -199,8 +199,8 @@ module Jekyll
         # It is not automatically implied that the source format is also
         # an output format!
         for try in search_keys(*keys)
-          tried = Jekyll::DistorteD::Floor::config(
-            Jekyll::DistorteD::Floor::CONFIG_ROOT,
+          tried = Jekyll::DistorteD::Setting::config(
+            Jekyll::DistorteD::Setting::CONFIG_ROOT,
             :changes,
             *try,
           )
@@ -233,8 +233,8 @@ module Jekyll
         # See if any config data exists for each given key hierarchy,
         # but under the root DistorteD config key.
         for try in search_keys(*keys)
-          tried = Jekyll::DistorteD::Floor::config(
-            Jekyll::DistorteD::Floor::CONFIG_ROOT,
+          tried = Jekyll::DistorteD::Setting::config(
+            Jekyll::DistorteD::Setting::CONFIG_ROOT,
             :outer_limits,
             *try,
           )

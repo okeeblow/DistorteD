@@ -5,7 +5,7 @@ require 'distorted/error_code'
 require 'distorted/checking_you_out'
 
 # Configuration-loading code
-require 'distorted-jekyll/floor'
+require 'distorted-jekyll/the_setting_sun'
 require 'distorted-jekyll/static_state'
 
 # Media-type drivers
@@ -41,7 +41,7 @@ module Jekyll
       GEM_ROOT = File.dirname(__FILE__).freeze
 
       # Mix in config-loading methods.
-      include Jekyll::DistorteD::Floor
+      include Jekyll::DistorteD::Setting
       include Jekyll::DistorteD::StaticState
 
       # Enabled media_type drivers. These will be attempted back to front.
@@ -119,7 +119,7 @@ module Jekyll
         @type_mars ||= begin
           mime = CHECKING::YOU::OUT(@name)
           if mime.empty?
-            if Jekyll::DistorteD::Floor::config(Jekyll::DistorteD::Floor::CONFIG_ROOT, :last_resort)
+            if Jekyll::DistorteD::Setting::config(Jekyll::DistorteD::Setting::CONFIG_ROOT, :last_resort)
               mime = Jekyll::DistorteD::Molecule::LastResort::LOWER_WORLD
             end
           end
@@ -194,11 +194,11 @@ module Jekyll
         # (or other extension) like the default Jekyll config.
         # Get the dirname if the url is not a dir itself.
         @relative_dest = page_data['url'.freeze]
-        unless @relative_dest[-1] == Jekyll::DistorteD::Floor::PATH_SEPARATOR
+        unless @relative_dest[-1] == Jekyll::DistorteD::Setting::PATH_SEPARATOR
           @relative_dest = File.dirname(@relative_dest)
           # Append the trailing slash so we don't have to do it
           # in the Liquid templates.
-          @relative_dest << Jekyll::DistorteD::Floor::PATH_SEPARATOR
+          @relative_dest << Jekyll::DistorteD::Setting::PATH_SEPARATOR
         end
 
         # Add our new file to the list that will be handled
@@ -230,8 +230,8 @@ module Jekyll
           )
 
           # Jekyll's Liquid renderer caches in 4.0+.
-          if Jekyll::DistorteD::Floor::config(
-              Jekyll::DistorteD::Floor::CONFIG_ROOT,
+          if Jekyll::DistorteD::Setting::config(
+              Jekyll::DistorteD::Setting::CONFIG_ROOT,
               :cache_templates,
           )
             # file(path) is the caching function, with path as the cache key.
