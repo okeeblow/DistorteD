@@ -8,7 +8,7 @@ module Jekyll
     module Molecule
       module Image
 
-        include Cooltrainer::DistorteD::Image
+        include Cooltrainer::DistorteD::Molecule::Image
 
         # Returns the filename we should use in the oldschool <img> tag
         # as a fallback for <picture> sources. This file should be a cropped

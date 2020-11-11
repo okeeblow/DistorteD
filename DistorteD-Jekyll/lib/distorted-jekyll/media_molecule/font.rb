@@ -8,7 +8,7 @@ module Jekyll
     module Molecule
       module Font
 
-        include Cooltrainer::DistorteD::Font
+        include Cooltrainer::DistorteD::Molecule::Font
 
         def render_to_output_buffer(context, output)
           super

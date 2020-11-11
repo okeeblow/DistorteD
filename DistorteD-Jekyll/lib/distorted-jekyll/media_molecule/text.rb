@@ -8,7 +8,7 @@ module Jekyll
     module Molecule
       module Text
 
-        include Cooltrainer::DistorteD::Text
+        include Cooltrainer::DistorteD::Molecule::Text
 
         def render_to_output_buffer(context, output)
           super
