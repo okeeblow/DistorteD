@@ -6,7 +6,7 @@ module Jekyll
     module Molecule
       module Video
 
-        include Cooltrainer::DistorteD::Video
+        include Cooltrainer::DistorteD::Molecule::Video
 
         def render_to_output_buffer(context, output)
           super

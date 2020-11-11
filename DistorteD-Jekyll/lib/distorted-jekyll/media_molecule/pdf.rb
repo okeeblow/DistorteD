@@ -8,7 +8,7 @@ module Jekyll
     module Molecule
       module PDF
 
-        include Cooltrainer::DistorteD::PDF
+        include Cooltrainer::DistorteD::Molecule::PDF
 
 
         # Generate a Hash of our PDF Open Params based on any given to the Liquid tag

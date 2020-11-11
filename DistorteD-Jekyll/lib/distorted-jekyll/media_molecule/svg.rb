@@ -8,7 +8,7 @@ module Jekyll
     module Molecule
       module SVG
 
-        include Cooltrainer::DistorteD::SVG
+        include Cooltrainer::DistorteD::Molecule::SVG
 
         def render_to_output_buffer(context, output)
           super
