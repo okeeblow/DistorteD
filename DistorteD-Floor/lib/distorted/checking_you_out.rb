@@ -26,6 +26,13 @@ end
 module CHECKING
   class YOU
 
+    # Returns a single Type with Array-style access.
+    class OUT
+      def self.[](type)
+        CHECKING::YOU::types[type]
+      end
+    end
+
     # Returns a Set of MIME::Type for a given file path, by default only
     # based on the file extension. If the file extension is unavailable—
     # or if `so_deep` is enabled—the `path` will be used as an actual
@@ -81,6 +88,8 @@ module CHECKING
         types[wanted_type_or_types, :complete => wanted_type_or_types.is_a?(Regexp)].to_set
       end
     end
+
+    protected
 
     # Returns the MIME::Types container or loads one
     def self.types
