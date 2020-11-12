@@ -11,15 +11,6 @@ require 'distorted/checking_you_out'
 require 'distorted-jekyll/the_setting_sun'
 require 'distorted-jekyll/static_state'
 
-# Media-type drivers
-require 'distorted-jekyll/molecule/font'
-require 'distorted-jekyll/molecule/image'
-require 'distorted-jekyll/molecule/text'
-require 'distorted-jekyll/molecule/pdf'
-require 'distorted-jekyll/molecule/svg'
-require 'distorted-jekyll/molecule/video'
-require 'distorted-jekyll/molecule/lastresort'
-
 # Slip in and out of phenomenon
 require 'liquid/tag'
 require 'liquid/tag/parser'
@@ -46,19 +37,18 @@ module Jekyll
       include Jekyll::DistorteD::Setting
       include Jekyll::DistorteD::StaticState
 
+      # Load Jekyll Molecules which will implicitly load
+      # the Core Molecules they're based on.
+      @@loaded_molecules rescue begin
+        Dir[File.join(__dir__, 'molecule', '*.rb')].each { |molecule| require molecule }
+        @@loaded_molecules = true
+      end
       include Cooltrainer::DistorteD::Invoker
 
       # Enabled media_type drivers. These will be attempted back to front.
-      # TODO: Make this configurable.
-      MEDIA_MOLECULES = [
-        Jekyll::DistorteD::Molecule::LastResort,
-        Jekyll::DistorteD::Molecule::Font,
-        Jekyll::DistorteD::Molecule::Text,
-        Jekyll::DistorteD::Molecule::PDF,
-        Jekyll::DistorteD::Molecule::SVG,
-        Jekyll::DistorteD::Molecule::Video,
-        Jekyll::DistorteD::Molecule::Image,
-      ]
+      MEDIA_MOLECULES = Jekyll::DistorteD::Molecule.constants.map{ |molecule|
+        Jekyll::DistorteD::Molecule::const_get(molecule)
+      }
       # Reduce the above to a Hash of Sets of MediaMolecules-per-Type, keyed by Type.
       TYPE_MOLECULES = MEDIA_MOLECULES.reduce(
         Hash.new{|hash, key| hash[key] = Set[]}
