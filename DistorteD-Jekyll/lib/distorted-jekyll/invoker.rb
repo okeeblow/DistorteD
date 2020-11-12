@@ -1,6 +1,9 @@
 # Our custom Exceptions
 require 'distorted/error_code'
 
+# Molecule loading and plugging functionality
+require 'distorted/invoker'
+
 # MIME::Typer
 require 'distorted/checking_you_out'
 
@@ -17,9 +20,6 @@ require 'distorted-jekyll/molecule/svg'
 require 'distorted-jekyll/molecule/video'
 require 'distorted-jekyll/molecule/lastresort'
 
-# Set.to_hash
-require 'distorted/monkey_business/set'
-
 # Slip in and out of phenomenon
 require 'liquid/tag'
 require 'liquid/tag/parser'
@@ -29,6 +29,8 @@ require 'shellwords'
 
 # Set is in stdlib but is not in core.
 require 'set'
+# Set.to_hash
+require 'distorted/monkey_business/set'
 
 # I mean, this is why we're here, right?
 require 'jekyll'
@@ -43,6 +45,8 @@ module Jekyll
       # Mix in config-loading methods.
       include Jekyll::DistorteD::Setting
       include Jekyll::DistorteD::StaticState
+
+      include Cooltrainer::DistorteD::Invoker
 
       # Enabled media_type drivers. These will be attempted back to front.
       # TODO: Make this configurable.
