@@ -2,7 +2,7 @@ require 'set'
 
 require 'distorted/checking_you_out'
 
-require 'distorted/modular_technology/triple_counter'
+require 'distorted/triple_counter'
 GST_MINIMUM_VER = TripleCounter.new(1, 18, 0)
 
 begin

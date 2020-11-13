@@ -3,7 +3,7 @@
 # Vips::Image text operator, animated WebP support, and more:
 # https://libvips.github.io/libvips/2019/04/22/What's-new-in-8.8.html
 
-require 'distorted/modular_technology/triple_counter'
+require 'distorted/triple_counter'
 VIPS_MINIMUM_VER = TripleCounter.new(8, 8, 0)
 
 # Tell the user to install the shared library if it's missing.
