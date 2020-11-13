@@ -13,7 +13,7 @@
 #                       `/oooooooooooooo:`-+o+/.  `+oo+o++++ooo+oooooo-       `-+oo/`   :oooooooooooooo/                 
 #                                                                                                                        
 
-require_relative 'modular_technology/triple_counter'
+require_relative 'triple_counter'
 
 module Cooltrainer
   module DistorteD
