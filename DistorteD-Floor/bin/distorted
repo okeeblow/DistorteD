@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+require 'distorted/invoker'
+require 'distorted/checking_you_out'
+
+include Cooltrainer::DistorteD::Invoker
+
+#puts Cooltrainer::DistorteD::Molecule.constants
+
+opt = OptionParser.new
+opt.parse!
+@name = ARGV.pop
+raise 'No filename specified.' unless @name
+
+
+puts plug
