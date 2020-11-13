@@ -18,17 +18,17 @@ Gem::Specification.new do |spec|
   spec.license       = 'AGPL-3.0'
 
   # "The optional base keyword argument specifies the base directory for interpreting relative pathnames instead of the current working directory. As the results are not prefixed with the base directory name in this case, you will need to prepend the base directory name if you want real paths."
-  spec.files         = Dir.glob('{font,lib}/**/*').keep_if { |file| File.file?(file) } + %w(LICENSE README.md)
+  spec.files         = Dir.glob('{bin,font,lib}/**/*').keep_if { |file| File.file?(file) } + %w(LICENSE README.md)
   spec.test_files    = Dir['test/**/*']
   spec.require_paths = ['lib']
+
+  spec.executables = ['distorted']
 
   spec.required_ruby_version = '>= 2.7.0'
 
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'minitest', '~> 5.0'
-
-  spec.add_dependency 'clamp', '~> 1.3'
 
   spec.add_dependency 'gstreamer', '~> 3.4'
   spec.add_dependency 'mime-types', '~> 3.0'
