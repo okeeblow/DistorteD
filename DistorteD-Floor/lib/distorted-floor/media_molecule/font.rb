@@ -7,7 +7,6 @@ require 'distorted/modular_technology/pango'
 require 'distorted/modular_technology/ttfunk'
 require 'distorted/modular_technology/vips_save'
 require 'distorted/checking_you_out'
-require 'distorted/injection_of_love'
 
 
 module Cooltrainer; end
@@ -44,7 +43,6 @@ module Cooltrainer::DistorteD::Molecule::Font
   include Cooltrainer::DistorteD::Technology::TTFunk
   include Cooltrainer::DistorteD::Technology::Pango
   include Cooltrainer::DistorteD::Technology::VipsSave
-  include Cooltrainer::DistorteD::InjectionOfLove
 
 
   # irb(main):089:0> chars.take(5)

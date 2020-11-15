@@ -3,7 +3,6 @@ require 'set'
 require 'hexapdf'
 
 require 'distorted/checking_you_out'
-require 'distorted/injection_of_love'
 
 
 module Cooltrainer; end
@@ -92,7 +91,6 @@ module Cooltrainer::DistorteD::Molecule::PDF
     :fdf => /^#{RESERVED_CHARACTERS_FRAGMENT}$/,
   }
 
-  include Cooltrainer::DistorteD::InjectionOfLove
 
   # TODO: Use MuPDF instead of libvips magick-based PDF loader.
 

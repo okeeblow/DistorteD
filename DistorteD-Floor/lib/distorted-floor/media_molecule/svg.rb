@@ -3,7 +3,6 @@ require 'set'
 require 'svg_optimizer'
 
 require 'distorted/checking_you_out'
-require 'distorted/injection_of_love'
 
 
 module Cooltrainer; end
@@ -31,7 +30,7 @@ module Cooltrainer::DistorteD::Molecule::SVG
   }
 
   include Cooltrainer::DistorteD::Technology::VipsSave
-  include Cooltrainer::DistorteD::InjectionOfLove
+
 
   def to_vips_image
     # TODO: Load-time options for various formats, like SVG's `unlimited`:
