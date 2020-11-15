@@ -3,7 +3,6 @@ require 'set'
 
 require 'distorted/checking_you_out'
 require 'distorted/modular_technology/vips'
-require 'distorted/injection_of_love'
 
 
 module Cooltrainer; end
@@ -30,6 +29,5 @@ module Cooltrainer::DistorteD::Molecule::Image
   }
 
   include Cooltrainer::DistorteD::Technology::Vips
-  include Cooltrainer::DistorteD::InjectionOfLove
 
 end  # Image

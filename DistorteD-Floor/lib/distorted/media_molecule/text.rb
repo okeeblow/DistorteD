@@ -9,7 +9,6 @@ require 'distorted/modular_technology/ttfunk'
 require 'distorted/modular_technology/vips_save'
 
 require 'distorted/checking_you_out'
-require 'distorted/injection_of_love'
 require 'distorted/molecule/image'
 
 
@@ -104,7 +103,6 @@ module Cooltrainer::DistorteD::Molecule::Text
   include Cooltrainer::DistorteD::Technology::TTFunk
   include Cooltrainer::DistorteD::Technology::Pango
   include Cooltrainer::DistorteD::Technology::VipsSave
-  include Cooltrainer::DistorteD::InjectionOfLove
 
 
   # Return a Pango Markup escaped version of the document.

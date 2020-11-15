@@ -1,7 +1,6 @@
 require 'set'
 
 require 'distorted/checking_you_out'
-require 'distorted/injection_of_love'
 
 require 'distorted/modular_technology/gstreamer'
 
@@ -25,6 +24,5 @@ module Cooltrainer::DistorteD::Molecule::Video
   ATTRIBUTES_VALUES = {}
 
   include Cooltrainer::DistorteD::Technology::GStreamer
-  include Cooltrainer::DistorteD::InjectionOfLove
 
 end  # Video
