@@ -11,6 +11,7 @@ TripleCounter = Struct.new(:major, :minor, :micro) do
     @major = major
     @minor = minor
     @micro = micro
+    super(major, minor, micro)  # Intentionally not passing our splat to `super`
   end
 
   def to_s
