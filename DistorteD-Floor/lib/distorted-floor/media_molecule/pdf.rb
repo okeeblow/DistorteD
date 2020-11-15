@@ -4,7 +4,6 @@ require 'hexapdf'
 
 require 'distorted/checking_you_out'
 require 'distorted/injection_of_love'
-require 'distorted/molecule/C18H27NO3'
 
 
 module Cooltrainer; end
@@ -13,7 +12,6 @@ module Cooltrainer::DistorteD::Molecule; end
 module Cooltrainer::DistorteD::Molecule::PDF
 
 
-  include Cooltrainer::DistorteD::Molecule::C18H27NO3
 
   LOWER_WORLD = CHECKING::YOU::IN("application/pdf")
 
@@ -85,12 +83,12 @@ module Cooltrainer::DistorteD::Molecule::PDF
     :view => /^Fit(H|V|B|BH|BV(,#{FLOAT_INT_FRAGMENT})?)?$/,
     :viewrect => /^#{FLOAT_INT_FRAGMENT},#{FLOAT_INT_FRAGMENT},#{FLOAT_INT_FRAGMENT},#{FLOAT_INT_FRAGMENT}$/,
     :pagemode => Set[:none, :thumbs, :bookmarks],
-    :scrollbar => BOOLEAN_ATTR_VALUES,
+    :scrollbar => Cooltrainer::BOOLEAN_VALUES,
     :search => /^#{RESERVED_CHARACTERS_FRAGMENT}(,\s#{RESERVED_CHARACTERS_FRAGMENT})*$/,
-    :toolbar => BOOLEAN_ATTR_VALUES,
-    :statusbar => BOOLEAN_ATTR_VALUES,
-    :messages => BOOLEAN_ATTR_VALUES,
-    :navpanes => BOOLEAN_ATTR_VALUES,
+    :toolbar => Cooltrainer::BOOLEAN_VALUES,
+    :statusbar => Cooltrainer::BOOLEAN_VALUES,
+    :messages => Cooltrainer::BOOLEAN_VALUES,
+    :navpanes => Cooltrainer::BOOLEAN_VALUES,
     :fdf => /^#{RESERVED_CHARACTERS_FRAGMENT}$/,
   }
 

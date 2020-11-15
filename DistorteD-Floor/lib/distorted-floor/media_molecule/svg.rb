@@ -4,7 +4,6 @@ require 'svg_optimizer'
 
 require 'distorted/checking_you_out'
 require 'distorted/injection_of_love'
-require 'distorted/molecule/C18H27NO3'
 
 
 module Cooltrainer; end
@@ -12,7 +11,6 @@ module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Molecule; end
 module Cooltrainer::DistorteD::Molecule::SVG
 
-  include Cooltrainer::DistorteD::Molecule::C18H27NO3
 
   #WISHLIST: Support VML for old IE compatibility.
   #  Example: RaphaëlJS — https://en.wikipedia.org/wiki/Rapha%C3%ABl_(JavaScript_library)
@@ -26,7 +24,7 @@ module Cooltrainer::DistorteD::Molecule::SVG
     :optimize,
   ]
   ATTRIBUTES_VALUES = {
-    :optimize => BOOLEAN_ATTR_VALUES,
+    :optimize => Cooltrainer::BOOLEAN_VALUES,
   }
   ATTRIBUTES_DEFAULT = {
     :optimize => false,
