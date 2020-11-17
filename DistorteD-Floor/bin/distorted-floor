@@ -7,7 +7,6 @@ require 'distorted/checking_you_out'
 
 include Cooltrainer::DistorteD::Invoker
 
-#puts Cooltrainer::DistorteD::Molecule.constants
 
 opt = OptionParser.new
 opt.parse!
@@ -15,4 +14,6 @@ opt.parse!
 raise 'No filename specified.' unless @name
 
 
-puts plug
+
+# TODO: Support multiple Molecules
+puts lower_world[type_mars.first][media_molecule]

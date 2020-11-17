@@ -46,20 +46,12 @@ module Jekyll
       include Cooltrainer::DistorteD::Invoker
 
       # Enabled media_type drivers. These will be attempted back to front.
-      MEDIA_MOLECULES = Jekyll::DistorteD::Molecule.constants.map{ |molecule|
-        Jekyll::DistorteD::Molecule::const_get(molecule)
-      }
-      # Reduce the above to a Hash of Sets of MediaMolecules-per-Type, keyed by Type.
-      TYPE_MOLECULES = MEDIA_MOLECULES.reduce(
-        Hash.new{|hash, key| hash[key] = Set[]}
-      ) { |types, molecule|
-        if molecule.const_defined?(:LOWER_WORLD)
-          molecule.const_get(:LOWER_WORLD).each { |t|
-            types.update(t => Set[molecule]) { |k,o,n| o.merge(n) }
-          }
-        end
-        types
-      }
+      def media_molecules
+        Jekyll::DistorteD::Molecule.constants.map{ |molecule|
+          Jekyll::DistorteD::Molecule::const_get(molecule)
+        }
+      end
+
 
       # Any any attr value will get a to_sym if shorter than this
       # totally arbitrary length, or if the attr key is in the plugged
@@ -126,26 +118,6 @@ module Jekyll
       # referenced from lower layers in the pile.
       def user_arguments
         @liquid_liquid || Hash[]
-      end
-
-      # Decides which MediaMolecule is most appropriate for our file and returns it.
-      def media_molecule
-        available_molecules = TYPE_MOLECULES.keys.to_set & type_mars
-        # TODO: Handle multiple molecules for the same file
-        case available_molecules.length
-        when 0
-          raise MediaTypeNotImplementedError.new(@name)
-        when 1
-          return TYPE_MOLECULES[available_molecules.first].first
-        end
-      end
-
-      def plug
-        unless self.singleton_class.instance_variable_defined?(:@media_molecule)
-          self.singleton_class.instance_variable_set(:@media_molecule, media_molecule)
-          self.singleton_class.prepend(media_molecule)
-          Jekyll.logger.info(@name, "Plugging #{media_molecule}")
-        end
       end
 
       # Called by Jekyll::Renderer
