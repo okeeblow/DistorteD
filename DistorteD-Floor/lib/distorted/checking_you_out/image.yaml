@@ -1,0 +1,10 @@
+
+# libvips' internal format, unlikely to be used but may as well be supported :)
+- !ruby/object:MIME::Type
+  content-type: image/vips
+  extensions:
+    - v
+    - vips
+  xrefs_urls:
+    - "http://fileformats.archiveteam.org/wiki/VIPS"
+  registered: false
