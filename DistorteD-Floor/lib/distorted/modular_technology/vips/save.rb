@@ -3,6 +3,7 @@
 # Vips::Image text operator, animated WebP support, and more:
 # https://libvips.github.io/libvips/2019/04/22/What's-new-in-8.8.html
 
+require 'distorted/element_of_media'
 require 'distorted/triple_counter'
 VIPS_MINIMUM_VER = TripleCounter.new(8, 8, 0)
 
@@ -68,6 +69,8 @@ module Cooltrainer::DistorteD::Technology::VipsSave
     },
   }
 
+
+
   # Returns a Set of MIME::Types based on libvips VipsForeignSave capabilities.
   # https://libvips.github.io/libvips/API/current/VipsForeignSave.html
   #
@@ -122,7 +125,7 @@ module Cooltrainer::DistorteD::Technology::VipsSave
   # => [".csv", ".mat", ".v", ".vips", ".ppm", ".pgm", ".pbm", ".pfm",
   #     ".hdr", ".dz", ".png", ".jpg", ".jpeg", ".jpe", ".webp", ".tif",
   #     ".tiff", ".fits", ".fit", ".fts", ".gif", ".bmp"]
-  OUTER_LIMITS = Vips.get_suffixes.map{ |t|
+  VIPS_SAVERS = Vips.get_suffixes.map{ |t|
     # A single call to this will return a Set of MIME::Types for a String input
     CHECKING::YOU::OUT(t)
   }.reduce { |c,t|
@@ -134,10 +137,15 @@ module Cooltrainer::DistorteD::Technology::VipsSave
     t.media_type == 'image'
   }
 
+  OUTER_LIMITS = VIPS_SAVERS.reduce(Hash[]) { |c,t|
+    # Flatten the Set-of-Sets-of-Types into a Hash-of-Types
+    c.update({t => Hash[]})
+  }
+
   # Define a to_<mediatype>_<subtype> method for each MIME::Type supported by libvips,
   # e.g. a supported Type 'image/png' will define a method :to_image_png in any
   # context where this module is included.
-  self::OUTER_LIMITS.each { |t|
+  self::OUTER_LIMITS.each_key { |t|
     define_method(t.distorted_method) { |*a, **k, &b|
       vips_save(*a, **k, &b)
     }
@@ -154,7 +162,6 @@ module Cooltrainer::DistorteD::Technology::VipsSave
       elsif width.respond_to?(:to_i)
         ver = to_vips_image.thumbnail_image(
           width.to_i,
-          # Use `self` namespace for constants so subclasses can redefine
           **{:crop => abstract(:crop)},
         )
         return ver.write_to_file(dest)
