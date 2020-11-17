@@ -17,3 +17,18 @@
   xrefs_urls:
     - "http://justsolve.archiveteam.org/wiki/MAT"
   registered: false
+
+
+# Microsoft SilverLight multiple-zoom tiled-raster image archive formats.
+# I made this content-type up based on the convention of other 'vnd.microsoft' Types,
+# e.g. #<MIME::Type: application/vnd.microsoft.windows.thumbnail-cache>
+- !ruby/object:MIME::Type
+  content-type: application/vnd.microsoft.deep-zoom
+  extensions:
+    - dz
+    - dzi
+    - dzc
+    - xml
+  xrefs_urls:
+    - "http://msdn.microsoft.com/en-us/library/cc645077(VS.95).aspx"
+  registered: false
