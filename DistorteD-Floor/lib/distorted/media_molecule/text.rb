@@ -18,8 +18,8 @@ module Cooltrainer::DistorteD::Molecule; end
 module Cooltrainer::DistorteD::Molecule::Text
 
 
-  LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/)
-  OUTER_LIMITS = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/)
+  LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash
+  OUTER_LIMITS = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash
 
   # Track supported fonts by codepage.
   # Avoid renaming these from the original archives / websites.
@@ -76,7 +76,7 @@ module Cooltrainer::DistorteD::Molecule::Text
     memo
   }
 
-  self::OUTER_LIMITS.each { |t|
+  self::OUTER_LIMITS.keys.each { |t|
     define_method(t.distorted_method) { |*a, **k, &b|
       copy_file(*a, **k, &b)
     }

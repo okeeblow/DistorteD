@@ -11,8 +11,7 @@ module Cooltrainer::DistorteD::Molecule; end
 module Cooltrainer::DistorteD::Molecule::PDF
 
 
-
-  LOWER_WORLD = CHECKING::YOU::IN("application/pdf")
+  LOWER_WORLD = CHECKING::YOU::IN("application/pdf").to_hash
 
   # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/object#Attributes
   # https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/pdf_open_parameters.pdf

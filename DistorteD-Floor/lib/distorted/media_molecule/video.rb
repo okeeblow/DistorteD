@@ -10,7 +10,7 @@ module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Molecule; end
 module Cooltrainer::DistorteD::Molecule::Video
 
-  LOWER_WORLD = CHECKING::YOU::IN('video/mp4')
+  LOWER_WORLD = CHECKING::YOU::IN('video/mp4').to_hash
 
   # Attributes for our <video>.
   # Automatically enabled as attrs for DD Liquid Tag.
