@@ -20,8 +20,8 @@ module Cooltrainer::DistorteD::Molecule::Font
   # and later switching to Harfbuzz from Freetype:
   # https://gitlab.gnome.org/GNOME/pango/-/issues/386
   # https://blogs.gnome.org/mclasen/2019/05/25/pango-future-directions/
-  LOWER_WORLD = CHECKING::YOU::IN(/^font\/ttf/)
-  OUTER_LIMITS = CHECKING::YOU::IN(/^font\/ttf/)
+  LOWER_WORLD = CHECKING::YOU::IN(/^font\/ttf/).to_hash
+  OUTER_LIMITS = CHECKING::YOU::IN(/^font\/ttf/).to_hash
 
   ATTRIBUTES = Set[
     :alt,
@@ -34,7 +34,7 @@ module Cooltrainer::DistorteD::Molecule::Font
 
   # Maybe T0DO: Process output with TTFunk instead of only using it
   # to generate images and metadata.
-  self::OUTER_LIMITS.each { |t|
+  self::OUTER_LIMITS.keys.each { |t|
     define_method(t.distorted_method) { |*a, **k, &b|
       copy_file(*a, **k, &b)
     }

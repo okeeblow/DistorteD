@@ -13,7 +13,7 @@ module Cooltrainer::DistorteD::Molecule::SVG
 
   #WISHLIST: Support VML for old IE compatibility.
   #  Example: RaphaëlJS — https://en.wikipedia.org/wiki/Rapha%C3%ABl_(JavaScript_library)
-  LOWER_WORLD = CHECKING::YOU::IN(/^image\/svg/)
+  LOWER_WORLD = CHECKING::YOU::IN(/^image\/svg/).to_hash
 
   ATTRIBUTES = Set[
     :alt,
