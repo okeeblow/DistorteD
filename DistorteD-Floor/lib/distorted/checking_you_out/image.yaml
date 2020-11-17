@@ -8,3 +8,35 @@
   xrefs_urls:
     - "http://fileformats.archiveteam.org/wiki/VIPS"
   registered: false
+
+
+# OpenEXR stuff
+- !ruby/object:MIME::Type
+  content-type:  image/x-exr
+  extensions:
+    - exr
+  xrefs_urls:
+    - "https://www.nationalarchives.gov.uk/PRONOM/fmt/1001"
+    - "https://en.wikipedia.org/wiki/OpenEXR"
+    - "http://fileformats.archiveteam.org/wiki/OpenEXR"
+
+- !ruby/object:MIME::Type
+  content-type:  image/vnd.radiance
+  extensions:
+    - hdr
+  xrefs_urls:
+    - "https://en.wikipedia.org/wiki/RGBE_image_format"
+  registered: false
+
+- !ruby/object:MIME::Type
+  content-type:  image/fits
+  extensions:
+    - fits
+    - fit
+    - fts
+  xrefs_urls:
+    - "https://www.iana.org/assignments/media-types/image/fits"
+    - "https://www.cv.nrao.edu/fits/"
+  registered: true
+
+# End OpenEXR stuff
