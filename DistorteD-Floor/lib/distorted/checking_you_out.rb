@@ -29,7 +29,7 @@ module CHECKING
     # Returns a single Type with Array-style access.
     class OUT
       def self.[](type)
-        CHECKING::YOU::types[type]
+        CHECKING::YOU::types[type].first
       end
     end
 
