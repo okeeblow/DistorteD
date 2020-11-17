@@ -6,3 +6,14 @@
     person:
       - okeeblow
   registered: false
+
+
+# MATLAB files supported by VIPS Magick foreign loader.
+- !ruby/object:MIME::Type
+  content-type: application/x-matlab-data
+  encoding: 8bit
+  extensions:
+    - mat
+  xrefs_urls:
+    - "http://justsolve.archiveteam.org/wiki/MAT"
+  registered: false
