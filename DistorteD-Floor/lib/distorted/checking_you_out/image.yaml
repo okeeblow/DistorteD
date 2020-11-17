@@ -40,3 +40,61 @@
   registered: true
 
 # End OpenEXR stuff
+
+
+# OpenSlide stuff — https://openslide.org/formats/
+
+- !ruby/object:MIME::Type
+  content-type:  image/vnd.scanscope.virtual.slide
+  extensions:
+    - svs  # Excluding tiff since that has a generic entry.
+  xrefs_urls:
+    - "https://openslide.org/formats/aperio/"
+    - "https://docs.openmicroscopy.org/bio-formats/latest/formats/aperio-svs-tiff.html"
+    - "http://justsolve.archiveteam.org/wiki/Aperio_SVS"
+  registered: false
+
+- !ruby/object:MIME::Type
+  content-type:  image/vnd.hamamatsu
+  extensions:
+    - vms
+    - vmu
+    - ndpi
+  xrefs_urls:
+    - "https://openslide.org/formats/hamamatsu/"
+  registered: false
+
+- !ruby/object:MIME::Type
+  content-type:  image/vnd.sakura
+  extensions:
+    - svslide
+  xrefs_urls:
+    - "https://openslide.org/formats/sakura/"
+  registered: false
+
+- !ruby/object:MIME::Type
+  content-type:  image/vnd.mirax
+  extensions:
+    - mrxs 
+  xrefs_urls:
+    - "https://openslide.org/formats/mirax/"
+  registered: false
+
+- !ruby/object:MIME::Type
+  content-type:  image/vnd.leica
+  extensions:
+    - scn
+  xrefs_urls:
+    - "https://openslide.org/formats/leica/"
+  registered: false
+
+- !ruby/object:MIME::Type
+  content-type:  image/vnd.ventana
+  extensions:
+    - bif
+  xrefs_urls:
+    - "https://openslide.org/formats/ventana/"
+  registered: false
+
+
+# End OpenSlide stuff
