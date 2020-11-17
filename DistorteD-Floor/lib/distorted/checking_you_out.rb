@@ -3,6 +3,9 @@ require 'set'
 require 'mime/types'
 require 'ruby-filemagic'
 
+# General resources:
+# https://www.iana.org/assignments/media-types/media-types.xhtml
+
 module MIME
   class Type
     # Give MIME::Type objects an easy way to get the DistorteD saver method name.
@@ -38,7 +41,7 @@ module CHECKING
     # or if `so_deep` is enabled—the `path` will be used as an actual
     # path to look at the magic bytes with ruby-filemagic.
     def self.OUT(path, so_deep: false)
-      unless so_deep || types.type_for(path).empty?
+      if not (so_deep || types.type_for(path).empty?)
         # NOTE: `type_for`'s return order is supposed to be deterministic:
         # https://github.com/mime-types/ruby-mime-types/issues/148
         # My use case so far has never required order but has required
@@ -50,7 +53,7 @@ module CHECKING
         # irb(main)> MIME::Types.type_for('lol.ttf')).to_set
         # => #<Set: {#<MIME::Type: font/ttf>, #<MIME::Type: application/font-sfnt>, #<MIME::Type: application/x-font-truetype>, #<MIME::Type: application/x-font-ttf>}>
         return types.type_for(path).to_set
-      else
+      elsif path[0] != '.'.freeze  # Support taking hypothetical file extensions (e.g. '.jpg') without stat()ing anything.
         # Did we fail to guess any MIME::Types from the given filename?
         # We're going to have to look at the actual file
         # (or at least its first four bytes).
@@ -70,9 +73,13 @@ module CHECKING
           # irb(main)> "image/svg+xml; charset=us-ascii".split(';').first
           # => "image/svg+xml"
           mime = types[fm.file(path, false).split(';'.freeze).first].to_set
-        end
-      end
-    end
+        end  # FileMagic.open
+      else
+        # TODO: Warn here that we may need a custom type!
+        #p "NO MATCH FOR #{path}"
+        Set[]
+      end  # if
+    end  # self.OUT()
 
     # Returns a Set of MIME::Type objects matching a String search key of the
     # format MEDIA_TYPE/SUB_TYPE.
