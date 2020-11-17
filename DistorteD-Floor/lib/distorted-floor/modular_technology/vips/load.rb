@@ -2,6 +2,7 @@
 require 'set'
 
 require 'distorted/checking_you_out'
+require 'distorted/modular_technology/vips_foreign'
 require 'distorted/modular_technology/vips_save'
 
 
@@ -9,6 +10,8 @@ module Cooltrainer; end
 module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Technology; end
 module Cooltrainer::DistorteD::Technology::VipsLoad
+
+  include Cooltrainer::DistorteD::Technology::VipsForeign
 
   # Returns a Set of MIME::Types based on libvips LipsForeignLoad capabilities.
   # NOTE: libvips only declares support (via :get_suffixes) for the "saver" types,
@@ -52,17 +55,16 @@ module Cooltrainer::DistorteD::Technology::VipsLoad
   #            https://gitlab.gnome.org/GNOME/librsvg/-/issues/494#note_579774
   #
 
-  # TODO: Figure out how to detect non-Magick non-Saver Loader support,
-  # by which I mean "everything not included in :get_suffixes".
   # NOTE: The Magick-based '.bmp' loader is broken/missing in libvips <= 8.9.1:
-  # https://github.com/libvips/libvips/issues/1528
-  # irb> MIME::Types.type_for('.bmp')
-  # => [#<MIME::Type: image/bmp>, #<MIME::Type: image/x-bmp>, #<MIME::Type: image/x-ms-bmp>]
-  # irb> MIME::Types.type_for('.bmp').map(&:preferred_extension)
-  # => ["bmp", "bmp", "bmp"]
-  LOWER_WORLD = (VIPS_AVAILABLE_VER < TripleCounter.new(8, 9, 1)) ?
-    Cooltrainer::DistorteD::Technology::VipsSave::OUTER_LIMITS.keep_if { |t| t.preferred_extension != 'bmp'.freeze } :
-    Cooltrainer::DistorteD::Technology::VipsSave::OUTER_LIMITS
+  VIPS_LOADERS = Cooltrainer::DistorteD::Technology::VipsForeign::vips_get_types('VipsForeignLoad').keep_if { |t|
+    t.media_type != 'text'.freeze and not t.sub_type.include?('zip'.freeze)
+  }
+
+  LOWER_WORLD = VIPS_LOADERS.reduce(Hash[]) { |c,t|
+    # Flatten the Set-of-Sets-of-Types into a Hash-of-Types
+    c.update({t => Hash[]})
+  }
+
 
   def to_vips_image
     # TODO: Learn more about what VipsAccess means for our use case,
