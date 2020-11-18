@@ -28,7 +28,7 @@ module Cooltrainer::DistorteD::Invoker
 
   def lower_world
     @@lower_world ||= media_molecules.reduce(
-      Hash.new{|molecules, type| molecules[type] = Hash[]}
+      Hash.new{|molecules, type| molecules[molecule] = Hash[]}
     ) { |types, molecule|
       Set[molecule].merge(molecule.ancestors).each{ |mod|
         if mod.const_defined?(:LOWER_WORLD)
@@ -43,7 +43,7 @@ module Cooltrainer::DistorteD::Invoker
 
   def outer_limits
     @@outer_limits ||= media_molecules.reduce(
-      Hash.new{|molecules, molecule| molecules[molecule] = Hash[]}
+      Hash.new{|molecules, type| molecules[molecule] = Hash[]}
     ) { |molecules, molecule|
       Set[molecule].merge(molecule.ancestors).each{ |mod|
         if mod.const_defined?(:OUTER_LIMITS)

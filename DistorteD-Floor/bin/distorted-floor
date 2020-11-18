@@ -16,4 +16,5 @@ raise 'No filename specified.' unless @name
 
 
 # TODO: Support multiple Molecules
-puts lower_world[type_mars.first][media_molecule]
+p lower_world[media_molecule][type_mars.first]
+p outer_limits[media_molecule][type_mars.first]
