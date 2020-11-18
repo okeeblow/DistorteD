@@ -34,8 +34,8 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
 
   # All of the actual Loader/Saver classes we need to interact with
   # will be tree children of one of these top-level class categories:
-  TOP_LEVEL_LOADER = 'VipsForeignLoad'.freeze
-  TOP_LEVEL_SAVER  = 'VipsForeignSave'.freeze
+  TOP_LEVEL_LOADER = :VipsForeignLoad
+  TOP_LEVEL_SAVER  = :VipsForeignSave
 
 
   # Store FFI results where possible to minimize memory churn 'n' general fragility.
@@ -46,7 +46,7 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
   # Returns a Set of MIME::Types based on the "supported suffix" lists generated
   # by libvips and our other functions here in this Module.
   def self.vips_get_types(basename)
-    @@vips_foreign_types[basename] ||= self::vips_get_suffixes(basename).reduce(Set[]) { |types, suffix|
+    @@vips_foreign_types[basename.to_sym] ||= self::vips_get_suffixes(basename).reduce(Set[]) { |types, suffix|
       types.merge(CHECKING::YOU::OUT(suffix))
     }
   end
@@ -59,7 +59,7 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
   # e.g. 
   # This is unrelated to MIME::Type#preferred_extension!!
   def self.vips_get_suffixes(basename)
-    @@vips_foreign_suffixes[basename] ||= self::vips_get_suffixes_per_nickname(basename).values.reduce(Set[]) {|n,s| n.merge(s)}
+    @@vips_foreign_suffixes[basename.to_sym] ||= self::vips_get_suffixes_per_nickname(basename).values.reduce(Set[]) {|n,s| n.merge(s)}
   end
 
 
