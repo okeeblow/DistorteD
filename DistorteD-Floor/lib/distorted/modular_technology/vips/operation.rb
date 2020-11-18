@@ -26,6 +26,12 @@ module Cooltrainer::DistorteD::Technology; end
 module Cooltrainer::DistorteD::Technology::VipsForeign
 
 
+  # 🄵🄸🄽🄳 🅃🄷🄴 🄲🄾🄼🄿🅄🅃🄴🅁 🅁🄾🄾🄼
+  # 🄵🄸🄽🄳 🅃🄷🄴 🄲🄾🄼🄿🅄🅃🄴🅁 🅁🄾🄾🄼
+  # 🄵🄸🄽🄳 🅃🄷🄴 🄲🄾🄼🄿🅄🅃🄴🅁 🅁🄾🄾🄼
+  Vips::vips_vector_set_enabled(1)
+
+
   # All of the actual Loader/Saver classes we need to interact with
   # will be tree children of one of these top-level class categories:
   TOP_LEVEL_LOADER = 'VipsForeignLoad'.freeze
