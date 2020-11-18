@@ -7,10 +7,10 @@ module Cooltrainer
   BOOLEAN_VALUES = Set[0, 1, false, true, '0'.freeze, '1'.freeze, 'false'.freeze, 'true'.freeze]
 
 
-  Compound = Struct.new(:element, :valid, :default, keyword_init: true) do
-    attr_reader :element, :valid, :default
+  Compound = Struct.new(:element, :valid, :default, :blurb, keyword_init: true) do
+    attr_reader :element, :valid, :default, :blurb
 
-    def initialize(key_or_keys, valid: Set[], default: nil)
+    def initialize(key_or_keys, valid: nil, default: nil, blurb: nil)
       if key_or_keys.is_a?(Enumerable)
         @element = key_or_keys.first
         @isotopes = key_or_keys.to_set
@@ -20,8 +20,7 @@ module Cooltrainer
       end
       @valid = valid
       @default = default
-      p @element
-      super(element: element, valid: valid, default: default)
+      super(element: element, valid: valid, default: default, blurb: blurb)
     end
 
     def to_s
