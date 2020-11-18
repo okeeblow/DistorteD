@@ -137,9 +137,11 @@ module Cooltrainer::DistorteD::Technology::VipsSave
     t.media_type == 'image'
   }
 
-  OUTER_LIMITS = VIPS_SAVERS.reduce(Hash[]) { |c,t|
-    # Flatten the Set-of-Sets-of-Types into a Hash-of-Types
-    c.update({t => Hash[]})
+  OUTER_LIMITS = VIPS_SAVERS.reduce(Hash[]) { |types,type|
+    types[type] = Cooltrainer::DistorteD::Technology::VipsForeign::vips_get_options(
+      Vips::vips_foreign_find_save(".#{type.preferred_extension}")
+    )
+    types
   }
 
   # Define a to_<mediatype>_<subtype> method for each MIME::Type supported by libvips,

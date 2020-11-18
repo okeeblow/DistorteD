@@ -38,9 +38,19 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
   TOP_LEVEL_SAVER  = :VipsForeignSave
 
 
+  # This has got to be built in to Ruby-GLib somewhere, right?
+  # Remove this if an FFI method is possible to get this mapping.
+  G_TYPE_VALUES = {
+    :gboolean => Cooltrainer::BOOLEAN_VALUES,
+    :gchararray => String,
+    :gint => Integer,
+  }
+
+
   # Store FFI results where possible to minimize memory churn 'n' general fragility.
   @@vips_foreign_types = Hash[]
   @@vips_foreign_suffixes = Hash[]
+  @@vips_foreign_options = Hash[]
 
 
   # Returns a Set of MIME::Types based on the "supported suffix" lists generated
@@ -60,6 +70,13 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
   # This is unrelated to MIME::Type#preferred_extension!!
   def self.vips_get_suffixes(basename)
     @@vips_foreign_suffixes[basename.to_sym] ||= self::vips_get_suffixes_per_nickname(basename).values.reduce(Set[]) {|n,s| n.merge(s)}
+  end
+
+
+  # Returns a Hash[alias] of Compound attributes supported by a given libvips Loader/Saver class.
+  def self.vips_get_options(nickname)
+    return Hash if nickname.nil?
+    @@vips_foreign_options[nickname.to_sym] ||= self::vips_get_nickname_options(nickname)
   end
 
 
@@ -135,6 +152,105 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
     }
     generate_class.call(GObject::g_type_from_name(basename))
     nicknames
+  end
+
+  # Returns a Hash[alias] of attribute Compounds for every optional attribute of a libvips Loader/Saver class.
+  #
+  # The discarded 'required' attributes are things like filenames that we will handle ourselves in DD.
+  # irb> Vips::Introspect.get('jpegload').required_input
+  # => [{:arg_name=>"filename", :flags=>19, :gtype=>64}]
+  # irb> Vips::Introspect.new('jpegload').required_output
+  # => [{:arg_name=>"out", :flags=>35, :gtype=>94062772794288}]
+  #
+  ## Example using :argument_map:
+  # irb> Vips::Operation.new('gifload').argument_map{|a,b,c| p "#{a[:name]} — #{a[:value_type]} — #{GObject::g_type_name(a[:value_type])}"}
+  # "filename — 64 — gchararray"
+  # "nickname — 64 — gchararray"
+  # "out — 94691057294304 — VipsImage"
+  # "description — 64 — gchararray"
+  # "page — 24 — gint"
+  # "n — 24 — gint"
+  # "flags — 94691059531296 — VipsForeignFlags"
+  # "memory — 20 — gboolean"
+  # "access — 94691057417952 — VipsAccess"
+  # "sequential — 20 — gboolean"
+  # "fail — 20 — gboolean"
+  # "disc — 20 — gboolean"
+  #
+  ## Descriptions are obtained by passing the complete pspec to g_param_get_blurb:
+  #   Example:
+  # irb> Vips::Operation.new('openexrload').argument_map{|a,b,c| p GObject::g_param_spec_get_blurb(a)}
+  # "Filename to load from"
+  # "Class nickname"
+  # "Output image"
+  # "Class description"
+  # "Flags for this file"
+  # "Force open via memory"
+  # "Required access pattern for this file"
+  # "Sequential read only"
+  # "Fail on first error"
+  # "Open to disc"
+  def self.vips_get_nickname_options(nickname)
+    options = Hash[]
+    Vips::Operation.new(nickname).argument_map{ |param_spec, argument_class, _argument_instance|
+      flags = argument_class[:flags]
+      if (flags & Vips::ARGUMENT_INPUT) != 0  # We only want "input" arguments
+        # …and we also only want optional non-deprecated arguments.
+        if (flags & Vips::ARGUMENT_REQUIRED) == 0 && (flags & Vips::ARGUMENT_DEPRECATED) == 0
+          # ParameterSpec name will be a String e.g. 'Q' or 'interlace' or 'page-height'
+          element = param_spec[:name].to_sym
+          g_type = GObject::g_type_name(param_spec[:value_type]).to_sym
+
+          # There's only one thing I want to alias here right now,
+          # so just do it as a one-off:
+          isotopes = Set[element]
+          isotopes.add(:quality) if element == :Q
+
+          # Keyword arguments to splat into our Compound
+          attributes = {
+            :blurb => GObject::g_param_spec_get_blurb(param_spec),
+            :default => self::vips_get_option_default(param_spec[:value_type]),
+          }
+          if G_TYPE_VALUES.has_key?(g_type)
+            attributes[:valid] = G_TYPE_VALUES[g_type]
+          end
+
+          # Add the Compound for every alias
+          compound = Cooltrainer::Compound.new(isotopes, **attributes)
+          isotopes.each{ |isotope|
+            options.store(isotope, compound)
+          }
+        end
+      end
+    }
+    options
+  end
+
+
+  # Returns the default value for any ruby-vips GObject::GValue
+  #
+  ## Example:
+  # irb> gvp = GObject::GValue.alloc
+  # irb> gvp
+  # => #<GObject::GValue:0x00005603ba9d4c70>
+  # irb> gvp.init(GObject::g_type_from_name('VipsAccess'))
+  # => nil
+  # irb> GObject::g_type_from_name 'VipsAccess'
+  # => 94574011156416
+  # irb> gvp.get
+  # => :random
+  def self.vips_get_option_default(gtype)
+    begin
+      gtype_id = gtype.is_a?(String) ? GObject::g_type_from_name(gtype) : gtype
+      # Deallocation is automatic when `gvp` goes out of scope.
+      gvp = GObject::GValue.alloc
+      gvp.init(gtype)
+      gvp.get
+    rescue FFI::NullPointerError => e
+      # This is happening for VipsArrayDouble gtype 94691056795136
+      # end I don't feel like debugging it rn lololol
+      nil
+    end
   end
 
 end
