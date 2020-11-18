@@ -23,8 +23,9 @@ module Cooltrainer
       super(element: element, valid: valid, default: default, blurb: blurb)
     end
 
-    def to_s
-      "#{@element}#{" a.k.a. #{@isotopes}" if @isotopes.length > 1}: #{@valid} (#{@default})"
+    def inspect
+      # Intentionally not including the blurb here since they are pretty long and messy.
+      "#{@element}#{" a.k.a. #{@isotopes}" if @isotopes.length > 1}: #{"#{@valid} " if @valid}(#{@default})"
     end
 
   end  # Compound
