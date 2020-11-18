@@ -60,9 +60,11 @@ module Cooltrainer::DistorteD::Technology::VipsLoad
     t.media_type != 'text'.freeze and not t.sub_type.include?('zip'.freeze)
   }
 
-  LOWER_WORLD = VIPS_LOADERS.reduce(Hash[]) { |c,t|
-    # Flatten the Set-of-Sets-of-Types into a Hash-of-Types
-    c.update({t => Hash[]})
+  LOWER_WORLD = VIPS_LOADERS.reduce(Hash[]) { |types,type|
+    types[type] = Cooltrainer::DistorteD::Technology::VipsForeign::vips_get_options(
+      Vips::vips_foreign_find_load(".#{type.preferred_extension}")
+    )
+    types
   }
 
 
