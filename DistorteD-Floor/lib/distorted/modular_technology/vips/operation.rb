@@ -53,6 +53,64 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
   @@vips_foreign_options = Hash[]
 
 
+  # Returns a String libvips Loader class name most appropriate for the given filename suffix.
+  # This is a workaround for the fact that the built-in Vips::vips_foreign_find_load
+  # requires access of a real image file, and we are here talking only of hypothetical ones.
+  # See this method's call site in 'vips/load' for more detailed comments on this.
+  #
+  # irb(main):234:0> Vips::vips_filename_get_filename('fart.jpg')
+  # => #<FFI::Pointer address=0x0000561efe3d08e0>
+  # irb(main):235:0> Vips::p2str(Vips::vips_filename_get_filename('fart.jpg'))
+  # => "fart.jpg"
+  # irb(main):236:0> File.extname(Vips::p2str(Vips::vips_filename_get_filename('fart.jpg')))
+  # => ".jpg"
+  # irb(main):237:0> Vips::vips_foreign_find_save(File.extname(Vips::p2str(Vips::vips_filename_get_filename('fart.jpg'))))
+  # => "VipsForeignSaveJpegFile"
+  #
+  # Here are the available Operations I have on my laptop with libvips 8.8:
+  # [okeeblow@emi#okeeblow] vips -l|grep VipsForeign|grep File
+  #   VipsForeignLoadPdfFile (pdfload), load PDF with libpoppler (.pdf), priority=0, is_a, get_flags, get_flags_filename, header, load
+  #   VipsForeignLoadSvgFile (svgload), load SVG with rsvg (.svg, .svgz, .svg.gz), priority=0, is_a, get_flags, get_flags_filename, header, load
+  #   VipsForeignLoadGifFile (gifload), load GIF with giflib (.gif), priority=0, is_a, get_flags, get_flags_filename, header, load
+  #   VipsForeignLoadJpegFile (jpegload), load jpeg from file (.jpg, .jpeg, .jpe), priority=50, is_a, get_flags, header, load
+  #   VipsForeignLoadWebpFile (webpload), load webp from file (.webp), priority=0, is_a, get_flags, get_flags_filename, header, load
+  #   VipsForeignLoadTiffFile (tiffload), load tiff from file (.tif, .tiff), priority=50, is_a, get_flags, get_flags_filename, header, load
+  #   VipsForeignLoadMagickFile (magickload), load file with ImageMagick, priority=-100, is_a, get_flags, get_flags_filename, header
+  #   VipsForeignSaveRadFile (radsave), save image to Radiance file (.hdr), priority=0, rgb
+  #   VipsForeignSaveDzFile (dzsave), save image to deepzoom file (.dz), priority=0, any
+  #   VipsForeignSavePngFile (pngsave), save image to png file (.png), priority=0, rgba
+  #   VipsForeignSaveJpegFile (jpegsave), save image to jpeg file (.jpg, .jpeg, .jpe), priority=0, rgb-cmyk
+  #   VipsForeignSaveWebpFile (webpsave), save image to webp file (.webp), priority=0, rgba-only
+  #   VipsForeignSaveTiffFile (tiffsave), save image to tiff file (.tif, .tiff), priority=0, any
+  #   VipsForeignSaveMagickFile (magicksave), save file with ImageMagick (.gif, .bmp), priority=-100, any
+  #
+  # You can notice differences such as a `dzsave` and `radsave` but no `dzload` or `radload`.
+  # This is why we can't assume that HAS_SAVER == HAS_LOADER across the board.
+  # Other differences are invisible here, like different formats supported silently by `magickload`,
+  # so that Operation is the catch-all fallback if we don't have any better idea.
+  #
+  # We can try taking a MIME::Type's `sub_type`, capitalizing it, and trying to find a Loader Operation by that name.
+  # irb(main):254:0> MIME::Types::type_for('.heif').last.sub_type.capitalize
+  # => "Heif"
+  # irb(main):255:0> MIME::Types::type_for('.jpg').last.sub_type.capitalize
+  # => "Jpeg"
+  #
+  ## NOTE: I'm writing this on an old install that lacks HEIF support in its libvips 8.8 installation,
+  # so this failure to find 'VipsForeignLoadHeifFile' is expected and correct for me!
+  # It probably won't fail for you in the future, but I want to make sure to include
+  # some example of varying library capability and not assume capabilities based on libvips version:
+  #
+  # irb(main):257:0> GObject::g_type_from_name("VipsForeignLoad#{MIME::Types::type_for('.jpg').last.sub_type.capitalize}File")
+  # => 94691057380176
+  # irb(main):258:0> GObject::g_type_from_name("VipsForeignLoad#{MIME::Types::type_for('.heif').last.sub_type.capitalize}File")
+  # => 0
+  def self.vips_foreign_find_load_suffix(filename)
+    suffix = File.extname(Vips::p2str(Vips::vips_filename_get_filename('fart.jpg')))
+    guessed_loader = "VipsForeignLoad#{CHECKING::YOU::OUT(suffix).first.sub_type.capitalize}File"
+    return self::vips_foreign_valid_operation?(guessed_loader) ? guessed_loader : 'VipsForeignLoadMagickFile'.freeze
+  end
+
+
   # Returns a Set of MIME::Types based on the "supported suffix" lists generated
   # by libvips and our other functions here in this Module.
   def self.vips_get_types(basename)
@@ -199,16 +257,32 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
         if (flags & Vips::ARGUMENT_REQUIRED) == 0 && (flags & Vips::ARGUMENT_DEPRECATED) == 0
           # ParameterSpec name will be a String e.g. 'Q' or 'interlace' or 'page-height'
           element = param_spec[:name].to_sym
+
+          # `magicksave` takes an argument `format` to choose one of its many supported types,
+          # but that selection in DistorteD-land is via our MIME::Types, so this option should be dropped.
+          # https://github.com/libvips/libvips/blob/4de9b56725862edf872ae503a3dfb4cf05da9e77/libvips/foreign/magicksave.c#L455~L460
+          next if element == :format
+
+          # GObject::g_type_name will return `nil` for an invalid :value_type,
+          # but these are coming straight from libvips so we know they're fine.
           g_type = GObject::g_type_name(param_spec[:value_type]).to_sym
 
-          # There's only one thing I want to alias here right now,
-          # so just do it as a one-off:
+          # There's only one thing I want to alias for consistency right now,
+          # libvips 'Q' into 'quality', so just do it as a one-off.
           isotopes = Set[element]
           isotopes.add(:quality) if element == :Q
 
           # Keyword arguments to splat into our Compound
           attributes = {
-            :blurb => GObject::g_param_spec_get_blurb(param_spec),
+            # Some libvips drivers seem to have mixed-leading-case options,
+            # like ppmsave and webp save for example:
+            # https://github.com/libvips/libvips/blob/4de9b56725862edf872ae503a3dfb4cf05da9e77/libvips/foreign/ppmsave.c#L396~L415
+            # https://github.com/libvips/libvips/blob/4de9b56725862edf872ae503a3dfb4cf05da9e77/libvips/foreign/webpsave.c#L152
+            # TODO: Inventory all of these and submit an upstream patch to capitaqlize them consistently.
+            # Until them (and for old versions), fix up the first letter manually.
+            # Avoid using just `blurb.capitalize` as that will lowercase everything after
+            # the first character, which is definitely worse than what I'm trying to fix lol
+            :blurb => GObject::g_param_spec_get_blurb(param_spec).tap{|blurb| blurb[0] = blurb[0].capitalize},
             :default => self::vips_get_option_default(param_spec[:value_type]),
           }
           if G_TYPE_VALUES.has_key?(g_type)
@@ -251,6 +325,22 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
       # end I don't feel like debugging it rn lololol
       nil
     end
+  end
+
+
+  # Returns boolean validity for libvips class names,
+  # e.g. for validating that a desired Loader/Saver class actually exists!
+  def self.vips_foreign_valid_operation?(otra)
+    # This doesn't seem to raise any Exception on invalid g_type, just returns 0.
+    # Use this to cast to a boolean return value:
+    #
+    # irb(main):243:0> GObject::g_type_from_name('VipsForeignSaveJpegFile')
+    # => 94691057381120
+    # irb(main):244:0> GObject::g_type_from_name('VipsForeignLoadJpegFile')
+    # => 94691057380176
+    # irb(main):245:0> GObject::g_type_from_name('VipsForeignLoadJpegFilgfgfgfe')
+    # => 0
+    GObject::g_type_from_name(otra) == 0 ? false : true
   end
 
 end
