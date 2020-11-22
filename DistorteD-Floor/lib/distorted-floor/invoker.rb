@@ -58,13 +58,12 @@ module Cooltrainer::DistorteD::Invoker
 
   # Decides which MediaMolecule is most appropriate for our file and returns it.
   def media_molecule
-    available_molecules = lower_world.keys.to_set & type_mars
     # TODO: Handle multiple molecules for the same file
-    case available_molecules.length
+    case type_mars.length
     when 0
       raise MediaTypeNotImplementedError.new(@name)
     when 1
-      return plug(lower_world[available_molecules.first].keys.first)
+      return plug(lower_world[type_mars.first].keys.first)
     end
   end
 
@@ -77,7 +76,7 @@ module Cooltrainer::DistorteD::Invoker
   end
 
   def type_mars
-    @type_mars ||= CHECKING::YOU::OUT(@name)
+    @type_mars ||= CHECKING::YOU::OUT(@name) & lower_world.keys.to_set
   end
 
 end
