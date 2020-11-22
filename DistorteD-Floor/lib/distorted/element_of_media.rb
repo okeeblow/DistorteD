@@ -8,7 +8,7 @@ module Cooltrainer
 
 
   Compound = Struct.new(:element, :valid, :default, :blurb, keyword_init: true) do
-    attr_reader :element, :valid, :default, :blurb
+    attr_reader :element, :isotopes, :valid, :default, :blurb
 
     def initialize(key_or_keys, valid: nil, default: nil, blurb: nil)
       if key_or_keys.is_a?(Enumerable)
@@ -20,6 +20,7 @@ module Cooltrainer
       end
       @valid = valid
       @default = default
+      @blurb = blurb
       super(element: element, valid: valid, default: default, blurb: blurb)
     end
 
