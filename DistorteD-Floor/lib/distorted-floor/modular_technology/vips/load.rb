@@ -60,9 +60,54 @@ module Cooltrainer::DistorteD::Technology::VipsLoad
     t.media_type != 'text'.freeze and not t.sub_type.include?('zip'.freeze)
   }
 
+  # Vips::vips_foreign_find_save is based on filename suffix (extension),
+  # but :vips_foreign_find_load seems to be based on file magic.
+  # That is, we can't `vips_foreign_find_load` for a made-up filename
+  # or plain suffix like we can to to build 'vips/save'::OUTER_LIMITS.
+  # This caught me off guard but doesn't *entirely* not-make-sense,
+  # considering Vips::Image::new_from_filename calls :vips_foreign_find_load
+  # and obviously expects a file to be present.
+  #
+  ## Example — works with real file and fails with only suffix:
+  # irb> Vips::vips_foreign_find_load '/home/okeeblow/cover.jpg'
+  # => "VipsForeignLoadJpegFile"
+  # irb> Vips::vips_foreign_find_load 'cover.jpg'
+  # => nil
+  #
+  ## Syscalls of successful real-file :vips_foreign_find_load call
+  # showing how it works:
+  # [okeeblow@emi#okeeblow] strace ruby -e "require 'vips'; Vips::vips_foreign_find_load '/home/okeeblow/cover.jpg'" 2>&1|grep cover.jpg
+  # access("/home/okeeblow/cover.jpg", R_OK) = 0
+  # openat(AT_FDCWD, "/home/okeeblow/cover.jpg", O_RDONLY) = 5
+  # openat(AT_FDCWD, "/home/okeeblow/cover.jpg", O_RDONLY) = 5
+  # openat(AT_FDCWD, "/home/okeeblow/cover.jpg", O_RDONLY) = 5
+  # openat(AT_FDCWD, "/home/okeeblow/cover.jpg", O_RDONLY) = 5
+  # openat(AT_FDCWD, "/home/okeeblow/cover.jpg", O_RDONLY|O_CLOEXEC) = 5
+  # openat(AT_FDCWD, "/home/okeeblow/cover.jpg", O_RDONLY|O_CLOEXEC) = 5
+  # lstat("/home/okeeblow/cover.jpg", {st_mode=S_IFREG|0740, st_size=6242228, ...}) = 0
+  # openat(AT_FDCWD, "/home/okeeblow/cover.jpg", O_RDONLY|O_CLOEXEC) = 5
+  # stat("/home/okeeblow/cover.jpg", {st_mode=S_IFREG|0740, st_size=6242228, ...}) = 0
+  # stat("/home/okeeblow/cover.jpg-journal", 0x7fffa70f4df0) = -1 ENOENT (No such file or directory)
+  # stat("/home/okeeblow/cover.jpg-wal", 0x7fffa70f4df0) = -1 ENOENT (No such file or directory)
+  # stat("/home/okeeblow/cover.jpg", {st_mode=S_IFREG|0740, st_size=6242228, ...}) = 0
+  # openat(AT_FDCWD, "/home/okeeblow/cover.jpg", O_RDONLY) = 5
+  #
+  ## …and of a fake suffix-only filename to show how it doesn't:
+  # [okeeblow@emi#okeeblow] strace ruby -e "require 'vips'; Vips::vips_foreign_find_load 'fartbutt.jpg'" 2>&1|grep '.jpg'
+  # read(5, ".write_to_target target, \".jpg[Q"..., 8192) = 8192
+  # access("fartbutt.jpg", R_OK)            = -1 ENOENT (No such file or directory)
+  #
+  ## Versus the corresponding Vips::vips_foreign_find_save which is *only* based
+  # on filename suffix and does not try to look at a file at all,
+  # perhaps (read: obviously) because that file wouldn't exist yet to test until we save it :)
+  # [okeeblow@emi#okeeblow] strace ruby -e "require 'vips'; p Vips::vips_foreign_find_save 'fartbutt.jpg'" 2>&1|grep -E 'Save|.jpg'
+  # read(5, ".write_to_target target, \".jpg[Q"..., 8192) = 8192
+  # write(1, "\"VipsForeignSaveJpegFile\"\n", 26"VipsForeignSaveJpegFile"
+  #
+  # For this reason I'm going to write my own shim Loader-finder and use it instead.
   LOWER_WORLD = VIPS_LOADERS.reduce(Hash[]) { |types,type|
     types[type] = Cooltrainer::DistorteD::Technology::VipsForeign::vips_get_options(
-      Vips::vips_foreign_find_load(".#{type.preferred_extension}")
+      Cooltrainer::DistorteD::Technology::VipsForeign::vips_foreign_find_load_suffix(".#{type.preferred_extension}")
     )
     types
   }
