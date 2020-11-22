@@ -28,7 +28,7 @@ module Cooltrainer::DistorteD::Invoker
 
   def lower_world
     @@lower_world ||= media_molecules.reduce(
-      Hash.new{|molecules, molecule| molecules[molecule] = Hash[]}
+      Hash.new{|types, type| types[type] = Hash[]}
     ) { |types, molecule|
       Set[molecule].merge(molecule.ancestors).each{ |mod|
         if mod.const_defined?(:LOWER_WORLD)
