@@ -41,6 +41,7 @@ module CHECKING
     # or if `so_deep` is enabled—the `path` will be used as an actual
     # path to look at the magic bytes with ruby-filemagic.
     def self.OUT(path, so_deep: false)
+      return Set[] if path.nil?
       if not (so_deep || types.type_for(path).empty?)
         # NOTE: `type_for`'s return order is supposed to be deterministic:
         # https://github.com/mime-types/ruby-mime-types/issues/148
