@@ -52,6 +52,46 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
     :gint => Integer,
   }
 
+  # Aliases we want to support for consistency and accessibility.
+  VIPS_ALIASES = {
+    :Q => Set[:Q, :quality],
+    :colours => Set[:colours, :colors],
+  }
+
+  # GEnum valid values are detectable, but I don't know how to do the same
+  # for the numeric parameters. Specify them here manually for now.
+  VIPS_VALID = {
+    :"page-height" => (0..Vips::MAX_COORD),
+    :"quant-table" => (0..8),
+    :Q => (0..100),
+    :colours => (2..256),
+    :dither => (0.0..1.0),
+    :compression => (0..9),
+    :"alpha-q" => (0..100),
+    :"reduction-effort" => (0..6),
+    :kmin => (0..0x7FFFFFFF),  # https://en.wikipedia.org/wiki/2,147,483,647
+    :kmax => (0..0x7FFFFFFF),
+    :"tile-width" => (0..0x8000),  # 32768
+    :"tile-height" => (0..0x8000),
+    :xres => (0.001..1e+06),
+    :yres => (0.001..1e+06),
+  }
+
+  # Same with default values for numeric parameters.
+  VIPS_DEFAULT = {
+    :Q => 75,
+    :colours => 256,
+    :compression => 6,
+    :"alpha-q" => 100,
+    :"reduction-effort" => 4,
+    :kmin => 0x7FFFFFFF - 1,
+    :kmax => 0x7FFFFFFF,
+    :"tile-width" => 128,
+    :"tile-height" => 128,
+    :xres => 1,
+    :yres => 1,
+  }
+
 
   # Store FFI results where possible to minimize memory churn 'n' general fragility.
   @@vips_foreign_types = Hash[]
@@ -271,12 +311,11 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
 
           # GObject::g_type_name will return `nil` for an invalid :value_type,
           # but these are coming straight from libvips so we know they're fine.
-          g_type = GObject::g_type_name(param_spec[:value_type]).to_sym
+          gtype_name = GObject::g_type_name(param_spec[:value_type]).to_sym
 
-          # There's only one thing I want to alias for consistency right now,
-          # libvips 'Q' into 'quality', so just do it as a one-off.
-          isotopes = Set[element]
-          isotopes.add(:quality) if element == :Q
+          # Support aliasing options like 'Q' into 'quality' for consistency
+          # and 'colours' into 'colors' for accessibility.
+          isotopes = VIPS_ALIASES.dig(element) || Set[element]
 
           # Keyword arguments to splat into our Compound
           attributes = {
@@ -291,8 +330,12 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
             :blurb => GObject::g_param_spec_get_blurb(param_spec).tap{|blurb| blurb[0] = blurb[0].capitalize},
             :default => self::vips_get_option_default(param_spec[:value_type]),
           }
-          if G_TYPE_VALUES.has_key?(g_type)
-            attributes[:valid] = G_TYPE_VALUES[g_type]
+          if GObject::g_type_fundamental(param_spec[:value_type]) == GObject::GENUM_TYPE
+            attributes[:valid] = self::vips_get_enum_values(param_spec[:value_type])
+          elsif VIPS_VALID.has_key?(element)
+            attributes[:valid] = VIPS_VALID[element]
+          elsif G_TYPE_VALUES.has_key?(gtype_name)
+            attributes[:valid] = G_TYPE_VALUES[gtype_name]
           end
 
           # Add the Compound for every alias
@@ -308,6 +351,32 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
 
 
   # Returns the default value for any ruby-vips GObject::GValue
+  # based on its fundamental GType.
+  def self.vips_get_option_default(gtype)
+    gtype_id = gtype.is_a?(String) ? GObject::g_type_from_name(gtype) : gtype
+    # The `enum` method will actually work for several of these types,
+    # e.g. returns `false` for GBool, but let's skip it to avoid the whole,
+    # like, FFI/allocation thing.
+    case GObject::g_type_fundamental(gtype_id)
+    when GObject::GENUM_TYPE
+      return self.vips_get_enum_default(gtype_id)
+    when GObject::GBOOL_TYPE
+      return false
+    when GObject::GDOUBLE_TYPE
+      return 0.0
+    when GObject::GINT_TYPE
+      return 0
+    when GObject::GUINT64_TYPE
+      return 0
+    when GObject::GBOXED_TYPE
+      return self.vips_get_boxed_default(gtype_id)
+    else
+      return nil
+    end
+  end
+
+  # Returns the default for a GEnum derivative by allocating, initializing,
+  # and getting the contents of a GValue.
   #
   ## Example:
   # irb> gvp = GObject::GValue.alloc
@@ -319,7 +388,7 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
   # => 94574011156416
   # irb> gvp.get
   # => :random
-  def self.vips_get_option_default(gtype)
+  def self.vips_get_enum_default(gtype)
     begin
       gtype_id = gtype.is_a?(String) ? GObject::g_type_from_name(gtype) : gtype
       # Deallocation is automatic when `gvp` goes out of scope.
@@ -332,6 +401,54 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
       # This is happening for VipsArrayDouble gtype 94691056795136
       # end I don't feel like debugging it rn lololol
       nil
+    end
+  end
+
+
+  # Returns a Set[Symbol] of supported enum values for a given g_type
+  def self.vips_get_enum_values(gtype)
+    begin
+      gtype_id = gtype.is_a?(String) ? GObject::g_type_from_name(gtype) : gtype
+
+      # HACK HACK HACK:
+      # There *has* to be a better/native way to get this, but for now I'm just going to
+      # parse them out of the error message you can access after trying an obviously-wrong value.
+      #
+      # irb> Vips::vips_error_clear
+      # => nil
+      # irb> GObject::g_type_from_name 'VipsForeignTiffCompression'
+      # => 94691059614768
+      # irb> Vips::vips_enum_from_nick 'DistorteD', 94691059614768, 'lolol'
+      # => -1
+      # irb> Vips::vips_error_buffer
+      # => "DistorteD: enum 'VipsForeignTiffCompression' has no member 'lolol', should be one of: none, jpeg, deflate, packbits, ccittfax4, lzw\n"
+      Vips::vips_enum_from_nick('DistorteD'.freeze, gtype_id, 'lolol'.freeze)
+      error_buffer = Vips::vips_error_buffer
+      if error_buffer.include?('should be one of: '.freeze)
+        Vips::vips_error_clear
+        return error_buffer.split('should be one of: '.freeze)[1][0..-2].split(', '.freeze).map(&:to_sym)
+      else
+        return Set[]
+      end
+    rescue
+      return Set[]
+    end
+  end
+
+
+  # Returns a Array of the boxed type (Int, Double, etc)
+  def self.vips_get_boxed_default(gtype)
+    gtype_id = gtype.is_a?(String) ? GObject::g_type_from_name(gtype) : gtype
+    gtype_name = GObject::g_type_name(gtype_id)
+    # It's not really correct to explicitly return three values here,
+    # but the use of this for `background` colors are the only use rn.
+    case gtype_name
+    when 'VipsArrayDouble'.freeze
+      return [0.0, 0.0, 0.0]
+    when 'VipsArrayInt'.freeze
+      return [0, 0, 0]
+    else
+      return []
     end
   end
 
