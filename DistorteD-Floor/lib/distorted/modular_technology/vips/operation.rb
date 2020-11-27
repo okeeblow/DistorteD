@@ -46,8 +46,9 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
   # This has got to be built in to Ruby-GLib somewhere, right?
   # Remove this if an FFI method is possible to get this mapping.
   G_TYPE_VALUES = {
-    :gboolean => Cooltrainer::BOOLEAN_VALUES,
+    :gboolean => [false, true],
     :gchararray => String,
+    :gdouble => Float,
     :gint => Integer,
   }
 
