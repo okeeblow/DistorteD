@@ -29,6 +29,22 @@ module Cooltrainer
       "#{@element}#{" a.k.a. #{@isotopes}" if @isotopes.length > 1}: #{"#{@valid} " if @valid}(#{@default})"
     end
 
+    def to_options
+      @isotopes.reduce(Set[]) { |commands, aka|
+        command = "-#{'-'.freeze if aka.length > 1}#{aka.to_s}"
+        if @valid.is_a?(Range)
+          command << " [#{@valid.to_s}]"
+        elsif @valid.is_a?(Enumerable)
+          command << " [#{@valid.join(', '.freeze)}]"
+        elsif not @default.nil?
+          command << " [#{@default}]"
+        else
+          command << " [#{@element.upcase}]"
+        end
+        commands << command
+      }
+    end
+
   end  # Compound
 
 end
