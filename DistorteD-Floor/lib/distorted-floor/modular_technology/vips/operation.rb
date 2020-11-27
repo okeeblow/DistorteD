@@ -324,7 +324,9 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
       # Deallocation is automatic when `gvp` goes out of scope.
       gvp = GObject::GValue.alloc
       gvp.init(gtype)
-      gvp.get
+      out = gvp.get
+      gvp.unset
+      return out
     rescue FFI::NullPointerError => e
       # This is happening for VipsArrayDouble gtype 94691056795136
       # end I don't feel like debugging it rn lololol
