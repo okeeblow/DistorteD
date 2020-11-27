@@ -19,6 +19,11 @@ module Vips
 
 end
 
+module GObject
+  # Fundamental types not already defined in ruby-vips' `lib/vips.rb`
+  GBOXED_TYPE = g_type_from_name('GBoxed')
+end
+
 
 module Cooltrainer; end
 module Cooltrainer::DistorteD; end
