@@ -56,6 +56,7 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
   VIPS_ALIASES = {
     :Q => Set[:Q, :quality],
     :colours => Set[:colours, :colors],
+    :centre => Set[:centre, :center],  # America; FUCK YEAH!
   }
 
   # GEnum valid values are detectable, but I don't know how to do the same
@@ -346,6 +347,18 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
         end
       end
     }
+
+    # This isn't really a 'Saver' Option — rather an argument to a separate
+    # :smartcrop or :thumbnail VIPS method we can call, but I want to offer
+    # this option on every Type and use it to control the method we call
+    # to write the image.
+    options.store(:crop, Cooltrainer::Compound.new(:crop,
+      blurb: 'Visual cropping method',
+      valid: self::vips_get_enum_values('VipsInteresting'.freeze),
+      default: self::vips_get_option_default('VipsInteresting'.freeze),
+    ))
+
+    # All done :)
     options
   end
 
