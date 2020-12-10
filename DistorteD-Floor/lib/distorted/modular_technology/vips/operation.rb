@@ -426,12 +426,20 @@ module Cooltrainer::DistorteD::Technology::VipsForeign
       error_buffer = Vips::vips_error_buffer
       if error_buffer.include?('should be one of: '.freeze)
         Vips::vips_error_clear
-        return error_buffer.split('should be one of: '.freeze)[1][0..-2].split(', '.freeze).map(&:to_sym)
+        # Parse the error into a Set of Symbol options
+        discovered = error_buffer.split('should be one of: '.freeze)[1][0..-2].split(', '.freeze).map(&:to_sym).to_set
+        # For any Options with aliases, merge in the aliases.
+        (discovered & self::VIPS_ALIASES.keys.to_set).each { |aliased|
+          discovered.merge(self::VIPS_ALIASES[aliased])
+        }
+        # We need to give this back as an Array because callers will want to call :join on it,
+        # and we should give it back sorted so aliased aren't all piled up at the end.
+        discovered.to_a.sort
       else
-        return Set[]
+        return Array[]
       end
     rescue
-      return Set[]
+      return Array[]
     end
   end
 
