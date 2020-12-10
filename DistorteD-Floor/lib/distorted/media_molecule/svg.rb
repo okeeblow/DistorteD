@@ -3,6 +3,7 @@ require 'set'
 require 'svg_optimizer'
 
 require 'distorted/checking_you_out'
+require 'distorted/modular_technology/vips/save'
 
 
 module Cooltrainer; end
@@ -29,7 +30,7 @@ module Cooltrainer::DistorteD::Molecule::SVG
     :optimize => false,
   }
 
-  include Cooltrainer::DistorteD::Technology::VipsSave
+  include Cooltrainer::DistorteD::Technology::Vips::Save
 
 
   def to_vips_image

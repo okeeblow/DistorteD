@@ -6,7 +6,7 @@ require 'distorted/monkey_business/encoding'
 require 'distorted/monkey_business/string'  # String#map
 require 'distorted/modular_technology/pango'
 require 'distorted/modular_technology/ttfunk'
-require 'distorted/modular_technology/vips_save'
+require 'distorted/modular_technology/vips/save'
 
 require 'distorted/checking_you_out'
 require 'distorted/molecule/image'
@@ -20,7 +20,7 @@ module Cooltrainer::DistorteD::Molecule::Text
 
   include Cooltrainer::DistorteD::Technology::TTFunk
   include Cooltrainer::DistorteD::Technology::Pango
-  include Cooltrainer::DistorteD::Technology::VipsSave
+  include Cooltrainer::DistorteD::Technology::Vips::Save
 
   # Track supported fonts by codepage.
   # Avoid renaming these from the original archives / websites.
@@ -82,7 +82,7 @@ module Cooltrainer::DistorteD::Molecule::Text
     :encoding => Cooltrainer::Compound.new(:encoding, blurb: 'Character encoding used in this document.', default: 'UTF-8'.freeze),
   ]}
   OUTER_LIMITS = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash.merge(
-    Cooltrainer::DistorteD::Technology::VipsSave::OUTER_LIMITS.dup.transform_values{ |v| Hash[
+    Cooltrainer::DistorteD::Technology::Vips::Save::OUTER_LIMITS.dup.transform_values{ |v| Hash[
       :spacing => Cooltrainer::Compound.new(:spacing, blurb: 'Document-wide character spacing style.', valid: Set[:monospace, :proportional]),
       :dpi => Cooltrainer::Compound.new(:dpi, blurb: 'Dots per inch for text rendering.', valid: Integer, default: 144),
       :font => Cooltrainer::Compound.new(:font, blurb: 'Font to use for text rendering.', valid: self::FONT_FILENAME.keys.to_set),
@@ -182,7 +182,7 @@ module Cooltrainer::DistorteD::Molecule::Text
       File.dirname(__FILE__),  # molecule
       '..'.freeze,  # distorted
       '..'.freeze,  # lib
-      '..'.freeze,  # DistorteD-Core
+      '..'.freeze,  # DistorteD-Floor
       'font'.freeze,
       font_codepage.to_s,
       font_filename,

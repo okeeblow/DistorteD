@@ -1,5 +1,5 @@
 gemspec
 
 # Depend on the DistorteD core in the same repo as us.
-gem 'distorted', :path => File.join(File.dirname(__FILE__), '..', 'DistorteD-Core')
+gem 'distorted', :path => File.join(File.dirname(__FILE__), '..', 'DistorteD-Floor')
 

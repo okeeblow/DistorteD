@@ -38,7 +38,7 @@ module Jekyll
       include Jekyll::DistorteD::StaticState
 
       # Load Jekyll Molecules which will implicitly load
-      # the Core Molecules they're based on.
+      # the Floor Molecules they're based on.
       @@loaded_molecules rescue begin
         Dir[File.join(__dir__, 'molecule', '*.rb')].each { |molecule| require molecule }
         @@loaded_molecules = true
