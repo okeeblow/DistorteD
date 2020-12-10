@@ -1,20 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'optparse'
+require 'distorted/floor'
 
-require 'distorted/invoker'
-require 'distorted/checking_you_out'
-
-include Cooltrainer::DistorteD::Invoker
-
-
-opt = OptionParser.new
-opt.parse!
-@name = ARGV.pop
-raise 'No filename specified.' unless @name
-
-
-
-# TODO: Support multiple Molecules
-p lower_world[media_molecule][type_mars.first]
-p outer_limits[media_molecule][type_mars.first]
+click = Cooltrainer::DistorteD::Floor.new(ARGV.dup, File.basename(__FILE__))
+click.write(Dir.pwd)
