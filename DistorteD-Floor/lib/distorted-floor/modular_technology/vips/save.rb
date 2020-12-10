@@ -50,7 +50,7 @@ require 'distorted/checking_you_out'
 module Cooltrainer; end
 module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Technology; end
-module Cooltrainer::DistorteD::Technology::VipsSave
+module Cooltrainer::DistorteD::Technology::Vips::Save
 
 
   # There is one (only one) native libvips image format, with file extname `.vips`.
@@ -118,7 +118,7 @@ module Cooltrainer::DistorteD::Technology::VipsSave
   }
 
   OUTER_LIMITS = VIPS_SAVERS.reduce(Hash[]) { |types,type|
-    types[type] = Cooltrainer::DistorteD::Technology::VipsForeign::vips_get_options(
+    types[type] = Cooltrainer::DistorteD::Technology::Vips::vips_get_options(
       Vips::vips_foreign_find_save(".#{type.preferred_extension}")
     )
     types

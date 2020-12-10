@@ -28,7 +28,7 @@ end
 module Cooltrainer; end
 module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Technology; end
-module Cooltrainer::DistorteD::Technology::VipsForeign
+module Cooltrainer::DistorteD::Technology::Vips
 
 
   # 🄵🄸🄽🄳 🅃🄷🄴 🄲🄾🄼🄿🅄🅃🄴🅁 🅁🄾🄾🄼

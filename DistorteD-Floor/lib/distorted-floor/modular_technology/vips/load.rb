@@ -2,16 +2,14 @@
 require 'set'
 
 require 'distorted/checking_you_out'
-require 'distorted/modular_technology/vips_foreign'
-require 'distorted/modular_technology/vips_save'
+require 'distorted/modular_technology/vips/foreign'
+require 'distorted/modular_technology/vips/save'
 
 
 module Cooltrainer; end
 module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Technology; end
-module Cooltrainer::DistorteD::Technology::VipsLoad
-
-  include Cooltrainer::DistorteD::Technology::VipsForeign
+module Cooltrainer::DistorteD::Technology::Vips::Load
 
   # Returns a Set of MIME::Types based on libvips LipsForeignLoad capabilities.
   # NOTE: libvips only declares support (via :get_suffixes) for the "saver" types,
@@ -57,7 +55,7 @@ module Cooltrainer::DistorteD::Technology::VipsLoad
   #   [MAGICK]: The Magick-based '.bmp' loader is broken/missing in libvips <= 8.9.1,
   #            but our automatic Loader detection will handle that. Just FYI :)
   #
-  VIPS_LOADERS = Cooltrainer::DistorteD::Technology::VipsForeign::vips_get_types('VipsForeignLoad').keep_if { |t|
+  VIPS_LOADERS = Cooltrainer::DistorteD::Technology::Vips::vips_get_types('VipsForeignLoad').keep_if { |t|
     t.media_type != 'text'.freeze and not t.sub_type.include?('zip'.freeze)
   }
 
@@ -107,8 +105,8 @@ module Cooltrainer::DistorteD::Technology::VipsLoad
   #
   # For this reason I'm going to write my own shim Loader-finder and use it instead.
   LOWER_WORLD = VIPS_LOADERS.reduce(Hash[]) { |types,type|
-    types[type] = Cooltrainer::DistorteD::Technology::VipsForeign::vips_get_options(
-      Cooltrainer::DistorteD::Technology::VipsForeign::vips_foreign_find_load_suffix(".#{type.preferred_extension}")
+    types[type] = Cooltrainer::DistorteD::Technology::Vips::vips_get_options(
+      Cooltrainer::DistorteD::Technology::Vips::vips_foreign_find_load_suffix(".#{type.preferred_extension}")
     )
     types
   }
