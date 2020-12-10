@@ -1,10 +1,47 @@
 require 'set'
 
+require 'distorted/checking_you_out'
+
 
 module Cooltrainer
 
 
   BOOLEAN_VALUES = Set[0, 1, false, true, '0'.freeze, '1'.freeze, 'false'.freeze, 'true'.freeze]
+
+
+  Change = Struct.new(:type, :tag, :name, keyword_init: true) do
+    attr_reader :type, :tag
+
+    def initialize(type, molecule: nil, tag: :full, name: nil)
+      @type = type
+      @tag = tag
+      @molecule = molecule
+      # Don't change the filename of full-size variations
+      @filetag = tag == :full ? ''.freeze : '-'.concat(tag.to_s)
+      # Use the original extname for LastResort
+      @ext = type == CHECKING::YOU::OUT['application/x.distorted.last-resort'] ? File.extname(name) : type.preferred_extension
+      # Handle LastResort for files that might be a bare name with no extension
+      @dot = '.'.freeze unless @ext.nil? || @ext&.empty?
+      @basename = File.basename(name, '.*')
+      #t == CHECKING::YOU::OUT['application/x.distorted.last-resort'] ? @name : "#{basename}.#{t.preferred_extension}"
+      super(type: type, tag: tag, name: name)
+    end
+
+    def name
+      "#{@basename}#{@filetag}#{@dot}#{@ext}"
+    end
+
+    # A generic version of Struct#to_hash was rejected with good reason,
+    # but I'm going to use it here because I want the implicit Struct-to-Hash
+    # conversion to let me use these Structs with a double-splat.
+    # https://bugs.ruby-lang.org/issues/4862
+    def to_hash
+      Hash[self.members.zip(self.values)]
+    end
+    def to_h
+      Hash[self.members.zip(self.values)]
+    end
+  end
 
 
   Compound = Struct.new(:element, :valid, :default, :blurb, keyword_init: true) do

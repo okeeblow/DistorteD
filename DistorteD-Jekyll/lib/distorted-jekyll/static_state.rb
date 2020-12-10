@@ -14,9 +14,6 @@ module Jekyll::DistorteD; end
 module Jekyll::DistorteD::StaticState
 
 
-  ATTRIBUTES = Set[:title]
-
-
   # Returns the to-be-written path of a single standard StaticFile.
   # The value returned by this method is only the 'main' or 'original'
   # (even if modified somehow) file and does not include the
