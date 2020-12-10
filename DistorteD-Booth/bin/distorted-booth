@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'distorted-booth/invoker'
+
+click = Cooltrainer::DistorteD::Booth.new(ARGV.dup)
