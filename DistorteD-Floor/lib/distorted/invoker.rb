@@ -14,18 +14,21 @@ module Cooltrainer; end
 module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Invoker
 
+  # Discover DistorteD MediaMolecules bundled with this Gem
+  # TODO: and any installed as separate Gems.
   @@loaded_molecules rescue begin
     Dir[File.join(__dir__, 'molecule', '*.rb')].each { |molecule| require molecule }
     @@loaded_molecules = true
   end
 
-  # Enabled media_type drivers. These will be attempted back to front.
+  # Returns a Set[Module] of our discovered MediaMolecules.
   def media_molecules
     Cooltrainer::DistorteD::Molecule.constants.map{ |molecule|
       Cooltrainer::DistorteD::Molecule::const_get(molecule)
     }.to_set
   end
 
+  # Returns a Hash[MIME::Type] => Hash[MediaMolecule] => Hash[param_alias] => Compound
   def lower_world
     @@lower_world ||= media_molecules.reduce(
       Hash.new{|types, type| types[type] = Hash[]}
@@ -41,8 +44,11 @@ module Cooltrainer::DistorteD::Invoker
     }
   end
 
-  def outer_limits
-    @@outer_limits ||= media_molecules.reduce(
+  # Returns a Hash[MediaMolecule] => Hash[MIME::Type] => Hash[param_alias] => Compound
+  def outer_limits(all: false)
+    @@outer_limits ||= (all ? media_molecules : type_mars.reduce(Set[]) { |molecules, type|
+      molecules.merge(lower_world[type].keys)
+    }).reduce(
       Hash.new{|molecules, molecule| molecules[molecule] = Hash[]}
     ) { |molecules, molecule|
       Set[molecule].merge(molecule.ancestors).each{ |mod|
@@ -56,27 +62,65 @@ module Cooltrainer::DistorteD::Invoker
     }
   end
 
-  # Decides which MediaMolecule is most appropriate for our file and returns it.
-  def media_molecule
-    # TODO: Handle multiple molecules for the same file
-    case type_mars.length
-    when 0
-      raise MediaTypeNotImplementedError.new(@name)
-    when 1
-      return plug(lower_world[type_mars.first].keys.first)
-    end
+  # Filename without the dot-and-extension.
+  def basename
+    File.basename(@name, '.*')
   end
 
-  def plug(media_molecule)
-    unless self.singleton_class.instance_variable_defined?(:@media_molecule)
-      self.singleton_class.instance_variable_set(:@media_molecule, media_molecule)
-      self.singleton_class.prepend(media_molecule)
-    end
-    media_molecule
-  end
-
+  # Returns a Set of MIME::Types common to the source file and our supported MediaMolecules.
+  # Each of these Molecules will be plugged to the current instance.
   def type_mars
-    @type_mars ||= CHECKING::YOU::OUT(@name) & lower_world.keys.to_set
+    @type_mars ||= (CHECKING::YOU::OUT(@name) & lower_world.keys.to_set).tap do |type|
+      type.each { |molecule|
+        logme = "Using #{lower_world[type]}"
+      }
+    end
+    raise MediaTypeNotImplementedError.new(@name) if @type_mars.empty?
+    @type_mars
+  end
+
+  # MediaMolecule file-type plugger.
+  # Any call to a MIME::Type's distorted_method will end up here unless
+  # the Molecule that defines it has been `prepend`ed to our instance.
+  def method_missing(meth, *args, **kwargs, &block)
+    # Only consider method names with our prefix.
+    if meth.to_s.start_with?('to_'.freeze)
+      # TODO: Might need to handle cases here where the Set[Molecule]
+      # exists but none of them defined our method.
+      unless self.singleton_class.instance_variable_get(:@media_molecules)
+        unless outer_limits.empty?
+          self.singleton_class.instance_variable_set(
+            :@media_molecules,
+            outer_limits.keys.reduce(Set[]) { |molecules, molecule|
+              self.singleton_class.prepend(molecule)
+              molecules.add(molecule)
+            }
+          )
+          # `return` to ensure we don't fall through to #method_missing:super
+          # if we are going to do any work, otherwise a NoMethodError will
+          # still be raised despite the distorted_method :sends suceeding.
+          #
+          # Use :__send__ in case a Molecule defines a `:send` method.
+          # https://ruby-doc.org/core/Object.html#method-i-send
+          # https://eregon.me/blog/2019/11/10/the-delegation-challenge-of-ruby27.html
+          return kwargs.empty? ? self.send(meth, *args, &block) : self.send(meth, *args, **kwargs, &block)
+        end
+      end
+    end
+    # …and I still haven't found it! — What I'm looking for, that is.
+    # https://www.youtube.com/watch?v=xqse3vYcnaU
+    super
+  end
+
+  # Make sure :respond_to? works for yet-unplugged distorted_methods.
+  # http://blog.marc-andre.ca/2010/11/15/methodmissing-politely/
+  def respond_to_missing?(meth, *)
+    meth.to_s.start_with?('to_'.freeze) || super
+  end
+
+  # Returns an absolute String path to the source file.
+  def path
+    File.expand_path(@name)
   end
 
 end
