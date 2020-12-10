@@ -54,8 +54,9 @@ module Cooltrainer::DistorteD::Technology::VipsLoad
   #            This was finally fixed in 2019 as of librsvg2 version 2.45.91 :)
   #            https://gitlab.gnome.org/GNOME/librsvg/-/issues/494#note_579774
   #
-
-  # NOTE: The Magick-based '.bmp' loader is broken/missing in libvips <= 8.9.1:
+  #   [MAGICK]: The Magick-based '.bmp' loader is broken/missing in libvips <= 8.9.1,
+  #            but our automatic Loader detection will handle that. Just FYI :)
+  #
   VIPS_LOADERS = Cooltrainer::DistorteD::Technology::VipsForeign::vips_get_types('VipsForeignLoad').keep_if { |t|
     t.media_type != 'text'.freeze and not t.sub_type.include?('zip'.freeze)
   }

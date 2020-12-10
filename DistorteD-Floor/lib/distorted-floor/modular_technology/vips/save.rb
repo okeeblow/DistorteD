@@ -52,28 +52,7 @@ module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Technology; end
 module Cooltrainer::DistorteD::Technology::VipsSave
 
-  ATTRIBUTES = {
-    :crop => nil,
-    :Q => Set[:quality],
-  }
-  ATTRIBUTES_DEFAULT = {
-    :crop => :attention,
-  }
-  ATTRIBUTES_VALUES = {
-    # https://www.rubydoc.info/gems/ruby-vips/Vips/Interesting
-    :crop => {
-      :none => nil,
-      :centre => Set[:center],  # America, FUCK YEAH!
-      :entropy => nil,
-      :attention => nil,
-    },
-  }
 
-
-
-  # Returns a Set of MIME::Types based on libvips VipsForeignSave capabilities.
-  # https://libvips.github.io/libvips/API/current/VipsForeignSave.html
-  #
   # There is one (only one) native libvips image format, with file extname `.vips`.
   # As I write this—running libvips 8.8—the :get_suffixes function does not include
   # its own '.vips' as a supported extension.
@@ -113,6 +92,7 @@ module Cooltrainer::DistorteD::Technology::VipsSave
   # Vips allows us to query supported *SAVE* types by suffix.
   # There's a simple relationship between filetype and extension since
   # libvips uses the suffix to pick the Saver module.
+  # https://libvips.github.io/libvips/API/current/VipsForeignSave.html
   #
   # Loader modules, on the other hand, are picked by sniffing the
   # first few bytes of the file, so a list of file extensions for
@@ -149,7 +129,8 @@ module Cooltrainer::DistorteD::Technology::VipsSave
   # context where this module is included.
   self::OUTER_LIMITS.each_key { |t|
     define_method(t.distorted_method) { |*a, **k, &b|
-      vips_save(*a, **k, &b)
+      # https://bugs.ruby-lang.org/issues/10856
+      k.empty? ? vips_save(*a, &b) : vips_save(*a, **k, &b)
     }
   }
 
@@ -157,6 +138,7 @@ module Cooltrainer::DistorteD::Technology::VipsSave
 
   # Generic Vips saver method, optionally handling resizing and cropping.
   # NOTE: libvips chooses a saver (internally) based on the extname of the destination path.
+  # TODO: String-buffer version of this method using e.g. Image#jpegsave_buffer
   def vips_save(dest, width: nil, **kw)
     begin
       if width.nil? or width == :full

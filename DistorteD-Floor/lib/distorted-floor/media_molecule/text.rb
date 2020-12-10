@@ -18,8 +18,9 @@ module Cooltrainer::DistorteD::Molecule; end
 module Cooltrainer::DistorteD::Molecule::Text
 
 
-  LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash
-  OUTER_LIMITS = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash
+  include Cooltrainer::DistorteD::Technology::TTFunk
+  include Cooltrainer::DistorteD::Technology::Pango
+  include Cooltrainer::DistorteD::Technology::VipsSave
 
   # Track supported fonts by codepage.
   # Avoid renaming these from the original archives / websites.
@@ -76,33 +77,23 @@ module Cooltrainer::DistorteD::Molecule::Text
     memo
   }
 
+
+  LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash.transform_values { |v| Hash[
+    :encoding => Cooltrainer::Compound.new(:encoding, blurb: 'Character encoding used in this document.', default: 'UTF-8'.freeze),
+  ]}
+  OUTER_LIMITS = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash.merge(
+    Cooltrainer::DistorteD::Technology::VipsSave::OUTER_LIMITS.dup.transform_values{ |v| Hash[
+      :spacing => Cooltrainer::Compound.new(:spacing, blurb: 'Document-wide character spacing style.', valid: Set[:monospace, :proportional]),
+      :dpi => Cooltrainer::Compound.new(:dpi, blurb: 'Dots per inch for text rendering.', valid: Integer, default: 144),
+      :font => Cooltrainer::Compound.new(:font, blurb: 'Font to use for text rendering.', valid: self::FONT_FILENAME.keys.to_set),
+    ]}
+  )
+
   self::OUTER_LIMITS.keys.each { |t|
     define_method(t.distorted_method) { |*a, **k, &b|
       copy_file(*a, **k, &b)
     }
   }
-
-  ATTRIBUTES = Set[
-    :alt,
-    :crop,
-    :font,
-    :encoding,
-    :spacing,
-    :dpi,
-  ]
-  ATTRIBUTES_VALUES = {
-    :spacing => Set[:monospace, :proportional],
-    :font => self::FONT_FILENAME.keys.to_set,
-  }
-  ATTRIBUTES_DEFAULT = {
-    :crop => :none,
-    :dpi => 144,
-    :encoding => 'UTF-8'.freeze
-  }
-
-  include Cooltrainer::DistorteD::Technology::TTFunk
-  include Cooltrainer::DistorteD::Technology::Pango
-  include Cooltrainer::DistorteD::Technology::VipsSave
 
 
   # Return a Pango Markup escaped version of the document.
