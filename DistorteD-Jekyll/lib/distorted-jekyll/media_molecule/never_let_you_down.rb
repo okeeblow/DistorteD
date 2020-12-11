@@ -1,7 +1,6 @@
 require 'set'
 
 require 'distorted/checking_you_out'
-require 'distorted/injection_of_love'
 
 module Jekyll
   module DistorteD

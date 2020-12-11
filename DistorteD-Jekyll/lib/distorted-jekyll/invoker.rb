@@ -124,14 +124,12 @@ module Jekyll
       # https://github.com/jekyll/jekyll/blob/HEAD/lib/jekyll/renderer.rb
       # https://jekyllrb.com/tutorials/orderofinterpretation/
       def render(context)
-        plug
         render_to_output_buffer(context, '')
       end
 
       # A future Liquid version (5.0?) will call this function directly
       # instead of calling render()
       def render_to_output_buffer(context, output)
-        plug
         # Get Jekyll Site object back from tag rendering context registers so we
         # can get configuration data and path information from it and
         # then pass it along to our StaticFile subclass.
@@ -182,7 +180,7 @@ module Jekyll
           # Use a given filename, or detect one based on media-type.
           if name.nil?
             # e.g. Jekyll::DistorteD::Molecule::Image -> 'image.liquid'
-            name = "#{self.singleton_class.instance_variable_get(:@media_molecule).name.gsub(/^.*::/, '').downcase}.liquid".freeze
+            name = "#{self.singleton_class.instance_variable_get(:@media_molecule).first.name.gsub(/^.*::/, '').downcase}.liquid".freeze
           elsif not name.include?('.liquid'.freeze)
             # Support filename arguments with and without file extension.
             # The given String might already be frozen, so concatenating
