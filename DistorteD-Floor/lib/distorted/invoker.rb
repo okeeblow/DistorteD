@@ -118,9 +118,4 @@ module Cooltrainer::DistorteD::Invoker
     meth.to_s.start_with?('to_'.freeze) || super
   end
 
-  # Returns an absolute String path to the source file.
-  def path
-    File.expand_path(@name)
-  end
-
 end
