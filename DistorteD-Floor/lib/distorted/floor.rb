@@ -163,17 +163,14 @@ class Cooltrainer::DistorteD::Floor
 
   # Writes all intended output files to a given directory.
   def write(dest_root)
-    changes.each_pair { |type, change|
-      molecule = lower_world[type]
+    changes.each { |change|
       change.each { |c|
         filename = File.expand_path(c.name, dest_root)
 
-        if self.respond_to?(type.distorted_method)
-          self.send(type.distorted_method, filename, **c)
-        elsif type_mars.include?(type)
-          #copy_file(filename)
+        if self.respond_to?(c.type.distorted_method)
+          self.send(c.type.distorted_method, filename, **c)
         else
-          raise MediaTypeOutputNotImplementedError.new(filename, type, self.class.name)
+          raise MediaTypeOutputNotImplementedError.new(filename, c.type, self.class.name)
         end
       }
     }
@@ -192,17 +189,17 @@ class Cooltrainer::DistorteD::Floor
     end
   end
 
-  # Returns a Hash[MIME::Type] => Change for every intended output variation.
+  # Returns an Array[Change] for every intended output variation.
   def changes
     vers = Set[:full]
     explicit_outer = @global_options&.dig(:"outer-limits") || []
     (explicit_outer.length == @argv.length ?
       @argv.zip(explicit_outer.map{|a| CHECKING::YOU::OUT[a]}) :
       @argv.zip(@argv.map{ |a| CHECKING::YOU::OUT(a).first})
-    ).reduce(Hash[]){ |wanted, (f,t)|
+    ).reduce(Array[]){ |wanted, (f,t)|
       # TODO: Nice way to check format for Type string here.
       # Should be e.g. "image/png"
-      wanted.store(t, vers.map{ |v|
+      wanted.append(vers.map{ |v|
         Cooltrainer::Change.new(t, tag: v, name: f)
       })
       wanted
