@@ -209,6 +209,11 @@ class Cooltrainer::DistorteD::Floor
     }
   end
 
+  # Returns an absolute String path to the source file.
+  def path
+    File.expand_path(@name)
+  end
+
   # This is a CLI, so we always want to write new files when called.
   def modified?
     true
