@@ -9,10 +9,10 @@ module Cooltrainer
   BOOLEAN_VALUES = Set[0, 1, false, true, '0'.freeze, '1'.freeze, 'false'.freeze, 'true'.freeze]
 
 
-  Change = Struct.new(:type, :tag, :name, keyword_init: true) do
-    attr_reader :type, :tag
+  Change = Struct.new(:type, :name, :molecule, :tag, :extra, keyword_init: true) do
+    attr_reader :type, :molecule, :tag, :extra
 
-    def initialize(type, molecule: nil, tag: :full, name: nil)
+    def initialize(type, name: nil, molecule: nil, tag: :full, **extra)
       @type = type
       @tag = tag
       @molecule = molecule
@@ -23,8 +23,8 @@ module Cooltrainer
       # Handle LastResort for files that might be a bare name with no extension
       @dot = '.'.freeze unless @ext.nil? || @ext&.empty?
       @basename = File.basename(name, '.*')
-      #t == CHECKING::YOU::OUT['application/x.distorted.last-resort'] ? @name : "#{basename}.#{t.preferred_extension}"
-      super(type: type, tag: tag, name: name)
+      @extra = extra
+      super(type: type, name: name, molecule: molecule, tag: tag, extra: extra)
     end
 
     def name
@@ -36,10 +36,10 @@ module Cooltrainer
     # conversion to let me use these Structs with a double-splat.
     # https://bugs.ruby-lang.org/issues/4862
     def to_hash
-      Hash[self.members.zip(self.values)]
+      Hash[self.members.reject{|m| m == :extra}.zip(self.values.reject{|v| v.is_a?(Hash)})].merge(@extra || Hash[])
     end
     def to_h
-      Hash[self.members.zip(self.values)]
+      Hash[self.members.reject{|m| m == :extra}.zip(self.values.reject{|v| v.is_a?(Hash)})].merge(@extra || Hash[])
     end
   end
 
