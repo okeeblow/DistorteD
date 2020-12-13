@@ -70,11 +70,7 @@ module Cooltrainer::DistorteD::Invoker
   # Returns a Set of MIME::Types common to the source file and our supported MediaMolecules.
   # Each of these Molecules will be plugged to the current instance.
   def type_mars
-    @type_mars ||= (CHECKING::YOU::OUT(@name) & lower_world.keys.to_set).tap do |type|
-      type.each { |molecule|
-        logme = "Using #{lower_world[type]}"
-      }
-    end
+    @type_mars ||= CHECKING::YOU::OUT(@name) & lower_world.keys.to_set
     raise MediaTypeNotImplementedError.new(@name) if @type_mars.empty?
     @type_mars
   end
