@@ -53,15 +53,6 @@ module Jekyll
       end
 
 
-      # Any any attr value will get a to_sym if shorter than this
-      # totally arbitrary length, or if the attr key is in the plugged
-      # Molecule's set of attrs that take only a defined set of values.
-      # My chosen boundary length fits all of the outer-limit tag names I use,
-      # like 'medium'. It fits the longest value of Vips::Interesting too,
-      # though `crop` will be symbolized based on the other condition.
-      ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY = 13
-
-
       # 𝘏𝘖𝘞 𝘈𝘙𝘌 𝘠𝘖𝘜 𝘎𝘌𝘕𝘛𝘓𝘌𝘔𝘌𝘕 ！！
       def initialize(tag_name, arguments, liquid_options)
         super
@@ -79,15 +70,14 @@ module Jekyll
         else
           @name = parsed_arguments.delete(:argv1)
         end
+
+        # Load contextual variables for abstract()
         @liquid_liquid = parsed_arguments.select{ |attr, val|
           not [nil, ''.freeze].include?(val)
-        }.transform_keys { |attr|
-          attr.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY ? attr.to_sym : attr.freeze
-        }.transform_values { |val|
-          if val.is_a?(String)
-            val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY ? val.to_sym : val.freeze
-          else
-            val
+        }.transform_keys(&:to_sym).transform_values { |val|
+          case val
+          when String then (val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY) ? val.to_sym : val.freeze
+          else val
           end
         }
 
@@ -117,6 +107,11 @@ module Jekyll
       # referenced from lower layers in the pile.
       def user_arguments
         @liquid_liquid || Hash[]
+      end
+
+      # Returns a context-only setting from our Liquid attributes.
+      def abstract(key)
+        user_arguments.dig(key)
       end
 
       # Called by Jekyll::Renderer
@@ -193,10 +188,7 @@ module Jekyll
           )
 
           # Jekyll's Liquid renderer caches in 4.0+.
-          if Jekyll::DistorteD::Setting::config(
-              Jekyll::DistorteD::Setting::CONFIG_ROOT,
-              :cache_templates,
-          )
+          if Jekyll::DistorteD::Setting::the_setting_sun(:remember_me)
             # file(path) is the caching function, with path as the cache key.
             # The `template` here will be the full path, so no versions of this
             # gem should ever conflict. For example, right now during dev it's:

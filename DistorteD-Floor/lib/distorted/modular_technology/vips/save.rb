@@ -146,7 +146,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
       elsif width.respond_to?(:to_i)
         ver = to_vips_image.thumbnail_image(
           width.to_i,
-          **{:crop => abstract(:crop)},
+          **{:crop => kw&.dig(:crop) || :none},
         )
         return ver.write_to_file(dest)
       end
