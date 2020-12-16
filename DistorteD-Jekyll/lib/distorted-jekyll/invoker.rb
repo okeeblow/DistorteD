@@ -102,15 +102,14 @@ module Jekyll
       # Returns a Set of DD MIME::Types descriving our file,
       # optionally falling through to a plain file copy.
       def type_mars
-        @type_mars ||= begin
-          mime = CHECKING::YOU::OUT(@name)
-          if mime.empty?
-            if Jekyll::DistorteD::Setting::config(Jekyll::DistorteD::Setting::CONFIG_ROOT, :last_resort)
-              mime = Jekyll::DistorteD::Molecule::LastResort::LOWER_WORLD
-            end
+        @type_mars ||= (CHECKING::YOU::OUT(@name) & lower_world.keys.to_set).tap { |gemini|
+          if gemini.empty? && the_setting_sun(:never_let_you_down)
+            gemini << CHECKING::YOU::OUT['application/x.distorted.never-let-you-down']
           end
-          mime
-        end
+        }
+        raise MediaTypeNotImplementedError.new(@name) if @type_mars.empty?
+        @type_mars
+      end
       end
 
       # Return any arguments given by the user to our Liquid tag.

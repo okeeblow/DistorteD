@@ -8,14 +8,16 @@ module Jekyll
       module LastResort
 
 
-        LOWER_WORLD = CHECKING::YOU::IN('application/x.distorted.last-resort').to_hash.transform_values{ |v| Hash[
-          :alt => Cooltrainer::Compound.new(:alt, blurb: 'Alternate text to display when this element cannot be rendered.'),
-          :title => Cooltrainer::Compound.new(:title, blurb: 'Extra information about this element — usually displayed as tooltip text.'),
-          :href => Cooltrainer::Compound.new(:href, blurb: 'Hyperlink reference for this element.')
-        ]}
+        LOWER_WORLD = Hash[
+          CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'] => Hash[
+            :alt => Cooltrainer::Compound.new(:alt, blurb: 'Alternate text to display when this element cannot be rendered.'),
+            :title => Cooltrainer::Compound.new(:title, blurb: 'Extra information about this element — usually displayed as tooltip text.'),
+            :href => Cooltrainer::Compound.new(:href, blurb: 'Hyperlink reference for this element.')
+          ]
+        ]
 
         # This is one of the few render methods that will be defined in JekyllLand.
-        define_method(CHECKING::YOU::IN('application/x.distorted.last-resort').first.distorted_method) { |*a, **k, &b|
+        define_method(CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'].distorted_method) { |*a, **k, &b|
           copy_file(*a, **k, &b)
         }
 
