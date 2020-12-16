@@ -78,11 +78,41 @@ module Cooltrainer
       "#{@element}#{" a.k.a. #{@isotopes}" if @isotopes.length > 1}: #{"#{@valid} " if @valid}(#{@default})"
     end
 
+    # Returns a Set of properly-formatted OptionParser::Switch strings for this Compound.
     def to_options
-      @isotopes.reduce(Set[]) { |commands, aka|
-        command = "-#{'-'.freeze if aka.length > 1}#{aka.to_s}"
+      # @isotopes is a Hash[Symbol] => Compound, allowing for Compound aliasing
+      # to multiple Hash keys, e.g. libvips' `:Q` and `:quality` are two Hash keys
+      # referencing the same Compound object.
+      @isotopes.reduce(Array[]) { |commands, aka|
+        # Every Switch has at least one leading dash, and longer ones have two,
+        # e.g. `-Q` vs `--quality`.
+        command = "-"
+        if aka.length > 1
+          command << '-'.freeze
+        end
+
+        # Compounds that take a boolean should format their Switch string
+        # as `--[no]-whatever` (including the brackets!) instead of taking
+        # any kind of boolean-ish argument like true/false/yes/no.
+        #
+        # TODO: There seems to be a bug with Ruby optparse and multiple of these
+        # "--[no]-whatever"-style Switches where only the final Switch will display,
+        # so disable this for now in favor of separate --whatever/--no-whatever.
+        # I have a very basic standalone repro case that fails, so it's not just DD.
+        #
+        #if @valid == BOOLEAN_VALUES or @valid == BOOLEAN_VALUES.to_a
+        #  command << '[no]-'.freeze
+        #end
+
+        # Add the alias to form the command.
+        command << aka.to_s
+
+        # Format the valid values and/or default value and stick it on the end.
+        # https://ruby-doc.org/stdlib/libdoc/optparse/rdoc/OptionParser.html#class-OptionParser-label-Type+Coercion
         if @valid.is_a?(Range)
           command << " [#{@valid.to_s}]"
+        elsif @valid == BOOLEAN_VALUES or @valid == BOOLEAN_VALUES.to_a
+          # Intentional no-op
         elsif @valid.is_a?(Enumerable)
           command << " [#{@valid.join(', '.freeze)}]"
         elsif not @default.nil?
@@ -90,9 +120,19 @@ module Cooltrainer
         else
           command << " [#{@element.upcase}]"
         end
+
         commands << command
+
+        # HACK around issue with multiple "--[no]-whatever"-style long arguments.
+        # See above note and the commented-out implementation I'd like to use
+        # instead of this. Remove this iff I can figure out what's wrong there.
+        if @valid == BOOLEAN_VALUES or @valid == BOOLEAN_VALUES.to_a
+          commands << "--no-#{aka}"
+        end
+
+        commands
       }
-    end
+    end  # to_options
 
   end  # Compound
 
