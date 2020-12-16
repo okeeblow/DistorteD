@@ -22,7 +22,6 @@ module Cooltrainer::DistorteD::Molecule::SVG
       Cooltrainer::DistorteD::Technology::Vips::vips_foreign_find_load_suffix(".#{type.preferred_extension}")
     ).merge(Hash[
       :optimize => Cooltrainer::Compound.new(:optimize, valid: Cooltrainer::BOOLEAN_VALUES, default: false, blurb: 'SvgOptimizer'),
-      :unlimited => Cooltrainer::Compound.new(:unlimited, valid: Cooltrainer::BOOLEAN_VALUES, default: true, blurb: 'Load SVGs larger than 10MiB (security feature)'),
     ])
     types
   }
@@ -30,9 +29,9 @@ module Cooltrainer::DistorteD::Molecule::SVG
 
 
   def to_vips_image
-    # TODO: Load-time options for various formats, like SVG's `unlimited`:
-    # "SVGs larger than 10MB are normally blocked for security. Set unlimited to allow SVGs of any size."
-    # https://libvips.github.io/libvips/API/current/VipsForeignSave.html#vips-svgload
+    # NOTE: libvips 8.9 added the `unlimited` argument to svgload.
+    # Loading SVGs >= 10MiB in size will fail on older libvips.
+    # https://github.com/libvips/libvips/commit/55e49831b801e05ddd974b1e2102fda7956c53f5
     @vips_image ||= Vips::Image.new_from_file(path)
   end
 
