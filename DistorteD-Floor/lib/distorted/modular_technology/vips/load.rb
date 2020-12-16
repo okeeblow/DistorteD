@@ -56,7 +56,14 @@ module Cooltrainer::DistorteD::Technology::Vips::Load
   #            but our automatic Loader detection will handle that. Just FYI :)
   #
   VIPS_LOADERS = Cooltrainer::DistorteD::Technology::Vips::vips_get_types('VipsForeignLoad').keep_if { |t|
-    t.media_type != 'text'.freeze and not t.sub_type.include?('zip'.freeze)
+    Array[
+      t.media_type != 'text'.freeze,
+    ].all? && Array[
+      t.sub_type.include?('zip'.freeze),
+      # Skip declaring SVG here since I want to handle it in a Vector-only Molecule
+      # and will re-declare this there. Prolly need to think up a better way to do this.
+      t.sub_type.include?('svg'.freeze),
+    ].none?
   }
 
   # Vips::vips_foreign_find_save is based on filename suffix (extension),

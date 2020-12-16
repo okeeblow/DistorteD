@@ -1,6 +1,6 @@
 require 'set'
 
-require 'svg_optimizer'
+require 'svg_optimizer'  # https://github.com/fnando/svg_optimizer
 
 require 'distorted/checking_you_out'
 require 'distorted/modular_technology/vips/save'
@@ -14,22 +14,18 @@ module Cooltrainer::DistorteD::Molecule::SVG
 
   #WISHLIST: Support VML for old IE compatibility.
   #  Example: RaphaëlJS — https://en.wikipedia.org/wiki/Rapha%C3%ABl_(JavaScript_library)
-  LOWER_WORLD = CHECKING::YOU::IN(/^image\/svg/).to_hash
-
-  ATTRIBUTES = Set[
-    :alt,
-    :caption,
-    :href,
-    :loading,
-    :optimize,
+  LOWER_TYPES = Set[
+    CHECKING::YOU::OUT['image/svg+xml']
   ]
-  ATTRIBUTES_VALUES = {
-    :optimize => Cooltrainer::BOOLEAN_VALUES,
+  LOWER_WORLD = LOWER_TYPES.reduce(Hash[]) { |types,type|
+    types[type] = Cooltrainer::DistorteD::Technology::Vips::vips_get_options(
+      Cooltrainer::DistorteD::Technology::Vips::vips_foreign_find_load_suffix(".#{type.preferred_extension}")
+    ).merge(Hash[
+      :optimize => Cooltrainer::Compound.new(:optimize, valid: Cooltrainer::BOOLEAN_VALUES, default: false, blurb: 'SvgOptimizer'),
+      :unlimited => Cooltrainer::Compound.new(:unlimited, valid: Cooltrainer::BOOLEAN_VALUES, default: true, blurb: 'Load SVGs larger than 10MiB (security feature)'),
+    ])
+    types
   }
-  ATTRIBUTES_DEFAULT = {
-    :optimize => false,
-  }
-
   include Cooltrainer::DistorteD::Technology::Vips::Save
 
 
@@ -40,17 +36,12 @@ module Cooltrainer::DistorteD::Molecule::SVG
     @vips_image ||= Vips::Image.new_from_file(path)
   end
 
-  def to_image_svg_xml(dest, *a, **k, &b)
-    if abstract(:optimize)
+  define_method(CHECKING::YOU::OUT['image/svg+xml'].distorted_method) { |dest, *a, **k, &b|
+    if k.dig(:optimize)
       SvgOptimizer.optimize_file(path, dest, SvgOptimizer::DEFAULT_PLUGINS)
     else
       copy_file(dest, *a, **k, &b)
     end
-  end
-
-  def self.optimize(src, dest)
-    # TODO: Make optimizations/plugins configurable
-    SvgOptimizer.optimize_file(src, dest, SvgOptimizer::DEFAULT_PLUGINS)
-  end
+  }
 
 end
