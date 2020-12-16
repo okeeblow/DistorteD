@@ -46,20 +46,29 @@ module Cooltrainer::DistorteD::Invoker
 
   # Returns a Hash[MediaMolecule] => Hash[MIME::Type] => Hash[param_alias] => Compound
   def outer_limits(all: false)
-    @@outer_limits ||= (all ? media_molecules : type_mars.reduce(Set[]) { |molecules, type|
-      molecules.merge(lower_world[type].keys)
-    }).reduce(
-      Hash.new{|molecules, molecule| molecules[molecule] = Hash[]}
-    ) { |molecules, molecule|
-      Set[molecule].merge(molecule.ancestors).each{ |mod|
-        if mod.const_defined?(:OUTER_LIMITS)
-          mod.const_get(:OUTER_LIMITS).each { |t, elements|
-            molecules.update(molecule => {t => elements}) { |k,o,n| o.merge(n) }
-          }
-        end
+    # Use the singleton_class instance to avoid pinning a incomplete list to the shared class.
+    if self.singleton_class.instance_variable_defined?(:@outer_limits)
+      return self.singleton_class.instance_variable_get(:@outer_limits)
+    end
+    # Build OUTER_LIMITS of every MediaMolecule if all==true or if there is
+    # no currently-loaded source media file (if `type_mars` is empty),
+    # otherwise just of MediaMolecules relevant to the current instance.
+    self.singleton_class.instance_variable_set(:@outer_limits,
+       ((all || type_mars.empty?) ? media_molecules : type_mars.reduce(Set[]) { |molecules, type|
+        molecules.merge(lower_world[type].keys)
+      }).reduce(
+        Hash.new{|molecules, molecule| molecules[molecule] = Hash[]}
+      ) { |molecules, molecule|
+        Set[molecule].merge(molecule.ancestors).each{ |mod|
+          if mod.const_defined?(:OUTER_LIMITS)
+            mod.const_get(:OUTER_LIMITS).each { |t, elements|
+              molecules.update(molecule => {t => elements}) { |k,o,n| o.merge(n) }
+            }
+          end
+        }
+        molecules
       }
-      molecules
-    }
+    )
   end
 
   # Filename without the dot-and-extension.
