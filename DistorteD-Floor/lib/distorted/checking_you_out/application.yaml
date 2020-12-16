@@ -1,6 +1,6 @@
-# Define our own type to trigger Last Resort instead of abusing application/x-imagemap :)
+# Define our own type to trigger fallback copy instead of abusing application/x-imagemap :)
 - !ruby/object:MIME::Type
-  content-type: application/x.distorted.last-resort
+  content-type: application/x.distorted.never-let-you-down
   encoding: 8bit
   xrefs:
     person:

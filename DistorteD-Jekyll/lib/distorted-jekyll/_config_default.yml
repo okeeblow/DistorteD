@@ -33,7 +33,7 @@ distorted:
   # <img> tag around the original media file?
   # If not, the site build will fail when an unrecognized
   # file is encountered.
-  last_resort: true
+  never_let_you_down: true
 
   # Configure DistorteD format changes by media_type, then by sub_type.
   # The list of target formats is plain text, media_type/sub_type.
