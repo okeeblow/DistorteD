@@ -5,7 +5,7 @@ require 'distorted/checking_you_out'
 module Jekyll
   module DistorteD
     module Molecule
-      module LastResort
+      module NeverLetYouDown
 
 
         LOWER_WORLD = Hash[
@@ -15,6 +15,7 @@ module Jekyll
             :href => Cooltrainer::Compound.new(:href, blurb: 'Hyperlink reference for this element.')
           ]
         ]
+        OUTER_LIMITS = Hash[CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'] => nil]
 
         # This is one of the few render methods that will be defined in JekyllLand.
         define_method(CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'].distorted_method) { |*a, **k, &b|
