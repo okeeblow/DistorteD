@@ -54,14 +54,20 @@ module Cooltrainer
     attr_reader :element, :isotopes, :valid, :default, :blurb
 
     def initialize(key_or_keys, valid: nil, default: nil, blurb: nil)
+      # Intentionally using Array for isotopes to guarantee order (vs Set)
+      # so we can tell the "real" element from any aliases,
+      # because the primary attribute name will always be the first.
       if key_or_keys.is_a?(Enumerable)
         @element = key_or_keys.first
-        @isotopes = key_or_keys.to_set
+        @isotopes = key_or_keys.to_a
       else
         @element = key_or_keys
-        @isotopes = Set[key_or_keys]
+        @isotopes = Array[key_or_keys]
       end
-      @valid = valid
+      @valid = case valid
+      when Set then valid.to_a
+      else valid
+      end
       @default = default
       @blurb = blurb
       super(element: element, valid: valid, default: default, blurb: blurb)
