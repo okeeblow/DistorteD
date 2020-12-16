@@ -100,6 +100,21 @@ module Jekyll
         raise MediaTypeNotImplementedError.new(@name) if @type_mars.empty?
         @type_mars
       end
+
+      # Returns an Array[Change] for every intended output variation
+      def changes
+        type_mars.reduce(Array[]) { |wanted, lower|
+          # Handle empty sub_types by compacting and splatting a sub-Array
+          config = the_setting_sun(:changes, *[lower.media_type, lower.sub_type.split('+').first].compact)
+          config = (config.nil? || config&.empty?) ? Set[lower] : config.map {|t| CHECKING::YOU::OUT[t]}
+          config.each { |t|
+            vers = the_setting_sun(:outer_limits, *[t.media_type, t.sub_type.split('+').first].compact) || [{:tag=>:full, :crop=>:none}]
+            wanted.concat(vers.map{ |v|
+              Cooltrainer::Change.new(t, name: @name, **v)
+            })
+          }
+          wanted
+        }
       end
 
       # Return any arguments given by the user to our Liquid tag.
