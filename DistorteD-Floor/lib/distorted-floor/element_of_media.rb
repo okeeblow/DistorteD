@@ -6,7 +6,13 @@ require 'distorted/checking_you_out'
 module Cooltrainer
 
 
-  BOOLEAN_VALUES = Set[0, 1, false, true, '0'.freeze, '1'.freeze, 'false'.freeze, 'true'.freeze]
+  # Fun Ruby Fact™: `false` is always object_id 0
+  # https://skorks.com/2009/09/true-false-and-nil-objects-in-ruby/
+  # irb(main):650:0> true.object_id
+  # => 20
+  # irb(main):651:0> false.object_id
+  # => 0
+  BOOLEAN_VALUES = Set[false, true]
 
 
   Change = Struct.new(:type, :name, :molecule, :tag, :extra, keyword_init: true) do
