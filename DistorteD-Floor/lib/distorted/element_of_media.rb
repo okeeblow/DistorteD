@@ -25,7 +25,7 @@ module Cooltrainer
       # Don't change the filename of full-size variations
       @filetag = tag == :full ? ''.freeze : '-'.concat(tag.to_s)
       # Use the original extname for LastResort
-      @ext = type == CHECKING::YOU::OUT['application/x.distorted.last-resort'] ? File.extname(name) : type.preferred_extension
+      @ext = type == CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'] ? File.extname(name) : type.preferred_extension
       # Handle LastResort for files that might be a bare name with no extension
       @dot = '.'.freeze unless @ext.nil? || @ext&.empty?
       @basename = File.basename(name, '.*')
