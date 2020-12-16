@@ -44,7 +44,7 @@ module Jekyll::DistorteD::StaticState
     # Assume modified for the sake of freshness :)
     modified = true
 
-    site_dest = Jekyll::DistorteD::Setting::config(:destination).to_s
+    site_dest = the_setting_sun(:jekyll, :destination).to_s
     if Dir.exist?(site_dest)
       if Dir.exist?(File.join(site_dest, @relative_dest))
         extant_files = Dir.entries(File.join(site_dest, @relative_dest)).to_set

@@ -27,7 +27,7 @@ distorted:
   # Liquid template caching is default as of Jekyll 4.0,
   # but it can be disabled if needed.
   # I just can't think of when it would be needed :)
-  cache_templates: true
+  remember_me: true
 
   # Should unrecognized media-types fall back to a bare
   # <img> tag around the original media file?
