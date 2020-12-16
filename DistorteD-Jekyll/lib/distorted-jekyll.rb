@@ -40,10 +40,6 @@ if [
   Hash.method_defined?(:transform_keys),  # 2.5
   Enumerable.method_defined?(:filter_map),  # 2.7
 ].all?
-  # Monkey-patch preferred_extensions iff we're going to load.
-  # My JPEGs coming out with a '.jpeg' file extension just annoys me so much.
-  require 'distorted/monkey_business/mnemoniq'
-
   # Monkey-patch Jekyll::Cleaner to not nuke DistorteD-generated variations
   # for our media files. This makes DistorteD fast!
   require 'distorted-jekyll/monkey_business/jekyll/cleaner'
