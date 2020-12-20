@@ -167,8 +167,8 @@ class Cooltrainer::DistorteD::Floor
       change.each { |c|
         filename = File.expand_path(c.name, dest_root)
 
-        if self.respond_to?(c.type.distorted_method)
-          self.send(c.type.distorted_method, filename, **c)
+        if self.respond_to?(c.type.distorted_file_method)
+          self.send(c.type.distorted_file_method, filename, **c)
         else
           raise MediaTypeOutputNotImplementedError.new(filename, c.type, self.class.name)
         end

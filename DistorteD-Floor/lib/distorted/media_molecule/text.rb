@@ -90,7 +90,7 @@ module Cooltrainer::DistorteD::Molecule::Text
   )
 
   self::OUTER_LIMITS.keys.each { |t|
-    define_method(t.distorted_method) { |*a, **k, &b|
+    define_method(t.distorted_file_method) { |*a, **k, &b|
       copy_file(*a, **k, &b)
     }
   }

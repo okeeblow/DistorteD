@@ -33,7 +33,7 @@ class Cooltrainer::DistorteD::Booth
     type = CHECKING::YOU::OUT['image/x-portable-pixmap']
 
     tkd = TkDistorteD.new(File.expand_path(@name))
-    tkd.send(type.distorted_method, temp.path)
+    tkd.send(type.distorted_file_method, temp.path)
     temp.close
 
     root = TkRoot.new(

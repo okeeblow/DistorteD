@@ -93,19 +93,19 @@ module Jekyll::DistorteD::StaticState
     changes&.each { |change|
       filename = File.join(dest_root, @relative_dest, change.name || @name)
 
-      if self.respond_to?(change.type.distorted_method)
-        Jekyll.logger.debug("DistorteD::#{change.type.distorted_method}", filename)
-        self.send(change.type.distorted_method, filename, **change)
+      if self.respond_to?(change.type.distorted_file_method)
+        Jekyll.logger.debug("DistorteD::#{change.type.distorted_file_method}", filename)
+        self.send(change.type.distorted_file_method, filename, **change)
       elsif extname == ".#{change.type.preferred_extension}"
         Jekyll.logger.debug(@name, <<~RAWCOPY
-            No #{change.type.distorted_method} method is defined,
+            No #{change.type.distorted_file_method} method is defined,
             but the intended output type #{change.type.to_s} is the same
             as the input type, so I will fall back to copying the raw file.
           RAWCOPY
         )
         copy_file(filename)
       else
-        Jekyll.logger.error(@name, "Missing rendering method #{type.distorted_method}")
+        Jekyll.logger.error(@name, "Missing rendering method #{type.distorted_file_method}")
         raise MediaTypeOutputNotImplementedError.new(filename, type, self.class.name)
       end
     }

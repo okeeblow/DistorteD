@@ -18,7 +18,7 @@ module Jekyll
         OUTER_LIMITS = Hash[CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'] => nil]
 
         # This is one of the few render methods that will be defined in JekyllLand.
-        define_method(CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'].distorted_method) { |*a, **k, &b|
+        define_method(CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'].distorted_file_method) { |*a, **k, &b|
           copy_file(*a, **k, &b)
         }
 

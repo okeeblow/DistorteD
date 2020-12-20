@@ -35,7 +35,7 @@ module Cooltrainer::DistorteD::Molecule::Font
   # Maybe T0DO: Process output with TTFunk instead of only using it
   # to generate images and metadata.
   self::OUTER_LIMITS.keys.each { |t|
-    define_method(t.distorted_method) { |*a, **k, &b|
+    define_method(t.distorted_file_method) { |*a, **k, &b|
       copy_file(*a, **k, &b)
     }
   }

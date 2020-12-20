@@ -35,7 +35,7 @@ module Cooltrainer::DistorteD::Molecule::SVG
     @vips_image ||= Vips::Image.new_from_file(path)
   end
 
-  define_method(CHECKING::YOU::OUT['image/svg+xml'].distorted_method) { |dest, *a, **k, &b|
+  define_method(CHECKING::YOU::OUT['image/svg+xml'].distorted_file_method) { |dest, *a, **k, &b|
     if k.dig(:optimize)
       SvgOptimizer.optimize_file(path, dest, SvgOptimizer::DEFAULT_PLUGINS)
     else
