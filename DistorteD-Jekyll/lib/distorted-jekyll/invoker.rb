@@ -92,7 +92,7 @@ module Jekyll
       # Returns a Set of DD MIME::Types descriving our file,
       # optionally falling through to a plain file copy.
       def type_mars
-        @type_mars ||= (CHECKING::YOU::OUT(@name) & lower_world.keys.to_set).tap { |gemini|
+        @type_mars ||= (CHECKING::YOU::OUT(path, so_deep: true) & lower_world.keys.to_set).tap { |gemini|
           if gemini.empty? && the_setting_sun(:never_let_you_down)
             gemini << CHECKING::YOU::OUT['application/x.distorted.never-let-you-down']
           end

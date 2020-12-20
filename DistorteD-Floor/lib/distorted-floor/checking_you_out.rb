@@ -40,9 +40,9 @@ module CHECKING
     # based on the file extension. If the file extension is unavailable—
     # or if `so_deep` is enabled—the `path` will be used as an actual
     # path to look at the magic bytes with ruby-filemagic.
-    def self.OUT(path, so_deep: false)
+    def self.OUT(path, so_deep: false, only_one_test: false)
       return Set[] if path.nil?
-      if not (so_deep || types.type_for(path).empty?)
+      if not (only_one_test || types.type_for(path).empty?)
         # NOTE: `type_for`'s return order is supposed to be deterministic:
         # https://github.com/mime-types/ruby-mime-types/issues/148
         # My use case so far has never required order but has required
@@ -54,7 +54,7 @@ module CHECKING
         # irb(main)> MIME::Types.type_for('lol.ttf')).to_set
         # => #<Set: {#<MIME::Type: font/ttf>, #<MIME::Type: application/font-sfnt>, #<MIME::Type: application/x-font-truetype>, #<MIME::Type: application/x-font-ttf>}>
         return types.type_for(path).to_set
-      elsif path[0] != '.'.freeze  # Support taking hypothetical file extensions (e.g. '.jpg') without stat()ing anything.
+      elsif (so_deep && path[0] != '.'.freeze)  # Support taking hypothetical file extensions (e.g. '.jpg') without stat()ing anything.
         # Did we fail to guess any MIME::Types from the given filename?
         # We're going to have to look at the actual file
         # (or at least its first four bytes).
