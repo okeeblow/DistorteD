@@ -12,6 +12,11 @@ class Cooltrainer::DistorteD::Booth
   class TkDistorteD
     include Cooltrainer::DistorteD::Invoker
 
+    # Returns an absolute String path to the source file.
+    def path
+      File.expand_path(@name)
+    end
+
     def initialize(src)
       @name = src
     end
@@ -20,6 +25,9 @@ class Cooltrainer::DistorteD::Booth
 
   def initialize(argv)
     @name = argv.shift
+    unless @name
+      raise ArgumentError.new('Please provide a media file to open.')
+    end
 
     temp = Tempfile.new([File.basename(@name, '.*'), '.ppm'])
     type = CHECKING::YOU::OUT['image/x-portable-pixmap']
