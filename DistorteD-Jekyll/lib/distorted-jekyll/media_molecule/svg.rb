@@ -11,7 +11,6 @@ module Jekyll
         include Cooltrainer::DistorteD::Molecule::SVG
 
         def render_to_output_buffer(context, output)
-          super
           begin
             # Liquid doesn't seem able to reference symbolic keys,
             # so convert everything to string for template.

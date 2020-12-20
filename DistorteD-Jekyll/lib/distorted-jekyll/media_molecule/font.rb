@@ -11,7 +11,6 @@ module Jekyll
         include Cooltrainer::DistorteD::Molecule::Font
 
         def render_to_output_buffer(context, output)
-          super
           begin
             filez = files.keep_if{ |f|
               # Strip out all non-displayable media-types, e.g. the actual text/whatever.

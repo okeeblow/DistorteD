@@ -46,7 +46,6 @@ module Jekyll
         end
 
         def render_to_output_buffer(context, output)
-          super
           begin
             # TODO: iOS treats our <object> like an <img>,
             # showing only the first page with transparency and stretched to the

@@ -133,12 +133,6 @@ module Jekyll
       # https://github.com/jekyll/jekyll/blob/HEAD/lib/jekyll/renderer.rb
       # https://jekyllrb.com/tutorials/orderofinterpretation/
       def render(context)
-        render_to_output_buffer(context, '')
-      end
-
-      # A future Liquid version (5.0?) will call this function directly
-      # instead of calling render()
-      def render_to_output_buffer(context, output)
         # Get Jekyll Site object back from tag rendering context registers so we
         # can get configuration data and path information from it and
         # then pass it along to our StaticFile subclass.
@@ -174,10 +168,26 @@ module Jekyll
           @relative_dest << Jekyll::DistorteD::Setting::PATH_SEPARATOR
         end
 
+        # Duplicated from Floor Invoker#method_missing because all Molecules
+        # share the same render_to_output_buffer method name for now,
+        # so they won't be caught and plugged there like the Type-specific
+        # file-writing methods.
+        unless self.singleton_class.instance_variable_get(:@media_molecules)
+          unless outer_limits.empty?
+            self.singleton_class.instance_variable_set(
+              :@media_molecules,
+              outer_limits.keys.reduce(Set[]) { |molecules, molecule|
+                self.singleton_class.prepend(molecule)
+                molecules.add(molecule)
+              }
+            )
+          end
+        end
+
         # Add our new file to the list that will be handled
         # by Jekyll's built-in StaticFile generator.
         @site.static_files << self
-        output
+        render_to_output_buffer(context, '')
       end
 
       # Generic Liquid template loader that will be used in every MediaMolecule.
@@ -189,7 +199,7 @@ module Jekyll
           # Use a given filename, or detect one based on media-type.
           if name.nil?
             # e.g. Jekyll::DistorteD::Molecule::Image -> 'image.liquid'
-            name = "#{self.singleton_class.instance_variable_get(:@media_molecule).first.name.gsub(/^.*::/, '').downcase}.liquid".freeze
+            name = "#{self.singleton_class.instance_variable_get(:@media_molecules).first.name.gsub(/^.*::/, '').downcase}.liquid".freeze
           elsif not name.include?('.liquid'.freeze)
             # Support filename arguments with and without file extension.
             # The given String might already be frozen, so concatenating

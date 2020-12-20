@@ -24,7 +24,6 @@ module Jekyll
 
 
         def render_to_output_buffer(context, output)
-          super
           begin
             output << parse_template.render({
               'name' => @name,
