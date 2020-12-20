@@ -8,7 +8,30 @@ require 'ruby-filemagic'
 
 module MIME
   class Type
-    # Give MIME::Type objects an easy way to get the DistorteD saver method name.
+
+    # Provide a few variations on the base :distorted_method for mixed workflows
+    # where it isn't feasible to overload a single method name and call :super.
+    # Jekyll, for example, renders its output markup upfront, collects all of
+    # the StaticFiles (or StaticStatic-includers, in our case), then calls their
+    # :write methods all at once after the rest of the site is built,
+    # and this precludes us from easily sharing method names between layers.
+    #
+    # The exact effects are up to the implementation, but in general these will be used for:
+
+    # Writes a file of this Type to a given path on a filesystem.
+    def distorted_file_method; "to_#{distorted_method}_file".to_sym; end
+
+    # Returns a String buffer containing the file in this Type.
+    def distorted_buffer_method; "to_#{distorted_method}_buffer".to_sym; end
+
+    # Returns a context-appropriate Object for displaying the file as this Type.
+    # Might be e.g. a String buffer containing Rendered Liquid in Jekylland,
+    # or a Type-appropriate frame in some GUI toolkit in DD-Booth.
+    def distorted_template_method; "render_#{distorted_method}".to_sym; end
+
+    private
+
+    # Provide a consistent base method name for all DistorteD operations.
     def distorted_method
       # Standardize MIME::Types' media_type+sub_type to DistorteD method mapping
       # by replacing all the combining characters with underscores (snake case)
@@ -21,7 +44,7 @@ module MIME
       # :to_application_vnd_openxmlformats_officedocument_wordprocessingml_document
       # which would most likely be defined by the :included method of a library-specific
       # module for handling OpenXML MS Office documents.
-      "to_#{self.media_type}_#{self.sub_type.gsub(/[-+\.]/, '_'.freeze)}".to_sym
+      "#{self.media_type}_#{self.sub_type.gsub(/[-+\.]/, '_'.freeze)}".to_sym
     end
   end
 end

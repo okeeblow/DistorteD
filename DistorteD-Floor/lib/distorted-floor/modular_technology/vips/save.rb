@@ -128,7 +128,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # e.g. a supported Type 'image/png' will define a method :to_image_png in any
   # context where this module is included.
   self::OUTER_LIMITS.each_key { |t|
-    define_method(t.distorted_method) { |*a, **k, &b|
+    define_method(t.distorted_file_method) { |*a, **k, &b|
       # https://bugs.ruby-lang.org/issues/10856
       k.empty? ? vips_save(*a, &b) : vips_save(*a, **k, &b)
     }

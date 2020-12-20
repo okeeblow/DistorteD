@@ -33,7 +33,7 @@ module Cooltrainer::DistorteD::Molecule::PDF
     end
   end
 
-  def to_application_pdf(*a, **k, &b)
+  def to_application_pdf_file(*a, **k, &b)
     copy_file(*a, **k, &b)
   end
 
