@@ -16,8 +16,8 @@ module Jekyll
             # so convert everything to string for template.
             # Not stripping :full tags like Image because all of our
             # SVG variations will be full-res for now.
-            filez = files.map{ |f|
-              f.transform_values(&:to_s).transform_keys(&:to_s)
+            filez = changes.map{ |f|
+              f.to_hash.transform_values(&:to_s).transform_keys(&:to_s)
             }
             output << parse_template.render({
               'name' => @name,
