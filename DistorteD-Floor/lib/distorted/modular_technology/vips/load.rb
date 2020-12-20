@@ -57,7 +57,8 @@ module Cooltrainer::DistorteD::Technology::Vips::Load
   #
   VIPS_LOADERS = Cooltrainer::DistorteD::Technology::Vips::vips_get_types('VipsForeignLoad').keep_if { |t|
     Array[
-      t.media_type != 'text'.freeze,
+      t.media_type != 'application'.freeze,  # e.g. application/pdf
+      t.media_type != 'text'.freeze,  # e.g. text/csv
     ].all? && Array[
       t.sub_type.include?('zip'.freeze),
       # Skip declaring SVG here since I want to handle it in a Vector-only Molecule
