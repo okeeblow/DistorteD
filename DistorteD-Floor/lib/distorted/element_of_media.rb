@@ -16,7 +16,10 @@ module Cooltrainer
 
 
   Change = Struct.new(:type, :name, :molecule, :tag, :extra, keyword_init: true) do
+
     attr_reader :type, :molecule, :tag, :extra
+
+    FALLBACK_TYPE = CHECKING::YOU::OUT['application/x.distorted.never-let-you-down']
 
     def initialize(type, name: nil, molecule: nil, tag: :full, **extra)
       @type = type
@@ -25,12 +28,18 @@ module Cooltrainer
       # Don't change the filename of full-size variations
       @filetag = tag == :full ? ''.freeze : '-'.concat(tag.to_s)
       # Use the original extname for LastResort
-      @ext = type == CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'] ? File.extname(name) : type.preferred_extension
+      @ext = type == FALLBACK_TYPE ? File.extname(name) : type.preferred_extension
       # Handle LastResort for files that might be a bare name with no extension
       @dot = '.'.freeze unless @ext.nil? || @ext&.empty?
       @basename = File.basename(name, '.*')
       @extra = extra
       super(type: type, name: name, molecule: molecule, tag: tag, extra: extra)
+
+      # Define accessors for context-specific :extra keys/values that aren't normal Struct members.
+      extra.each_key{ |k|
+        self.singleton_class.define_method(k) {self.extra.dig(k)}
+        self.singleton_class.define_method("#{k}=".to_sym) {|v| self.extra.store(k, v)}
+      }
     end
 
     def name
