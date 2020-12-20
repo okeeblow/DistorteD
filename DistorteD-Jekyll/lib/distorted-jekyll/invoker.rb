@@ -103,14 +103,31 @@ module Jekyll
         @type_mars
       end
 
-      # Returns an Array[Change] for every intended output variation
+      # Returns an Array[Change] for every intended output Type
+      # and every variation (e.g. resolution, bitrate) on each Type.
       def changes
-        type_mars.reduce(Array[]) { |wanted, lower|
-          # Handle empty sub_types by compacting and splatting a sub-Array
+        # The available/desired output Media Types and (variations on those Types)
+        # are based on the input Type and the Molecule(s) available to service those Types.
+        # Use an Array, since order might be important here when generating many variations
+        # at multiple levels of the DistorteD stack, e.g. the actual files on the Floor level
+        # and the templates/markup here in the Jekyll level.
+        @changes ||= type_mars.reduce(Array[]) { |wanted, lower|
+          # Query our configuration for Type changes, e.g. image/webp to (image/png and image/webp).
+          # Handle empty sub_types by compacting and splatting a sub-Array.
           config = the_setting_sun(:changes, *[lower.media_type, lower.sub_type.split('+').first].compact)
+          # If there is no config, treat it as a change to the same Type as the input,
+          # otherwise instantiate each "mediatype/subtype" config String to a Type.
           config = (config.nil? || config&.empty?) ? Set[lower] : config.map {|t| CHECKING::YOU::OUT[t]}
+          # Query our configuration again for variations on each Type.
+          # For example, one single image Type may want multiple resolutions
+          # to enable responsive <picture> tags, or a single video Type may want
+          # multiple bitrates for adaptive streaming.
           config.each { |t|
+            # As before, if there is nothing in the config just treat it
+            # as a change to the full resolution/bitrate/whatever as the input.
             vers = the_setting_sun(:outer_limits, *[t.media_type, t.sub_type.split('+').first].compact) || [{:tag=>:full, :crop=>:none}]
+            # Instantiate each variation of each Type into a Change struct
+            # that will handle some of the details like output-filename generation.
             wanted.concat(vers.map{ |v|
               Cooltrainer::Change.new(t, name: @name, **v)
             })
