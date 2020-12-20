@@ -196,7 +196,7 @@ module Jekyll
       # Callers will call `render(**{:template => vars})` on the Object returned
       # by this method.
       def parse_template(site: nil, name: nil)
-        site = site || @site || Jekyll.sites.first
+        site = site || @site || Jekyll.sites&.first
         begin
           # Use a given filename, or detect one based on media-type.
           if name.nil?
@@ -215,7 +215,7 @@ module Jekyll
           )
 
           # Jekyll's Liquid renderer caches in 4.0+.
-          if Jekyll::DistorteD::Setting::the_setting_sun(:remember_me)
+          if the_setting_sun(:remember_me)
             # file(path) is the caching function, with path as the cache key.
             # The `template` here will be the full path, so no versions of this
             # gem should ever conflict. For example, right now during dev it's:

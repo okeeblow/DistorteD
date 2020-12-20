@@ -28,10 +28,10 @@ module Jekyll
           }.map { |m|
             m.sub_type
           }.compact.to_set
-          files.keep_if{|f| f.key?(:width) or f.key?(:height)}.each{ |f|
-            if sub_types.include?(f[:type]&.sub_type)
+          changes.keep_if{|f| f.extra&.key?(:width) or f.extra&.key?(:height)}.each{ |f|
+            if sub_types.include?(f.type&.sub_type)
               if biggest_ver
-                if f[:width] > biggest_ver[:width]
+                if f.extra[:width] > biggest_ver.extra[:width]
                   biggest_ver = f
                 end
               else
@@ -41,19 +41,7 @@ module Jekyll
           }
           # Return the filename of the biggest matched variation,
           # otherwise use the original filename.
-          biggest_ver&.dig(:name) || @name
-        end
-
-        def outer_limits(*keys)
-          config = super
-          if config.empty?
-            Set[{
-              tag: :full,
-              crop: :none,
-            }]
-          else
-            config
-          end
+          biggest_ver&.name || @name
         end
 
         def render_to_output_buffer(context, output)
@@ -62,8 +50,8 @@ module Jekyll
             # so convert everything to string for template.
             # Remove full-size images from <sources> list before generating.
             # Those should only be linked to, not displayed.
-            filez = files.keep_if{|f| f.key?(:width) or f.key?(:height)}.map{ |f|
-              f.transform_values(&:to_s).transform_keys(&:to_s)
+            filez = changes.keep_if{|f| f.extra&.key?(:width) or f.extra&.key?(:height)}.map{ |f|
+              f.to_hash.transform_values(&:to_s).transform_keys(&:to_s)
             }
 
             output << parse_template.render({

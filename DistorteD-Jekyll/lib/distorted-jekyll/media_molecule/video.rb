@@ -57,7 +57,7 @@ module Jekyll
           # Assume modified for the sake of freshness :)
           modified = true
 
-          site_dest = the_setting_sun(:destination).to_s
+          site_dest = the_setting_sun(:jekyll, :destination).to_s
           if Dir.exist?(site_dest)
 
             dd_dest = File.join(site_dest, @relative_dest)
