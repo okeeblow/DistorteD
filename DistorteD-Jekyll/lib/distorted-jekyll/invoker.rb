@@ -76,6 +76,8 @@ module Jekyll
           not [nil, ''.freeze].include?(val)
         }.transform_keys(&:to_sym).transform_values { |val|
           case val
+          when 'true' then true
+          when 'false' then false
           when String then (val.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY) ? val.to_sym : val.freeze
           else val
           end
