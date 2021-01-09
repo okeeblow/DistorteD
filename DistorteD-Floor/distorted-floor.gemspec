@@ -26,16 +26,35 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = '>= 2.7.0'
 
-  spec.add_development_dependency 'bundler', '~> 2.0'
-  spec.add_development_dependency 'rake', '~> 10.0'
-  spec.add_development_dependency 'minitest', '~> 5.0'
+  spec.add_development_dependency 'bundler', '~> 2.2'  # https://bundler.io/ — https://github.com/rubygems/rubygems/tree/master/bundler
+  spec.add_development_dependency 'rake', '~> 13.0'  # https://ruby.github.io/rake/ — https://github.com/ruby/rake
+  spec.add_development_dependency 'minitest', '~> 5.14'  # http://docs.seattlerb.org/minitest/ — https://github.com/seattlerb/minitest
 
-  spec.add_dependency 'gstreamer', '~> 3.4'
-  spec.add_dependency 'mime-types', '~> 3.0'
-  spec.add_dependency 'ruby-filemagic', '~> 0.7'
-  spec.add_dependency 'ruby-vips', '~> 2.0'
-  spec.add_dependency 'svg_optimizer', '~> 0.2.5'
-  spec.add_dependency 'hexapdf', '~> 0.11.9'
-  spec.add_dependency 'ttfunk', '~> 1.6'
-  spec.add_dependency 'charlock_holmes', '~> 0.7'
+  # Kaital Struct seems like it might be a good fit for DistorteD,
+  # but it's read-only in 1.x and I think it's generally kinda awkward
+  # idk the all-YAML separate-compiler thing is a huge turnoff for me
+  # https://doc.kaitai.io/
+  # https://doc.kaitai.io/faq.html#writing
+  # https://github.com/kaitai-io/kaitai_struct_ruby_runtime
+
+  # https://github.com/dmendel/bindata will probably be useful.
+
+  # Common
+  spec.add_dependency 'mime-types', '~> 3.3'  # https://github.com/mime-types/ruby-mime-types
+  spec.add_dependency 'ruby-filemagic', '~> 0.7'  http://blackwinter.github.io/ruby-filemagic/ https://github.com/blackwinter/ruby-filemagic
+  # FYI: Unmaintained!! https://github.com/blackwinter/ruby-filemagic/commit/e1f2efd07da4130484f06f58fed016d9eddb4818
+
+  # Images
+  spec.add_dependency 'ruby-vips', '~> 2.0'  # https://github.com/libvips/ruby-vips
+  spec.add_dependency 'svg_optimizer', '~> 0.2.5'  # https://github.com/fnando/svg_optimizer
+
+  # Video
+  spec.add_dependency 'gstreamer', '~> 3.4'  # https://ruby-gnome2.osdn.jp/ — https://github.com/ruby-gnome/ruby-gnome/tree/master/gstreamer/
+
+  # Documents
+  spec.add_dependency 'hexapdf', '~> 0.13'  # https://github.com/gettalong/hexapdf — https://hexapdf.gettalong.org/
+  spec.add_dependency 'charlock_holmes', '~> 0.7'  # https://github.com/brianmario/charlock_holmes
+
+  # Computer-y formats
+  spec.add_dependency 'ttfunk', '~> 1.6'  # https://github.com/prawnpdf/ttfunk — https://prawnpdf.org/
 end
