@@ -1,7 +1,6 @@
 # Define our own type to trigger fallback copy instead of abusing application/x-imagemap :)
 - !ruby/object:MIME::Type
   content-type: application/x.distorted.never-let-you-down
-  encoding: 8bit
   xrefs:
     person:
       - okeeblow
