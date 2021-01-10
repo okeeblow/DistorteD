@@ -1,11 +1,44 @@
 require 'set'
 
-require 'mime/types'
-require 'ruby-filemagic'
+# CYO encapsulate all concepts related to media file identification for DistorteD!
 
-# General resources:
+# General media type resources:
 # https://www.iana.org/assignments/media-types/media-types.xhtml
 
+
+# The Gem `ruby-mime-types` and its associated `mime-types-data` provide our core classes:
+# https://github.com/mime-types/ruby-mime-types
+require 'mime/types'
+#
+# - Its MIME Types database ensures I don't have to constantly update DD with
+#   new filetypes as they are invented, like how AVIF is still currently brand-new as of 2021.
+# - Our main Type search method — :OUT() — wraps `MIME::Types.type_for`/`MIME::Types[]`
+#   to identify media types based on filename alone (e.g. even for hypothetical files).
+# - The Object we give callers will be a `MIME::Type`, not anything wrapped/renamed.
+# - I use its Loader class and YAML structure to ship additional Type definitions local to DD.
+#
+# NOTE: Type objects returned from the unwrapped MIME::Types interfaces will not have equality
+#       with instances of the same media type from CYO! This is because we load our own database.
+#   irb(main)> MIME::Types['image/jpeg'].object_id
+#   => 136400
+#   irb(main)> CHECKING::YOU::OUT['image/jpeg'].object_id
+#   => 90800
+
+
+# The Gem `ruby-filemagic` provides the ability to inspect the magic bytes of actual on-disk files.
+# https://github.com/blackwinter/ruby-filemagic
+# http://blackwinter.github.io/ruby-filemagic/
+#
+# NOTE: Unmaintained!
+# https://github.com/blackwinter/ruby-filemagic/commit/e1f2efd07da4130484f06f58fed016d9eddb4818
+#
+# Might consider replacing this with an FFI filemagic to eliminate the native-code compilation.
+# https://rubygems.org/gems/glongman-ffiruby-filemagic/
+# https://stuart.com/blog/ruby-bindings-extensions/
+require 'ruby-filemagic'
+
+
+# Monkey-patch some DistorteD-specific methods into MIME::Type objects.
 module MIME
   class Type
 
@@ -15,24 +48,36 @@ module MIME
     # the StaticFiles (or StaticStatic-includers, in our case), then calls their
     # :write methods all at once after the rest of the site is built,
     # and this precludes us from easily sharing method names between layers.
-    #
-    # The exact effects are up to the implementation, but in general these will be used for:
+    DISTORTED_METHOD_PREFIXES = Hash[
+      :buffer => 'to'.freeze,
+      :file => 'write'.freeze,
+      :template => 'render'.freeze,
+    ]
+    SUB_TYPE_SEPARATORS = /[-_+\.]/
 
-    # Writes a file of this Type to a given path on a filesystem.
-    def distorted_file_method; "to_#{distorted_method}_file".to_sym; end
+    # Returns a Symbol name of the method that should return a String buffer containing the file in this Type.
+    def distorted_buffer_method; "#{DISTORTED_METHOD_PREFIXES[:buffer]}_#{distorted_method_suffix}".to_sym; end
 
-    # Returns a String buffer containing the file in this Type.
-    def distorted_buffer_method; "to_#{distorted_method}_buffer".to_sym; end
+    # Returns a Symbol name of the method that should write a file of this Type to a given path on a filesystem.
+    def distorted_file_method; "#{DISTORTED_METHOD_PREFIXES[:file]}_#{distorted_method_suffix}".to_sym; end
 
-    # Returns a context-appropriate Object for displaying the file as this Type.
+    # Returns a Symbol name of the method that should returns a context-appropriate Object
+    # for displaying the file as this Type.
     # Might be e.g. a String buffer containing Rendered Liquid in Jekylland,
     # or a Type-appropriate frame in some GUI toolkit in DD-Booth.
-    def distorted_template_method; "render_#{distorted_method}".to_sym; end
+    def distorted_template_method; "#{DISTORTED_METHOD_PREFIXES[:template]}_#{distorted_method_suffix}".to_sym; end
+
+    # Returns an Array[Array[String]] of human-readable keys we can use for our YAML config,
+    # e.g. :media_type 'image' & :sub_type 'svg+xml' would be split to ['image', 'svg'].
+    # `nil` `:sub_type`s will just be compacted out.
+    # Every non-nil :media_type will also request a key path [media_type, '*']
+    # to allow for similar-type defaults, e.g. every image type outputting a fallback.
+    def settings_paths; [[self.media_type, '*'.freeze], [self.media_type, self.sub_type&.split('+'.freeze)&.first].compact]; end
 
     private
 
-    # Provide a consistent base method name for all DistorteD operations.
-    def distorted_method
+    # Provide a consistent base method name for context-specific DistorteD operations.
+    def distorted_method_suffix
       # Standardize MIME::Types' media_type+sub_type to DistorteD method mapping
       # by replacing all the combining characters with underscores (snake case)
       # to match Ruby conventions:
@@ -44,10 +89,11 @@ module MIME
       # :to_application_vnd_openxmlformats_officedocument_wordprocessingml_document
       # which would most likely be defined by the :included method of a library-specific
       # module for handling OpenXML MS Office documents.
-      "#{self.media_type}_#{self.sub_type.gsub(/[-+\.]/, '_'.freeze)}".to_sym
-    end
+      "#{self.media_type}_#{self.sub_type.gsub(SUB_TYPE_SEPARATORS, '_'.freeze)}"
+    end  # distorted_method_suffix
   end
 end
+
 
 module CHECKING
   class YOU

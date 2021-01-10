@@ -88,8 +88,8 @@ module Cooltrainer::DistorteD::Invoker
   # Any call to a MIME::Type's distorted_method will end up here unless
   # the Molecule that defines it has been `prepend`ed to our instance.
   def method_missing(meth, *args, **kwargs, &block)
-    # Only consider method names with our prefix.
-    if meth.to_s.start_with?('to_'.freeze)
+    # Only consider method names with our prefixes.
+    if MIME::Type::DISTORTED_METHOD_PREFIXES.values.map(&:to_s).include?(meth.to_s.split(MIME::Type::SUB_TYPE_SEPARATORS)[0])
       # TODO: Might need to handle cases here where the Set[Molecule]
       # exists but none of them defined our method.
       unless self.singleton_class.instance_variable_get(:@media_molecules)
@@ -107,8 +107,7 @@ module Cooltrainer::DistorteD::Invoker
           #
           # Use :__send__ in case a Molecule defines a `:send` method.
           # https://ruby-doc.org/core/Object.html#method-i-send
-          # https://eregon.me/blog/2019/11/10/the-delegation-challenge-of-ruby27.html
-          return kwargs.empty? ? self.send(meth, *args, &block) : self.send(meth, *args, **kwargs, &block)
+          return self.send(meth, *args, **kwargs, &block)
         end
       end
     end
@@ -119,8 +118,18 @@ module Cooltrainer::DistorteD::Invoker
 
   # Make sure :respond_to? works for yet-unplugged distorted_methods.
   # http://blog.marc-andre.ca/2010/11/15/methodmissing-politely/
-  def respond_to_missing?(meth, *)
-    meth.to_s.start_with?('to_'.freeze) || super
+  def respond_to_missing?(meth, *a)
+    # We can tell if a method looks like one of ours if it has at least 3 (maybe more!)
+    # underscore-separated components with a valid prefix as the first component
+    # and the media-type and sub-type as the rest, e.g.
+    #
+    # irb(main)> 'to_application_pdf'.split('_')
+    # => ["to", "application", "pdf"]
+    #
+    # irb(main)> CHECKING::YOU::OUT('.docx').first.distorted_file_method.to_s.split('_')
+    # => ["write", "application", "vnd", "openxmlformats", "officedocument", "wordprocessingml", "document"]
+    parts = meth.to_s.split(MIME::Type::SUB_TYPE_SEPARATORS)
+    MIME::Type::DISTORTED_METHOD_PREFIXES.values.map(&:to_s).include?(parts[0]) && parts.length > 2 || super(meth, *a)
   end
 
 end
