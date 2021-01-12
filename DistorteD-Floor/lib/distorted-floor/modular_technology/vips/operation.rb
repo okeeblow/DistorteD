@@ -161,7 +161,7 @@ module Cooltrainer::DistorteD::Technology::Vips
   # Returns a Set of MIME::Types based on the "supported suffix" lists generated
   # by libvips and our other functions here in this Module.
   def self.vips_get_types(basename)
-    @@vips_foreign_types[basename.to_sym] ||= self::vips_get_suffixes(basename).reduce(Set[]) { |types, suffix|
+    @@vips_foreign_types[basename.to_sym] ||= self::vips_get_suffixes(basename).each_with_object(Set[]) { |suffix, types|
       types.merge(CHECKING::YOU::OUT(suffix))
     }
   end
@@ -174,7 +174,7 @@ module Cooltrainer::DistorteD::Technology::Vips
   # e.g. 
   # This is unrelated to MIME::Type#preferred_extension!!
   def self.vips_get_suffixes(basename)
-    @@vips_foreign_suffixes[basename.to_sym] ||= self::vips_get_suffixes_per_nickname(basename).values.reduce(Set[]) {|n,s| n.merge(s)}
+    @@vips_foreign_suffixes[basename.to_sym] ||= self::vips_get_suffixes_per_nickname(basename).values.each_with_object(Set[]) {|s,n| n.merge(s)}
   end
 
 
@@ -195,11 +195,10 @@ module Cooltrainer::DistorteD::Technology::Vips
 
   # Returns a Hash[Type] of Set[String] class nicknames supporting that Type.
   def self.vips_get_nicknames_per_type(basename)
-    self::vips_get_nickname_types(basename).reduce(Hash.new{|h,k| h[k] = Set[]}) {|memo,(nickname,type_set)|
+    self::vips_get_nickname_types(basename).each_with_object(Hash.new { |h,k| h[k] = Set[] }) { |(nickname,type_set), memo|
       type_set.each{ |t|
         memo[t] << nickname
       }
-      memo
     }
   end
 
@@ -221,8 +220,7 @@ module Cooltrainer::DistorteD::Technology::Vips
   # duplicate suffixes for every supported suffix variation of a given type,
   #   e.g.  ['.jpg', '.jpe', '.jpeg', '.png], '.gif', '.tif', '.tiff' … ]
   def self.vips_get_suffixes_per_nickname(basename)
-    nickname_suffixes = Hash[]
-    self::vips_get_child_class_nicknames(basename).each{ |nickname|
+    self::vips_get_child_class_nicknames(basename).each_with_object(Hash.new) { |nickname, nickname_suffixes|
       # "Search below basename, return the first class whose name or nickname matches."
       # VipsForeign is a basename for savers and loaders alike.
       foreign_class = Vips::vips_class_find('VipsForeign'.freeze, nickname)
@@ -241,7 +239,6 @@ module Cooltrainer::DistorteD::Technology::Vips
       suffixes = class_summary.scan(/\.\w+\.?\w+/)
       nickname_suffixes.update({nickname => suffixes.to_set}) unless suffixes.empty?
     }
-    nickname_suffixes
   end
 
   # Returns a Set of String class names for libvips' Loaders/Savers.
