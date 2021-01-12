@@ -353,7 +353,7 @@ module Cooltrainer::DistorteD::Technology::Vips
       blurb: 'Visual cropping method',
       valid: self::vips_get_enum_values('VipsInteresting'.freeze),
       default: self::vips_get_option_default('VipsInteresting'.freeze),
-    ))
+    )) if nickname.include?('Save'.freeze)  # Only for savers!!
 
     # All done :)
     options
