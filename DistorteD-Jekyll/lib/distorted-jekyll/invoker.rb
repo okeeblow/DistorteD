@@ -15,6 +15,8 @@ require 'distorted-jekyll/static_state'
 require 'liquid/tag'
 require 'liquid/tag/parser'
 
+require 'distorted-jekyll/molecule'
+
 # Explicitly required for l/t/parser since a1cfa27c27cf4d4c308da2f75fbae88e9d5ae893
 require 'shellwords'
 
