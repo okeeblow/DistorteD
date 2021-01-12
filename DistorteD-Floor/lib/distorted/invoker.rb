@@ -4,71 +4,33 @@ require 'distorted/error_code'
 
 # MIME::Typer
 require 'distorted/checking_you_out'
+require 'distorted/molecule'
 
 # Set.to_hash
 require 'distorted/monkey_business/set'
 require 'set'
 
 
-module Cooltrainer; end
-module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Invoker
-
-  # Discover DistorteD MediaMolecules bundled with this Gem
-  # TODO: and any installed as separate Gems.
-  @@loaded_molecules rescue begin
-    Dir[File.join(__dir__, 'molecule', '*.rb')].each { |molecule| require molecule }
-    @@loaded_molecules = true
-  end
-
-  # Returns a Set[Module] of our discovered MediaMolecules.
-  def media_molecules
-    Cooltrainer::DistorteD::Molecule.constants.map{ |molecule|
-      Cooltrainer::DistorteD::Molecule::const_get(molecule)
-    }.to_set
-  end
-
   # Returns a Hash[MIME::Type] => Hash[MediaMolecule] => Hash[param_alias] => Compound
   def lower_world
-    @@lower_world ||= media_molecules.reduce(
-      Hash.new{|types, type| types[type] = Hash[]}
-    ) { |types, molecule|
-      Set[molecule].merge(molecule.ancestors).each{ |mod|
-        if mod.const_defined?(:LOWER_WORLD)
-          mod.const_get(:LOWER_WORLD).each { |t, elements|
-            types.update(t => {molecule => elements}) { |k,o,n| o.merge(n) }
-          }
-        end
-      }
-      types
+    Cooltrainer::DistorteD::IMPLANTATION(:LOWER_WORLD).each_with_object(
+      Hash.new { |pile, type| pile[type] = Hash[] }
+    ) { |(key, types), pile|
+      types.each { |type, elements| pile.update(type => {key.molecule => elements}) { |k,o,n| o.merge(n) }}
     }
   end
 
   # Returns a Hash[MediaMolecule] => Hash[MIME::Type] => Hash[param_alias] => Compound
   def outer_limits(all: false)
-    # Use the singleton_class instance to avoid pinning a incomplete list to the shared class.
-    if self.singleton_class.instance_variable_defined?(:@outer_limits)
-      return self.singleton_class.instance_variable_get(:@outer_limits)
-    end
-    # Build OUTER_LIMITS of every MediaMolecule if all==true or if there is
-    # no currently-loaded source media file (if `type_mars` is empty),
-    # otherwise just of MediaMolecules relevant to the current instance.
-    self.singleton_class.instance_variable_set(:@outer_limits,
-       ((all || type_mars.empty?) ? media_molecules : type_mars.reduce(Set[]) { |molecules, type|
+    Cooltrainer::DistorteD::IMPLANTATION(
+      :OUTER_LIMITS,
+      (all || type_mars.empty?) ? Cooltrainer::DistorteD::media_molecules : type_mars.each_with_object(Set[]) { |type, molecules|
         molecules.merge(lower_world[type].keys)
-      }).reduce(
-        Hash.new{|molecules, molecule| molecules[molecule] = Hash[]}
-      ) { |molecules, molecule|
-        Set[molecule].merge(molecule.ancestors).each{ |mod|
-          if mod.const_defined?(:OUTER_LIMITS)
-            mod.const_get(:OUTER_LIMITS).each { |t, elements|
-              molecules.update(molecule => {t => elements}) { |k,o,n| o.merge(n) }
-            }
-          end
-        }
-        molecules
-      }
-    )
+      },
+    ).each_with_object(Hash.new { |pile, type| pile[type] = Hash[] }) { |(key, types), pile|
+      types.each { |type, elements| pile.update(key.molecule => {type => elements}) { |k,o,n| o.merge(n) }}
+    }
   end
 
   # Filename without the dot-and-extension.
@@ -96,7 +58,7 @@ module Cooltrainer::DistorteD::Invoker
         unless outer_limits.empty?
           self.singleton_class.instance_variable_set(
             :@media_molecules,
-            outer_limits.keys.reduce(Set[]) { |molecules, molecule|
+            outer_limits.keys.each_with_object(Set[]) { |molecule, molecules|
               self.singleton_class.prepend(molecule)
               molecules.add(molecule)
             }
