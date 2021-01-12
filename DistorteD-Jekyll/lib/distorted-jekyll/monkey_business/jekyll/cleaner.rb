@@ -1,4 +1,5 @@
 require 'set'
+require 'distorted-jekyll/molecule'
 
 module Jekyll
   # Handles the cleanup of a site's destination before it is built or re-built.
@@ -49,6 +50,72 @@ module Jekyll
         Jekyll.logger.debug('DistorteD', "Monkey-patched Jekyll::Cleaner#new_files backtrace: #{e.backtrace}")
         the_old_new_thing.bind(self).()
       end
-    end
+    end  # define_method :new_files
+
+
+    # Private: Creates a regular expression from the config's keep_files array
+    #
+    # Examples
+    #   ['.git','.svn'] with site.dest "/myblog/_site" creates
+    #   the following regex: /\A\/myblog\/_site\/(\.git|\/.svn)/
+    #
+    # Returns the regular expression
+    #
+    # Monkey-patch this to protect DistorteD-generated files from destruction
+    # https://jekyllrb.com/docs/configuration/incremental-regeneration/
+    # when running Jekyll in Incremental mode twice in a row.
+    #
+    # The first Incremental build will process our Liquid tags on every post/page
+    # which will add our generated files to Jekyll::Cleaner's :new_files (See above!)
+    # A second build, however, will not re-process any posts/pages that haven't changed.
+    # Our Tags never get initialized, so their previously-generated files now appear
+    # to be spurious and will get purged.
+    #
+    # Work around this by merging Jekyll::Cleaner#keep_file_regex with a second Regexp
+    # based on the :preferred_extension for every MIME::Type DistorteD can output.
+    mr_regular = instance_method(:keep_file_regex)
+    define_method(:keep_file_regex) do
+      begin
+        # We're going to use it either way, so go ahead and get what the :keep_file_regex
+        # would have been in unpatched Jekyll, e.g.:
+        # (?-mix:\A/home/okeeblow/Works/cooltrainer/_site\/(\.git|\.svn))
+        super_regexp = mr_regular.bind(self).()
+
+        # If we aren't in Incremental mode then each Tag will explicitly declare
+        # the files they write, and that's preferrable to this shotgun approach
+        # since the Regexp approach may preserve unwanted files, but "Some unwanted files"
+        # is way nicer than "fifteen minutes rebuilding everything" rofl
+        if site&.incremental?
+          # Discover every supported output MIME::Type based on every loaded MediaMolecule.
+          outer_limits = Cooltrainer::DistorteD::IMPLANTATION(
+            :OUTER_LIMITS,
+            Cooltrainer::DistorteD::media_molecules,
+          ).values.flat_map(&:keys)
+
+          # Build a new Regexp globbing the preferred extension of every Type we support, e.g.:
+          # (?-mix:\A/home/okeeblow/Works/cooltrainer/_site/.*(txt|nfo|v|ppm|pgm|pbm|hdr|png|jpg|webp|tiff|fits|gif|bmp|ttf|svg|pdf|mpd|m3u8|mp4))
+          #
+          # Some Types may have duplicate preferred_extensions, and some might have nil
+          # (e.g. our own application/x.distorted.never-let-you-down), so :uniq and :compact them out.
+          outer_regexp = %r!\A#{Regexp.quote(site.dest)}/.*(#{Regexp.union(outer_limits&.map(&:preferred_extension).uniq.compact).source})!
+
+          # Do the thing.
+          combined_regexp = Regexp.union(outer_regexp, super_regexp)
+          Jekyll.logger.debug(
+            'Protecting DistorteD-generated files from Incremental-mode destruction with new Jekyll::Cleaner#keep_file_regex',
+            combined_regexp.source)
+          return combined_regexp
+        else
+          # Feels like I'm patching nothin' at all… nothin' at all… nothin' at all!
+          return super_regexp
+        end
+      rescue RuntimeError => e
+        Jekyll.logger.warn('DistorteD', "Monkey-patching Jekyll::Cleaner#keep_file_regex failed: #{e.message}")
+        Jekyll.logger.debug('DistorteD', "Monkey-patched Jekyll::Cleaner#keep_file_regex backtrace: #{e.backtrace}")
+        # Bail out by returning what the :keep_file_regex would have been without this patch.
+        mr_regular.bind(self).()
+      end
+    end  # define_method :keep_file_regex
+
   end  # Cleaner
 end  # Jekyll
