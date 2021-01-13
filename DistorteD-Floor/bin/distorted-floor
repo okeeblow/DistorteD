@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'distorted/floor'
+require 'distorted/click_again'
 
-click = Cooltrainer::DistorteD::Floor.new(ARGV.dup, File.basename(__FILE__))
+click = Cooltrainer::DistorteD::ClickAgain.new(ARGV, File.basename(__FILE__))
 click.write(Dir.pwd)
