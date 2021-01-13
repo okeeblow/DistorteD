@@ -128,9 +128,8 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # e.g. a supported Type 'image/png' will define a method :to_image_png in any
   # context where this module is included.
   self::OUTER_LIMITS.each_key { |t|
-    define_method(t.distorted_file_method) { |*a, **k, &b|
-      # https://bugs.ruby-lang.org/issues/10856
-      k.empty? ? vips_save(*a, &b) : vips_save(*a, **k, &b)
+    define_method(t.distorted_file_method) { |dest_root, change|
+      vips_save(dest_root, change)
     }
   }
 
@@ -139,16 +138,16 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # Generic Vips saver method, optionally handling resizing and cropping.
   # NOTE: libvips chooses a saver (internally) based on the extname of the destination path.
   # TODO: String-buffer version of this method using e.g. Image#jpegsave_buffer
-  def vips_save(dest, width: nil, **kw)
+  def vips_save(dest_root, change)
     begin
-      if width.nil? or width == :full
-        return to_vips_image.write_to_file(dest)
-      elsif width.respond_to?(:to_i)
+      if change.width.nil?
+        return to_vips_image.write_to_file(change.path(dest_root))
+      elsif
         ver = to_vips_image.thumbnail_image(
-          width.to_i,
-          **{:crop => kw&.dig(:crop) || :none},
+          change.width.to_int,
+          **{:crop => change.crop || :none},
         )
-        return ver.write_to_file(dest)
+        return ver.write_to_file(change.path(dest_root))
       end
     rescue Vips::Error => v
       if v.message.include?('No known saver')

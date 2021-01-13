@@ -14,8 +14,12 @@ module Cooltrainer::DistorteD::Molecule::PDF
   # https://hexapdf.gettalong.org/documentation/reference/api/HexaPDF/Document/index.html#method-c-new
   # https://hexapdf.gettalong.org/documentation/reference/api/HexaPDF/index.html#DefaultDocumentConfiguration
   # https://hexapdf.gettalong.org/documentation/reference/api/HexaPDF/Task/Optimize.html
+  PDF_TYPE = CHECKING::YOU::OUT['application/pdf']
   LOWER_WORLD = Hash[
-    CHECKING::YOU::OUT['application/pdf'] => nil,
+    PDF_TYPE => nil,
+  ]
+  OUTER_LIMITS = Hash[
+    PDF_TYPE => nil,
   ]
 
   # TODO: Use MuPDF instead of libvips magick-based PDF loader.
@@ -33,8 +37,8 @@ module Cooltrainer::DistorteD::Molecule::PDF
     end
   end
 
-  def to_application_pdf_file(*a, **k, &b)
-    copy_file(*a, **k, &b)
-  end
+  define_method(PDF_TYPE.distorted_file_method) { |dest_root, change|
+    copy_file(change.path(dest_root))
+  }
 
 end  # PDF
