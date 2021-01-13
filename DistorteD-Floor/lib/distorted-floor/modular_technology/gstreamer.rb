@@ -39,7 +39,11 @@ module Cooltrainer::DistorteD::Technology::GStreamer
   ])
 
 
-  def to_application_dash_xml(dest, *a, **k)
+  def write_video_mp4(dest_root, change)
+    copy_file(change.path(dest_root))
+  end
+
+  def write_application_dash_xml(dest, *a, **k)
     begin
       segment_dest = File.join(File.dirname(dest), "#{basename}.dash", '/')
       #segment_dest = segment_dest.sub("#{@base}/", '')
@@ -87,7 +91,7 @@ module Cooltrainer::DistorteD::Technology::GStreamer
     end
   end
 
-  def to_application_vnd_apple_mpegurl(dest, *a, **k)
+  def write_application_vnd_apple_mpegurl(dest, *a, **k)
     begin
       orig_dest = dest
       orig_path = path
