@@ -6,28 +6,19 @@
 # so duplicate Array values will be compacted!
 
 standard_image: &standard_image
-  - tag: full
-    crop: none
+  - crop: none
   - tag: small
     width: 400
     height: 400
-    media: "(max-width: 400px)"
   - tag: medium
     width: 800
     height: 800
-    media: "(min-width: 400px) and (max-width: 800px)"
   - tag: large
     width: 1500
     height: 1500
-    media: "(min-width: 800px)"
 
 
 distorted:
-
-  # Liquid template caching is default as of Jekyll 4.0,
-  # but it can be disabled if needed.
-  # I just can't think of when it would be needed :)
-  remember_me: true
 
   # Should unrecognized media-types fall back to a bare
   # <img> tag around the original media file?

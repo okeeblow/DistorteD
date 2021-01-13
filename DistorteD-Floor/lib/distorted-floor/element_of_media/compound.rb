@@ -14,7 +14,7 @@ module Cooltrainer
     DateTime,
     Time,
     URI,
-    Shellwords,
+    #Shellwords,  # Stock in optparse, but under autoload. I don't want it.
     String,
     Integer,
     Float,

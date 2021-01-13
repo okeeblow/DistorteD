@@ -1,50 +1,28 @@
 require 'set'
 
 require 'distorted/checking_you_out'
+require 'distorted-jekyll/liquid_liquid'
 
-module Jekyll
-  module DistorteD
-    module Molecule
-      module NeverLetYouDown
+module Jekyll; end
+module Jekyll::DistorteD; end
+module Jekyll::DistorteD::Molecule; end
+module Jekyll::DistorteD::Molecule::NeverLetYouDown
 
+  FALLBACK_TYPE = CHECKING::YOU::OUT['application/x.distorted.never-let-you-down']
+  LOWER_WORLD = Hash[
+    FALLBACK_TYPE => Hash[
+      :alt => Cooltrainer::Compound.new(:alt, blurb: 'Alternate text to display when this element cannot be rendered.'),
+      :title => Cooltrainer::Compound.new(:title, blurb: 'Extra information about this element — usually displayed as tooltip text.'),
+      :href => Cooltrainer::Compound.new(:href, blurb: 'Hyperlink reference for this element.')
+    ]
+  ]
+  OUTER_LIMITS = Hash[FALLBACK_TYPE => nil]
 
-        LOWER_WORLD = Hash[
-          CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'] => Hash[
-            :alt => Cooltrainer::Compound.new(:alt, blurb: 'Alternate text to display when this element cannot be rendered.'),
-            :title => Cooltrainer::Compound.new(:title, blurb: 'Extra information about this element — usually displayed as tooltip text.'),
-            :href => Cooltrainer::Compound.new(:href, blurb: 'Hyperlink reference for this element.')
-          ]
-        ]
-        OUTER_LIMITS = Hash[CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'] => nil]
+  define_method(FALLBACK_TYPE.distorted_file_method) { |dest_root, change|
+    copy_file(change.path(dest_root))
+  }
+  define_method(FALLBACK_TYPE.distorted_template_method) { |change|
+    Cooltrainer::ElementalCreation.new(:anchor_inline, change, **{})
+  }
 
-        # This is one of the few render methods that will be defined in JekyllLand.
-        define_method(CHECKING::YOU::OUT['application/x.distorted.never-let-you-down'].distorted_file_method) { |*a, **k, &b|
-          copy_file(*a, **k, &b)
-        }
-
-
-        def render_to_output_buffer(context, output)
-          begin
-            output << parse_template.render({
-              'name' => @name,
-              'basename' => File.basename(@name, '.*'),
-              'path' => @relative_dest,
-              'alt' => abstract(:alt),
-              'title' => abstract(:title),
-              'href' => abstract(:href),
-              'caption' => abstract(:caption),
-            })
-          rescue Liquid::SyntaxError => l
-            unless Jekyll.env == 'production'.freeze
-              output << parse_template(name: 'error_code'.freeze).render({
-                'message' => l.message,
-              })
-            end
-          end
-          output
-        end
-
-      end
-    end
-  end
 end

@@ -1,84 +1,45 @@
 require 'distorted/molecule/video'
 
 
-module Jekyll
-  module DistorteD
-    module Molecule
-      module Video
+module Jekyll; end
+module Jekyll::DistorteD; end
+module Jekyll::DistorteD::Molecule; end
+module Jekyll::DistorteD::Molecule::Video
 
-        include Cooltrainer::DistorteD::Molecule::Video
+  include Cooltrainer::DistorteD::Molecule::Video
 
-        def render_to_output_buffer(context, output)
-          begin
-            output << parse_template.render({
-              'name' => @name,
-              'basename' => File.basename(@name, '.*'),
-              'path' => @url,
-              'caption' => abstract(:caption),
-            })
-          rescue Liquid::SyntaxError => l
-            unless Jekyll.env == 'production'.freeze
-              output << parse_template(name: 'error_code'.freeze).render({
-                'message' => l.message,
-              })
-            end
-          end
-          output
+  Cooltrainer::DistorteD::IMPLANTATION(:LOWER_WORLD, Cooltrainer::DistorteD::Molecule::Video).each_key { |type|
+    define_method(type.distorted_template_method) { |change|
+      Cooltrainer::ElementalCreation.new(:video_source, change, parents: Array[:video])
+    }
+  }
+
+  # Override wanted-filenames method from StaticState with one that prevents our generated
+  # video segments from being deleted.
+  # This is still very hacky until I can guarantee/control the number of segments we get.
+  def wanted_files
+    dd_dest = File.join(the_setting_sun(:jekyll, :destination).to_s, @relative_dest)
+    changes.each_with_object(Set[]) { |change, wanted|
+      case change.type
+      # Treat HLS and MPEG-DASH the same, with slightly different naming conventions.
+      # Add their main playlist file, but then also glob any segments that happen to exist.
+      when CHECKING::YOU::OUT['application/dash+xml']
+        hls_dir = File.join(dd_dest, "#{basename}.hls")
+        wanted.add(File.join(hls_dir, "#{basename}.m3u8"))
+        if Dir.exist?(hls_dir)
+          Dir.entries(hls_dir).to_set.subtract(Set["#{basename}.m3u8"]).each { |hls| wanted.add(File.join(hls_dir, hls)) }
         end
-
-        # Return a Set of extant video variations due to inability/unwillingness
-        # to exactly predict GStreamer's HLS/DASH segment output naming
-        # even if we are controlling all variables like segment length etc.
-        # This implementation may give stale segments but will at least speed
-        # up site generation by not having to regenerate the video every time.
-        def destinations(dest)
-          wanted = Set[]
-          if Dir.exist?(File.join(dest, @relative_dest))
-            hls_dir = File.join(dest, @relative_dest, "#{basename}.hls")
-            if Dir.exist?(hls_dir)
-              wanted.merge(Dir.entries(hls_dir).to_set.map{|f| File.join(hls_dir, f)})
-            end
-          end
-          wanted
+      when CHECKING::YOU::OUT['application/vnd.apple.mpegurl']
+        dash_dir = File.join(dd_dest, "#{basename}.dash")
+        wanted.add(File.join(dash_dir, "#{basename}.mpd"))
+        if Dir.exist?(dash_dir)
+          Dir.entries(dash_dir).to_set.subtract(Set["#{basename}.mpd"]).each { |dash| wanted.add(File.join(dash_dir, dash)) }
         end
-
-        def modified?
-          # We can't use the standard Static::State#modified? here until
-          # I figure out how to cleanly get a duplicate of what would be
-          # the generated filenames from GStreamer's sink.
-          #
-          # For now for the sake of speeding up my site generation
-          # I'll assume not-modified that if the output variant (e.g. DASH/HLS)
-          # container dir exists and contains at least two files:
-          # the playlist and at least one segment.
-          #
-          # Hacky HLS-only right now until dashsink2 lands in upstream Gst.
-          #
-          # Assume modified for the sake of freshness :)
-          modified = true
-
-          site_dest = the_setting_sun(:jekyll, :destination).to_s
-          if Dir.exist?(site_dest)
-
-            dd_dest = File.join(site_dest, @relative_dest)
-            if Dir.exist?(dd_dest)
-
-              hls_dir = File.join(dd_dest, "#{basename}.hls")
-              if Dir.exist?(hls_dir)
-                need_filez = Set["#{basename}.m3u8"]
-                var_filez = Dir.entries(hls_dir).to_set
-                if need_filez.subset?(var_filez) and var_filez.count > 2
-                  modified = false
-                end
-              end
-
-            end
-          end
-          Jekyll.logger.debug("#{@name} modified?",  modified)
-          modified
-        end
-
+      else
+        # Treat any other type (including single-file video types) like normal.
+        wanted.add(change.name)
       end
-    end
+    }
   end
-end
+
+end  # Video

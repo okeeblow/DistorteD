@@ -1,0 +1,5 @@
+<object data="{{ change.dir }}{{ change.name }}{{ fragment }}"{{ change.attr.type }}{{ change.attr.width }}{{ change.attr.height }}>
+{%- for child in children %}
+  {{ child }}
+{%- endfor -%}
+</object>
