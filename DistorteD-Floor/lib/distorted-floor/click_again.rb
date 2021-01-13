@@ -36,6 +36,56 @@ module Cooltrainer::DistorteD::ClickAgain
     end
   end
 
+  # Partitions the raw `argv` into two buckets — outer_limits (String relative filenames or "media/type" Strings) and switches/arguments.
+  #
+  # References:
+  # - glibc Program Argument Syntax Conventions https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
+  # - POSIX Utility Argument Syntax https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_01
+  # - Windows Command-line syntax key https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/command-line-syntax-key
+  #
+  # The filenames will be used as the source file (first member) and destination file(s) (any others).
+  # The switches/arguments will be passed to our global OptionParser's `:parse_in_order`
+  # which will return the unused remainder.
+  #
+  # I think it should be possible to achieve this same effect with our global OptionParser alone
+  # by specifying two required NoArgument Switches (source and first destination filename),
+  # specifying multiple optional NoArgument Switches (additional destinations),
+  # and parsing the unmodified `:argv` in permutation mode.
+  # I can't figure out how to wrangle OptionParser into doing that rn tho so welp here we are.
+  #
+  # There is a built-in Enumeraable#partition, but:
+  # - It doesn't take an accumulator variable natively.
+  # - I'm bad at chaining Enumerators and idk how to chain in a `:with_object` without returning only that object.
+  # - `:with_object` treats scalar types as immutable which precludes cleanly passing a boolean flag variable between iterations.
+  def partition_argv(argv)
+    switches, @get_out = argv.each_with_object(
+      # Accumulate to a three-key Hash containing the two wanted buckets and the flag that will be discarded.
+      Hash[:switches => Array.new, :get_out => Array.new, :want_value => false]
+    ) { |arg, partition|
+      # Switches and their values will be:
+      # - Any argument beginning with a single dash, e.g. long switches like '--crop' or short switches like '-Q90'.
+      # - Any non-dash argument if :want_value is flagged, e.g. the 'attention' value for the '--crop' switch.
+      # Filenames will be:
+      # - Anything else :)
+      if partition.fetch(:want_value) and not arg[0] == '-'.freeze
+        # `ARGV` Strings are frozen, so we have to replace instead of directly concat
+        partition[:switches].push(partition[:switches].pop.yield_self { |last| "#{last}#{'='.freeze unless arg[0] == '='.freeze}#{arg}" })
+      else
+        partition[(arg[0] == '-'.freeze or partition.fetch(:want_value)) ? :switches : :get_out].push(arg)
+      end
+      # The *next* argument should be a value for this iteration's argument iff:
+      # - This iteration is a long switch with no included value,  e.g. '--crop' but not '--crop=attention'.
+      # - This iteration is a short switch with no included value, e.g. '-Q' but not '-Q90' or '-Q=90'.
+      partition.store(:want_value, [
+        arg[0] == '-'.freeze,                           # e.g. '--crop' or '-Q'
+        !arg.include?('='.freeze),                      # e.g. not '--crop=attention' or '-Q=90'
+        [
+          arg[1] == '-'.freeze,                         # e.g. '--crop'
+          [arg[1] == '-'.freeze, arg.length > 2].none?  # e.g. not '-Q90'
+        ].any?
+      ].all?)
+    }.values.select(&Array.method(:===))  # Return only the Array members of the Hash
+  end
 
   # This is defined in writing in a comment in optparse.rb's RDoc,
   # but I can't seem to find anywhere it's available directly in code,
