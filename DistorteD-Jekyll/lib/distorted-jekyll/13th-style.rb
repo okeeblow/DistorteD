@@ -35,7 +35,7 @@ module Jekyll
       end
 
       def render_to_output_buffer(context, output)
-        css_filename = File.join(File.dirname(__FILE__), 'template'.freeze, '13th-style.css'.freeze)
+        css_filename = File.join(File.dirname(__FILE__), '13th-style.css'.freeze)
 
         # Use IO.foreach() to call a block on each line of our template file
         # without slurping the entire file into memory like File.read() / File.readlines()

@@ -33,7 +33,7 @@ module Jekyll::DistorteD::StaticState
   # that should be kept when regenerating the site.
   # This makes DistorteD fast!
   def destinations(dest_root)
-    wanted_files.map{|f| File.join(dest_root, @relative_dest, f)}
+    changes&.map { |change| change.path(dest_root) }
   end
 
   # HACK HACK HACK
@@ -91,11 +91,14 @@ module Jekyll::DistorteD::StaticState
     # dimensions, attributes, etc of each output variation we want.
     # Full-size outputs will have the special tag `:full`.
     changes&.each { |change|
-      filename = File.join(dest_root, @relative_dest, change.name || @name)
-
       if self.respond_to?(change.type.distorted_file_method)
-        Jekyll.logger.debug("DistorteD::#{change.type.distorted_file_method}", filename)
-        self.send(change.type.distorted_file_method, filename, **change)
+        Jekyll.logger.debug("DistorteD::#{change.type.distorted_file_method}", change.path(dest_root))
+        # WISHLIST: Remove the empty final positional Hash argument once we require a Ruby version
+        # that will not perform the implicit Change-to-Hash conversion due to Change's
+        # implementation of :to_hash. Ruby 2.7 will complain but still do the conversion,
+        # breaking downstream callers that want a Struct they can call arbitrary key methods on.
+        # https://www.ruby-lang.org/en/news/2019/12/12/separation-of-positional-and-keyword-arguments-in-ruby-3-0/
+        self.send(change.type.distorted_file_method, dest_root, change, **{})
       elsif extname == ".#{change.type.preferred_extension}"
         Jekyll.logger.debug(@name, <<~RAWCOPY
             No #{change.type.distorted_file_method} method is defined,
@@ -103,10 +106,10 @@ module Jekyll::DistorteD::StaticState
             as the input type, so I will fall back to copying the raw file.
           RAWCOPY
         )
-        copy_file(filename)
+        copy_file(change.path(dest_root))
       else
-        Jekyll.logger.error(@name, "Missing rendering method #{type.distorted_file_method}")
-        raise MediaTypeOutputNotImplementedError.new(filename, type, self.class.name)
+        Jekyll.logger.error(@name, "Missing write method #{change.type.distorted_file_method}")
+        raise MediaTypeOutputNotImplementedError.new(change.path(dest_root), type_mars, self.class.name)
       end
     }
   end  # write
@@ -149,7 +152,7 @@ module Jekyll::DistorteD::StaticState
   # Returns a Set of just the String filenames we want for this media.
   # This will be used by `modified?` among others.
   def wanted_files
-    changes.map{|f| f.name}.to_set
+    changes.map(&:name).to_set
   end
 
 

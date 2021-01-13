@@ -1,0 +1,15 @@
+{% assign img_child = nil -%}
+<picture>
+{% for child in children %}
+{%- assign test_img = child | slice: 1, 3 -%}
+{%- if test_img == 'img' -%}
+{%- assign img_child = child -%}
+{%- else -%}
+{{ child }}
+{%- endif -%}
+{%- endfor -%}
+{%- unless img_child -%}
+{%- assign img_child = '<img/>' -%}
+{%- endunless -%}
+  {{ img_child }}
+</picture>

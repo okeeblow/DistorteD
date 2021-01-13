@@ -58,8 +58,7 @@ opened.'),
 
   OUTER_LIMITS = Hash[
     CHECKING::YOU::OUT['application/pdf'] => PDF_OPEN_PARAMS.concat(CONTAINER_ATTRIBUTES).reduce(Hash[]) {|aka, compound|
-      aka.store(compound.element, compound)
-      aka
+      aka.tap { |a| a.store(compound.element, compound) }
     }
   ]
 
@@ -69,8 +68,11 @@ opened.'),
   def pdf_open_params
     PDF_OPEN_PARAMS.reduce(Hash[]) {|params, compound|
       # Only include those params whose user-given value exists and differs from its default.
-      params.store(compound.element, abstract(compound.element)) unless [nil, ''.freeze, compound.default].include?(abstract(compound.element))
-      params
+      params.tap { |p|
+        p.store(compound.element, abstract(compound.element)) unless [
+          nil, ''.freeze, compound.default,
+        ].include?(abstract(compound.element))
+      }
     }
   end
 
@@ -78,7 +80,6 @@ opened.'),
   # This would be difficult / impossible to construct within Liquid
   # from the individual variables, so let's just do it out here.
   def pdf_open_params_url
-    Jekyll.logger.warn(@name, pdf_open_params)
     pdf_open_params.map{ |(k,v)|
       case
       when k == :search
@@ -93,32 +94,15 @@ opened.'),
     }.join('&')
   end
 
-  def render_to_output_buffer(context, output)
-    Jekyll.logger.warn(@name, pdf_open_params_url)
-    begin
-      # TODO: iOS treats our <object> like an <img>,
-      # showing only the first page with transparency and stretched to the
-      # size of the container element.
-      # We will need something like PDF.js in an <iframe> to handle this.
-
-      output << parse_template.render({
-        'name' => @name,
-        'path' => @relative_dest,
-        'alt' => abstract(:alt),
-        'title' => abstract(:title),
-        'height' => abstract(:height),
-        'width' => abstract(:width),
-        'caption' => abstract(:caption),
-        'pdf_open_params' => pdf_open_params_url,
-      })
-    rescue Liquid::SyntaxError => l
-      unless Jekyll.env == 'production'.freeze
-        output << parse_template(name: 'error_code'.freeze).render({
-          'message' => l.message,
-        })
-      end
-    end
-    output
-  end
+  # http://joliclic.free.fr/html/object-tag/en/
+  # TODO: iOS treats our <object> like an <img>,
+  # showing only the first page with transparency and stretched to the
+  # size of the container element.
+  # We will need something like PDF.js in an <iframe> to handle this.
+  define_method(CHECKING::YOU::OUT['application/pdf'].distorted_template_method) { |change|
+    Cooltrainer::ElementalCreation.new(:object, change, children: [:embed, :anchor_inline]).tap { |e|
+      e.fragment = pdf_open_params.empty? ? ''.freeze : "##{pdf_open_params_url}"
+    }
+  }
 
 end  # PDF
