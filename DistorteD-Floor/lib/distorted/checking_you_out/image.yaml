@@ -1,3 +1,11 @@
+# Define our own type to trigger a legacy <img> element src for <picture>
+- !ruby/object:MIME::Type
+  content-type: image/x.distorted.fallback
+  xrefs:
+    person:
+      - okeeblow
+  registered: false
+
 
 # libvips' internal format, unlikely to be used but may as well be supported :)
 - !ruby/object:MIME::Type
