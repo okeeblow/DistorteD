@@ -1,6 +1,6 @@
 require 'set'
 
-require 'distorted/molecule/font'
+require 'distorted/media_molecule/font'
 require 'distorted-jekyll/liquid_liquid/picture'
 
 

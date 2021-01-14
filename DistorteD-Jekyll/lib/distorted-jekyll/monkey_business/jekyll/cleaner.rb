@@ -1,5 +1,5 @@
 require 'set'
-require 'distorted-jekyll/molecule'
+require 'distorted-jekyll/media_molecule'
 
 module Jekyll
   # Handles the cleanup of a site's destination before it is built or re-built.

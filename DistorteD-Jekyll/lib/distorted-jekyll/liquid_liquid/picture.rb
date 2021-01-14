@@ -1,6 +1,6 @@
 require 'distorted-jekyll/liquid_liquid'
 require 'distorted/modular_technology/vips/save'
-require 'distorted/molecule'
+require 'distorted/media_molecule'
 
 module Jekyll; end
 module Jekyll::DistorteD; end

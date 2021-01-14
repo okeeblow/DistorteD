@@ -6,7 +6,7 @@ module Cooltrainer::DistorteD
   # Discover DistorteD MediaMolecules bundled with this Gem
   # TODO: and any installed as separate Gems.
   @@loaded_molecules rescue begin
-    Dir[File.join(__dir__, 'molecule', '*.rb')].each { |molecule| require molecule }
+    Dir[File.join(__dir__, 'media_molecule', '*.rb')].each { |molecule| require molecule }
     @@loaded_molecules = true
   end
 
