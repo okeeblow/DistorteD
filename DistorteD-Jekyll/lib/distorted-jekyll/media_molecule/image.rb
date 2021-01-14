@@ -1,7 +1,7 @@
 require 'set'
 
 require 'distorted-jekyll/liquid_liquid/picture'
-require 'distorted/molecule/image'
+require 'distorted/media_molecule/image'
 
 
 module Jekyll; end

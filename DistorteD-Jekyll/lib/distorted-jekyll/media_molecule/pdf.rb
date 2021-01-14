@@ -1,6 +1,6 @@
 require 'set'
 
-require 'distorted/molecule/pdf'
+require 'distorted/media_molecule/pdf'
 
 
 module Jekyll; end

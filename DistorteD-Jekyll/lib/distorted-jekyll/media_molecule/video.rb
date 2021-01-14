@@ -1,4 +1,4 @@
-require 'distorted/molecule/video'
+require 'distorted/media_molecule/video'
 
 
 module Jekyll; end

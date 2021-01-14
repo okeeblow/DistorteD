@@ -201,7 +201,7 @@ module CHECKING
       # after we've loaded the upstream data.
       # :@path is set up in Loader::initialize and only has an attr_reader
       # but we can reach in and change it.
-      loader.instance_variable_set(:@path, File.join(__dir__, 'types'.freeze))
+      loader.instance_variable_set(:@path, File.join(__dir__, 'checking_you_out'.freeze))
 
       # Load our local types data. The YAML files are separated by type,
       # and :load_yaml will load all of them in the :@path we just set.

@@ -4,7 +4,7 @@ require 'distorted/error_code'
 
 # MIME::Typer
 require 'distorted/checking_you_out'
-require 'distorted/molecule'
+require 'distorted/media_molecule'
 
 # Set.to_hash
 require 'distorted/monkey_business/set'

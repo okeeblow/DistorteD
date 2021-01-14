@@ -9,7 +9,6 @@ require 'distorted/modular_technology/ttfunk'
 require 'distorted/modular_technology/vips/save'
 
 require 'distorted/checking_you_out'
-require 'distorted/molecule/image'
 
 
 module Cooltrainer; end

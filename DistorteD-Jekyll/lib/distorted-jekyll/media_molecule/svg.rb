@@ -1,6 +1,6 @@
 require 'set'
 
-require 'distorted/molecule/svg'
+require 'distorted/media_molecule/svg'
 require 'distorted-jekyll/liquid_liquid/picture'
 
 
