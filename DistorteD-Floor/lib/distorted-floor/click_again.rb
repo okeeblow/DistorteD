@@ -260,7 +260,7 @@ class Cooltrainer::DistorteD::ClickAgain
           name = @name
           type = CHECKING::YOU::OUT[out]
         end
-        wanted.push(Cooltrainer::Change.new(type, name: name, **(combined_outer_options.fetch(type, {}))))
+        wanted.push(Cooltrainer::Change.new(type, src: name, **(combined_outer_options.fetch(type, {}))))
       }
     end
   end
