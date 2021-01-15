@@ -88,14 +88,39 @@ module Cooltrainer
       }
     end
 
-    # Invoker will want to sort these by number of wanted parent Elements
-    # so they can be popped and created in reverse order.
-    # Inverting the parent.length sort means many-parent Elements will sort
-    # to the head of an Enumerable and no-parent Elements at the end.
+    # Hash[String] => Integer containing weights for MIME::Type#sub_type sorting weights.
+    # Weights are assigned in auto-incrementing Array order and will be called from :<=>.
+    # Sub-types near the beginning will sort before sub-types near the bottom.
+    # This is important for things like <picture> tags where the first supported <source> child
+    # encountered is the one that will be used, so we want vector types (SVG) to come first,
+    # then modern annoying formats like AVIF/WebP, then old standby types like PNG.
+    # TODO: Sort things other than Images
+    SORT_WEIGHTS = [
+      'svg+xml'.freeze,
+      'avif'.freeze,
+      'webp'.freeze,
+      'png'.freeze,
+      'jpeg'.freeze,
+      'gif'.freeze,
+    ].map.with_index.to_h
+    # Return a static 0 weight for unknown sub_types.
+    SORT_WEIGHTS.default_proc = Proc.new { 0 }
+
+    # Elements should sort themselves under their parent when rendering.
+    # Use predefined weights, e.g.:
+    #   irb> SORT_WEIGHTS['avif']
+    #   => 1
+    #   irb> SORT_WEIGHTS['png']
+    #   => 3
+    #   irb> SORT_WEIGHTS['avif'] <=> SORT_WEIGHTS['png']
+    #   => -1
     def <=>(otra)
-      self.parents&.length || 0 <=> otra.parents&.length || 0
+      SORT_WEIGHTS[self.change&.type&.sub_type] <=> SORT_WEIGHTS[otra&.change&.type&.sub_type]
     end
 
+    # Take a child Element and store it.
+    # If it requests no parents, store it with us.
+    # If it requests a parent, forward it there to the same method.
     def mad_child(moon_child)
       parent = moon_child.parents&.shift
       if parent.nil?  # When shifting/popping an empty :parents Array
@@ -142,7 +167,7 @@ module Cooltrainer
           # in our own output.
           :children => self[:children]&.values.map { |child|
             child.is_a?(Symbol) ? self.class.new(child, self[:change], parents: self[:name], assigns: self[:assigns]) : child
-          }.map(&:render),
+          }.sort.map(&:render),  # :sort will use ElementalCreation's :<=> method.
         ]).transform_keys(&:to_s).transform_values { |value|
           # Liquid wants String keys and values, not Symbols.
           value.is_a?(Symbol) ? value.to_s : value
