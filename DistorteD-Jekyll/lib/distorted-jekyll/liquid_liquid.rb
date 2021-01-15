@@ -221,7 +221,9 @@ module Cooltrainer
     def liquid_method_missing(method)
       # Liquid will send us String keys only, so translate them
       # to Symbols when looking up in the Change Struct.
-      @change&.send(method.to_sym)&.to_s || super
+      # Don't explicitly call :to_s before returning,
+      # because we might be returning an Array.
+      @change&.send(method.to_sym) || super
     end
   end  # Struct ChangeDrop
 

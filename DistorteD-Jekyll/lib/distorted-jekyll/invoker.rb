@@ -107,18 +107,18 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
         # Query our configuration again for variations on each Type.
         # For example, one single image Type may want multiple resolutions to enable responsive <picture> tags,
         # or a single video Type may want multiple bitrates for adaptive streaming.
-        outer_config = the_setting_sun(:outer_limits, *(type&.settings_paths)) || Array[Hash[]]
+        limit_breaks = the_setting_sun(:outer_limits, *(type&.settings_paths)) || Array[Hash[]]
         # Which MediaMolecule Modules support this Type as an output? Probably just one.
         outer_limits.keep_if { |k, v| v.has_key?(type) }.keys.each { |molecule|
           # As before, if there is nothing in the config just treat it as a Change to
           # the full resolution/bitrate/whatever as the input, so this will always run at least once.
-          outer_config.each { |variation|
+          limit_breaks.each { |limit_break|
             # Merge each variation's config with any/all attributes given to our Liquid Tag,
             # as well as any Jekyll Stuff™ like the relative destination path.
-            given_arguments = variation.merge(Hash[:dir => @relative_dest]).merge(context_arguments)
-            # Each Change will carry instance data in Atom Structs so we can avoid modifying
+            change_arguments = limit_break.merge(Hash[:dir => @relative_dest]).merge(context_arguments)
+            # Each Change will carry instance Compound data in Atom Structs so we can avoid modifying
             # the Compound Struct with any variation-specific values since they will be reused.
-            atoms = Hash[]
+            atoms = Hash.new
             # We will always want an Atom from every Compound even if it only carries the :default.
             Cooltrainer::DistorteD::IMPLANTATION(:OUTER_LIMITS, molecule)&.dig(type)&.each_pair { |aka, compound|
               next if aka != compound.element  # Skip alias Compounds since they will all be handled at once.
@@ -126,16 +126,18 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
               # and check those values against the Compound for validity.
               atoms.store(compound.element, Cooltrainer::Atom.new(compound.isotopes.reduce(nil) { |value, isotope|
                 # TODO: valid?
-                value || given_arguments&.delete(isotope)
+                value || change_arguments&.delete(isotope)
               }, compound.default))
             }
             # After looping through the Compounds and calling :delete for matched values,
             # this bag will be left with only the freeform non-Compound-associated arguments, if any.
-            # Turn them into an Atom with only the value and a `nil` :default.
-            given_arguments.each_pair { |attribute, value| atoms.store(attribute, Cooltrainer::Atom.new(value, nil)) }
+            # Separate those into arguments that match Change member names, and arguments that don't.
+            change_member_keys, atom_keys = change_arguments.keys.partition(&Cooltrainer::Change.members.method(:include?))
+            # Instantiate a no-default Atom for every remaining argument that isn't a Change member.
+            atom_keys.each { |attribute| atoms.store(attribute, Cooltrainer::Atom.new(change_arguments.delete(attribute), nil)) }
             # Instantiate each variation of each Type into a Change struct
             # that will handle some of the details like output-filename generation.
-            wanted.append(Cooltrainer::Change.new(type, name: @name, molecule: molecule, **atoms))
+            wanted.append(Cooltrainer::Change.new(type, src: @name, molecule: molecule, **change_arguments, **atoms))
           }
         }
       }

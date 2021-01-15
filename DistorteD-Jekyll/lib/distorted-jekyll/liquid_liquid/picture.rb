@@ -32,8 +32,7 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
   def self.render_picture_source
     @@render_picture_source = lambda { |change|
       # Fill in missing CSS media queries for any original-size (tag == null) Change that lacks one.
-      if [:tag, :width, :media].map { |k| change.send(k) }.all?(&:nil?) and not change.type.sub_type.include?('svg'.freeze)
-        change.media = Jekyll::DistorteD::LiquidLiquid::Picture::full_size_media_query(change, to_vips_image)
+      if change.width.nil? and not change.type.sub_type.include?('svg'.freeze)
         change.width = to_vips_image.width
       end
       Cooltrainer::ElementalCreation.new(:picture_source, change, parents: Array[:anchor, :picture])

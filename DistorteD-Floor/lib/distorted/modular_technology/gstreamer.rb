@@ -40,7 +40,7 @@ module Cooltrainer::DistorteD::Technology::GStreamer
 
 
   def write_video_mp4(dest_root, change)
-    copy_file(change.path(dest_root))
+    copy_file(change.paths(dest_root).first)
   end
 
   def write_application_dash_xml(dest, *a, **k)

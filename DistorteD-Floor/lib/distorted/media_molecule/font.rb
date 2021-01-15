@@ -36,7 +36,7 @@ module Cooltrainer::DistorteD::Molecule::Font
   # to generate images and metadata.
   self::LOWER_WORLD.keys.each { |t|
     define_method(t.distorted_file_method) { |dest_root, change|
-      copy_file(change.path(dest_root))
+      copy_file(change.paths(dest_root).first)
     }
   }
 

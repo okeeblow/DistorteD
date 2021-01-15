@@ -38,7 +38,7 @@ module Cooltrainer::DistorteD::Molecule::PDF
   end
 
   define_method(PDF_TYPE.distorted_file_method) { |dest_root, change|
-    copy_file(change.path(dest_root))
+    copy_file(change.paths(dest_root).first)
   }
 
 end  # PDF
