@@ -11,35 +11,65 @@ module Cooltrainer
 
   # Struct to encapsulate all the data needed to perform one (1) MIME::Type transformation
   # of a source media file into any supported MIME::Type, possibly even the same type as input.
-  Change = Struct.new(:type, :src, :basename, :name, :molecule, :tag, :atoms, keyword_init: true) do
+  Change = Struct.new(:type, :src, :basename, :molecule, :tag, :breaks, :atoms, keyword_init: true) do
 
     # Customize the destination filename and other values before doing the normal Struct setup.
-    def initialize(type, name: nil, molecule: nil, tag: nil, **atoms)
+    def initialize(type, src: nil, molecule: nil, tag: nil, breaks: Array.new, **atoms)
       # `name` might have a leading slash if referenced as an absolute path as the Tag.
-      basename = File.basename(name, '.*'.freeze).reverse.chomp('/'.freeze).reverse
-      src = name.dup
-      # Don't change the filename of full-size variations
-      filetag = (tag.nil? || tag&.to_s.empty?) ? ''.freeze : '-'.concat(tag.to_s)
-      # Give our new file the extension defined by the Type instead of the one it came in with.
-      dot = '.'.freeze unless type.preferred_extension.nil? || type.preferred_extension&.empty?
-      name = "#{basename}#{filetag}#{dot}#{type.preferred_extension}"
+      basename = File.basename(src, '.*'.freeze).reverse.chomp('/'.freeze).reverse
 
+      # Set the &default_proc on the kwarg-glob Hash instead of making a new Hash,
       atoms.default_proc = lambda { |h,k| h[k] = Cooltrainer::Atom.new }
-      # Define accessors for context-specific :atoms keys/values that aren't normal Struct members.
       atoms.transform_values {
+        # We might get Atoms already instantiated, but do it for any that aren't.
+        # We won't have a default value for them in that case.
         |v| v.is_a?(Cooltrainer::Atom) ? atom : Cooltrainer::Atom.new(v, nil)
-      }.each_key{ |k|
+      }.each_key { |k|
+        # Define accessors for context-specific :atoms keys/values that aren't normal Struct members.
         self.singleton_class.define_method(k) { self[:atoms]&.fetch(k, nil)&.get }
         self.singleton_class.define_method("#{k}=".to_sym) { |v| self[:atoms][k] = v }
       }
 
       # And now back to your regularly-scheduled Struct
-      super(type: type, src: src, basename: basename, name: name, molecule: molecule, tag: tag, atoms: atoms)
+      super(type: type, src: src, basename: basename, molecule: molecule, tag: tag, breaks: breaks, atoms: atoms)
     end
 
-    def path(dest_root = ''.freeze)  # Empty String will expand to current working directory
-      output_path = self[:atoms]&.fetch(:dir, nil).nil? ? self[:name] : File.join(self[:atoms]&.dig(:dir).get, self[:name])
-      return File.join(File.expand_path(dest_root), output_path)
+    # Returns the Change Type's :preferred_extension as a String with leading dot (.)
+    def extname
+      @extname ||= begin
+        dot = '.'.freeze unless type.preferred_extension.nil? || type.preferred_extension&.empty?
+        "#{dot}#{type.preferred_extension}"
+      end
+    end
+
+    # Returns an Array[String] of filenames this Change should generate,
+    # one 'full'/'original' plus any limit-breaks,
+    # e.g. ["DistorteD.png", "DistorteD-333.png", "DistorteD-555.png", "DistorteD-888.png", "DistorteD-1111.png"]
+    def names
+      Array[''.freeze].concat(self[:breaks]).map { |b|
+        filetag = (b.nil? || b&.to_s.empty?) ? ''.freeze : '-'.concat(b.to_s)
+        "#{self[:basename]}#{"-#{self.tag}" unless self.tag.nil?}#{filetag}#{extname}"
+      }
+    end
+
+    # Returns a String describing the :names but rolled into one,
+    # e.g. "IIDX-turntable-(400|800|1500).png"
+    def name
+      tags = self[:breaks].length > 1 ? "-(#{self[:breaks].join('|'.freeze)})" : ''.freeze
+      "#{self.basename}#{tags}#{self.extname}"
+    end
+
+    # Returns an Array[String] of all absolute destination paths this Change should generate,
+    # given a root destination directory.
+    def paths(dest_root = ''.freeze)  # Empty String will expand to current working directory
+      output_dir = self[:atoms]&.fetch(:dir, ''.freeze)
+      return self.names.map { |n| File.join(File.expand_path(dest_root), output_dir, n) }
+    end
+
+    # Returns a String absolute destination path for only one limit-break.
+    def path(dest_root, break_value)
+      output_dir = self[:atoms]&.fetch(:dir, ''.freeze)
+      return File.join(File.expand_path(dest_root), output_dir, "#{self.basename}#{"-#{self.tag}" unless self.tag.nil?}-#{break_value}#{self.extname}")
     end
 
     # A generic version of Struct#to_hash was rejected with good reason,

@@ -33,7 +33,7 @@ module Jekyll::DistorteD::StaticState
   # that should be kept when regenerating the site.
   # This makes DistorteD fast!
   def destinations(dest_root)
-    changes&.map { |change| change.path(dest_root) }
+    changes&.flat_map { |change| change.paths(dest_root) }
   end
 
   # HACK HACK HACK
@@ -92,7 +92,7 @@ module Jekyll::DistorteD::StaticState
     # Full-size outputs will have the special tag `:full`.
     changes&.each { |change|
       if self.respond_to?(change.type.distorted_file_method)
-        Jekyll.logger.debug("DistorteD::#{change.type.distorted_file_method}", change.path(dest_root))
+        Jekyll.logger.debug("DistorteD::#{change.type.distorted_file_method}", change.name)
         # WISHLIST: Remove the empty final positional Hash argument once we require a Ruby version
         # that will not perform the implicit Change-to-Hash conversion due to Change's
         # implementation of :to_hash. Ruby 2.7 will complain but still do the conversion,
@@ -106,7 +106,7 @@ module Jekyll::DistorteD::StaticState
             as the input type, so I will fall back to copying the raw file.
           RAWCOPY
         )
-        copy_file(change.path(dest_root))
+        copy_file(change.paths(dest_root).first)
       else
         Jekyll.logger.error(@name, "Missing write method #{change.type.distorted_file_method}")
         raise MediaTypeOutputNotImplementedError.new(change.path(dest_root), type_mars, self.class.name)
@@ -152,7 +152,8 @@ module Jekyll::DistorteD::StaticState
   # Returns a Set of just the String filenames we want for this media.
   # This will be used by `modified?` among others.
   def wanted_files
-    changes.map(&:name).to_set
+    # Cooltrainer::Change#names returns an Array[String], so we must concat every Change into one.
+    changes.map(&:names).reduce(&:concat).to_set
   end
 
 

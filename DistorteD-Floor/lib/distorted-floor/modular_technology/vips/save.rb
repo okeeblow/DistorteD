@@ -140,15 +140,14 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # TODO: String-buffer version of this method using e.g. Image#jpegsave_buffer
   def vips_save(dest_root, change)
     begin
-      if change.width.nil?
-        return to_vips_image.write_to_file(change.path(dest_root))
-      elsif
+      to_vips_image.write_to_file(change.paths(dest_root).first)
+      change.breaks.each { |b|
         ver = to_vips_image.thumbnail_image(
-          change.width.to_int,
+          b.to_int,
           **{:crop => change.crop || :none},
         )
-        return ver.write_to_file(change.path(dest_root))
-      end
+        ver.write_to_file(change.path(dest_root, b))
+      }
     rescue Vips::Error => v
       if v.message.include?('No known saver')
         # TODO: Handle missing output formats. Replacements? Skip it? Die?

@@ -36,9 +36,9 @@ module Cooltrainer::DistorteD::Molecule::SVG
 
   define_method(CHECKING::YOU::OUT['image/svg+xml'].distorted_file_method) { |dest_root, change|
     if change.optimize
-      SvgOptimizer.optimize_file(path, dest, SvgOptimizer::DEFAULT_PLUGINS)
+      SvgOptimizer.optimize_file(path, change.paths(dest_root).first, SvgOptimizer::DEFAULT_PLUGINS)
     else
-      copy_file(change.path(dest_root))
+      copy_file(change.paths(dest_root).first)
     end
   }
 
