@@ -266,7 +266,18 @@ class Cooltrainer::DistorteD::ClickAgain
           name = @name
           type = CHECKING::YOU::OUT[out]
         end
-        wanted.push(Cooltrainer::Change.new(type, src: name, **(combined_outer_options.fetch(type, {}))))
+        type_options = combined_outer_options.fetch(type, Hash.new)
+        atoms = Hash.new
+        Cooltrainer::DistorteD::IMPLANTATION(:OUTER_LIMITS, type_options[:molecule])&.dig(type)&.each_pair { |aka, compound|
+          next if aka != compound.element  # Skip alias Compounds since they will all be handled at once.
+          # Look for a user-given argument matching any supported alias of a Compound,
+          # and check those values against the Compound for validity.
+          atoms.store(compound.element, Cooltrainer::Atom.new(compound.isotopes.reduce(nil) { |value, isotope|
+            # TODO: valid?
+            value || type_options&.delete(isotope)
+          }, compound.default))
+        }
+        wanted.push(Cooltrainer::Change.new(type, src: name, **atoms))
       }
     end
   end
