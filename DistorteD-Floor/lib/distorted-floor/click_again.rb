@@ -212,9 +212,15 @@ class Cooltrainer::DistorteD::ClickAgain
       # - Any non-dash argument if :want_value is flagged, e.g. the 'attention' value for the '--crop' switch.
       # Filenames will be:
       # - Anything else :)
-      if partition.fetch(:want_value) and not arg[0] == '-'.freeze
+      #
+      # Combine long switches like '--crop' with their value as a single String with equals, e.g. '--crop=none'.
+      # Combine short switches like '-Q' with their value as a single String without equals, e.g. '-Q90'.
+      if partition.fetch(:want_value) and arg[0] != '-'.freeze  # Does this look like a value when we want a value?
         # `ARGV` Strings are frozen, so we have to replace instead of directly concat
-        partition[:switches].push(partition[:switches].pop.yield_self { |last| "#{last}#{'='.freeze unless arg[0] == '='.freeze}#{arg}" })
+        partition[:switches].push(partition[:switches].pop.yield_self { |last|
+          # Prefix the value with equals for long switches if we don't already have one.
+          "#{last}#{'='.freeze if last[1] == '-'.freeze and arg[0] != '='.freeze}#{arg}"
+        })
       else
         partition[(arg[0] == '-'.freeze or partition.fetch(:want_value)) ? :switches : :get_out].push(arg)
       end
@@ -300,7 +306,23 @@ class Cooltrainer::DistorteD::ClickAgain
           parts.append(compound.valid)
         end
         parts.append(compound.blurb)
-        subopt.on(*parts)
+
+        # Avoid using a `subopt.accept(Range)` Proc to handle Ranges,
+        # because that would only allow us to define a single handler for all Ranges
+        # regardless of the type or value they represent.
+        # The value yielded from this block will be the value recieved by parse_in_order's `into`.
+        if compound.valid.is_a?(Range)
+          subopt.on(*parts) do |value|
+            if compound.valid.to_a.all?(Integer)
+              value = Integer(value)
+            elsif compound.valid.to_a.all(Float)
+              value = Float(value)
+            end
+            next compound.valid.include?(value) ? value : compound.default
+          end
+        else
+          subopt.on(*parts)
+        end
       }
       subopt.on_tail('-h', '--help', 'Show this message')
     }
