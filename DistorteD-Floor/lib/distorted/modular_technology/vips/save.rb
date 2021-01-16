@@ -94,7 +94,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # libvips uses the suffix to pick the Saver module.
   # https://libvips.github.io/libvips/API/current/VipsForeignSave.html
   #
-  # Loader modules, on the other hand, are picked by sniffing the
+  # Loader modules, on the other hand, are usually picked by sniffing the
   # first few bytes of the file, so a list of file extensions for
   # supported loadable formats won't always be complete.
   # For example, SVG and PDF are usually supported as loaders
@@ -105,23 +105,23 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # => [".csv", ".mat", ".v", ".vips", ".ppm", ".pgm", ".pbm", ".pfm",
   #     ".hdr", ".dz", ".png", ".jpg", ".jpeg", ".jpe", ".webp", ".tif",
   #     ".tiff", ".fits", ".fit", ".fts", ".gif", ".bmp"]
-  VIPS_SAVERS = Vips.get_suffixes.map{ |t|
-    # A single call to this will return a Set of MIME::Types for a String input
-    CHECKING::YOU::OUT(t)
-  }.reduce { |c,t|
-    # Flatten the Set-of-Sets-of-Types into a Set-of-Types
-    (c || Set[]).merge(t)
-  }.keep_if { |t|
+  #
+  # Use our own FFI code path for consistency with Vips::Load.
+  # Functionally this is identical to the built-in :get_suffixes.
+  VIPS_SAVERS = Cooltrainer::DistorteD::Technology::Vips::vips_get_types(
+    Cooltrainer::DistorteD::Technology::Vips::TOP_LEVEL_SAVER
+  ).keep_if { |t|
     # Filter out any of libvips' supported output Types that aren't
-    # actually images (e.g. CSV)
-    t.media_type == 'image'
+    # actually images (e.g. CSV and Type1 fonts) while allowing
+    # some 'application' media-types for vendor image formats.
+    # TODO: Make this more robust/automatic.
+    t.media_type != 'text'.freeze and not t.sub_type.include?('font'.freeze)
   }
 
-  OUTER_LIMITS = VIPS_SAVERS.reduce(Hash[]) { |types,type|
+  OUTER_LIMITS = VIPS_SAVERS.each_with_object(Hash.new) { |type, types|
     types[type] = Cooltrainer::DistorteD::Technology::Vips::vips_get_options(
       Vips::vips_foreign_find_save(".#{type.preferred_extension}")
     )
-    types
   }
 
   # Define a to_<mediatype>_<subtype> method for each MIME::Type supported by libvips,

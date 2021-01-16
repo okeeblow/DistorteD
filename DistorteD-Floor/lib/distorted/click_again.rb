@@ -312,7 +312,7 @@ class Cooltrainer::DistorteD::ClickAgain
     type_mars.each_with_object(Hash[]) { |type, commands|
       lower_world[type].each_pair { |molecule, aka|
         commands.update(type => {
-          molecule => COMPOUND_OPTIONPARSER.call(aka.values.to_set, type, molecule)
+          molecule => COMPOUND_OPTIONPARSER.call(aka&.values.to_set, type, molecule)
         }) { |k,o,n| o.merge(n) }
       }
     }
@@ -324,7 +324,7 @@ class Cooltrainer::DistorteD::ClickAgain
     outer_limits(all: all).each_with_object(Hash[]) { |(molecule, types), commands|
       types.each_pair { |type, aka|
         commands.update(molecule => {
-          type => COMPOUND_OPTIONPARSER.call(aka.values.to_set, molecule, type)
+          type => COMPOUND_OPTIONPARSER.call(aka&.values.to_set, molecule, type)
         }) { |k,o,n| o.merge(n) }
       }
     }

@@ -55,7 +55,13 @@ module Cooltrainer::DistorteD::Technology::Vips::Load
   #   [MAGICK]: The Magick-based '.bmp' loader is broken/missing in libvips <= 8.9.1,
   #            but our automatic Loader detection will handle that. Just FYI :)
   #
-  VIPS_LOADERS = Cooltrainer::DistorteD::Technology::Vips::vips_get_types('VipsForeignLoad').keep_if { |t|
+  VIPS_LOADERS = Cooltrainer::DistorteD::Technology::Vips::vips_get_types(
+    Cooltrainer::DistorteD::Technology::Vips::TOP_LEVEL_LOADER
+  ).keep_if { |t|
+    # Skip text types for image data until I have a way for multiple
+    # type-supporting Molecules to vote on a src file.
+    # TODO: Support loading image CSV
+    # TODO: Make this more robust/automatic.
     Array[
       t.media_type != 'application'.freeze,  # e.g. application/pdf
       t.media_type != 'text'.freeze,  # e.g. text/csv
@@ -112,11 +118,10 @@ module Cooltrainer::DistorteD::Technology::Vips::Load
   # write(1, "\"VipsForeignSaveJpegFile\"\n", 26"VipsForeignSaveJpegFile"
   #
   # For this reason I'm going to write my own shim Loader-finder and use it instead.
-  LOWER_WORLD = VIPS_LOADERS.reduce(Hash[]) { |types,type|
+  LOWER_WORLD = VIPS_LOADERS.each_with_object(Hash.new) { |type, types|
     types[type] = Cooltrainer::DistorteD::Technology::Vips::vips_get_options(
-      Cooltrainer::DistorteD::Technology::Vips::vips_foreign_find_load_suffix(".#{type.preferred_extension}")
+      Cooltrainer::DistorteD::Technology::Vips::vips_foreign_find_loader_by_suffix(".#{type.preferred_extension}")
     )
-    types
   }
 
 
