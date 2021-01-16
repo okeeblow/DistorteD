@@ -100,6 +100,42 @@ module Cooltrainer::DistorteD::Technology::Vips
   @@vips_foreign_options = Hash[]
 
 
+  def self.vips_foreign_find_loader_by_suffix(filename)
+    self.vips_foreign_find_class_by_suffix(filename, self::TOP_LEVEL_LOADER)
+  end
+  def self.vips_foreign_find_saver_by_suffix(filename)
+    self.vips_foreign_find_class_by_suffix(filename, self::TOP_LEVEL_SAVER)
+  end
+
+  # Returns a Set of MIME::Types based on the "supported suffix" lists generated
+  # by libvips and our other functions here in this Module.
+  def self.vips_get_types(basename)
+    @@vips_foreign_types[basename.to_sym] ||= self::vips_get_suffixes(basename).each_with_object(Set[]) { |suffix, types|
+      types.merge(CHECKING::YOU::OUT(suffix))
+    }
+  end
+
+
+  # Returns a Set of String filename suffixes supported by a tree of libvips loader/saver classes.
+  #
+  # The Array returned from self::vips_get_suffixes_per_nickname will be overloaded
+  # with all duplicate suffix possibilities for each Type according to libvips.
+  #   e.g.  ['.jpg', '.jpe', '.jpeg', '.png], '.gif', '.tif', '.tiff' … ]
+  def self.vips_get_suffixes(basename)
+    @@vips_foreign_suffixes[basename.to_sym] ||= self::vips_get_suffixes_per_nickname(basename).values.each_with_object(Set[]) {|s,n| n.merge(s)}
+  end
+
+
+  # Returns a Hash[alias] of Compound attributes supported by a given libvips Loader/Saver class.
+  def self.vips_get_options(nickname)
+    return Hash if nickname.nil?
+    @@vips_foreign_options[nickname.to_sym] ||= self::vips_get_nickname_options(nickname)
+  end
+
+
+  protected
+
+
   # Returns a String libvips Loader class name most appropriate for the given filename suffix.
   # This is a workaround for the fact that the built-in Vips::vips_foreign_find_load
   # requires access of a real image file, and we are here talking only of hypothetical ones.
@@ -151,46 +187,22 @@ module Cooltrainer::DistorteD::Technology::Vips
   # => 94691057380176
   # irb(main):258:0> GObject::g_type_from_name("VipsForeignLoad#{MIME::Types::type_for('.heif').last.sub_type.capitalize}File")
   # => 0
-  def self.vips_foreign_find_load_suffix(filename)
-    suffix = File.extname(Vips::p2str(Vips::vips_filename_get_filename('fart.jpg')))
-    guessed_loader = "VipsForeignLoad#{CHECKING::YOU::OUT(suffix).first.sub_type.capitalize}File"
-    return self::vips_foreign_valid_operation?(guessed_loader) ? guessed_loader : 'VipsForeignLoadMagickFile'.freeze
+  def self.vips_foreign_find_class_by_suffix(filename, top_level)
+    # VIPS' `get_filename` is meant to strip the hash-delimited arguments from vips CLI arguments and returns a pointer,
+    # and :p2str turns that back into a String. We really don't need either of those calls for our usage,
+    # but I'm going to do it anyway to be as consistent with ruby-vips' built-in methods as possible.
+    vips_filename = Vips::p2str(Vips::vips_filename_get_filename(filename))
+    # File.extname will return an empty String when we supply just a `.extension`-style String.
+    # Since we must take full filename arguments as well as just-extension arguments,
+    # just pass the fill filename to CYO:
+    # https://bugs.ruby-lang.org/issues/15244
+    guessed_loader = "#{top_level}#{CHECKING::YOU::OUT(vips_filename).first.sub_type.capitalize}File"
+    return self::vips_foreign_valid_operation?(guessed_loader) ? guessed_loader : "#{top_level}MagickFile"
   end
-
-
-  # Returns a Set of MIME::Types based on the "supported suffix" lists generated
-  # by libvips and our other functions here in this Module.
-  def self.vips_get_types(basename)
-    @@vips_foreign_types[basename.to_sym] ||= self::vips_get_suffixes(basename).each_with_object(Set[]) { |suffix, types|
-      types.merge(CHECKING::YOU::OUT(suffix))
-    }
-  end
-
-
-  # Returns a Set of String filename suffixes supported by a tree of libvips loader/saver classes.
-  #
-  # The Array returned from self::vips_get_nickname_suffixes will be overloaded
-  # with all duplicate suffix possibilities for each Type according to libvips.
-  # e.g. 
-  # This is unrelated to MIME::Type#preferred_extension!!
-  def self.vips_get_suffixes(basename)
-    @@vips_foreign_suffixes[basename.to_sym] ||= self::vips_get_suffixes_per_nickname(basename).values.each_with_object(Set[]) {|s,n| n.merge(s)}
-  end
-
-
-  # Returns a Hash[alias] of Compound attributes supported by a given libvips Loader/Saver class.
-  def self.vips_get_options(nickname)
-    return Hash if nickname.nil?
-    @@vips_foreign_options[nickname.to_sym] ||= self::vips_get_nickname_options(nickname)
-  end
-
-
-  protected
-
 
   # Returns a Set of local MIME::Types supported by the given class and any of its children.
   def self.vips_get_types_per_nickname(basename)
-    self::vips_get_suffixes_per_nickname(basename).transform_values{|s| CHECKING::YOU::OUT(s)}
+    self::vips_get_suffixes_per_nickname(basename).transform_values(&CHECKING::YOU.method(:OUT))
   end
 
   # Returns a Hash[Type] of Set[String] class nicknames supporting that Type.
@@ -252,7 +264,7 @@ module Cooltrainer::DistorteD::Technology::Vips
       # "Map over a type's children. Stop when fn returns non-nil and return that value."
       Vips::vips_type_map(gtype, generate_class, nil)
     }
-    generate_class.call(GObject::g_type_from_name(basename))
+    generate_class.call(GObject::g_type_from_name(basename.to_s))
     nicknames
   end
 

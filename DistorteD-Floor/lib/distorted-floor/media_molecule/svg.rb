@@ -15,7 +15,7 @@ module Cooltrainer::DistorteD::Molecule::SVG
 
   LOWER_WORLD = Hash[
     CHECKING::YOU::OUT['image/svg+xml'] => Cooltrainer::DistorteD::Technology::Vips::vips_get_options(
-      Cooltrainer::DistorteD::Technology::Vips::vips_foreign_find_load_suffix(".#{CHECKING::YOU::OUT['image/svg+xml'].preferred_extension}")
+      Cooltrainer::DistorteD::Technology::Vips::vips_foreign_find_loader_by_suffix(".#{CHECKING::YOU::OUT['image/svg+xml'].preferred_extension}")
     ).merge(Hash[
       :optimize => Cooltrainer::Compound.new(:optimize, valid: Cooltrainer::BOOLEAN_VALUES, default: false, blurb: 'SvgOptimizer'),
     ])
