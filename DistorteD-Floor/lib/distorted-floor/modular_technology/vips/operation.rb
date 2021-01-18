@@ -332,7 +332,7 @@ module Cooltrainer::DistorteD::Technology::Vips
             # Avoid using just `blurb.capitalize` as that will lowercase everything after
             # the first character, which is definitely worse than what I'm trying to fix lol
             :blurb => GObject::g_param_spec_get_blurb(param_spec).tap{|blurb| blurb[0] = blurb[0].capitalize},
-            :default => FFI::vips_get_option_default(param_spec[:value_type]),
+            :default => VIPS_DEFAULT.fetch(element, FFI::vips_get_option_default(param_spec[:value_type])),
           }
           if GObject::g_type_fundamental(param_spec[:value_type]) == GObject::GENUM_TYPE
             attributes[:valid] = self::vips_get_enum_values(param_spec[:value_type])
