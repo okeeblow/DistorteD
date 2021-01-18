@@ -1,28 +1,7 @@
-require 'vips'
+require 'distorted/modular_technology/vips/ffi'
 
 require 'distorted/checking_you_out'
 require 'distorted/element_of_media'
-
-# Based on https://github.com/libvips/ruby-vips/issues/186#issuecomment-433691412
-module Vips
-  attach_function :vips_class_find, [:string, :string], :pointer
-  attach_function :vips_object_summary_class, [:pointer, :pointer], :void
-
-  class BufStruct < FFI::Struct
-    layout :base, :pointer,
-           :mx, :int,
-           :i, :int,
-           :full, :bool,
-           :lasti, :int,
-           :dynamic, :bool
-  end
-
-end
-
-module GObject
-  # Fundamental types not already defined in ruby-vips' `lib/vips.rb`
-  GBOXED_TYPE = g_type_from_name('GBoxed')
-end
 
 
 module Cooltrainer; end
@@ -197,7 +176,7 @@ module Cooltrainer::DistorteD::Technology::Vips
     # just pass the fill filename to CYO:
     # https://bugs.ruby-lang.org/issues/15244
     guessed_loader = "#{top_level}#{CHECKING::YOU::OUT(vips_filename).first.sub_type.capitalize}File"
-    return self::vips_foreign_valid_operation?(guessed_loader) ? guessed_loader : "#{top_level}MagickFile"
+    return FFI::vips_object_valid?(guessed_loader) ? guessed_loader : "#{top_level}MagickFile"
   end
 
   # Returns a Set of local MIME::Types supported by the given class and any of its children.
@@ -238,16 +217,31 @@ module Cooltrainer::DistorteD::Technology::Vips
       foreign_class = Vips::vips_class_find('VipsForeign'.freeze, nickname)
       next if foreign_class.null?
 
+      # Construct a buffer to hold the String summary of a VipsObject
+      # so we can parse the file extensions out of it.
+      # These are one-line Strings so 2048 bytes should be a safe size.
+      # For example, every Foreign Jpeg Loader and Saver subclass description
+      # comes in at under 800 bytes on my system, and we will only ever look
+      # at one of these lines at a time in this method:
+      #
+      # [okeeblow@emi#DistorteD-Booth] vips -l|grep Jpeg
+      #  VipsForeignLoadJpeg (jpegload_base), load jpeg, priority=0
+      #    VipsForeignLoadJpegFile (jpegload), load jpeg from file (.jpg, .jpeg, .jpe), priority=50, is_a, get_flags, header, load
+      #    VipsForeignLoadJpegBuffer (jpegload_buffer), load jpeg from buffer, priority=0, is_a_buffer, get_flags, header, load
+      #  VipsForeignSaveJpeg (jpegsave_base), save jpeg (.jpg, .jpeg, .jpe), priority=0, rgb-cmyk
+      #    VipsForeignSaveJpegFile (jpegsave), save image to jpeg file (.jpg, .jpeg, .jpe), priority=0, rgb-cmyk
+      #    VipsForeignSaveJpegBuffer (jpegsave_buffer), save image to jpeg buffer (.jpg, .jpeg, .jpe), priority=0, rgb-cmyk
+      #    VipsForeignSaveJpegMime (jpegsave_mime), save image to jpeg mime (.jpg, .jpeg, .jpe), priority=0, rgb-cmyk
+      # [okeeblow@emi#DistorteD-Booth] vips -l|grep Jpeg|wc
+      # 7      75     773
       buf_struct = Vips::BufStruct.new
-      buf_struct_string = FFI::MemoryPointer.new(:char, 2048)
+      buf_struct_string = ::FFI::MemoryPointer.new(:char, 2048)
       buf_struct[:base] = buf_struct_string
       buf_struct[:mx] = 2048
-
-      # Load the human-readable class summary into a given buffer.
       Vips::vips_object_summary_class(foreign_class, buf_struct.pointer)
-
       class_summary = buf_struct_string.read_string
 
+      # Parse an Array[String] of file extensions out of a class summary.
       suffixes = class_summary.scan(/\.\w+\.?\w+/)
       nickname_suffixes.update({nickname => suffixes.to_set}) unless suffixes.empty?
     }
@@ -338,7 +332,7 @@ module Cooltrainer::DistorteD::Technology::Vips
             # Avoid using just `blurb.capitalize` as that will lowercase everything after
             # the first character, which is definitely worse than what I'm trying to fix lol
             :blurb => GObject::g_param_spec_get_blurb(param_spec).tap{|blurb| blurb[0] = blurb[0].capitalize},
-            :default => self::vips_get_option_default(param_spec[:value_type]),
+            :default => FFI::vips_get_option_default(param_spec[:value_type]),
           }
           if GObject::g_type_fundamental(param_spec[:value_type]) == GObject::GENUM_TYPE
             attributes[:valid] = self::vips_get_enum_values(param_spec[:value_type])
@@ -364,66 +358,11 @@ module Cooltrainer::DistorteD::Technology::Vips
     options.store(:crop, Cooltrainer::Compound.new(:crop,
       blurb: 'Visual cropping method',
       valid: self::vips_get_enum_values('VipsInteresting'.freeze),
-      default: self::vips_get_option_default('VipsInteresting'.freeze),
+      default: FFI::vips_get_option_default('VipsInteresting'.freeze),
     )) if nickname.include?('Save'.freeze)  # Only for savers!!
 
     # All done :)
     options
-  end
-
-
-  # Returns the default value for any ruby-vips GObject::GValue
-  # based on its fundamental GType.
-  def self.vips_get_option_default(gtype)
-    gtype_id = gtype.is_a?(String) ? GObject::g_type_from_name(gtype) : gtype
-    # The `enum` method will actually work for several of these types,
-    # e.g. returns `false` for GBool, but let's skip it to avoid the whole,
-    # like, FFI/allocation thing.
-    case GObject::g_type_fundamental(gtype_id)
-    when GObject::GENUM_TYPE
-      return self.vips_get_enum_default(gtype_id)
-    when GObject::GBOOL_TYPE
-      return false
-    when GObject::GDOUBLE_TYPE
-      return 0.0
-    when GObject::GINT_TYPE
-      return 0
-    when GObject::GUINT64_TYPE
-      return 0
-    when GObject::GBOXED_TYPE
-      return self.vips_get_boxed_default(gtype_id)
-    else
-      return nil
-    end
-  end
-
-  # Returns the default for a GEnum derivative by allocating, initializing,
-  # and getting the contents of a GValue.
-  #
-  ## Example:
-  # irb> gvp = GObject::GValue.alloc
-  # irb> gvp
-  # => #<GObject::GValue:0x00005603ba9d4c70>
-  # irb> gvp.init(GObject::g_type_from_name('VipsAccess'))
-  # => nil
-  # irb> GObject::g_type_from_name 'VipsAccess'
-  # => 94574011156416
-  # irb> gvp.get
-  # => :random
-  def self.vips_get_enum_default(gtype)
-    begin
-      gtype_id = gtype.is_a?(String) ? GObject::g_type_from_name(gtype) : gtype
-      # Deallocation is automatic when `gvp` goes out of scope.
-      gvp = GObject::GValue.alloc
-      gvp.init(gtype)
-      out = gvp.get
-      gvp.unset
-      return out
-    rescue FFI::NullPointerError => e
-      # This is happening for VipsArrayDouble gtype 94691056795136
-      # end I don't feel like debugging it rn lololol
-      nil
-    end
   end
 
 
@@ -463,39 +402,6 @@ module Cooltrainer::DistorteD::Technology::Vips
     rescue
       return Array[]
     end
-  end
-
-
-  # Returns a Array of the boxed type (Int, Double, etc)
-  def self.vips_get_boxed_default(gtype)
-    gtype_id = gtype.is_a?(String) ? GObject::g_type_from_name(gtype) : gtype
-    gtype_name = GObject::g_type_name(gtype_id)
-    # It's not really correct to explicitly return three values here,
-    # but the use of this for `background` colors are the only use rn.
-    case gtype_name
-    when 'VipsArrayDouble'.freeze
-      return [0.0, 0.0, 0.0]
-    when 'VipsArrayInt'.freeze
-      return [0, 0, 0]
-    else
-      return []
-    end
-  end
-
-
-  # Returns boolean validity for libvips class names,
-  # e.g. for validating that a desired Loader/Saver class actually exists!
-  def self.vips_foreign_valid_operation?(otra)
-    # This doesn't seem to raise any Exception on invalid g_type, just returns 0.
-    # Use this to cast to a boolean return value:
-    #
-    # irb(main):243:0> GObject::g_type_from_name('VipsForeignSaveJpegFile')
-    # => 94691057381120
-    # irb(main):244:0> GObject::g_type_from_name('VipsForeignLoadJpegFile')
-    # => 94691057380176
-    # irb(main):245:0> GObject::g_type_from_name('VipsForeignLoadJpegFilgfgfgfe')
-    # => 0
-    GObject::g_type_from_name(otra) == 0 ? false : true
   end
 
 end
