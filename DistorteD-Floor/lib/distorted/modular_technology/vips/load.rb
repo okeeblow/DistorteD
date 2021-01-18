@@ -2,7 +2,7 @@
 require 'set'
 
 require 'distorted/checking_you_out'
-require 'distorted/modular_technology/vips/foreign'
+require 'distorted/modular_technology/vips/operation'
 require 'distorted/modular_technology/vips/save'
 
 
