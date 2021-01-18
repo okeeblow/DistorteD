@@ -46,6 +46,8 @@ require 'set'
 
 require 'distorted/checking_you_out'
 
+require 'distorted/modular_technology/vips/operation'
+
 
 module Cooltrainer; end
 module Cooltrainer::DistorteD; end
