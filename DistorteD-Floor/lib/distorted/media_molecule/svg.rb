@@ -13,18 +13,18 @@ module Cooltrainer::DistorteD::Molecule::SVG
 
   include Cooltrainer::DistorteD::Technology::Vips::Save
 
+  SVG_TYPE = CHECKING::YOU::OUT['image/svg+xml']
+
   LOWER_WORLD = Hash[
-    CHECKING::YOU::OUT['image/svg+xml'] => Cooltrainer::DistorteD::Technology::Vips::vips_get_options(
-      Cooltrainer::DistorteD::Technology::Vips::vips_foreign_find_loader_by_suffix(".#{CHECKING::YOU::OUT['image/svg+xml'].preferred_extension}")
-    ).merge(Hash[
-      :optimize => Cooltrainer::Compound.new(:optimize, valid: Cooltrainer::BOOLEAN_VALUES, default: false, blurb: 'SvgOptimizer'),
-    ])
-  ]
+    SVG_TYPE => Cooltrainer::DistorteD::Technology::Vips::VipsType::loader_for(SVG_TYPE).map(&:options).reduce(&:merge)
+  ].merge(Hash[
+    :optimize => Cooltrainer::Compound.new(:optimize, valid: Cooltrainer::BOOLEAN_VALUES, default: false, blurb: 'SvgOptimizer'),
+  ])
 
   # WISHLIST: Support VML for old IE compatibility.
   #  Example: RaphaëlJS — https://en.wikipedia.org/wiki/Rapha%C3%ABl_(JavaScript_library)
   OUTER_LIMITS = Hash[
-    CHECKING::YOU::OUT['image/svg+xml'] => nil,
+    SVG_TYPE => nil,
   ]
 
   def to_vips_image
@@ -34,7 +34,7 @@ module Cooltrainer::DistorteD::Molecule::SVG
     @vips_image ||= Vips::Image.new_from_file(path)
   end
 
-  define_method(CHECKING::YOU::OUT['image/svg+xml'].distorted_file_method) { |dest_root, change|
+  define_method(SVG_TYPE.distorted_file_method) { |dest_root, change|
     if change.optimize
       SvgOptimizer.optimize_file(path, change.paths(dest_root).first, SvgOptimizer::DEFAULT_PLUGINS)
     else
