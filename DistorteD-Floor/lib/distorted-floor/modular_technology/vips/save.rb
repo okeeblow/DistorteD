@@ -22,7 +22,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # https://libvips.github.io/libvips/API/current/VipsForeignSave.html#vips-csvload
   #
   # Most libvips installations, even very minimally-built ones,
-  # will almost certainly support a few very common formats:
+  # will almost certainly support a few very common formats via the usual libraries:
   # - JPEG with libjpeg.
   # - PNG with libpng.
   # - GIF with giflib.
@@ -36,8 +36,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # - FITS★ with cfitsio.
   # - Styled text with Pango/ft2.
   # - Saving GIF/BMP with Magick.
-  #     NOTE that GIFs are *loaded* using giflib,
-  #     and that BMP loading is unsupported.
+  #     NOTE that GIFs are *loaded* using giflib.
   # - Various simple ASCII/binary-based formats with libgsf★
   #   · Comma-separated values
   #   · Netpbm★
@@ -47,73 +46,75 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # [LIBGSF]: https://developer.gnome.org/gsf/
   # [MATRIX]: https://libvips.github.io/libvips/API/current/VipsForeignSave.html#vips-matrixload
 
-  # Vips allows us to query supported *SAVE* types by suffix.
-  # There's a simple relationship between filetype and extension since
-  # libvips uses the suffix to pick the Saver module.
-  # https://libvips.github.io/libvips/API/current/VipsForeignSave.html
-  #
-  # Loader modules, on the other hand, are usually picked by sniffing the
-  # first few bytes of the file, so a list of file extensions for
-  # supported loadable formats won't always be complete.
-  # For example, SVG and PDF are usually supported as loaders
-  # (via rsvg and PDFium/Poppler)
-  # https://github.com/libvips/ruby-vips/issues/186
-  #
+  # Vips allows us to query supported *SAVE* types based on String file suffixes defined in Saver C code.
   # irb(main)> Vips.get_suffixes
   # => [".csv", ".mat", ".v", ".vips", ".ppm", ".pgm", ".pbm", ".pfm",
   #     ".hdr", ".dz", ".png", ".jpg", ".jpeg", ".jpe", ".webp", ".tif",
   #     ".tiff", ".fits", ".fit", ".fts", ".gif", ".bmp"]
   #
-  # Use our own FFI code path for consistency with Vips::Load.
-  # Functionally this is identical to the built-in :get_suffixes.
-  VIPS_SAVERS = Cooltrainer::DistorteD::Technology::Vips::vips_get_types(
-    Cooltrainer::DistorteD::Technology::Vips::TOP_LEVEL_SAVER
-  ).keep_if { |t|
-    # Filter out any of libvips' supported output Types that aren't
-    # actually images (e.g. CSV and Type1 fonts) while allowing
-    # some 'application' media-types for vendor image formats.
-    # TODO: Make this more robust/automatic.
-    t.media_type != 'text'.freeze and not t.sub_type.include?('font'.freeze)
-  }
-
-  OUTER_LIMITS = VIPS_SAVERS.each_with_object(Hash.new) { |type, types|
-    types[type] = Cooltrainer::DistorteD::Technology::Vips::vips_get_options(
-      Vips::vips_foreign_find_save(".#{type.preferred_extension}")
-    )
-  }
+  # Vips chooses Loader modules, on the other hand, by sniffing the first few bytes of the file,
+  # so a list of file extensions for supported loadable formats won't always be complete.
+  # For example, SVG and PDF are usually supported as loaders (via rsvg and PDFium/Poppler)
+  # but are nowhere to be found in the Saver-based `:get_suffixes`:
+  # https://github.com/libvips/ruby-vips/issues/186
+  OUTER_LIMITS = Cooltrainer::DistorteD::Technology::Vips::VipsType::saver_types.keep_if { |type, _operations|
+    # Skip textual formats like CVSV image data, and skip mistakenly-detected font Types.
+    #
+    # Suffix-based Loader detection with the `mime-types` library/database we use
+    # causes us to detect a Netpbm PortableFloatmap as an Adobe Printer Font Metrics file:
+    # https://en.wikipedia.org/wiki/Netpbm#32-bit_extensions
+    type.media_type != 'text'.freeze and not type.sub_type.include?('font'.freeze)
+  }.transform_values { |v| v.map(&:options).reduce(&:merge) }
 
   # Define a to_<mediatype>_<subtype> method for each MIME::Type supported by libvips,
   # e.g. a supported Type 'image/png' will define a method :to_image_png in any
   # context where this module is included.
   self::OUTER_LIMITS.each_key { |t|
     define_method(t.distorted_file_method) { |dest_root, change|
-      vips_save(dest_root, change)
+      # Find a VipsType Struct for the saver operation
+      vips_operation = Cooltrainer::DistorteD::Technology::Vips::VipsType::saver_for(change.type).first
+
+      # Prepare a Hash of options appropriate for this operation.
+      # We explicitly declare all supported VipsArguments, using the FFI-detected
+      # default values for keys with no user-given value.
+      options = change.to_hash.slice(
+        # Get an Array[Symbol] of non-aliased option keys.
+        # Loading any aliases' values happens when the Change/Atoms are constructed.
+        *vips_operation.options.keep_if { |aka, compound| aka == compound.element }.keys
+      ).reject { |k,v|
+        # Skip options we manually added (like :crop) or ones with nil values.
+        # TODO: Handle all VipsOperation arguments (like :crop) automatically.
+        [k == :crop, v.nil?].any?
+      }.transform_keys { |k|
+        # The `ruby-vips` binding expects hyphenated argument names to be converted to underscores:
+        # https://github.com/libvips/ruby-vips/blob/4f696e30796adcc99cbc70ff7fd778439f0cbac7/lib/vips/operation.rb#L78-L80
+        k.to_s.gsub('-', '_').to_sym
+      }
+
+      # Assume the first destination_path has a :nil limit-break.
+      change.paths(dest_root).zip(Array[nil].concat(change.breaks)).each { |(dest_path, width)|
+        # Chain a call to VipsThumbnailImage into our input Vips::Image iff we were given a width.
+        # TODO: Exand this to aarbitrary other operations and consume their options Hash e.g.
+        # Cooltrainer::DistorteD::Technology::Vips::VipsType.new(:VipsThumbnailImage).options
+        input_image = width.nil? ? to_vips_image : to_vips_image.thumbnail_image(width)
+        # Do the thing.
+        Vips::Operation.call(
+          # `:vips_call` expects the operation_name to be a String:
+          # https://libvips.github.io/libvips/API/current/VipsOperation.html#vips-call
+          vips_operation.name.to_s,
+          # Write what Vips::Image, to where?
+          [input_image, dest_path],
+          # Operation-appropriate options Hash
+          options,
+          # `:options_string`, unused since we have everything in our Hash.
+          ''.freeze,
+        )
+      }
+
+      # Vips::Image#write_gc is a private method, but the built-in
+      # :write_to_file/:write_to_buffer methods call it, so we should call it too.
+      to_vips_image.send(:write_gc)
     }
   }
-
-  protected
-
-  # Generic Vips saver method, optionally handling resizing and cropping.
-  # NOTE: libvips chooses a saver (internally) based on the extname of the destination path.
-  # TODO: String-buffer version of this method using e.g. Image#jpegsave_buffer
-  def vips_save(dest_root, change)
-    begin
-      to_vips_image.write_to_file(change.paths(dest_root).first)
-      change.breaks.each { |b|
-        ver = to_vips_image.thumbnail_image(
-          b.to_int,
-          **{:crop => change.crop || :none},
-        )
-        ver.write_to_file(change.path(dest_root, b))
-      }
-    rescue Vips::Error => v
-      if v.message.include?('No known saver')
-        # TODO: Handle missing output formats. Replacements? Skip it? Die?
-        return nil
-      else
-        raise
-      end
-    end
-  end  # save
 
 end
