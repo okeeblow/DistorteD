@@ -335,7 +335,6 @@ class Cooltrainer::DistorteD::ClickAgain
           subopt.on(*parts)
         end
       }
-      subopt.on_tail('-h', '--help', 'Show this message')
     }
   }
 
