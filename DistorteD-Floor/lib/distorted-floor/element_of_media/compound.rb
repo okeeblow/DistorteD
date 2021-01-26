@@ -58,7 +58,7 @@ module Cooltrainer
     # Returns a longform String representation of one option.
     def inspect
       # Intentionally not including the blurb here since they are pretty long and messy.
-      "#{self.isotopes.length > 1 ? self.isotopes : self.element}: #{"#{self.valid} " if self.valid}#{"(#{self.default})" if self.default}"
+      "#{self.isotopes.length > 1 ? self.isotopes : self.element}: #{"#{self.valid} " if self.valid}#{"(#{self.default})" unless self.default.nil?}"
     end
 
     # Returns an Array of properly-formatted OptionParser::Switch strings for this Compound.
@@ -97,9 +97,9 @@ module Cooltrainer
         elsif self.valid == BOOLEAN_VALUES or self.valid == BOOLEAN_VALUES.to_a
           # Intentional no-op
         elsif self.valid.is_a?(Enumerable)
-          command << " [#{self.valid.join(', '.freeze)}]"
-        elsif not default.nil?
-          command << " [#{self.default}]"
+          command << " [#{self.valid.join(', '.freeze)}]" unless self.valid.empty?
+        elsif self.valid.is_a?(Class)
+          command << " [#{self.valid.name}]"
         else
           command << " [#{self.element.upcase}]"
         end

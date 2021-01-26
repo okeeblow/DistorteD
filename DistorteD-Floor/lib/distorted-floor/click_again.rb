@@ -316,7 +316,7 @@ class Cooltrainer::DistorteD::ClickAgain
         elsif Cooltrainer::OPTIONPARSER_COERSIONS.include?(compound.valid.class)
           parts.append(compound.valid)
         end
-        parts.append(compound.blurb)
+        parts.append(compound.default.nil? ? compound.blurb : compound.blurb.concat(" (default: #{compound.default})"))
 
         # Avoid using a `subopt.accept(Range)` Proc to handle Ranges,
         # because that would only allow us to define a single handler for all Ranges
