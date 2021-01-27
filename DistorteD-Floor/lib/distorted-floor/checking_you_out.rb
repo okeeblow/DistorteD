@@ -185,18 +185,6 @@ module CHECKING
       #   irb> loader.load_columnar => #<MIME::Types: 2277 variants, 1195 extensions>
       loader.load_columnar
 
-      # Change default JPEG file extension from .jpeg to .jpg
-      # because it pisses me off lol
-      container['image/jpeg'].last.preferred_extension = 'jpg'
-
-      # Add a missing extension to MPEG-DASH manifests:
-      #   irb> MIME::Types['application/dash+xml'].first
-      #   => #<MIME::Type: application/dash+xml>
-      #   irb> MIME::Types['application/dash+xml'].first.preferred_extension
-      #   => nil
-      # https://www.iana.org/assignments/media-types/application/dash+xml
-      container['application/dash+xml'].last.preferred_extension = 'mpd'
-
       # Override the loader's path with the path to our local data directory
       # after we've loaded the upstream data.
       # :@path is set up in Loader::initialize and only has an attr_reader
@@ -212,6 +200,53 @@ module CHECKING
       # Convert::Columnar.from_yaml_to_columnar
       loader.load_yaml
 
+      self.healing_vision(container)
+    end
+
+    # Various fixups for the upstream data.
+    def self.healing_vision(container)
+      # Change default JPEG file extension from .jpeg to .jpg
+      # because it pisses me off lol
+      container['image/jpeg'].last.preferred_extension = 'jpg'
+
+      # Add a missing extension to MPEG-DASH manifests:
+      #   irb> MIME::Types['application/dash+xml'].first
+      #   => #<MIME::Type: application/dash+xml>
+      #   irb> MIME::Types['application/dash+xml'].first.preferred_extension
+      #   => nil
+      # https://www.iana.org/assignments/media-types/application/dash+xml
+      container['application/dash+xml'].last.preferred_extension = 'mpd'
+
+      begin
+        # Make internal containers accessible :)
+        container.singleton_class.attr_accessor(:extension_index)
+        container.extension_index.singleton_class.attr_accessor(:container)
+        container.singleton_class.attr_accessor(:type_variants)
+        container.type_variants.singleton_class.attr_accessor(:container)
+
+        # The upstream Types database contains multiple definitions for different variations of MS Windows Bitmap:
+        # irb> MIME::Types.type_for('.bmp')
+        # => [#<MIME::Type: image/bmp>, #<MIME::Type: image/x-bmp>, #<MIME::Type: image/x-ms-bmp>]
+        #
+        # It's annoying to see BMP options displayed three times, so baleet all but the
+        # canonical 'image/bmp' Type: https://tools.ietf.org/html/rfc7903
+        #
+        # The extension_index container is keyed on the String extname with no leading period
+        # and holds a Set[Type] of all types for that extension:
+        #   puts container.instance_variable_get(:@extension_index).instance_variable_get(:@container)['bmp']
+        #   #<Set: {#<MIME::Type: image/bmp>, #<MIME::Type: image/x-bmp>, #<MIME::Type: image/x-ms-bmp>}>
+        #
+        # The type_variants container is keyed on the full String MIME::Type and holds a Set[Type], usually just one:
+        #   puts container.instance_variable_get(:@type_variants).instance_variable_get(:@container)['image/x-bmp']
+        container.extension_index.container.fetch('bmp'.freeze, Set.new).reject! { |type|
+          type.to_s != 'image/bmp'.freeze
+        }.each_with_object(container.type_variants.container) { |spurious_type, type_variants|
+          type_variants.delete(spurious_type.to_s)
+        }
+      rescue
+        # This is kinda unavoidably shitty due to reaching into two levels of private instance variables,
+        # so if something blows up here we should consider it optional and shouldn't impede our execution.
+      end
       container
     end
 
