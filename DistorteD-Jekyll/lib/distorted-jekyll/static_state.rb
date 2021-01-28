@@ -40,14 +40,13 @@ module Jekyll::DistorteD::StaticState
   # Jekyll does not pass this method a site.dest like it does write() and
   # others, but I want to be able to short-circuit here if all the
   # to-be-generated files already exist.
-  def modified?
+  def modified?(dest_root = the_setting_sun(:jekyll, :destination).to_s)
     # Assume modified for the sake of freshness :)
     modified = true
 
-    site_dest = the_setting_sun(:jekyll, :destination).to_s
-    if Dir.exist?(site_dest)
-      if Dir.exist?(File.join(site_dest, @relative_dest))
-        extant_files = Dir.entries(File.join(site_dest, @relative_dest)).to_set
+    if Dir.exist?(dest_root)
+      if Dir.exist?(File.join(dest_root, @relative_dest))
+        extant_files = Dir.entries(File.join(dest_root, @relative_dest)).to_set
 
         # TODO: Make this smarter. It's not enough that all the generated
         # filenames should exist. Try a few more ways to detect subtler
