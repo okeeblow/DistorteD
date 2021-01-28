@@ -52,7 +52,7 @@ module Cooltrainer
         # not necessarily corresponding to the exact name of the element we return.
         element: element,
         change: change,
-        name: change&.name || element,
+        name: change&.name || element,  # TODO: Use change tag here as well
         # Symbol name or Enumerable[Symbol] names of parent Element(s) we should be under,
         # in order from outermost to innermost nesting.
         # This is used to collate Change templates under a required parent Element,

@@ -55,8 +55,8 @@ module Cooltrainer
     # Returns a String describing the :names but rolled into one,
     # e.g. "IIDX-turntable-(400|800|1500).png"
     def name
-      tags = self[:breaks].length > 1 ? "-(#{self[:breaks].join('|'.freeze)})" : ''.freeze
-      "#{self.basename}#{tags}#{self.extname}"
+      break_tags = self[:breaks].length > 1 ? "-(#{self[:breaks].join('|'.freeze)})" : ''.freeze
+      "#{self.basename}#{"-#{self.tag}" unless self.tag.nil?}#{break_tags}#{self.extname}"
     end
 
     # Returns an Array[String] of all absolute destination paths this Change should generate,
