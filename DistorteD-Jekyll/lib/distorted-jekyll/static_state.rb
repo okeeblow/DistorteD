@@ -90,6 +90,12 @@ module Jekyll::DistorteD::StaticState
     # dimensions, attributes, etc of each output variation we want.
     # Full-size outputs will have the special tag `:full`.
     changes&.each { |change|
+      # Skip this Change if its files all already exist, to speed up site regeneration.
+      # TODO: Make this configurable! I don't like that this can hide needed-regeneration
+      #       due to e.g. changed Settings giving us a different output.
+      #       Maybe hash the Atoms' values and use that in the filename as guarantee?
+      next if change.paths(dest_root).map(&File.method(:file?)).all?
+
       if self.respond_to?(change.type.distorted_file_method)
         Jekyll.logger.debug("DistorteD::#{change.type.distorted_file_method}", change.name)
         # WISHLIST: Remove the empty final positional Hash argument once we require a Ruby version
