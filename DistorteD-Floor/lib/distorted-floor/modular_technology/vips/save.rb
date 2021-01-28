@@ -91,6 +91,15 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
         k.to_s.gsub('-', '_').to_sym
       }
 
+      # HACK: MagickSave needs us to specify the 'delegate' (ImageMagick-speak)
+      # via the :format VipsAttribute that we skipped when generating Compounds.
+      # TODO: Use VipsType#parents once it exists instead of checking :include? on a String.
+      # TODO: Choose the delegate more directly/intelligently than by just downcasing the sub_type,
+      # e.g. 'GIF -> 'gif'. It does work, but this seems fragile.
+      if vips_operation.to_s.include?('VipsForeignSaveMagick')
+        options.store(:format, change.type.sub_type.downcase)
+      end
+
       # Assume the first destination_path has a :nil limit-break.
       change.paths(dest_root).zip(Array[nil].concat(change.breaks)).each { |(dest_path, width)|
         # Chain a call to VipsThumbnailImage into our input Vips::Image iff we were given a width.
