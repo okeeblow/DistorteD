@@ -25,6 +25,10 @@ distorted:
   # animated GIF and leaving 'image/gif' to refer to single-frame GIFs.
   changes:
     image:
+      ?
+        "*"
+      :
+        ? image/x.distorted.fallback
       jpeg:
         ? image/jpeg
         ? image/webp
