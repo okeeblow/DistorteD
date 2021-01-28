@@ -114,6 +114,22 @@ module Jekyll::DistorteD::StaticState
     }
   end  # write
 
+  # Returns source file path.
+  # NOTE: Can't be private because Jekyll::Doctor as of version 4.2.0
+  # will call this to show an obnoxious warning:
+  # https://github.com/jekyll/jekyll/pull/8459
+  def path
+    @path ||= begin
+      # Static file is from a collection inside custom collections directory
+      if !@collection.nil? && !@site.config['collections_dir'.freeze].empty?
+        File.join(*[@base, @site.config['collections_dir'.freeze], @dir, @name].compact)
+      else
+        File.join(*[@base, @dir, @name].compact)
+      end
+    end
+  end
+
+
   private
 
   def copy_file(dest_path, *a, **k)
@@ -135,19 +151,6 @@ module Jekyll::DistorteD::StaticState
   def mtime
     (@modified_time ||= File.stat(path).mtime).to_i
   end
-
-  # Returns source file path.
-  def path
-    @path ||= begin
-      # Static file is from a collection inside custom collections directory
-      if !@collection.nil? && !@site.config['collections_dir'.freeze].empty?
-        File.join(*[@base, @site.config['collections_dir'.freeze], @dir, @name].compact)
-      else
-        File.join(*[@base, @dir, @name].compact)
-      end
-    end
-  end
-
 
   # Returns a Set of just the String filenames we want for this media.
   # This will be used by `modified?` among others.
