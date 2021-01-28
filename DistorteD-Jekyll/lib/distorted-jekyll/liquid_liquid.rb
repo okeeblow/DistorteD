@@ -122,6 +122,10 @@ module Cooltrainer
     # If it requests no parents, store it with us.
     # If it requests a parent, forward it there to the same method.
     def mad_child(moon_child)
+      # TODO: Figure out what to do if we were given a non-ElementalCreation.
+      #       For now just skip it.
+      return nil unless moon_child.is_a?(self.class)
+
       parent = moon_child.parents&.shift
       if parent.nil?  # When shifting/popping an empty :parents Array
         # Store the child with an incrementing Integer key as if
