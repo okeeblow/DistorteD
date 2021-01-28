@@ -36,10 +36,8 @@ module Cooltrainer
 
     # Returns the Change Type's :preferred_extension as a String with leading dot (.)
     def extname
-      @extname ||= begin
-        dot = '.'.freeze unless type.preferred_extension.nil? || type.preferred_extension&.empty?
-        "#{dot}#{type.preferred_extension}"
-      end
+      dot = '.'.freeze unless type.preferred_extension.nil? || type.preferred_extension&.empty?
+      "#{dot}#{type.preferred_extension}"
     end
 
     # Returns an Array[String] of filenames this Change should generate,
