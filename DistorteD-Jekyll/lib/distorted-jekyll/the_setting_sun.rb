@@ -69,7 +69,8 @@ module Jekyll::DistorteD
     # use the default config it would be impossible to turn off any of that data.
     memory = sources.reduce(nil) { |out, source|
       key_paths.each { |key_path|
-        case new = source.call(key_path)
+        new = source.call(key_path)
+        case
         when [out, new].all? { |c| c&.respond_to?(:update) } then out.update(new)
         when [out, new].all? { |c| c&.respond_to?(:merge)  } then out.merge(new)
         when [out, new].all? { |c| c&.respond_to?(:concat) } then out.concat(new)
