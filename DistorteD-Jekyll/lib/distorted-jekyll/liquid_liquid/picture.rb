@@ -8,25 +8,29 @@ module Jekyll::DistorteD::LiquidLiquid; end
 module Jekyll::DistorteD::LiquidLiquid::Picture
 
 
-  # Returns a CSS media query String for a full-size Image outer_limit allowing btowsers,
-  # to properly consider its <source> alongside any generated resized versions of the same Image.
-  # https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries
-  def self.full_size_media_query(change, vips_image)
-    # This is kinda hacky, but use the Setting loader to look for `:outer_limits`
-    # of this Type that are larger than this `vips_image` since we won't have visibility of
-    # other `changes` from this Class instance method.
-    larger_than_us = Jekyll::DistorteD::the_setting_sun(:outer_limits, *(change.type.settings_paths))
-      .map { |l| l.fetch(:width, nil)}       # Look for a :width key in every outer limit.
-      .compact                               # Discard any limits that don't define :width.
-      .keep_if { |w| w > vips_image.width }  # Discard any limits whose :width is smaller than us.
-    # Add an additional `max` constraint to the media query if this `vips_image`
-    # is not the largest one in the <picture>.
-    # This effectively makes this <source> useless since so few user-agents will ever
-    # have a viewport the exact pixel width of this image, but for our use case
-    # it's better to have a useless media query than no media query since it will
-    # make browsers pick a better variation than this one.
-    return "(min-width: #{vips_image.width}px)#{" and (max-width: #{vips_image.width}px)" unless larger_than_us.empty?}"
   end
+
+  # Returns a Change modified in-place to includ the new fallback Type and Tag
+  def change_fallback_image!(change)
+    change.tap { |change|
+      change.type = detect_fallback_image_type
+      change.tag = :fallback
+    }
+  end
+
+  define_method(FALLBACK_IMAGE_TYPE.distorted_template_method) { |change|
+    # TODO: Fix the interaction between Change#name and any Tags, stop modifying this Change
+    # in-place since it will currently go on to run the modified-Type's :write method,
+    # and stop regenerating all files when only one has changed.
+    change_fallback_image!(change)
+    Cooltrainer::ElementalCreation.new(:img, change, parents: Array[:anchor, :picture])
+  }
+  define_method(FALLBACK_IMAGE_TYPE.distorted_file_method) { |dest_root, change|
+    # TODO: Handle `:modified?` more gracefully and stop relying on the above fallback
+    # `:distorted_template_method` to modify our Change for us.
+    # This currently never runs!
+    self.send(detect_fallback_image_type.distorted_file_method, dest_root, change_fallback_image(change))
+  }
 
   # Returns an anonymous method that generates a <source> tag for Image output Types.
   def self.render_picture_source
