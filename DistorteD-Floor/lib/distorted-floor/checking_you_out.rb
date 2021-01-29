@@ -51,9 +51,13 @@ module MIME
     DISTORTED_METHOD_PREFIXES = Hash[
       :buffer => 'to'.freeze,
       :file => 'write'.freeze,
+      :open => 'open'.freeze,
       :template => 'render'.freeze,
     ]
     SUB_TYPE_SEPARATORS = /[-_+\.]/
+
+    # Returns a Symbol name of the method that should return a loaded imtermediate structure of some sort, e.g. a Vips::Image.
+    def distorted_open_method; "#{DISTORTED_METHOD_PREFIXES[:open]}_#{distorted_method_suffix}".to_sym; end
 
     # Returns a Symbol name of the method that should return a String buffer containing the file in this Type.
     def distorted_buffer_method; "#{DISTORTED_METHOD_PREFIXES[:buffer]}_#{distorted_method_suffix}".to_sym; end
