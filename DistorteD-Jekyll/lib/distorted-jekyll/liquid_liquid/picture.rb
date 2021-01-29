@@ -22,7 +22,8 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
   def detect_fallback_image_type
     @fallback_image_type ||= case
     when to_vips_image.has_alpha? then CHECKING::YOU::OUT['image/png'.freeze]
-    when to_vips_image.percent(100) <= 256 then CHECKING::YOU::OUT['image/gif'.freeze]
+    # TODO: Figure out how to detect good GIF candidates. VIPS currently lacks indexed color support.
+    #when <idk> then CHECKING::YOU::OUT['image/gif'.freeze]
     else CHECKING::YOU::OUT['image/jpeg'.freeze]
     end
   end
