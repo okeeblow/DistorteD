@@ -118,13 +118,53 @@ module Cooltrainer::DistorteD::Technology::Vips::Load
   }.transform_values { |v| v.map(&:options).reduce(&:merge) }
 
 
+  self::LOWER_WORLD.each_key { |t|
+    define_method(t.distorted_open_method) { |src_path = path, change|
+      # Find a VipsType Struct for the saver operation
+      vips_operation = Cooltrainer::DistorteD::Technology::Vips::VipsType::loader_for(t).first
+
+      # Prepare a Hash of options appropriate for this operation.
+      # We explicitly declare all supported VipsArguments, using the FFI-detected
+      # default values for keys with no user-given value.
+      options = change.to_hash.slice(
+        # Get an Array[Symbol] of non-aliased option keys.
+        # Loading any aliases' values happens when the Change/Atoms are constructed.
+        *vips_operation.options.keep_if { |aka, compound| aka == compound.element }.keys
+      ).reject { |k,v| v.nil? }.transform_keys { |k|
+        # The `ruby-vips` binding expects hyphenated argument names to be converted to underscores:
+        # https://github.com/libvips/ruby-vips/blob/4f696e30796adcc99cbc70ff7fd778439f0cbac7/lib/vips/operation.rb#L78-L80
+        k.to_s.gsub('-', '_').to_sym
+      }
+
+      Vips::Operation.call(
+        # `:vips_call` expects the operation_name to be a String:
+        # https://libvips.github.io/libvips/API/current/VipsOperation.html#vips-call
+        vips_operation.name.to_s,
+        [src_path],
+        # Operation-appropriate options Hash
+        Hash.new,#options,
+        # `:options_string`, unused since we have everything in our Hash.
+        ''.freeze,
+      )
+    }
+  }
+
+
+  # Returns a Vips::Image from a file source.
+  # TODO: Get rid of this method! This is an old entrypoint.
+  #       Consume lower Types as a Change once we support Change chaining, then execute a chain.
   def to_vips_image
-    # TODO: Learn more about what VipsAccess means for our use case,
-    # if the default should be changed, and if it should be
-    # a user-controllable attr or not.
-    # https://libvips.github.io/libvips/API/current/VipsImage.html#VipsAccess
-    # https://libvips.github.io/libvips/API/current/How-it-opens-files.md.html
-    @vips_image ||= Vips::Image.new_from_file(path)
+    @vips_image ||= begin
+      lower_config = the_setting_sun(:lower_world, *(type_mars.first&.settings_paths)) || Hash.new
+      atoms = Hash.new
+      lower_world[type_mars.first].values.reduce(&:concat).each_pair { |aka, compound|
+        next if aka != compound.element  # Skip alias Compounds since they will all be handled at once.
+        atoms.store(compound.element, Cooltrainer::Atom.new(compound.isotopes.reduce(nil) { |value, isotope|
+          value || lower_config.fetch(isotope, nil) || context_arguments&.fetch(isotope, nil)
+        }, compound.default))
+      }
+      self.send(type_mars.first.distorted_open_method, **atoms.transform_values(&:get))
+    end
   end
 
 
