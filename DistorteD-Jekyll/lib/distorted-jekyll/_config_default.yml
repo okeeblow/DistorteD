@@ -17,6 +17,13 @@ distorted:
   # file is encountered.
   never_let_you_down: true
 
+  lower_world:
+    image:
+      ?
+        "*"
+      :
+        access: random
+
   # Configure DistorteD format changes by media_type, then by sub_type.
   # The list of target formats is plain text, media_type/sub_type.
   # These are mostly based on IANA's official Media Types list:
