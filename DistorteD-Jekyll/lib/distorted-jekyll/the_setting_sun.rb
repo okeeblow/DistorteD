@@ -71,6 +71,7 @@ module Jekyll::DistorteD
       key_paths.each { |key_path|
         new = source.call(key_path)
         case
+        when new.nil? then next
         when [out, new].all? { |c| c&.respond_to?(:update) } then out.update(new)
         when [out, new].all? { |c| c&.respond_to?(:merge)  } then out.merge(new)
         when [out, new].all? { |c| c&.respond_to?(:concat) } then out.concat(new)
