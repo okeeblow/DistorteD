@@ -113,7 +113,9 @@ module Jekyll::DistorteD
       # but that would make it really tedious and error-prone in the Jekyll config
       # if/when it comes time to override any defaults, so I em ignoring that capability
       # and doing my own normalization here in this method.
-      memory.values.all?{|v| v.nil?} ? memory.keys.map(&:to_sym).to_set : memory.transform_keys(&:to_sym)
+      memory.values.all?{|v| v.nil?} ? memory.keys.map(&:to_sym).to_set : memory.transform_keys(&:to_sym).transform_values { |hash_value|
+        (hash_value.is_a?(String) and hash_value.length <= ARBITRARY_ATTR_SYMBOL_STRING_LENGTH_BOUNDARY) ? hash_value.to_sym : hash_value
+      }
     else memory
     end
     # Use the `key_paths` Array[Array[String] as the Hash key directly to avoid the complexity
