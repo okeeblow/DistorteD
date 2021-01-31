@@ -78,7 +78,6 @@ module Jekyll::DistorteD
         else out = new
         end
       }
-      Jekyll.logger.debug(log_key, out) unless out.nil?
       break out unless out.nil?
     }
 
@@ -118,6 +117,7 @@ module Jekyll::DistorteD
       }
     else memory
     end
+    Jekyll.logger.debug(log_key, memory) unless memory.nil?
     # Use the `key_paths` Array[Array[String] as the Hash key directly to avoid the complexity
     # of trying to splat it and nest the keys in layers of other Hashes.
     self.memories.store(key_paths, memory)
