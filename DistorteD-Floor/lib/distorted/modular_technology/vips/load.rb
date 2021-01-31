@@ -136,13 +136,15 @@ module Cooltrainer::DistorteD::Technology::Vips::Load
         k.to_s.gsub('-', '_').to_sym
       }
 
+      # Do the thing.
       Vips::Operation.call(
         # `:vips_call` expects the operation_name to be a String:
         # https://libvips.github.io/libvips/API/current/VipsOperation.html#vips-call
         vips_operation.name.to_s,
+        # Loaders only take the source path as a required argument.
         [src_path],
         # Operation-appropriate options Hash
-        Hash.new,#options,
+        options,
         # `:options_string`, unused since we have everything in our Hash.
         ''.freeze,
       )
