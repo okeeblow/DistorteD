@@ -22,6 +22,7 @@ distorted:
       ?
         "*"
       :
+        memory: true
         access: random
 
   # Configure DistorteD format changes by media_type, then by sub_type.
