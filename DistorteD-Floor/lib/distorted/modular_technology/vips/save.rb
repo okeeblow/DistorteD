@@ -105,7 +105,9 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
         # Chain a call to VipsThumbnailImage into our input Vips::Image iff we were given a width.
         # TODO: Exand this to aarbitrary other operations and consume their options Hash e.g.
         # Cooltrainer::DistorteD::Technology::Vips::VipsType.new(:VipsThumbnailImage).options
-        input_image = width.nil? ? to_vips_image : to_vips_image.thumbnail_image(width, crop: change.to_hash.fetch(:crop, :none))
+        input_image = (width or not [nil, :none].include?(change.to_hash.fetch(:crop, nil))) ?
+          to_vips_image.thumbnail_image(to_vips_image.width, crop: change.to_hash.fetch(:crop, :none)) :
+          to_vips_image
         # Do the thing.
         Vips::Operation.call(
           # `:vips_call` expects the operation_name to be a String:
