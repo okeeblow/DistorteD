@@ -164,7 +164,8 @@ class Cooltrainer::DistorteD::ClickAgain
   end
 
   # Writes all intended output files to a given directory.
-  def write(dest_root)
+  # `dest_root` is a Jekyll-ism not used here in the CLI, but define it anyway for consistency.
+  def write(dest_root = nil)
     changes.each { |change|
       if self.respond_to?(change.type.distorted_file_method)
         # WISHLIST: Remove the empty final positional Hash argument once we require a Ruby version
@@ -277,7 +278,7 @@ class Cooltrainer::DistorteD::ClickAgain
             value || type_options&.delete(isotope)
           }, compound.default))
         }
-        wanted.push(Cooltrainer::Change.new(type, src: name, **atoms))
+        wanted.push(Cooltrainer::Change.new(type, src: name, dir: Cooltrainer::Atom.new(File.dirname(name)), **atoms))
       }
     end
   end

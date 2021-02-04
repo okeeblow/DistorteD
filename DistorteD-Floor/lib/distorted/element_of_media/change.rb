@@ -59,9 +59,9 @@ module Cooltrainer
 
     # Returns an Array[String] of all absolute destination paths this Change should generate,
     # given a root destination directory.
-    def paths(dest_root = ''.freeze)  # Empty String will expand to current working directory
-      output_dir = self[:atoms]&.fetch(:dir, ''.freeze)
-      return self.names.map { |n| File.join(File.expand_path(dest_root), output_dir, n) }
+    def paths(dest_root = nil)
+      output_dir = self[:atoms]&.fetch(:dir, nil)
+      return self.names.map { |n| File.expand_path(File.join(*([dest_root, output_dir, n].compact))) }
     end
 
     # Returns a String absolute destination path for only one limit-break.
