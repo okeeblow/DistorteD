@@ -3,4 +3,4 @@
 require 'distorted/click_again'
 
 click = Cooltrainer::DistorteD::ClickAgain.new(ARGV, File.basename(__FILE__))
-click.write(Dir.pwd)
+click.write
