@@ -270,6 +270,7 @@ class Cooltrainer::DistorteD::ClickAgain
         type_options = combined_outer_options.fetch(type, Hash.new)
         atoms = Hash.new
         Cooltrainer::DistorteD::IMPLANTATION(:OUTER_LIMITS, type_options[:molecule])&.dig(type)&.each_pair { |aka, compound|
+          next if aka.nil? or compound.nil?  # Allow Molecules to define Types with no options.
           next if aka != compound.element  # Skip alias Compounds since they will all be handled at once.
           # Look for a user-given argument matching any supported alias of a Compound,
           # and check those values against the Compound for validity.
@@ -346,7 +347,7 @@ class Cooltrainer::DistorteD::ClickAgain
       lower_world[type].each_pair { |molecule, aka|
         commands.update(type => {
           molecule => COMPOUND_OPTIONPARSER.call(aka&.values.to_set, type, molecule)
-        }) { |k,o,n| o.merge(n) }
+        }) { |k,o,n| o.merge(n) } unless aka.nil?
       }
     }
   end
@@ -358,7 +359,7 @@ class Cooltrainer::DistorteD::ClickAgain
       types.each_pair { |type, aka|
         commands.update(molecule => {
           type => COMPOUND_OPTIONPARSER.call(aka&.values.to_set, molecule, type)
-        }) { |k,o,n| o.merge(n) }
+        }) { |k,o,n| o.merge(n) } unless aka.nil?
       }
     }
   end
