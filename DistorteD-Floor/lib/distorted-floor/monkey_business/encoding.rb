@@ -291,9 +291,10 @@ class Encoding
 
   # Returns the Integer codepage ID of any Encoding instance.
   def code_page
-    Encoding::adopted_encoding_code_page_ids.dig(self) ||
-      self.names.any?{ |n| CODE_PAGE_ENCODING_NAME.match(n) } ?
-        Regexp.last_match['code_page'.freeze].to_i : nil
+    Encoding::adopted_encoding_code_page_ids.fetch(
+      self,
+      self.names.any?{ |n| CODE_PAGE_ENCODING_NAME.match(n) } ? Regexp.last_match['code_page'.freeze].to_i : nil
+    )
   end
 
   # Patch the Encoding::find() method to support taking Integer and numeric-String arguments
