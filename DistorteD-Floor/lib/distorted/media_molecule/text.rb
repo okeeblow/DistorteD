@@ -82,7 +82,7 @@ module Cooltrainer::DistorteD::Molecule::Text
 
 
   LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash.transform_values { |v| Hash[
-    :encoding => Cooltrainer::Compound.new(:encoding, blurb: 'Character encoding used in this document.', default: 'UTF-8'.freeze),
+    :encoding => Cooltrainer::Compound.new(:encoding, valid: Encoding, blurb: 'Character encoding used in this document. (default: automatically detect)', default: nil),
   ]}
   OUTER_LIMITS = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash.merge(
     Cooltrainer::DistorteD::Technology::Vips::Save::OUTER_LIMITS.dup.transform_values{ |v| Hash[
@@ -132,7 +132,6 @@ module Cooltrainer::DistorteD::Molecule::Text
     #
     # TODO: Figure out if/how we can get IBM437 files to not be detected as ISO-8859-1
     @text_file_encoding ||= Encoding::find(
-      abstract(:encoding).to_s ||
       CharlockHolmes::EncodingDetector.detect(text_file_content)[:encoding] ||
       'UTF-8'.freeze
     )
@@ -157,6 +156,14 @@ module Cooltrainer::DistorteD::Molecule::Text
     # => "PerfectDOSVGA437"
     # irb(main)> font_meta.line_gap
     # => 0
+
+    # It would be gross to pass this through so many methods in this mostly-untouched-since-0.5 code,
+    # so just stick these directly into the instance variables used for memoization.
+    unless change.encoding.nil?
+      # TODO: Turning the String arguments into an Encoding should be a centralized thing
+      # of some sort, probably in Cooltrainer::Compound.
+      @text_file_encoding = change.encoding.is_a?(Encoding) ? change.encoding : Encoding::const_get(change.encoding)
+    end
 
     # https://libvips.github.io/libvips/API/current/libvips-create.html#vips-text
     Vips::Image.text(
