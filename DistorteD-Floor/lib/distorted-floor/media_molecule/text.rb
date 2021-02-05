@@ -181,7 +181,7 @@ module Cooltrainer::DistorteD::Molecule::Text
         # Space between lines (in Points).
         :spacing => to_ttfunk.line_gap,
         :justify => true,  # Requires libvips 8.8
-        :dpi => abstract(:dpi)&.to_i,
+        :dpi => change.dpi&.to_i,
       },
     )
   end
