@@ -253,13 +253,42 @@ class Cooltrainer::DistorteD::ClickAgain
   # Returns an Array[Change] for every intended output variation.
   def changes
     @changes ||= begin
-      # TODO: Consume @lower_options as well, and figure out how to specify Molecule
-      # for future situations where multiple Molecules may overlap.
-      # Until then, just collapse @outer_options to one Hash and take anything we find for our Type.
-      combined_outer_options = @outer_options.each_with_object(Array.new) { |(molecule,type_options),combined| combined.push(type_options) }.reduce(&:merge)
+      # TODO: Handle loewr_options and outer_options separately
+      # once I have some idea of what kind of Change chaining I want to do.
+      # :@lower_options will be a Hash[MIME::Type] => Hash[MediaMolecule] => given options, e.g.
+      #   {#<MIME::Type: text/x-nfo>=>{Cooltrainer::DistorteD::Molecule::Text=>{:encoding=>"IBM437", :molecule=>Cooltrainer::DistorteD::Molecule::Text}}}
+      #
+      # Combine all Molecule options into one for now since we don't have multi-Molecule or Change-chaining.
+      # TODO: Don't combine them, because it's currently possible for same-key options to interfere.
+      combined_lower_options = @lower_options.slice(*type_mars).values.reduce(&:merge).values.reduce(&:merge)
+
+      # :@outer_options will be a Hash[MediaMolecule] => Hash[MIME::Type] => given options,
+      # with the given options duplicated among each supported Type, e.g.
+      #   {Cooltrainer::DistorteD::Molecule::Text=>{
+      #     #<MIME::Type: image/png>=>{:dpi=>"144", :molecule=>Cooltrainer::DistorteD::Molecule::Text},
+      #     #<MIME::Type: image/jpeg>=>{:dpi=>"144", :molecule=>Cooltrainer::DistorteD::Molecule::Text},
+      #     #<MIME::Type: image/webp>=>{:dpi=>"144", :molecule=>Cooltrainer::DistorteD::Molecule::Text},
+      #     …
+      #   }
+      #
+      # Combine all Molecule options into one for now since we don't have multi-Molecule.
+      # TODO: Don't combine them, because it's currently possible for same-key options to interfere.
+      combined_outer_options = @outer_options.values.reduce(&:merge)
+
+      # TODO: Support intermediate operations separate from OUTER LIMITS.
+      # For example, for image output we currently add the :crop option to each OL,
+      # but it will be more appropriate to support that VipsThumbnail operation as its own standalone thing.
+
+      # Construct a Change for each desired output,
+      # which is what we consider any positional argument to the CLI
+      # aside from the first one (for the source file path).
       @get_out.each_with_object(Array[]) { |out, wanted|
-        # TODO: Nice way to check format for Type string here.
-        # Should be e.g. "image/png"
+        # An output's positional argument may be:
+        # - A destination path, in which case we get the Type from the extension.
+        # - A MIME::Type identifier String, e.g. 'image/png'.
+        #
+        # TODO: Nice way to check format for Type string here and fail
+        # if we aren't given enough info to identify the wanted output Type.
         if CHECKING::YOU::OUT[out].nil?
           name = out
           type = CHECKING::YOU::OUT(out).first
@@ -267,16 +296,21 @@ class Cooltrainer::DistorteD::ClickAgain
           name = @name
           type = CHECKING::YOU::OUT[out]
         end
+
         type_options = combined_outer_options.fetch(type, Hash.new)
-        atoms = Hash.new
-        Cooltrainer::DistorteD::IMPLANTATION(:OUTER_LIMITS, type_options[:molecule])&.dig(type)&.each_pair { |aka, compound|
+        supported_options = [
+          Cooltrainer::DistorteD::IMPLANTATION(:LOWER_WORLD, type_options[:molecule])&.slice(*type_mars)&.values&.reduce(&:merge),
+          Cooltrainer::DistorteD::IMPLANTATION(:OUTER_LIMITS, type_options[:molecule])&.fetch(type, nil)
+        ].compact.reduce(&:merge)
+
+        atoms = supported_options.each_pair.with_object(Hash.new) { |(aka, compound), atoms|
           next if aka.nil? or compound.nil?  # Allow Molecules to define Types with no options.
           next if aka != compound.element  # Skip alias Compounds since they will all be handled at once.
           # Look for a user-given argument matching any supported alias of a Compound,
           # and check those values against the Compound for validity.
           atoms.store(compound.element, Cooltrainer::Atom.new(compound.isotopes.reduce(nil) { |value, isotope|
-            # TODO: valid?
-            value || type_options&.delete(isotope)
+            # TODO: Compound#valid?, and cast non-Strings to the correct :valid class.
+            value || type_options&.delete(isotope) || combined_lower_options.fetch(isotope, nil)
           }, compound.default))
         }
         wanted.push(Cooltrainer::Change.new(type, src: name, dir: Cooltrainer::Atom.new(File.dirname(name)), **atoms))
