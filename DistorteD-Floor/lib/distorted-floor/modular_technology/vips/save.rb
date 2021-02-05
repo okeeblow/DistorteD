@@ -100,14 +100,16 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
         options.store(:format, change.type.sub_type.downcase)
       end
 
+      loaded_image = to_vips_image(change)
+
       # Assume the first destination_path has a :nil limit-break.
       change.paths(dest_root).zip(Array[nil].concat(change.breaks)).each { |(dest_path, width)|
         # Chain a call to VipsThumbnailImage into our input Vips::Image iff we were given a width.
         # TODO: Exand this to aarbitrary other operations and consume their options Hash e.g.
         # Cooltrainer::DistorteD::Technology::Vips::VipsType.new(:VipsThumbnailImage).options
         input_image = (width or not [nil, :none].include?(change.to_hash.fetch(:crop, nil))) ?
-          to_vips_image.thumbnail_image(to_vips_image.width, crop: change.to_hash.fetch(:crop, :none)) :
-          to_vips_image
+          loaded_image.thumbnail_image(to_vips_image.width, crop: change.to_hash.fetch(:crop, :none)) :
+          loaded_image
         # Do the thing.
         Vips::Operation.call(
           # `:vips_call` expects the operation_name to be a String:
@@ -124,7 +126,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
 
       # Vips::Image#write_gc is a private method, but the built-in
       # :write_to_file/:write_to_buffer methods call it, so we should call it too.
-      to_vips_image.send(:write_gc)
+      loaded_image.send(:write_gc)
     }
   }
 

@@ -140,7 +140,7 @@ module Cooltrainer::DistorteD::Molecule::Text
     return abstract(:font)&.to_sym || CODEPAGE_FONT[text_file_encoding.code_page].first
   end
 
-  def to_vips_image
+  def to_vips_image(change)
     # Load font metadata directly from the file so we don't have to
     # duplicate it here to feed to Vips/Pango.
     #
