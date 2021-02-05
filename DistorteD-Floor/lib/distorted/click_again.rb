@@ -313,7 +313,7 @@ class Cooltrainer::DistorteD::ClickAgain
             value || type_options&.delete(isotope) || combined_lower_options.fetch(isotope, nil)
           }, compound.default))
         }
-        wanted.push(Cooltrainer::Change.new(type, src: name, dir: Cooltrainer::Atom.new(File.dirname(name)), **atoms))
+        wanted.push(Cooltrainer::Change.new(type, src: @name, dir: Cooltrainer::Atom.new(File.dirname(name)), **atoms))
       }
     end
   end
