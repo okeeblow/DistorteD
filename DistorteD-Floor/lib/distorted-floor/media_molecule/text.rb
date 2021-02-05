@@ -71,10 +71,13 @@ module Cooltrainer::DistorteD::Molecule::Text
       :perfectdosvga,
     ],
   }
+  # TODO: Figure out what to do here. ProFont isn't suitable for many (most?) Encodings,
+  # but the gem would be way way too big if I tried to include coverage for everything.
+  # Using system fonts is probably the solution, but I need to be able to get a path to them for VIPS.
+  CODEPAGE_FONT.default = Array[:profont, :profont_b]
   # …as well as the inverse, the numeric codepage for each font:
-  FONT_CODEPAGE = self::CODEPAGE_FONT.reduce(Hash.new([])) { |memo, (key, values)|
+  FONT_CODEPAGE = self::CODEPAGE_FONT.each_with_object(Hash.new([])) { |(key, values), memo|
     values.each { |value| memo[value] = key }
-    memo
   }
 
 
@@ -137,7 +140,7 @@ module Cooltrainer::DistorteD::Molecule::Text
 
   def vips_font
     # Set the shorthand Symbol key for our chosen font.
-    return abstract(:font)&.to_sym || CODEPAGE_FONT[text_file_encoding.code_page].first
+    CODEPAGE_FONT[text_file_encoding&.code_page].first
   end
 
   def to_vips_image(change)
