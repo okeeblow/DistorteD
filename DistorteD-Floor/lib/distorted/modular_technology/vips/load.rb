@@ -155,7 +155,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Load
   # Returns a Vips::Image from a file source.
   # TODO: Get rid of this method! This is an old entrypoint.
   #       Consume lower Types as a Change once we support Change chaining, then execute a chain.
-  def to_vips_image(change)
+  def to_vips_image(change = nil)
     @vips_image ||= begin
       lower_config = the_setting_sun(:lower_world, *(type_mars.first&.settings_paths)) || Hash.new
       atoms = Hash.new

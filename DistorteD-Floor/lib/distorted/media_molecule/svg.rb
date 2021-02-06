@@ -27,7 +27,7 @@ module Cooltrainer::DistorteD::Molecule::SVG
     SVG_TYPE => nil,
   ]
 
-  def to_vips_image(change)
+  def to_vips_image(change = nil)
     # NOTE: libvips 8.9 added the `unlimited` argument to svgload.
     # Loading SVGs >= 10MiB in size will fail on older libvips.
     # https://github.com/libvips/libvips/commit/55e49831b801e05ddd974b1e2102fda7956c53f5
