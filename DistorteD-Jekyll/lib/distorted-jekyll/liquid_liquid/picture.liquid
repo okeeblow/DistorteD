@@ -1,6 +1,6 @@
 {%- assign img_child = nil -%}
 <picture>
-{%- for child in children -%}
+{% for child in children -%}
 {%- assign test_img = child | slice: 1, 3 -%}
 {%- if test_img == 'img' -%}
 {%- assign img_child = child -%}
@@ -11,5 +11,5 @@
 {%- unless img_child -%}
 {%- assign img_child = '<img' | append: change.attr.alt | append: change.attr.title | append: change.attr.loading | append: '/>' -%}
 {%- endunless -%}
-  {{ img_child }}
+{{ img_child }}
 </picture>

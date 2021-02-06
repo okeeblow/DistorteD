@@ -10,7 +10,7 @@ module Jekyll::DistorteD::Molecule::Video
 
   Cooltrainer::DistorteD::IMPLANTATION(:LOWER_WORLD, Cooltrainer::DistorteD::Molecule::Video).each_key { |type|
     define_method(type.distorted_template_method) { |change|
-      Cooltrainer::ElementalCreation.new(:video_source, change, parents: Array[:video])
+      Cooltrainer::ElementalCreation.new(:video_source, change, parent: :video)
     }
   }
 

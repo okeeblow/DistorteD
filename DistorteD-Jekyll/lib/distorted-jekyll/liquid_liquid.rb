@@ -44,9 +44,9 @@ module Cooltrainer
   #
   # I might revisit this design decision once I experience working with more
   # media formats and in more page contexts :)
-  ElementalCreation = Struct.new(:element, :name, :parents, :children, :template, :assigns, :change, keyword_init: true) do
+  ElementalCreation = Struct.new(:element, :name, :parent, :children, :template, :assigns, :change, keyword_init: true) do
 
-    def initialize(element, change = nil, parents: nil, children: nil, template: nil, assigns: Hash[])
+    def initialize(element, change = nil, parent: nil, children: Array.new, template: nil, assigns: Hash[])
       super(
         # Symbol Template name, corresponding to a Liquid template file name,
         # not necessarily corresponding to the exact name of the element we return.
@@ -57,23 +57,10 @@ module Cooltrainer
         # in order from outermost to innermost nesting.
         # This is used to collate Change templates under a required parent Element,
         # e.g. <source> tags must be under a <picture> or a <video> tag.
-        parents: parents.nil? ? nil : (parents.is_a?(Enumerable) ? parents.to_a : Array[parents]),
-        # Set up a Hash to store any children of this element in an Array-like way
-        # using auto-incrementing Integer keys. Its `&default_proc` responds to Symbol Element names,
-        # uses :detect to search for and return the first instance of that Symbol iff one exists,
-        # and if not it instantiates an Element Struct for that symbol and stores it.
-        children: Hash.new { |children_hash, element| children_hash.values.detect(
-          # Enumerable#detect will call this `ifnone` Proc if :detect's block returns nil.
-          # This Proc will instantiate a new Element with a copy of our :change, then store and return it.
-          # Can remove the destructured empty Hash once Ruby 2.7 is gone.
-          ->{ children_hash.store(children_hash.length, self.class.new(element, change, **{}))}
-        ) { |child| child.element == element } if element.is_a?(Symbol) }.tap { |children_hash|
-          # Merge the children-given-to-initialize() into our Hash.
-          case children
-          when Array then children.map.with_index.with_object(children_hash) { |(v, i), h| h.store(i, v) }
-          when Hash then ch.merge(children)
-          end
-        },
+        parent: parent,
+        # Flat Array of child (and grandchild and etc) ElementalCreation Structs
+        # that will be sorted into a tree by our #render method.
+        children: children,
         # Our associated Liquid::Template, based on our element name.
         template: template || self.WATERING(element),
         # Container of variables we want to render in Liquid besides what's covered by the basics.
@@ -118,26 +105,6 @@ module Cooltrainer
       SORT_WEIGHTS[self.change&.type&.sub_type] <=> SORT_WEIGHTS[otra&.change&.type&.sub_type]
     end
 
-    # Take a child Element and store it.
-    # If it requests no parents, store it with us.
-    # If it requests a parent, forward it there to the same method.
-    def mad_child(moon_child)
-      # TODO: Figure out what to do if we were given a non-ElementalCreation.
-      #       For now just skip it.
-      return nil unless moon_child.is_a?(self.class)
-
-      parent = moon_child.parents&.shift
-      if parent.nil?  # When shifting/popping an empty :parents Array
-        # Store the child with an incrementing Integer key as if
-        # self[Lchildren] were an Array
-        self[:children].store(self[:children].length, moon_child)
-      else
-        # Forward the child to the next level of ElementalCreation.
-        # The Struct will be instantiated by the :children Hash's &default_proc
-        self[:children][parent].mad_child(moon_child)
-      end
-    end
-
     # Generic Liquid template loader
     # Jekyll's site-wide Liquid renderer caches in 4.0+ and is usable via
     # `site.liquid_renderer.file(cache_key).parse(liquid_string)`,
@@ -161,17 +128,58 @@ module Cooltrainer
 
     # Returns the rendered String contents of this and all child Elements.
     def render
+      # Sort our flat Array of child Elements into three groups based on the parent Element
+      # they want to attach to.
+      # Do we already have another matching Element, do we need to create the parent,
+      # or is no parent wanted, in which case it will be our direct child?
+      has_matching_parent, missing_parent, no_parent_needed = self[:children].map { |child|
+        # Support duplicate-Change `:children` defined as Array[Symbol].
+        child.is_a?(Symbol) ? self.class.new(child, self[:change], assigns: self[:assigns]) : child
+      }.partition { |child|
+        # Separate the Elements that will be our direct children out from all the others.
+        #
+        # It's important to check for parent==our_element as well as just nil,
+        # to avoid an infinite loop if we fail to nullify the child's parent
+        # where each level will create another duplicate parent.
+        child.parent.nil? or child.parent == self[:element]
+      }.yield_self { |(no_parent_needed, wants_parent)|
+        # Further separate the Elements that are not our direct children
+        # based on whether or not we need to create their parent Element.
+        wants_parent.partition { |child|
+          # Does the original flat Array of children include an Element
+          # matching the desired parent?
+          self[:children]&.group_by(&:element).keys.include?(child.parent)
+       }.push(no_parent_needed)  # Append our direct child Array to the Array[Array] we get from #partition.
+      }
+
+      # Set up a Hash[Symbol] => Element to hold the elements that will be rendered as our direct children,
+      # grouped so we can find and attach other Elements to them as their children.
+      direct_children = no_parent_needed.group_by(&:element)
+      # "Missing parent" Elements can be given all at once to a new intermediate parent Element,
+      # then *that* Element will become our direct child.
+      missing_parent.group_by(&:parent).each_pair { |parent, children|
+        # Give the new parent a copy of our Change to allow it to fill out
+        # contextual variables if desired, e.g. including the :alt attribute in a generated <img>.
+        direct_children.store(parent, Array[self.class.new(parent, self[:change], children: children, assigns: self[:assigns])])
+      }
+      # "Matched parent" Elements will already have a suitable detected parent Element
+      # in the :direct_children Hash.
+      has_matching_parent.group_by(&:parent).each_pair { |parent, children|
+        # NOTE: This currently only appends the matched children to the last (usually only)
+        # matching parent Element. I don't yet have a use-case to add anything more advanced.
+        direct_children[parent].last.children.concat(children)
+      }
+
+      # Now we're ready to render! Our template will need to interate any child Elements in Liquid.
       self[:template].render(
         self[:assigns].merge(Hash[
           # Most Elements will be associated with a Change Struct
           # encapsulating a single wanted variation on the source file.
           :change => self[:change].nil? ? nil : Cooltrainer::ChangeDrop.new(self[:change]),
-          # Create Elements for every wanted child if they were only given
-          # to us as Symbols, then render them all to Strings to include
-          # in our own output.
-          :children => self[:children]&.values.map { |child|
-            child.is_a?(Symbol) ? self.class.new(child, self[:change], parents: self[:name], assigns: self[:assigns]) : child
-          }.sort.map(&:render),  # :sort will use ElementalCreation's :<=> method.
+          # Take the Hash of our direct child Elements and recursively render them
+          # into our template's String output.
+          # The :sort will use ElementalCreation's :<=> method.
+          :children => direct_children.values.flatten.sort.map(&:render),
         ]).transform_keys(&:to_s).transform_values { |value|
           # Liquid wants String keys and values, not Symbols.
           value.is_a?(Symbol) ? value.to_s : value
@@ -196,8 +204,8 @@ module Cooltrainer
     def to_s; (self[:name] || self[:element]).to_s; end
 
     # e.g. <ElementalCreation::source name=IIDX-turntable-full.svg, parents=[:anchor, :picture]>
-    def inspect; "<#{self.class.name.split('::'.freeze).last}::#{self[:element]} #{
-      [:name, :parents, :children].map { |k| (self[k].nil? || self[k]&.empty?) ? nil : " #{k.to_s}=#{self[k]}" }.compact.join(','.freeze)
+    def inspect; "<#{self.class.name.split('::'.freeze).last}::#{self[:element]}#{
+      [:name, :children].map { |k| (self[k].nil? || self[k]&.empty?) ? nil : " #{k.to_s}=#{self[k]}" }.compact.join(','.freeze)
     }>"; end
 
   end  # Struct ElementalCreation
