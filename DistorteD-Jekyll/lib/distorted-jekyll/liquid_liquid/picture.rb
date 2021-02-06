@@ -46,7 +46,11 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
     # in-place since it will currently go on to run the modified-Type's :write method,
     # and stop regenerating all files when only one has changed.
     change_fallback_image!(change)
-    Cooltrainer::ElementalCreation.new(:img, change, parents: Array[:anchor, :picture])
+    change.href = "#{change.dir}#{change.name}"
+    Array[
+      Cooltrainer::ElementalCreation.new(:anchor, change, **{}),
+      Cooltrainer::ElementalCreation.new(:img, change, parent: :picture),
+    ]
   }
   define_method(FALLBACK_IMAGE_TYPE.distorted_file_method) { |dest_root, change|
     # TODO: Handle `:modified?` more gracefully and stop relying on the above fallback
@@ -62,7 +66,7 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
       if change.width.nil? and not change.type.sub_type.include?('svg'.freeze)
         change.width = to_vips_image(change).width
       end
-      Cooltrainer::ElementalCreation.new(:picture_source, change, parents: Array[:anchor, :picture])
+      Cooltrainer::ElementalCreation.new(:picture_source, change, parent: :picture)
     }
   end
 

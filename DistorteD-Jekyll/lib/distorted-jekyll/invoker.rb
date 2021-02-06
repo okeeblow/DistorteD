@@ -220,13 +220,17 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
       end
       Jekyll.logger.debug("DistorteD::#{change.type.distorted_template_method}", File.join(change.dir, change.name))
 
-      # Get an ElementalCreation Struct from the MediaMolecule's render method.
+      # Get ElementalCreation Structs from the MediaMolecule's render method.
       # WISHLIST: Remove the empty final positional Hash argument once we require a Ruby version
       # that will not perform the implicit Change-to-Hash conversion due to Change's
       # implementation of :to_hash. Ruby 2.7 will complain but still do the conversion,
       # breaking downstream callers that want a Struct they can call arbitrary key methods on.
       # https://www.ruby-lang.org/en/news/2019/12/12/separation-of-positional-and-keyword-arguments-in-ruby-3-0/
-      roots_of_my_way.mad_child(self.send(change.type.distorted_template_method, change, **{}))
+      self.send(change.type.distorted_template_method, change, **{}).yield_self { |element|
+        # Support taking a single Element as well as an Array[Element],
+        # by treating everything as an Array[Element].
+        element.is_a?(Cooltrainer::ElementalCreation) ? Array[element] : element
+      }.each { |element| roots_of_my_way.children.append(element) }
     }
 
     output << roots_of_my_way.render
