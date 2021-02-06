@@ -148,7 +148,7 @@ module Cooltrainer::DistorteD::Molecule::Font
     path
   end
 
-  def to_vips_image
+  def to_vips_image(change)
     # https://libvips.github.io/libvips/API/current/libvips-create.html#vips-text
     Vips::Image.text(
       # This string must be well-escaped Pango Markup:
@@ -166,7 +166,7 @@ module Cooltrainer::DistorteD::Molecule::Font
         :spacing => to_ttfunk.line_gap,
         # Requires libvips 8.8
         :justify => false,
-        :dpi => 144,
+        :dpi => change.dpi&.to_i,
       },
     )
   end

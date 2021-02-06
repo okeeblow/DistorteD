@@ -60,7 +60,7 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
     @@render_picture_source = lambda { |change|
       # Fill in missing CSS media queries for any original-size (tag == null) Change that lacks one.
       if change.width.nil? and not change.type.sub_type.include?('svg'.freeze)
-        change.width = to_vips_image.width
+        change.width = to_vips_image(change).width
       end
       Cooltrainer::ElementalCreation.new(:picture_source, change, parents: Array[:anchor, :picture])
     }
