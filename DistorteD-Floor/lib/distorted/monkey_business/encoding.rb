@@ -304,14 +304,14 @@ class Encoding
     begin
       if code_page_id.is_a?(Integer)
         Encoding::page_code(code_page_id)
-      elsif code_page_id.to_i > 0
+      elsif code_page_id.to_s.to_i > 0  # Chain :to_s to support Symbols too
         # String#to_i returns 0 for any non-entirely-numeric String
         Encoding::page_code(code_page_id.to_i)
       else
-        find_you_again.(code_page_id)
+        find_you_again.(code_page_id.to_s)
       end
     rescue RuntimeError => e
-      find_you_again.(code_page_id)
+      find_you_again.(code_page_id.to_s)
     end
   end
 
