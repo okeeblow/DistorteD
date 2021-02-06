@@ -121,6 +121,7 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
             atoms = Hash.new
             # We will always want an Atom from every Compound even if it only carries the :default.
             Cooltrainer::DistorteD::IMPLANTATION(:OUTER_LIMITS, molecule)&.dig(type)&.each_pair { |aka, compound|
+              next if aka.nil? or compound.nil?  # Support Molecules that define Types with nil options
               next if aka != compound.element  # Skip alias Compounds since they will all be handled at once.
               # Look for a user-given argument matching any supported alias of a Compound,
               # and check those values against the Compound for validity.
