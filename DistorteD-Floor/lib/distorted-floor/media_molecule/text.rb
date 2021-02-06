@@ -162,7 +162,7 @@ module Cooltrainer::DistorteD::Molecule::Text
     unless change.encoding.nil?
       # TODO: Turning the String arguments into an Encoding should be a centralized thing
       # of some sort, probably in Cooltrainer::Compound.
-      @text_file_encoding = change.encoding.is_a?(Encoding) ? change.encoding : Encoding::const_get(change.encoding)
+      @text_file_encoding = change.encoding.is_a?(Encoding) ? change.encoding : Encoding::find(change.encoding)
     end
 
     # https://libvips.github.io/libvips/API/current/libvips-create.html#vips-text
