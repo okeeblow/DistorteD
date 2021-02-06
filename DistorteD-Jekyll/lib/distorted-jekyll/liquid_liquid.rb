@@ -184,6 +184,7 @@ module Cooltrainer
     # fixes other situations too.
     # https://tenderlovemaking.com/2011/06/28/til-its-ok-to-return-nil-from-to_ary.html
     def to_ary; nil; end
+    def to_a;   nil; end
 
     # Expose Liquid's 'assigns' accessors for any keys we weren't given upfront.
     def method_missing(meth, *a)
