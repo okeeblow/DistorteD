@@ -1,3 +1,5 @@
+source 'https://rubygems.org'
+
 gemspec
 
 # Depend on the DistorteD core in the same repo as us.
