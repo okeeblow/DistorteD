@@ -5,3 +5,11 @@ gemspec
 # Depend on the DistorteD core in the same repo as us.
 gem 'distorted', :path => File.join(File.dirname(__FILE__), '..', 'DistorteD-Floor')
 
+# `bundle config set --local with 'distorted_optional_dependencies'`
+group :distorted_optional_dependencies do
+  # `platforms` declaration shamelessly copied from Jekyll's Gemfile
+  # because I assume they know what they're doing lol
+  platforms :ruby, :mswin, :mingw, :x64_mingw do
+    gem "liquid-c", "~> 4.0"
+  end
+end
