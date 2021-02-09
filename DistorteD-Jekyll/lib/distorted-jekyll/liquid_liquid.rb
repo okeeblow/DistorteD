@@ -1,6 +1,12 @@
 require 'liquid/drop'
 require 'liquid/template'
 
+begin
+  require 'liquid/c'  # Gotta go fast
+rescue LoadError
+  # This is an optional dependency: https://github.com/Shopify/liquid-c
+end
+
 
 module Cooltrainer
 
