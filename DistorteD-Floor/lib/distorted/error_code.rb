@@ -6,6 +6,12 @@
 # the library add new exception subclasses."
 class DistorteDError < StandardError; end
 
+# Normal "File not found" errors are platform-specific, in the Errno module,
+# so define our own generic one for DD:
+# https://ruby-doc.org/core/IOError.html
+# https://ruby-doc.org/core/Errno.html
+class DistorteDFileNotFoundError < DistorteDError; end
+
 # The built-in NotImplementedError is for "when a feature is not implemented
 # on the current platform", so make our own more appropriate ones.
 class MediaTypeNotImplementedError < DistorteDError
