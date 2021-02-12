@@ -4,12 +4,11 @@
 # This allows the user to rescue a generic exception type to catch
 # all exceptions the library may raise even if future versions of
 # the library add new exception subclasses."
-class StandardDistorteDError < StandardError
-end
+class DistorteDError < StandardError; end
 
 # The built-in NotImplementedError is for "when a feature is not implemented
 # on the current platform", so make our own more appropriate ones.
-class MediaTypeNotImplementedError < StandardDistorteDError
+class MediaTypeNotImplementedError < DistorteDError
   attr_reader :name
   def initialize(name)
     super
@@ -34,7 +33,7 @@ class MediaTypeOutputNotImplementedError < MediaTypeNotImplementedError
   end
 end
 
-class MediaTypeNotFoundError < StandardDistorteDError
+class MediaTypeNotFoundError < DistorteDError
   attr_reader :name
   def initialize(name)
     super
@@ -47,5 +46,4 @@ class MediaTypeNotFoundError < StandardDistorteDError
 end
 
 
-class OutOfDateLibraryError < LoadError
-end
+class OutOfDateLibraryError < LoadError; end
