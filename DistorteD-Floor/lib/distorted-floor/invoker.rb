@@ -10,6 +10,7 @@ require 'distorted/media_molecule'
 require 'distorted/monkey_business/set'
 require 'set'
 
+Cooltrainer::DistorteD::GEM_ROOT = File.expand_path(File.join(__dir__, '..'.freeze, '..'.freeze))
 
 module Cooltrainer::DistorteD::Invoker
   # Returns a Hash[MIME::Type] => Hash[MediaMolecule] => Hash[param_alias] => Compound

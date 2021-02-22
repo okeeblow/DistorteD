@@ -197,10 +197,7 @@ module Cooltrainer::DistorteD::Molecule::Text
   # Return the String absolute path to the TTF file
   def font_path
     File.join(
-      File.dirname(__FILE__),  # molecule
-      '..'.freeze,  # distorted
-      '..'.freeze,  # lib
-      '..'.freeze,  # DistorteD-Floor
+      Cooltrainer::DistorteD::GEM_ROOT,  # DistorteD-Floor
       'font'.freeze,
       font_codepage.to_s,
       font_filename,
