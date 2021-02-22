@@ -260,7 +260,7 @@ class Cooltrainer::DistorteD::ClickAgain
       #
       # Combine all Molecule options into one for now since we don't have multi-Molecule or Change-chaining.
       # TODO: Don't combine them, because it's currently possible for same-key options to interfere.
-      combined_lower_options = @lower_options.slice(*type_mars).values.reduce(&:merge).values.reduce(&:merge)
+      combined_lower_options = @lower_options.slice(*type_mars)&.values&.reduce(&:merge)&.values&.reduce(&:merge)
 
       # :@outer_options will be a Hash[MediaMolecule] => Hash[MIME::Type] => given options,
       # with the given options duplicated among each supported Type, e.g.
@@ -273,7 +273,7 @@ class Cooltrainer::DistorteD::ClickAgain
       #
       # Combine all Molecule options into one for now since we don't have multi-Molecule.
       # TODO: Don't combine them, because it's currently possible for same-key options to interfere.
-      combined_outer_options = @outer_options.values.reduce(&:merge)
+      combined_outer_options = @outer_options&.values&.reduce(&:merge)
 
       # TODO: Support intermediate operations separate from OUTER LIMITS.
       # For example, for image output we currently add the :crop option to each OL,
@@ -297,7 +297,7 @@ class Cooltrainer::DistorteD::ClickAgain
           type = CHECKING::YOU::OUT[out]
         end
 
-        type_options = combined_outer_options.fetch(type, Hash.new)
+        type_options = combined_outer_options&.fetch(type, Hash.new)
         supported_options = [
           Cooltrainer::DistorteD::IMPLANTATION(:LOWER_WORLD, type_options[:molecule])&.slice(*type_mars)&.values&.reduce(&:merge),
           Cooltrainer::DistorteD::IMPLANTATION(:OUTER_LIMITS, type_options[:molecule])&.fetch(type, nil)
@@ -310,7 +310,7 @@ class Cooltrainer::DistorteD::ClickAgain
           # and check those values against the Compound for validity.
           atoms.store(compound.element, Cooltrainer::Atom.new(compound.isotopes.reduce(nil) { |value, isotope|
             # TODO: Compound#valid?, and cast non-Strings to the correct :valid class.
-            value || type_options&.delete(isotope) || combined_lower_options.fetch(isotope, nil)
+            value || type_options&.delete(isotope) || combined_lower_options&.fetch(isotope, nil)
           }, compound.default))
         }
         wanted.push(Cooltrainer::Change.new(type, src: @name, dir: Cooltrainer::Atom.new(File.dirname(name)), **atoms))
