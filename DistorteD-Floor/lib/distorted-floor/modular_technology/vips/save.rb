@@ -108,7 +108,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
         # TODO: Exand this to aarbitrary other operations and consume their options Hash e.g.
         # Cooltrainer::DistorteD::Technology::Vips::VipsType.new(:VipsThumbnailImage).options
         input_image = (width or not [nil, :none].include?(change.to_hash.fetch(:crop, nil))) ?
-          loaded_image.thumbnail_image(to_vips_image.width, crop: change.to_hash.fetch(:crop, :none)) :
+          loaded_image.thumbnail_image(loaded_image.width, crop: change.to_hash.fetch(:crop, :none)) :
           loaded_image
         # Do the thing.
         Vips::Operation.call(
