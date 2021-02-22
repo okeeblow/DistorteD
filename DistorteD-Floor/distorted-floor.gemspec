@@ -53,7 +53,7 @@ Gem::Specification.new do |spec|
 
   # Documents
   spec.add_dependency 'hexapdf', '~> 0.13'  # https://github.com/gettalong/hexapdf — https://hexapdf.gettalong.org/
-  spec.add_dependency 'charlock_holmes', '~> 0.7'  # https://github.com/brianmario/charlock_holmes
+  spec.add_dependency 'ffi-icu', '~> 0.3'  # https://github.com/erickguan/ffi-icu
 
   # Computer-y formats
   spec.add_dependency 'ttfunk', '~> 1.6'  # https://github.com/prawnpdf/ttfunk — https://prawnpdf.org/

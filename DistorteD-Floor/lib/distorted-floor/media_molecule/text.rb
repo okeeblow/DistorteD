@@ -1,6 +1,6 @@
 require 'set'
 
-require 'charlock_holmes'  # Text file charset detection
+require 'ffi-icu'  # Text file charset detection
 
 require 'distorted/monkey_business/encoding'
 require 'distorted/monkey_business/string'  # String#map
@@ -122,7 +122,15 @@ module Cooltrainer::DistorteD::Molecule::Text
   end
 
   def text_file_utf8_content
-    CharlockHolmes::Converter.convert(text_file_content, text_file_encoding.to_s, 'UTF-8'.freeze)
+    # https://ruby-doc.org/core/Encoding/Converter.html#method-c-new
+    @text_file_utf8_content ||= text_file_encoding == Encoding::UTF_8 ?
+      text_file_content :
+      Encoding::Converter.new(
+        text_file_encoding,
+        Encoding::UTF_8,
+        undef: :replace,
+        invalid: :replace,
+      ).convert(text_file_content)
   end
 
   def text_file_encoding
@@ -131,10 +139,10 @@ module Cooltrainer::DistorteD::Molecule::Text
     # is worth a shot if the user gave us nothing.
     #
     # TODO: Figure out if/how we can get IBM437 files to not be detected as ISO-8859-1
-    @text_file_encoding ||= Encoding::find(
-      CharlockHolmes::EncodingDetector.detect(text_file_content)[:encoding] ||
-      'UTF-8'.freeze
-    )
+    #
+    # FFI-ICU::CharDet returns a Struct, e.g.:
+    #   #<struct ICU::CharDet::Detector::Match name="ISO-8859-1", confidence=19, language="en">
+    @text_file_encoding ||= Encoding::find(ICU::CharDet.detect(text_file_content).name) || Encoding::UTF_8
   end
 
   def vips_font
