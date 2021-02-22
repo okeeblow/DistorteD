@@ -114,6 +114,16 @@ module Cooltrainer::DistorteD::Molecule::Text
 
   protected
 
+  # Returns a boolean guess of whether our document uses box-drawing characters of a given Encoding.
+  def oobe?(encoding)
+    # Re-interpret our raw source file's bytes as the given Encoding,
+    # then take the codepoints seven at a time and see if any of those
+    # septagrams consist of all box-drawing characters of our given Encoding.
+    text_file_content.force_encoding(encoding).each_codepoint.each_cons(7).map{ |septagram|
+      septagram.uniq.length == 1 and Encoding::OOBE.fetch(encoding, nil)&.include?(septagram.first)
+    }.select(&TrueClass.method(:===)).length >= 1
+  end
+
   def text_file_content
     # VIPS makes us provide the text content as a single variable,
     # so we may as well just one-shot File.read() it into memory.
@@ -138,11 +148,22 @@ module Cooltrainer::DistorteD::Molecule::Text
     # we should use for any given text document, but using character detection
     # is worth a shot if the user gave us nothing.
     #
-    # TODO: Figure out if/how we can get IBM437 files to not be detected as ISO-8859-1
-    #
     # FFI-ICU::CharDet returns a Struct, e.g.:
     #   #<struct ICU::CharDet::Detector::Match name="ISO-8859-1", confidence=19, language="en">
-    @text_file_encoding ||= Encoding::find(ICU::CharDet.detect(text_file_content).name) || Encoding::UTF_8
+    @text_file_encoding ||= begin
+      Encoding::find(ICU::CharDet.detect(text_file_content).name).yield_self { |detected|
+        # Fix files with ASCII/ANSI art (like NFOs) from being detected as ISO-8859-1
+        # when they should be IBM437 to display properly.
+        [
+          type_mars.include?(CHECKING::YOU::OUT['text/x-nfo']),  # Only certain souce file types.
+          detected == Encoding::ISO_8859_1,  # Only if ICU detects ISO-8859-1.
+          oobe?(Encoding::IBM437),  # Does this look like IBM437 based on box-drawing characters?
+        ].all? ? Encoding::IBM437 : detected
+      }
+    rescue ArgumentError
+      # Raised by Encoding::find if we give it an unknown Encoding name.
+      Encoding::UTF_8
+    end
   end
 
   def vips_font

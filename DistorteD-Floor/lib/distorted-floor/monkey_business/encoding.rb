@@ -83,6 +83,8 @@ class Encoding
   # https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
   # https://en.wikipedia.org/wiki/CCSID
   # https://github.com/SheetJS/js-codepage/blob/master/codepage.md
+  # https://i18nqa.com/debug/table-iso8859-1-vs-windows-1252.html
+  # https://www.gammon.com.au/unicode/
   ADDITIONAL_ENCODING_CODE_PAGE_IDS = {
 
     # Burgerland :911:
@@ -258,6 +260,43 @@ class Encoding
     Encoding::MACCROATIAN => 10082,
 
   }  # ADDITIONAL_ENCODING_CODE_PAGE_IDS
+
+
+  # Box-drawing characters for various Encodings, including single/double pipe characters,
+  # area-sharing characters, and basically anything that could/would be used for art direction
+  # in an NFO file or oldschool DOS-style interface: https://en.wikipedia.org/wiki/Box-drawing_character
+  #
+  # These will be used as the hints for our own supplementary String-encoding detection
+  # since ICU has a hard time differentiating e.g. IBM437/ISO8859 when rendering text files,
+  # so we can look for the presence of certain combinations of these characters to help guess.
+  OOBE = {
+    Encoding::IBM437 => (0xB3..0xDA),  # 'murca
+    Encoding::CP850 => [
+      (0xB3..0xB4),  # IBM437 equivalent for Europe. Replaces some box drawing characters
+      (0xB9..0xBC),  # with additional printable letters with diacritic marks.
+      (0xBF..0xC5),  # CP850 has the same printable letters as ISO-8859-1 but incompatibly.
+      (0xC8..0xCE),  # ftp://ftp.software.ibm.com/software/globalization/gcoc/attachments/CP00850.pdf
+      (0xD9..0xDA),  # ftp://ftp.software.ibm.com/software/globalization/gcoc/attachments/CP00850.txt
+    ].reduce(&:chain),
+    Encoding::UTF_8 => [
+      (0x2500..0x257F),  # https://www.unicode.org/charts/PDF/U2500.pdf
+      (0x2580..0x259F),  # https://www.unicode.org/charts/PDF/U2580.pdf
+      [
+        (0x1FB00..0x1FB3B),  # Block mosaic terminal graphic characters
+        (0x1FB3C..0x1FB6F),  # Smooth mosaic terminal graphic characters
+        (0x1FB70..0x1FB8B),  # Block elements
+        (0x1FB3C..0x1FB94),  # Rectangular shade characters
+        (0x1FB95..0x1FB99),  # Fill characters
+        (0x1FB9A..0x1FB9B),  # Smooth mosaic terminal graphic characters
+        (0x1FB9C..0x1FB9F),  # Triangular shade characters
+        (0x1FBA0..0x1FBAE),  # Character cell diagonals
+        (0x1FBAE..0x1FBAE),  # Light solid line with stroke
+        # Skipping the rest of the Symbols for Legacy Computing block
+        # since it consists of terminal graphics, arrows, and segmented digits.
+      ].reduce(&:chain),  # https://www.unicode.org/charts/PDF/U1FB00.pdf
+    ].reduce(&:chain),
+  }
+
 
   # Returns a Hash of the built-in-orphan Encodings we now have codepage IDs for,
   # e.g. {#<Encoding:US-ASCII>=>20127, #<Encoding:UTF-16BE>=>1201, #<Encoding:UTF-16LE>=>1200}
