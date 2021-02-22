@@ -51,7 +51,7 @@ module Cooltrainer::DistorteD::Molecule::Font
   # => [255, 1, 2, 3, 4]
   # irb(main):091:0> chars.values.map(&:chr).take(5)
   # => ["\xFF", "\x01", "\x02", "\x03", "\x04"]
-  def to_pango
+  def to_pango(change)
     output = '' << cr << '<span>' << cr
 
     output << "<span size='35387'> #{font_name}</span>" << cr << cr
@@ -61,7 +61,7 @@ module Cooltrainer::DistorteD::Molecule::Font
     output << "<span size='24576'> #{font_version}</span>" << cr << cr
 
     # Print a preview String in using the loaded font. Or don't.
-    if abstract(:title)
+    if change.title
       output << cr << cr << "<span size='24576' foreground='grey'> #{g_markup_escape_text(abstract(:title))}</span>" << cr << cr << cr
     end
 
@@ -155,7 +155,7 @@ module Cooltrainer::DistorteD::Molecule::Font
       # https://developer.gnome.org/pango/stable/pango-Markup.html
       # However the official function for escaping text is
       # not implemented in Ruby GLib, so we have to do it ourselves.
-      to_pango,
+      to_pango(change),
       **{
         # String absolute path to TTF
         :fontfile => font_path,
