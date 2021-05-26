@@ -1,0 +1,2762 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!--
+  Description: This xml file defines the valid mime types used by Tika.
+  The mime type data within this file is based on information from various
+  sources like Apache Nutch, Apache HTTP Server, the file(1) command, etc.
+
+  Notes:
+   * Tika supports a wider range of match types than Freedesktop does
+   * Glob patterns must be unique, if there's a clash assign to the most
+     popular format
+   * The main mime type should be the canonical one, use aliases for any
+     other widely used forms
+   * Where there's a hierarchy in the types, list it via a parent
+   * Highly specific magic matches get a high priority
+   * General magic matches which could trigger a false-positive need
+     a low one
+   * The priority for containers normally need to be higher than for
+     the things they contain, so they don't accidently get detected
+     as what's in them
+   * For logic too complex to be expressed in a magic match, do the best
+     you can here, then provide a Custom Detector for the rest
+-->
+<mime-info>
+
+  <mime-type type="application/activemessage"/>
+  <mime-type type="application/andrew-inset">
+    <glob pattern="*.ez"/>
+  </mime-type>
+
+  <mime-type type="application/applefile">
+    <magic priority="50">
+      <match value="0x00051600" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/applixware">
+    <glob pattern="*.aw"/>
+  </mime-type>
+
+  <mime-type type="text/iso19139+xml">
+	  <root-XML localName="MD_metadata"/>
+	  <root-XML localName="MD_metadata" namespaceURI="http://www.isotc211.org/2005/gmd"/>
+	  <glob pattern="*.iso19139"/>
+	  <sub-class-of type="application/xml"/>
+   </mime-type>
+
+
+  <mime-type type="application/atom+xml">
+    <root-XML localName="feed" namespaceURI="http://purl.org/atom/ns#"/>
+    <root-XML localName="feed" namespaceURI="http://www.w3.org/2005/Atom"/>
+
+    <glob pattern="*.atom"/>
+  </mime-type>
+
+  <mime-type type="application/atomcat+xml">
+    <glob pattern="*.atomcat"/>
+  </mime-type>
+  <mime-type type="application/atomicmail"/>
+  <mime-type type="application/atomsvc+xml">
+    <glob pattern="*.atomsvc"/>
+  </mime-type>
+  <mime-type type="application/auth-policy+xml"/>
+
+  <mime-type type="application/x-bat">
+    <_comment>Windows Batch / Command File</_comment>
+    <alias type="application/bat"/>
+    <sub-class-of type="text/plain"/>
+    <magic priority="50">
+      <match value="@echo off" type="stringignorecase" offset="0" />
+      <match value="rem " type="stringignorecase" offset="0" />
+    </magic>
+    <glob pattern="*.bat"/>
+    <glob pattern="*.cmd"/>
+  </mime-type>
+
+  <mime-type type="application/batch-smtp"/>
+  <mime-type type="application/beep+xml"/>
+
+  <mime-type type="application/bizagi-modeler">
+    <_comment>BizAgi Process Modeler</_comment>
+    <sub-class-of type="application/zip"/>
+    <glob pattern="*.bpm"/>
+  </mime-type>
+
+  <mime-type type="application/cals-1840"/>
+
+  <mime-type type="application/cbor">
+    <acronym>CBOR</acronym>
+    <_comment>Concise Binary Object Representation container</_comment>
+    <tika:link>http://tools.ietf.org/html/rfc7049</tika:link>
+    <magic priority="60">
+      <match value="0xd9d9f7" type="string" offset="0" />
+    </magic>
+    <glob pattern="*.cbor"/>
+  </mime-type>
+
+  <mime-type type="application/ccxml+xml">
+    <glob pattern="*.ccxml"/>
+  </mime-type>
+  <mime-type type="application/cea-2018+xml"/>
+  <mime-type type="application/cellml+xml"/>
+  <mime-type type="application/cnrp+xml"/>
+  <mime-type type="application/commonground"/>
+  <mime-type type="application/conference-info+xml"/>
+  
+  <mime-type type="application/coreldraw">
+     <alias type="application/x-coreldraw"/>
+     <alias type="application/x-cdr"/>
+     <alias type="application/cdr"/>
+     <alias type="image/x-cdr"/>
+     <alias type="image/cdr"/>
+     <_comment>CorelDraw</_comment>
+     <_comment>cdr: CorelDraw</_comment>
+     <_comment>des: CorelDraw X4 and newer</_comment>
+     <magic priority="60">
+        <match value="RIFF" type="string" offset="0">
+           <match value="CDR" type="string" offset="8" />
+           <match value="cdr" type="string" offset="8" />
+           <match value="DES" type="string" offset="8" />
+           <match value="des" type="string" offset="8" />
+        </match>
+     </magic>
+     <glob pattern="*.cdr"/>
+  </mime-type>
+  
+  <mime-type type="application/cpl+xml"/>
+  <mime-type type="application/csta+xml"/>
+  <mime-type type="application/cstadata+xml"/>
+  <mime-type type="application/cu-seeme">
+    <glob pattern="*.cu"/>
+  </mime-type>
+  <mime-type type="application/cybercash"/>
+  <mime-type type="application/dash+xml">
+	  <glob pattern="*.mpd" />
+	    <magic>
+        <match value="&lt;MPD" type="string" offset="0"/>
+      </magic>
+      <sub-class-of type="application/xml"/>
+	</mime-type>
+  <mime-type type="application/davmount+xml">
+    <glob pattern="*.davmount"/>
+  </mime-type>
+  <mime-type type="application/x-dbf">
+    <magic priority="100">
+      <match value="(?s)^[\\x02\\x03\\x30\\x31\\x32\\x43\\x63\\x83\\x8B\\xCB\\xF5\\xE5\\xFB].[\\x01-\\x0C][\\x01-\\x1F].{4}(?:.[^\\x00]|[\\x41-\\xFF].)(?:[^\\x00\\x01].|.[^\\x00]).{31}(?&lt;=[\\x00][^\\x00]{0,10})[A-Z@+]" type="regex" offset="0"/>
+    </magic>
+    <glob pattern="*.dbf"/>
+    <glob pattern="*.dbase"/>
+    <glob pattern="*.dbase3"/>
+  </mime-type>
+
+  <mime-type type="application/dca-rft"/>
+  <mime-type type="application/dec-dx"/>
+  <mime-type type="application/dialog-info+xml"/>
+
+  <mime-type type="application/dicom">
+    <_comment>DICOM medical imaging data</_comment>
+    <magic priority="50">
+      <match value="DICM" type="string" offset="128"/>
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/dita+xml">
+    <sub-class-of type="application/xml"/>
+    <_comment>Darwin Information Typing Architecture</_comment>
+  </mime-type>
+
+  <mime-type type="application/dita+xml;format=map">
+    <sub-class-of type="application/dita+xml"/>
+    <_comment>DITA Map</_comment>
+    <root-XML localName="map"/>
+    <root-XML localName="map" namespaceURI="http://docs.oasis-open.org/namespace"/>
+    <glob pattern="*.ditamap"/>
+  </mime-type>
+  <mime-type type="application/dita+xml;format=topic">
+    <sub-class-of type="application/dita+xml"/>
+    <_comment>DITA Topic</_comment>
+    <root-XML localName="topic"/>
+    <root-XML localName="topic" namespaceURI="http://docs.oasis-open.org/namespace"/>
+    <!-- Topic is the default, Task and Concept are specialisations -->
+    <glob pattern="*.dita"/>
+  </mime-type>
+  <mime-type type="application/dita+xml;format=task">
+    <sub-class-of type="application/dita+xml"/>
+    <_comment>DITA Task Topic</_comment>
+    <root-XML localName="task"/>
+    <root-XML localName="task" namespaceURI="http://docs.oasis-open.org/namespace"/>
+  </mime-type>
+  <mime-type type="application/dita+xml;format=concept">
+    <sub-class-of type="application/dita+xml;format=topic"/>
+    <_comment>DITA Concept Topic</_comment>
+    <root-XML localName="concept"/>
+    <root-XML localName="concept" namespaceURI="http://docs.oasis-open.org/namespace"/>
+  </mime-type>
+  <mime-type type="application/dita+xml;format=val">
+    <sub-class-of type="application/dita+xml"/>
+    <_comment>DITA Conditional Processing Profile</_comment>
+    <root-XML localName="val"/>
+    <root-XML localName="val" namespaceURI="http://docs.oasis-open.org/namespace"/>
+    <glob pattern="*.ditaval"/>
+  </mime-type>
+
+  <mime-type type="application/dns"/>
+  <mime-type type="application/dvcs"/>
+  <mime-type type="application/ecmascript">
+    <glob pattern="*.ecma"/>
+  </mime-type>
+  <mime-type type="application/edi-consent"/>
+  <mime-type type="application/edi-x12"/>
+  <mime-type type="application/edifact"/>
+  <mime-type type="application/emma+xml">
+    <glob pattern="*.emma"/>
+  </mime-type>
+  <mime-type type="application/envi.hdr">
+    <glob pattern="*.hdr"/>
+  </mime-type>
+  <mime-type type="application/epp+xml"/>
+
+  <mime-type type="application/epub+zip">
+    <acronym>EPUB</acronym>
+    <_comment>Electronic Publication</_comment>
+    <magic priority="50">
+      <match value="PK\003\004" type="string" offset="0">
+        <match value="mimetypeapplication/epub+zip" type="string" offset="30"/>
+      </match>
+    </magic>
+    <glob pattern="*.epub"/>
+  </mime-type>
+
+  <mime-type type="application/eshop"/>
+  <mime-type type="application/example"/>
+  <mime-type type="application/fastinfoset"/>
+  <mime-type type="application/fastsoap"/>
+
+  <mime-type type="application/fits">
+    <acronym>FITS</acronym>
+    <_comment>Flexible Image Transport System</_comment>
+    <tika:link>http://www.digitalpreservation.gov/formats/fdd/fdd000317.shtml</tika:link>
+    <magic priority="50">
+      <match value="SIMPLE  =                    T" type="string" offset="0"/>
+      <match value="SIMPLE  =                T" type="string" offset="0"/>
+    </magic>
+    <glob pattern="*.fits"/>
+    <glob pattern="*.fit"/>
+    <glob pattern="*.fts"/>
+  </mime-type>
+
+  <mime-type type="application/font-tdpfr">
+    <glob pattern="*.pfr"/>
+  </mime-type>
+  <mime-type type="application/h224"/>
+  <mime-type type="application/http"/>
+  <mime-type type="application/hyperstudio">
+    <glob pattern="*.stk"/>
+  </mime-type>
+  <mime-type type="application/ibe-key-request+xml"/>
+  <mime-type type="application/ibe-pkg-reply+xml"/>
+  <mime-type type="application/ibe-pp-data"/>
+  <mime-type type="application/iges"/>
+
+  <mime-type type="application/illustrator">
+    <acronym>AI</acronym>
+    <_comment>Adobe Illustrator Artwork</_comment>
+    <tika:link>http://en.wikipedia.org/wiki/Adobe_Illustrator_Artwork</tika:link>
+    <glob pattern="*.ai"/>]
+    <sub-class-of type="application/postscript"/>
+  </mime-type>
+
+  <mime-type type="application/im-iscomposing+xml"/>
+  <mime-type type="application/index"/>
+  <mime-type type="application/index.cmd"/>
+  <mime-type type="application/index.obj"/>
+  <mime-type type="application/index.response"/>
+  <mime-type type="application/index.vnd"/>
+
+  <mime-type type="application/inf">
+    <_comment>Windows setup INFormation</_comment>
+    <tika:link>http://msdn.microsoft.com/en-us/library/windows/hardware/ff549520(v=vs.85).aspx</tika:link>
+    <alias type="application/x-setupscript"/>
+    <alias type="application/x-wine-extension-inf"/>
+    <sub-class-of type="text/plain"/>
+    <magic priority="30">
+      <match value="[version]" type="string" offset="0" />
+      <match value="[strings]" type="string" offset="0" />
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/iotp"/>
+  <mime-type type="application/ipp"/>
+  <mime-type type="application/isup"/>
+
+  <mime-type type="application/java-archive">
+    <_comment>Java Archive</_comment>
+    <tika:link>http://en.wikipedia.org/wiki/.jar</tika:link>
+    <tika:uti>com.sun.java-archive</tika:uti>
+    <sub-class-of type="application/zip"/>
+    <glob pattern="*.jar"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.android.package-archive">
+    <sub-class-of type="application/java-archive"/>
+    <glob pattern="*.apk"/>
+  </mime-type>
+  <mime-type type="application/x-tika-java-enterprise-archive">
+    <sub-class-of type="application/java-archive"/>
+    <glob pattern="*.ear"/>
+  </mime-type>
+  <mime-type type="application/x-tika-java-web-archive">
+    <sub-class-of type="application/java-archive"/>
+    <glob pattern="*.war"/>
+  </mime-type>
+
+  <mime-type type="application/x-tika-unix-dump"/>
+
+  <mime-type type="application/java-serialized-object">
+    <glob pattern="*.ser"/>
+  </mime-type>
+
+  <mime-type type="application/javascript">
+    <alias type="application/x-javascript"/>
+    <alias type="text/javascript"/>
+    <sub-class-of type="text/plain"/>
+    <_comment>JavaScript Source Code</_comment>
+    <glob pattern="*.js"/>
+
+    <!-- Note - there is no Unique Magic for JavaScript files! -->
+    <!-- Generally you can only detect JS with the filename -->
+    <!-- However... A few common JS libraries accidentally trigger -->
+    <!--  the HTML priority=20 magic incorrectly. So, for those only, -->
+    <!--  we list "magic" for those specific files -->
+    <magic priority="50">
+      <!-- jQuery -->
+      <match value="/* jQuery " type="string" offset="0"/>
+      <match value="/*! jQuery " type="string" offset="0"/>
+      <match value="/*!" type="string" offset="0">
+         <match value="* jQuery " offset="4:8"/>
+      </match>
+      <match value="(function(e,undefined){" type="string" offset="0"/>
+      <match value="!function(window,undefined){" type="string" offset="0"/>
+      <!-- Prototype -->
+      <match value="/*  Prototype JavaScript " type="string" offset="0"/>
+      <match value="var Prototype={" type="string" offset="0"/>
+      <match value="function $w(t){" type="string" offset="0"/>
+      <!-- React -->
+      <match value="/** @license React" type="string" offset="0"/>
+      <match value="/**" type="string" offset="0">
+         <match value="* React " offset="4:8"/>
+      </match>
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/json">
+    <sub-class-of type="application/javascript"/>
+    <glob pattern="*.json"/>
+  </mime-type>
+
+  <mime-type type="application/java-vm">
+    <_comment>Java Class File</_comment>
+    <alias type="application/x-java-vm"/>
+    <alias type="application/x-java"/>
+    <magic priority="40">
+      <match value="0xcafebabe" type="string" offset="0" />
+    </magic>
+    <glob pattern="*.class"/>
+  </mime-type>
+
+  <mime-type type="application/x-java-jnilib">
+    <_comment>Java Native Library for OSX</_comment>
+    <magic priority="50">
+      <match value="0xcafebabe" type="string" offset="0">
+        <match value="0xfeedface" type="string" offset="4096"/>
+        <match value="0xfeedfacf" type="string" offset="4096"/>
+        <match value="0xcefaedfe" type="string" offset="4096"/>
+        <match value="0xcffaedfe" type="string" offset="4096"/>
+      </match>
+    </magic>
+    <glob pattern="*.jnilib"/>
+  </mime-type>
+
+  <mime-type type="application/kpml-request+xml"/>
+  <mime-type type="application/kpml-response+xml"/>
+  <mime-type type="application/lost+xml">
+    <glob pattern="*.lostxml"/>
+  </mime-type>
+
+  <mime-type type="application/mac-binhex40">
+    <alias type="application/mac-binhex"/>
+    <alias type="application/binhex"/>
+    <magic priority="50">
+      <match value="must be converted with BinHex" type="string" offset="11"/>
+    </magic>
+    <glob pattern="*.hqx"/>
+  </mime-type>
+
+  <mime-type type="application/mac-compactpro">
+    <glob pattern="*.cpt"/>
+  </mime-type>
+
+  <mime-type type="application/macwriteii"/>
+  <mime-type type="application/marc">
+    <glob pattern="*.mrc"/>
+  </mime-type>
+
+  <mime-type type="application/mathematica">
+    <_comment>Wolfram Mathematica</_comment>
+    <glob pattern="*.ma"/>
+    <glob pattern="*.nb"/>
+    <glob pattern="*.mb"/>
+    <!-- Note - there is no Unique Magic for Mathematica files! -->
+    <!-- Check for a Mathematica-style opening comment as our best hope... -->
+    <magic priority="50">
+      <match value="(**" type="string" offset="0"/>
+      <match value="(* " type="string" offset="0"/>
+    </magic>
+    <sub-class-of type="text/plain"/>
+  </mime-type>
+  <mime-type type="application/vnd.wolfram.wl">
+    <_comment>Wolfram Language</_comment>
+    <glob pattern="*.wl"/>
+    <magic priority="50">
+      <match value="#!/usr/bin/env wolframscript" type="string" offset="0"/>
+    </magic>
+    <sub-class-of type="application/mathematica"/>
+  </mime-type>
+
+  <mime-type type="application/mathml+xml">
+    <glob pattern="*.mathml"/>
+  </mime-type>
+  <mime-type type="application/mbms-associated-procedure-description+xml"/>
+  <mime-type type="application/mbms-deregister+xml"/>
+  <mime-type type="application/mbms-envelope+xml"/>
+  <mime-type type="application/mbms-msk+xml"/>
+  <mime-type type="application/mbms-msk-response+xml"/>
+  <mime-type type="application/mbms-protection-description+xml"/>
+  <mime-type type="application/mbms-reception-report+xml"/>
+  <mime-type type="application/mbms-register+xml"/>
+  <mime-type type="application/mbms-register-response+xml"/>
+  <mime-type type="application/mbms-user-service-description+xml"/>
+
+  <mime-type type="application/mbox">
+    <!-- MBOX files start with "From [sender] [date]" -->
+    <!-- To avoid false matches, check for other headers after that -->
+
+    <magic priority="70">
+      <match value="From " type="string" offset="0">
+        <match value="\nFrom: " type="string" offset="32:256"/>
+        <match value="\nDate: " type="string" offset="32:256"/>
+        <match value="\nSubject: " type="string" offset="32:256"/>
+        <match value="\nDelivered-To: " type="string" offset="32:256"/>
+        <match value="\nReceived: by " type="string" offset="32:256"/>
+        <match value="\nReceived: via " type="string" offset="32:256"/>
+        <match value="\nReceived: from " type="string" offset="32:256"/>
+        <match value="\nMime-Version: " type="string" offset="32:256"/>
+
+        <match value="\nX-" type="stringignorecase" offset="32:256">
+          <match value="\nFrom: " type="string" offset="32:8192"/>
+          <match value="\nDate: " type="string" offset="32:8192"/>
+          <match value="\nSubject: " type="string" offset="32:8192"/>
+          <match value="\nDelivered-To: " type="string" offset="32:8192"/>
+          <match value="\nReceived: by " type="string" offset="32:8192"/>
+          <match value="\nReceived: via " type="string" offset="32:8192"/>
+          <match value="\nReceived: from " type="string" offset="32:8192"/>
+          <match value="\nMime-Version: " type="string" offset="32:8192"/>
+        </match>
+      </match>
+    </magic>
+    <glob pattern="*.mbox"/>
+    <sub-class-of type="text/x-tika-text-based-message"/>
+  </mime-type>
+  <mime-type type="application/media_control+xml"/>
+  <mime-type type="application/mediaservercontrol+xml">
+    <glob pattern="*.mscml"/>
+  </mime-type>
+  <mime-type type="application/mikey"/>
+  <mime-type type="application/moss-keys"/>
+  <mime-type type="application/moss-signature"/>
+  <mime-type type="application/mosskey-data"/>
+  <mime-type type="application/mosskey-request"/>
+
+  <mime-type type="application/quicktime">
+    <!-- The is the base QuickTime container -->
+    <!-- QuickTime video, and all MP4 formats, are based on it -->
+    <acronym>QTFF</acronym>
+    <_comment>QuickTime container format</_comment>
+  </mime-type>
+  <mime-type type="application/mp4">
+    <!-- Arbitrary data stored in a MP4 container -->
+    <_comment>MP4 container format</_comment>
+    <glob pattern="*.mp4s"/>
+    <sub-class-of type="application/quicktime" />
+  </mime-type>
+
+  <mime-type type="application/mpeg4-generic"/>
+  <mime-type type="application/mpeg4-iod"/>
+  <mime-type type="application/mpeg4-iod-xmt"/>
+
+  <!-- http://www.iana.org/assignments/media-types/application/msword -->
+  <mime-type type="application/msword">
+    <!-- Use DefaultDetector / org.apache.tika.parser.microsoft.POIFSContainerDetector for more reliable detection of OLE2 documents -->
+    <alias type="application/vnd.ms-word"/>
+    <_comment>Microsoft Word Document</_comment>
+    <tika:link>http://en.wikipedia.org/wiki/.doc</tika:link>
+    <tika:uti>com.microsoft.word.doc</tika:uti>
+    <magic priority="50">
+      <match value="Microsoft\ Word\ 6.0\ Document" type="string" offset="2080"/>
+      <match value="Documento\ Microsoft\ Word\ 6" type="string" offset="2080"/>
+      <match value="MSWordDoc" type="string" offset="2112"/>
+      <match value="0x31be0000" type="big32" offset="0"/>
+      <match value="PO^Q`" type="string" offset="0"/>
+      <match value="\376\067\0\043" type="string" offset="0"/>
+      <match value="\333\245-\0\0\0" type="string" offset="0"/>
+      <match value="\224\246\056" type="string" offset="0"/>
+      <match value="0xd0cf11e0a1b11ae1" type="string" offset="0:8">
+         <match value="W\x00o\x00r\x00d\x00D\x00o\x00c\x00u\x00m\x00e\x00n\x00t" type="string" offset="1152:4096" />
+      </match>
+    </magic>
+    <glob pattern="*.doc"/>
+    <glob pattern="*.dot"/>
+    <sub-class-of type="application/x-tika-msoffice"/>
+  </mime-type>
+
+  <mime-type type="application/msword2">
+    <!-- Pre-OLE2, not a subtype of application/x-tika-msoffice -->
+    <_comment>Microsoft Word 2 Document</_comment>
+    <magic priority="50">
+      <match value="0x9ba5" type="string" />
+      <match value="0xdba5" type="string" />
+    </magic>
+  </mime-type>
+  <mime-type type="application/msword5">
+    <!-- Pre-OLE2, not a subtype of application/x-tika-msoffice -->
+    <_comment>Microsoft Word 5 Document</_comment>
+    <magic priority="50">
+      <match value="0xfe37" type="string" />
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/mxf">
+    <glob pattern="*.mxf"/>
+  </mime-type>
+  <mime-type type="application/nasdata"/>
+  <mime-type type="application/news-checkgroups"/>
+  <mime-type type="application/news-groupinfo"/>
+  <mime-type type="application/news-transmission"/>
+  <mime-type type="application/nss"/>
+  <mime-type type="application/ocsp-request"/>
+  <mime-type type="application/ocsp-response"/>
+
+  <mime-type type="application/octet-stream">
+    <magic priority="50">
+      <match value="#\ This\ is\ a\ shell\ archive" type="string" offset="10"/>
+      <match value="\037\036" type="string" offset="0"/>
+      <match value="017437" type="host16" offset="0"/>
+      <match value="0x1fff" type="host16" offset="0"/>
+      <match value="\377\037" type="string" offset="0"/>
+      <match value="0145405" type="host16" offset="0"/>
+    </magic>
+    <glob pattern="*.bin"/>
+    <glob pattern="*.dms"/>
+    <glob pattern="*.lha"/>
+    <glob pattern="*.lrf"/>
+    <glob pattern="*.lzh"/>
+    <glob pattern="*.so"/>
+    <glob pattern="*.dist"/>
+    <glob pattern="*.distz"/>
+    <glob pattern="*.pkg"/>
+    <glob pattern="*.bpk"/>
+    <glob pattern="*.dump"/>
+    <glob pattern="*.elc"/>
+    <glob pattern="*.deploy"/>
+  </mime-type>
+
+  <mime-type type="application/oda">
+    <glob pattern="*.oda"/>
+  </mime-type>
+  <mime-type type="application/oebps-package+xml">
+    <glob pattern="*.opf"/>
+  </mime-type>
+
+  <mime-type type="application/ogg">
+    <alias type="application/x-ogg"/>
+    <magic priority="50">
+      <match value="OggS" type="string" offset="0"/>
+    </magic>
+    <glob pattern="*.ogx"/>
+  </mime-type>
+  <mime-type type="application/kate">
+    <sub-class-of type="application/ogg"/>
+  </mime-type>
+
+  <mime-type type="application/onenote">
+    <alias type="application/msonenote"/>
+    <acronym>OneNote</acronym>
+    <glob pattern="*.onetmp"/>
+  </mime-type>
+  <mime-type type="application/onenote;format=one">
+    <glob pattern="*.one"/>
+    <magic priority="50">
+      <!-- GUID {7B5C52E4-D88C-4DA7-AEB1-5378D02996D3} -->
+      <match value="0x7B5C52E4" type="little32" offset="0">
+        <match value="0xD88C" type="little16" offset="4">
+          <match value="0x4DA7" type="little16" offset="6">
+            <match value="0xAEB15378D02996D3" offset="8" />
+          </match>
+        </match>
+      </match>
+    </magic>
+    <sub-class-of type="application/onenote"/>
+  </mime-type>
+  <mime-type type="application/onenote;format=onetoc2">
+    <_comment>OneNote Table of Contents</_comment>
+    <glob pattern="*.onetoc"/>
+    <glob pattern="*.onetoc2"/>
+    <magic priority="50">
+      <!-- GUID {43FF2FA1-EFD9-4C76-9EE2-10EA5722765F} -->
+      <match value="0x43FF2FA1" type="little32" offset="0">
+        <match value="0xEFD9" type="little16" offset="4">
+          <match value="0x4C76" type="little16" offset="6">
+            <match value="0x9EE210EA5722765F" offset="8" />
+          </match>
+        </match>
+      </match>
+    </magic>
+    <sub-class-of type="application/onenote"/>
+  </mime-type>
+  <mime-type type="application/onenote; format=package">
+    <_comment>OneNote Package</_comment>
+    <glob pattern="*.onepkg"/>
+    <!-- Actually a CAB file of the other OneNote file formats! -->
+    <sub-class-of type="application/vnd.ms-cab-compressed" />
+  </mime-type>
+
+  <mime-type type="application/parityfec"/>
+  <mime-type type="application/patch-ops-error+xml">
+    <glob pattern="*.xer"/>
+  </mime-type>
+
+  <mime-type type="application/pdf">
+    <alias type="application/x-pdf"/>
+    <acronym>PDF</acronym>
+    <_comment>Portable Document Format</_comment>
+    <tika:link>http://en.wikipedia.org/wiki/PDF</tika:link>
+    <tika:link>http://www.adobe.com/devnet/pdf/pdf_reference_archive.html</tika:link>
+    <tika:uti>com.adobe.pdf</tika:uti>
+    <magic priority="50">
+      <!-- Normally just %PDF- -->
+      <match value="%PDF-" type="string" offset="0"/>
+      <!-- Sometimes has a UTF-8 Byte Order Mark first -->
+      <match value="\xef\xbb\xbf%PDF-" type="string" offset="0"/>
+    </magic>
+    <magic priority="20">
+      <!-- Low priority match for %PDF-#.# near the start of the file -->
+      <!-- Can trigger false positives, so set the priority rather low here -->
+      <match value="%PDF-1." type="string" offset="1:512"/>
+      <match value="%PDF-2." type="string" offset="1:512"/>
+    </magic>
+    <glob pattern="*.pdf"/>
+  </mime-type>
+
+  <mime-type type="application/pgp-encrypted">
+    <alias type="application/pgp"/>
+    <glob pattern="*.pgp"/>
+  </mime-type>
+
+  <mime-type type="application/pgp-keys"/>
+
+  <mime-type type="application/pgp-signature">
+    <glob pattern="*.asc"/>
+    <glob pattern="*.sig"/>
+  </mime-type>
+
+  <mime-type type="application/pics-rules">
+    <glob pattern="*.prf"/>
+  </mime-type>
+  <mime-type type="application/pidf+xml"/>
+  <mime-type type="application/pidf-diff+xml"/>
+  <mime-type type="application/pkcs10">
+    <glob pattern="*.p10"/>
+  </mime-type>
+
+  <mime-type type="application/pkcs7-mime">
+    <glob pattern="*.p7m"/>
+    <glob pattern="*.p7c"/>
+  </mime-type>
+
+  <mime-type type="application/pkcs7-signature">
+    <glob pattern="*.p7s"/>
+    <magic priority="50">
+      <!-- PEM encoded -->
+      <match value="-----BEGIN PKCS7" type="string" offset="0"/>
+      <!-- DER encoded, sequence+length, object=pkcs7-signedData -->
+      <match value="0x3080" offset="0">
+         <match value="0x06092a864886f70d0107FFa0" type="string"
+                 mask="0xFFFFFFFFFFFFFFFFFFFF00FF" offset="2"/>
+      </match>
+      <match value="0x3081" offset="0">
+         <match value="0x06092a864886f70d0107FFa0" type="string"
+                 mask="0xFFFFFFFFFFFFFFFFFFFF00FF" offset="3"/>
+      </match>
+      <match value="0x3082" offset="0">
+         <match value="0x06092a864886f70d0107FFa0" type="string"
+                 mask="0xFFFFFFFFFFFFFFFFFFFF00FF" offset="4"/>
+      </match>
+      <match value="0x3083" offset="0">
+         <match value="0x06092a864886f70d0107FFa0" type="string"
+                 mask="0xFFFFFFFFFFFFFFFFFFFF00FF" offset="5"/>
+      </match>
+      <match value="0x3084" offset="0">
+         <match value="0x06092a864886f70d0107FFa0" type="string"
+                 mask="0xFFFFFFFFFFFFFFFFFFFF00FF" offset="6"/>
+      </match>
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/timestamped-data">
+    <glob pattern="*.tsd"/>
+    <magic priority="50">
+      <match value="0x3080060B2A864886F7" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/pkix-cert">
+    <glob pattern="*.cer"/>
+  </mime-type>
+  <mime-type type="application/pkix-crl">
+    <glob pattern="*.crl"/>
+  </mime-type>
+  <mime-type type="application/pkix-pkipath">
+    <glob pattern="*.pkipath"/>
+  </mime-type>
+  <mime-type type="application/pkixcmp">
+    <glob pattern="*.pki"/>
+  </mime-type>
+  <mime-type type="application/pls+xml">
+    <glob pattern="*.pls"/>
+  </mime-type>
+  <mime-type type="application/poc-settings+xml"/>
+
+  <mime-type type="application/postscript">
+    <_comment>PostScript</_comment>
+    <magic priority="50">
+      <match value="%!" type="string" offset="0" />
+      <match value="\004%!" type="string" offset="0" />
+      <!-- Windows format EPS -->
+      <match value="0xc5d0d3c6" type="string" offset="0"/>
+      <match value="%!PS-Adobe-3.0 EPSF-3.0" type="string" offset="0"/> <!-- %!PS-Adobe-3.0 EPSF-3.0 (0x252150532D41646F)-->
+    </magic>
+    <glob pattern="*.ps"/>
+    <glob pattern="*.eps"/>
+    <glob pattern="*.epsf"/>
+    <glob pattern="*.epsi"/>
+  </mime-type>
+
+  <mime-type type="application/prs.alvestrand.titrax-sheet"/>
+  <mime-type type="application/prs.cww">
+    <glob pattern="*.cww"/>
+  </mime-type>
+  <mime-type type="application/prs.nprend"/>
+  <mime-type type="application/prs.plucker"/>
+  <mime-type type="application/qsig"/>
+
+  <mime-type type="application/vnd.ms-spreadsheetml">
+    <root-XML localName="Workbook" namespaceURI="urn:schemas-microsoft-com:office:spreadsheet"/>
+    <root-XML localName="Workbook"/>
+    <sub-class-of type="application/xml"/>
+    <_comment>Excel 2003 xml format, pre-ooxml</_comment>
+    <_comment>glob pattern typically *.xls</_comment>
+  </mime-type>
+  <mime-type type="application/vnd.ms-wordml">
+    <root-XML localName="wordDocument" namespaceURI="http://schemas.microsoft.com/office/word/2003/wordml"/>
+    <root-XML localName="wordDocument"/>
+    <sub-class-of type="application/xml"/>
+    <_comment>Word 2003 xml format, pre-ooxml</_comment>
+    <_comment>glob pattern typically *.doc</_comment>
+  </mime-type>
+  <mime-type type="application/vnd.ms-word2006ml">
+    <root-XML localName="package" namespaceURI="http://schemas.microsoft.com/office/2006/xmlPackage"/>
+    <sub-class-of type="application/xml"/>
+    <_comment>Word 2006 xml format, pre-ooxml</_comment>
+    <_comment>glob pattern typically *.xml</_comment>
+  </mime-type>
+
+  <mime-type type="application/rdf+xml">
+    <root-XML localName="RDF"/>
+    <root-XML localName="RDF" namespaceURI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <sub-class-of type="application/xml"/>
+    <acronym>RDF/XML</acronym>
+    <_comment>XML syntax for RDF graphs</_comment>
+
+    <glob pattern="*.rdf"/>
+    <glob pattern="*.owl"/>
+    <glob pattern="^rdf$" isregex="true"/>
+    <glob pattern="^owl$" isregex="true"/>
+    <glob pattern="*.xmp"/>
+  </mime-type>
+
+  <mime-type type="application/reginfo+xml">
+    <glob pattern="*.rif"/>
+  </mime-type>
+  <mime-type type="application/relax-ng-compact-syntax">
+    <sub-class-of type="text/plain"/>
+    <glob pattern="*.rnc"/>
+  </mime-type>
+  <mime-type type="application/remote-printing"/>
+  <mime-type type="application/resource-lists+xml">
+    <glob pattern="*.rl"/>
+  </mime-type>
+  <mime-type type="application/resource-lists-diff+xml">
+    <glob pattern="*.rld"/>
+  </mime-type>
+  <mime-type type="application/riscos"/>
+  <mime-type type="application/rlmi+xml"/>
+  <mime-type type="application/rls-services+xml">
+    <glob pattern="*.rs"/>
+  </mime-type>
+  <mime-type type="application/rsd+xml">
+    <glob pattern="*.rsd"/>
+  </mime-type>
+
+  <mime-type type="application/rss+xml">
+    <alias type="text/rss"/>
+    <root-XML localName="rss"/>
+    <root-XML namespaceURI="http://purl.org/rss/1.0/"/>
+
+    <glob pattern="*.rss"/>
+  </mime-type>
+
+  <mime-type type="application/rtf">
+    <_comment>Rich Text Format File</_comment>
+    <alias type="text/rtf"/>
+    <magic priority="50">
+      <match value="{\\rtf" type="string" offset="0"/>
+    </magic>
+    <glob pattern="*.rtf"/>
+    <sub-class-of type="text/plain"/>
+  </mime-type>
+
+  <mime-type type="application/rtx"/>
+  <mime-type type="application/samlassertion+xml"/>
+  <mime-type type="application/samlmetadata+xml"/>
+  <mime-type type="application/sbml+xml">
+    <glob pattern="*.sbml"/>
+  </mime-type>
+  <mime-type type="application/scvp-cv-request">
+    <glob pattern="*.scq"/>
+  </mime-type>
+  <mime-type type="application/scvp-cv-response">
+    <glob pattern="*.scs"/>
+  </mime-type>
+  <mime-type type="application/scvp-vp-request">
+    <glob pattern="*.spq"/>
+  </mime-type>
+  <mime-type type="application/scvp-vp-response">
+    <glob pattern="*.spp"/>
+  </mime-type>
+  <mime-type type="application/sdp">
+    <glob pattern="*.sdp"/>
+  </mime-type>
+
+  <mime-type type="application/sereal">
+    <_comment>Sereal binary serialization format</_comment>
+    <tika:link>https://github.com/Sereal/Sereal/blob/master/sereal_spec.pod</tika:link>
+    <glob pattern="*.srl"/>
+  </mime-type>
+  <mime-type type="application/sereal;version=1">
+    <sub-class-of type="application/sereal"/>
+    <magic priority="50">
+      <match value="0x6C72733D" type="little32" offset="0">
+        <match value="0x01" mask="0x0F" type="string" offset="4"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/sereal;version=2">
+    <sub-class-of type="application/sereal"/>
+    <magic priority="50">
+      <match value="0x6C72733D" type="little32" offset="0">
+        <match value="0x02" mask="0x0F" type="string" offset="4"/>
+      </match>
+    </magic>
+  </mime-type>
+  <mime-type type="application/sereal;version=3">
+    <sub-class-of type="application/sereal"/>
+    <magic priority="50">
+      <match value="0x6C72F33D" type="little32" offset="0">
+        <match value="0x03" mask="0x0F" type="string" offset="4"/>
+      </match>
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/set-payment"/>
+  <mime-type type="application/set-payment-initiation">
+    <glob pattern="*.setpay"/>
+  </mime-type>
+  <mime-type type="application/set-registration"/>
+  <mime-type type="application/set-registration-initiation">
+    <glob pattern="*.setreg"/>
+  </mime-type>
+  <mime-type type="application/sgml"/>
+  <mime-type type="application/sgml-open-catalog"/>
+  <mime-type type="application/shf+xml">
+    <glob pattern="*.shf"/>
+  </mime-type>
+  <mime-type type="application/sieve"/>
+  <mime-type type="application/simple-filter+xml"/>
+  <mime-type type="application/simple-message-summary"/>
+  <mime-type type="application/simplesymbolcontainer"/>
+  <mime-type type="application/slate"/>
+
+  <mime-type type="application/smil+xml">
+    <alias type="application/smil"/>
+    <_comment>SMIL Multimedia</_comment>
+    <root-XML localName="smil"/>
+    <sub-class-of type="application/xml"/>
+    <glob pattern="*.smi"/>
+    <glob pattern="*.smil"/>
+    <glob pattern="*.sml"/>
+  </mime-type>
+
+  <mime-type type="application/soap+fastinfoset"/>
+  <mime-type type="application/soap+xml"/>
+
+  <mime-type type="application/sldworks">
+    <_comment>SolidWorks CAD program</_comment>
+    <glob pattern="*.sldprt" />
+    <glob pattern="*.sldasm" />
+    <glob pattern="*.slddrw" />
+    <sub-class-of type="application/x-tika-msoffice" />
+  </mime-type>
+
+  <mime-type type="application/sparql-query">
+    <glob pattern="*.rq"/>
+  </mime-type>
+  <mime-type type="application/sparql-results+xml">
+    <glob pattern="*.srx"/>
+  </mime-type>
+  <mime-type type="application/spirits-event+xml"/>
+  <mime-type type="application/srgs">
+    <glob pattern="*.gram"/>
+  </mime-type>
+  <mime-type type="application/srgs+xml">
+    <glob pattern="*.grxml"/>
+  </mime-type>
+  <mime-type type="application/ssml+xml">
+    <glob pattern="*.ssml"/>
+  </mime-type>
+  <mime-type type="application/timestamp-query"/>
+  <mime-type type="application/timestamp-reply"/>
+  <mime-type type="application/tve-trigger"/>
+  <mime-type type="application/ulpfec"/>
+  <mime-type type="application/vemmi"/>
+  <mime-type type="application/vividence.scriptfile"/>
+  <mime-type type="application/vnd.3gpp.bsf+xml"/>
+  <mime-type type="application/vnd.3gpp.pic-bw-large">
+    <glob pattern="*.plb"/>
+  </mime-type>
+  <mime-type type="application/vnd.3gpp.pic-bw-small">
+    <glob pattern="*.psb"/>
+  </mime-type>
+  <mime-type type="application/vnd.3gpp.pic-bw-var">
+    <glob pattern="*.pvb"/>
+  </mime-type>
+  <mime-type type="application/vnd.3gpp.sms"/>
+  <mime-type type="application/vnd.3gpp2.bcmcsinfo+xml"/>
+  <mime-type type="application/vnd.3gpp2.sms"/>
+  <mime-type type="application/vnd.3gpp2.tcap">
+    <glob pattern="*.tcap"/>
+  </mime-type>
+  <mime-type type="application/vnd.3m.post-it-notes">
+    <glob pattern="*.pwn"/>
+  </mime-type>
+  <mime-type type="application/vnd.accpac.simply.aso">
+    <glob pattern="*.aso"/>
+  </mime-type>
+  <mime-type type="application/vnd.accpac.simply.imp">
+    <glob pattern="*.imp"/>
+  </mime-type>
+  <mime-type type="application/vnd.acucobol">
+    <glob pattern="*.acu"/>
+  </mime-type>
+  <mime-type type="application/vnd.acucorp">
+    <glob pattern="*.atc"/>
+    <glob pattern="*.acutc"/>
+  </mime-type>
+  <mime-type type="application/vnd.adobe.air-application-installer-package+zip">
+    <glob pattern="*.air"/>
+  </mime-type>
+  <mime-type type="application/vnd.adobe.aftereffects.project">
+    <glob pattern="*.aep"/>
+  </mime-type>
+  <mime-type type="application/vnd.adobe.aftereffects.template">
+    <glob pattern="*.aet"/>
+  </mime-type>
+  <mime-type type="application/vnd.adobe.xdp+xml">
+    <sub-class-of type="application/xml"/>
+    <root-XML localName="xdp" namespaceURI="http://ns.adobe.com/xdp/" />
+    <glob pattern="*.xdp"/>
+  </mime-type>
+  <mime-type type="application/vnd.adobe.xfdf">
+    <sub-class-of type="application/xml"/>
+    <root-XML localName="xfdf" namespaceURI="http://ns.adobe.com/xfdf/" />
+    <glob pattern="*.xfdf"/>
+  </mime-type>
+  <mime-type type="application/vnd.aether.imp"/>
+  <mime-type type="application/vnd.airzip.filesecure.azf">
+    <glob pattern="*.azf"/>
+  </mime-type>
+  <mime-type type="application/vnd.airzip.filesecure.azs">
+    <glob pattern="*.azs"/>
+  </mime-type>
+  <mime-type type="application/vnd.amazon.ebook">
+    <glob pattern="*.azw"/>
+  </mime-type>
+  <mime-type type="application/vnd.americandynamics.acc">
+    <glob pattern="*.acc"/>
+  </mime-type>
+  <mime-type type="application/vnd.amiga.ami">
+    <glob pattern="*.ami"/>
+  </mime-type>
+  <mime-type type="application/vnd.anser-web-certificate-issue-initiation">
+    <glob pattern="*.cii"/>
+  </mime-type>
+  <mime-type type="application/vnd.anser-web-funds-transfer-initiation">
+    <glob pattern="*.fti"/>
+  </mime-type>
+  <mime-type type="application/vnd.antix.game-component">
+    <glob pattern="*.atx"/>
+  </mime-type>
+  <mime-type type="application/vnd.apple.installer+xml">
+    <glob pattern="*.mpkg"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.apple.iwork">
+    <sub-class-of type="application/zip"/>
+  </mime-type>
+  <mime-type type="application/vnd.apple.keynote">
+    <root-XML localName="presentation" namespaceURI="http://developer.apple.com/namespaces/keynote2" />
+    <sub-class-of type="application/vnd.apple.iwork" />
+    <glob pattern="*.key"/>
+  </mime-type>
+  <mime-type type="application/vnd.apple.mpegurl">
+    <glob pattern="*.m3u8" />
+    <magic>
+      <match value="#EXTM3U" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/vnd.apple.pages">
+    <root-XML localName="document" namespaceURI="http://developer.apple.com/namespaces/sl" />
+    <sub-class-of type="application/vnd.apple.iwork" />
+    <glob pattern="*.pages"/>
+  </mime-type>
+  <mime-type type="application/vnd.apple.numbers">
+    <root-XML localName="document" namespaceURI="http://developer.apple.com/namespaces/ls" />
+    <sub-class-of type="application/vnd.apple.iwork" />
+    <glob pattern="*.numbers"/>
+  </mime-type>
+  <mime-type type="application/x-tika-iworks-protected">
+    <sub-class-of type="application/vnd.apple.iwork" />
+    <_comment>Password Protected iWorks File</_comment>
+  </mime-type>
+
+  <mime-type type="application/vnd.arastra.swi">
+    <glob pattern="*.swi"/>
+  </mime-type>
+  <mime-type type="application/vnd.audiograph"/>
+  <mime-type type="application/vnd.autopackage"/>
+  <mime-type type="application/vnd.avistar+xml"/>
+  <mime-type type="application/vnd.blueice.multipass">
+    <glob pattern="*.mpm"/>
+  </mime-type>
+  <mime-type type="application/vnd.bluetooth.ep.oob"/>
+  <mime-type type="application/vnd.bmi">
+    <glob pattern="*.bmi"/>
+  </mime-type>
+  <mime-type type="application/vnd.businessobjects">
+    <glob pattern="*.rep"/>
+  </mime-type>
+  <mime-type type="application/vnd.cab-jscript"/>
+  <mime-type type="application/vnd.canon-cpdl"/>
+  <mime-type type="application/vnd.canon-lips"/>
+  <mime-type type="application/vnd.cendio.thinlinc.clientconf"/>
+  <mime-type type="application/vnd.chemdraw+xml">
+    <glob pattern="*.cdxml"/>
+  </mime-type>
+  <mime-type type="application/vnd.chipnuts.karaoke-mmd">
+    <glob pattern="*.mmd"/>
+  </mime-type>
+  <mime-type type="application/vnd.cinderella">
+    <glob pattern="*.cdy"/>
+  </mime-type>
+  <mime-type type="application/vnd.cirpack.isdn-ext"/>
+  <mime-type type="application/vnd.claymore">
+    <glob pattern="*.cla"/>
+  </mime-type>
+  <mime-type type="application/vnd.clonk.c4group">
+    <glob pattern="*.c4g"/>
+    <glob pattern="*.c4d"/>
+    <glob pattern="*.c4f"/>
+    <glob pattern="*.c4p"/>
+    <glob pattern="*.c4u"/>
+  </mime-type>
+  <mime-type type="application/vnd.commerce-battelle"/>
+  <mime-type type="application/vnd.commonspace">
+    <glob pattern="*.csp"/>
+  </mime-type>
+  <mime-type type="application/vnd.contact.cmsg">
+    <glob pattern="*.cdbcmsg"/>
+  </mime-type>
+  <mime-type type="application/vnd.cosmocaller">
+    <glob pattern="*.cmc"/>
+  </mime-type>
+  <mime-type type="application/vnd.crick.clicker">
+    <glob pattern="*.clkx"/>
+  </mime-type>
+  <mime-type type="application/vnd.crick.clicker.keyboard">
+    <glob pattern="*.clkk"/>
+  </mime-type>
+  <mime-type type="application/vnd.crick.clicker.palette">
+    <glob pattern="*.clkp"/>
+  </mime-type>
+  <mime-type type="application/vnd.crick.clicker.template">
+    <glob pattern="*.clkt"/>
+  </mime-type>
+  <mime-type type="application/vnd.crick.clicker.wordbank">
+    <glob pattern="*.clkw"/>
+  </mime-type>
+  <mime-type type="application/vnd.criticaltools.wbs+xml">
+    <glob pattern="*.wbs"/>
+  </mime-type>
+  <mime-type type="application/vnd.ctc-posml">
+    <glob pattern="*.pml"/>
+  </mime-type>
+  <mime-type type="application/vnd.ctct.ws+xml"/>
+  <mime-type type="application/vnd.cups-pdf"/>
+  <mime-type type="application/vnd.cups-postscript"/>
+  <mime-type type="application/vnd.cups-ppd">
+    <glob pattern="*.ppd"/>
+  </mime-type>
+  <mime-type type="application/vnd.cups-raster"/>
+  <mime-type type="application/vnd.cups-raw"/>
+  <mime-type type="application/vnd.curl.car">
+    <glob pattern="*.car"/>
+  </mime-type>
+  <mime-type type="application/vnd.curl.pcurl">
+    <glob pattern="*.pcurl"/>
+  </mime-type>
+  <mime-type type="application/vnd.cybank"/>
+  <mime-type type="application/vnd.data-vision.rdz">
+    <glob pattern="*.rdz"/>
+  </mime-type>
+  <mime-type type="application/vnd.denovo.fcselayout-link">
+    <glob pattern="*.fe_launch"/>
+  </mime-type>
+  <mime-type type="application/vnd.digilite.prolights">
+    <tika:link>http://support.digilite.eu/?digilite=library</tika:link>
+    <_comment>digilite.eu Prolights configuration file</_comment>
+    <_comment>Note glob clash with Adobe's .fdf</_comment>
+    <!--<glob pattern="*.fdf"/>-->
+    <magic priority="50">
+      <match value="0x7F0C442B" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/vnd.dir-bi.plate-dl-nosuffix"/>
+  <mime-type type="application/vnd.dna">
+    <glob pattern="*.dna"/>
+  </mime-type>
+  <mime-type type="application/vnd.dolby.mlp">
+    <glob pattern="*.mlp"/>
+  </mime-type>
+  <mime-type type="application/vnd.dolby.mobile.1"/>
+  <mime-type type="application/vnd.dolby.mobile.2"/>
+  <mime-type type="application/vnd.dpgraph">
+    <glob pattern="*.dpg"/>
+  </mime-type>
+  <mime-type type="application/vnd.dreamfactory">
+    <glob pattern="*.dfac"/>
+  </mime-type>
+  <mime-type type="application/vnd.dvb.esgcontainer"/>
+  <mime-type type="application/vnd.dvb.ipdcdftnotifaccess"/>
+  <mime-type type="application/vnd.dvb.ipdcesgaccess"/>
+  <mime-type type="application/vnd.dvb.ipdcroaming"/>
+  <mime-type type="application/vnd.dvb.iptv.alfec-base"/>
+  <mime-type type="application/vnd.dvb.iptv.alfec-enhancement"/>
+  <mime-type type="application/vnd.dvb.notif-aggregate-root+xml"/>
+  <mime-type type="application/vnd.dvb.notif-container+xml"/>
+  <mime-type type="application/vnd.dvb.notif-generic+xml"/>
+  <mime-type type="application/vnd.dvb.notif-ia-msglist+xml"/>
+  <mime-type type="application/vnd.dvb.notif-ia-registration-request+xml"/>
+  <mime-type type="application/vnd.dvb.notif-ia-registration-response+xml"/>
+  <mime-type type="application/vnd.dvb.notif-init+xml"/>
+  <mime-type type="application/vnd.dxr"/>
+  <mime-type type="application/vnd.dynageo">
+    <glob pattern="*.geo"/>
+  </mime-type>
+  <mime-type type="application/vnd.ecdis-update"/>
+  <mime-type type="application/vnd.ecowin.chart">
+    <glob pattern="*.mag"/>
+  </mime-type>
+  <mime-type type="application/vnd.ecowin.filerequest"/>
+  <mime-type type="application/vnd.ecowin.fileupdate"/>
+  <mime-type type="application/vnd.ecowin.series"/>
+  <mime-type type="application/vnd.ecowin.seriesrequest"/>
+  <mime-type type="application/vnd.ecowin.seriesupdate"/>
+  <mime-type type="application/vnd.emclient.accessrequest+xml"/>
+  <mime-type type="application/vnd.enliven">
+    <glob pattern="*.nml"/>
+  </mime-type>
+  <mime-type type="application/vnd.epson.esf">
+    <glob pattern="*.esf"/>
+  </mime-type>
+  <mime-type type="application/vnd.epson.msf">
+    <glob pattern="*.msf"/>
+  </mime-type>
+  <mime-type type="application/vnd.epson.quickanime">
+    <glob pattern="*.qam"/>
+  </mime-type>
+  <mime-type type="application/vnd.epson.salt">
+    <glob pattern="*.slt"/>
+  </mime-type>
+  <mime-type type="application/vnd.epson.ssf">
+    <glob pattern="*.ssf"/>
+  </mime-type>
+  <mime-type type="application/vnd.ericsson.quickcall"/>
+  <mime-type type="application/vnd.eszigno3+xml">
+    <glob pattern="*.es3"/>
+    <glob pattern="*.et3"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.etsi.asic-e+zip">
+    <acronym>ASiC-E</acronym>
+    <_comment>Extended Associated Signature Container</_comment>
+    <sub-class-of type="application/zip"/>
+    <!-- Spec says the Mimetype entry should be the first in the zip -->
+    <magic priority="60">
+      <match value="PK\003\004" type="string" offset="0">
+        <match value="mimetypeapplication/vnd.etsi.asic-e+zip" type="string" offset="30" />
+      </match>
+    </magic>
+    <glob pattern="*.asice" />
+  </mime-type>
+
+  <mime-type type="application/vnd.etsi.asic-s+zip">
+    <acronym>ASiC-S</acronym>
+    <_comment>Simple Associated Signature Container</_comment>
+    <sub-class-of type="application/zip"/>
+    <!-- Spec says the Mimetype entry should be the first in the zip -->
+    <magic priority="60">
+      <match value="PK\003\004" type="string" offset="0">
+        <match value="mimetypeapplication/vnd.etsi.asic-s+zip" type="string" offset="30" />
+      </match>
+    </magic>
+    <glob pattern="*.asics" />
+  </mime-type>
+
+  <mime-type type="application/vnd.etsi.aoc+xml"/>
+  <mime-type type="application/vnd.etsi.cug+xml"/>
+  <mime-type type="application/vnd.etsi.iptvcommand+xml"/>
+  <mime-type type="application/vnd.etsi.iptvdiscovery+xml"/>
+  <mime-type type="application/vnd.etsi.iptvprofile+xml"/>
+  <mime-type type="application/vnd.etsi.iptvsad-bc+xml"/>
+  <mime-type type="application/vnd.etsi.iptvsad-cod+xml"/>
+  <mime-type type="application/vnd.etsi.iptvsad-npvr+xml"/>
+  <mime-type type="application/vnd.etsi.iptvueprofile+xml"/>
+  <mime-type type="application/vnd.etsi.mcid+xml"/>
+  <mime-type type="application/vnd.etsi.sci+xml"/>
+  <mime-type type="application/vnd.etsi.simservs+xml"/>
+  <mime-type type="application/vnd.eudora.data"/>
+  <mime-type type="application/vnd.ezpix-album">
+    <glob pattern="*.ez2"/>
+  </mime-type>
+  <mime-type type="application/vnd.ezpix-package">
+    <glob pattern="*.ez3"/>
+  </mime-type>
+  <mime-type type="application/vnd.f-secure.mobile"/>
+  <mime-type type="application/vnd.fdf">
+    <acronym>FDF</acronym>
+    <_comment>Forms Data Format</_comment>
+    <tika:link>http://en.wikipedia.org/wiki/Forms_Data_Format</tika:link>
+    <tika:link>http://www.adobe.com/devnet/acrobat/fdftoolkit.html</tika:link>
+    <tika:uti>com.adobe.fdf</tika:uti>
+    <magic priority="50">
+      <match value="%FDF-" type="string" offset="0" />
+    </magic>
+    <glob pattern="*.fdf"/>
+  </mime-type>
+  <mime-type type="application/vnd.fdsn.mseed">
+    <glob pattern="*.mseed"/>
+  </mime-type>
+  <mime-type type="application/vnd.fdsn.seed">
+    <glob pattern="*.seed"/>
+    <glob pattern="*.dataless"/>
+  </mime-type>
+  <mime-type type="application/vnd.ffsns"/>
+  <mime-type type="application/vnd.fints"/>
+  <mime-type type="application/vnd.flographit">
+    <glob pattern="*.gph"/>
+  </mime-type>
+  <mime-type type="application/vnd.fluxtime.clip">
+    <glob pattern="*.ftc"/>
+  </mime-type>
+  <mime-type type="application/vnd.font-fontforge-sfd"/>
+  <mime-type type="application/vnd.framemaker">
+    <glob pattern="*.fm"/>
+    <glob pattern="*.frame"/>
+    <glob pattern="*.maker"/>
+    <glob pattern="*.book"/>
+  </mime-type>
+  <mime-type type="application/vnd.frogans.fnc">
+    <glob pattern="*.fnc"/>
+  </mime-type>
+  <mime-type type="application/vnd.frogans.ltf">
+    <glob pattern="*.ltf"/>
+  </mime-type>
+  <mime-type type="application/vnd.fsc.weblaunch">
+    <glob pattern="*.fsc"/>
+  </mime-type>
+  <mime-type type="application/vnd.fujitsu.oasys">
+    <glob pattern="*.oas"/>
+  </mime-type>
+  <mime-type type="application/vnd.fujitsu.oasys2">
+    <glob pattern="*.oa2"/>
+  </mime-type>
+  <mime-type type="application/vnd.fujitsu.oasys3">
+    <glob pattern="*.oa3"/>
+  </mime-type>
+  <mime-type type="application/vnd.fujitsu.oasysgp">
+    <glob pattern="*.fg5"/>
+  </mime-type>
+  <mime-type type="application/vnd.fujitsu.oasysprs">
+    <glob pattern="*.bh2"/>
+  </mime-type>
+  <mime-type type="application/vnd.fujixerox.art-ex"/>
+  <mime-type type="application/vnd.fujixerox.art4"/>
+  <mime-type type="application/vnd.fujixerox.hbpl"/>
+  <mime-type type="application/vnd.fujixerox.ddd">
+    <glob pattern="*.ddd"/>
+  </mime-type>
+  <mime-type type="application/vnd.fujixerox.docuworks">
+    <glob pattern="*.xdw"/>
+  </mime-type>
+  <mime-type type="application/vnd.fujixerox.docuworks.binder">
+    <glob pattern="*.xbd"/>
+  </mime-type>
+  <mime-type type="application/vnd.fut-misnet"/>
+  <mime-type type="application/vnd.fuzzysheet">
+    <glob pattern="*.fzs"/>
+  </mime-type>
+  <mime-type type="application/vnd.genomatix.tuxedo">
+    <glob pattern="*.txd"/>
+  </mime-type>
+  <mime-type type="application/vnd.geogebra.file">
+    <glob pattern="*.ggb"/>
+  </mime-type>
+  <mime-type type="application/vnd.geogebra.tool">
+    <glob pattern="*.ggt"/>
+  </mime-type>
+  <mime-type type="application/vnd.geometry-explorer">
+    <glob pattern="*.gex"/>
+    <glob pattern="*.gre"/>
+  </mime-type>
+  <mime-type type="application/vnd.gmx">
+    <glob pattern="*.gmx"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.google-earth.kml+xml">
+    <root-XML localName="kml"/>
+    <root-XML namespaceURI="http://www.opengis.net/kml/2.2" localName="kml"/>
+    <root-XML namespaceURI="http://earth.google.com/kml/2.0" localName="kml"/>
+    <root-XML namespaceURI="http://earth.google.com/kml/2.1" localName="kml"/>
+    <root-XML namespaceURI="http://earth.google.com/kml/2.2" localName="kml"/>
+    <acronym>KML</acronym>
+    <_comment>Keyhole Markup Language</_comment>
+    <glob pattern="*.kml"/>
+    <sub-class-of type="application/xml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.google-earth.kmz">
+    <sub-class-of type="application/zip"/>
+    <glob pattern="*.kmz"/>
+  </mime-type>
+  <mime-type type="application/vnd.grafeq">
+    <glob pattern="*.gqf"/>
+    <glob pattern="*.gqs"/>
+  </mime-type>
+  <mime-type type="application/vnd.gridmp"/>
+  <mime-type type="application/vnd.groove-account">
+    <glob pattern="*.gac"/>
+  </mime-type>
+  <mime-type type="application/vnd.groove-help">
+    <glob pattern="*.ghf"/>
+  </mime-type>
+  <mime-type type="application/vnd.groove-identity-message">
+    <glob pattern="*.gim"/>
+  </mime-type>
+  <mime-type type="application/vnd.groove-injector">
+    <glob pattern="*.grv"/>
+  </mime-type>
+  <mime-type type="application/vnd.groove-tool-message">
+    <glob pattern="*.gtm"/>
+  </mime-type>
+  <mime-type type="application/vnd.groove-tool-template">
+    <glob pattern="*.tpl"/>
+  </mime-type>
+  <mime-type type="application/vnd.groove-vcard">
+    <glob pattern="*.vcg"/>
+  </mime-type>
+  <mime-type type="application/vnd.handheld-entertainment+xml">
+    <glob pattern="*.zmm"/>
+  </mime-type>
+  <mime-type type="application/vnd.hbci">
+    <glob pattern="*.hbci"/>
+  </mime-type>
+  <mime-type type="application/vnd.hcl-bireports"/>
+  <mime-type type="application/vnd.hhe.lesson-player">
+    <glob pattern="*.les"/>
+  </mime-type>
+  <mime-type type="application/vnd.hp-hpgl">
+    <glob pattern="*.hpgl"/>
+  </mime-type>
+  <mime-type type="application/vnd.hp-hpid">
+    <glob pattern="*.hpid"/>
+  </mime-type>
+  <mime-type type="application/vnd.hp-hps">
+    <glob pattern="*.hps"/>
+  </mime-type>
+  <mime-type type="application/vnd.hp-jlyt">
+    <glob pattern="*.jlt"/>
+  </mime-type>
+  <mime-type type="application/vnd.hp-pcl">
+    <glob pattern="*.pcl"/>
+  </mime-type>
+  <mime-type type="application/vnd.hp-pclxl">
+    <glob pattern="*.pclxl"/>
+  </mime-type>
+  <mime-type type="application/vnd.httphone"/>
+  <mime-type type="application/vnd.hydrostatix.sof-data">
+    <glob pattern="*.sfd-hdstx"/>
+  </mime-type>
+  <mime-type type="application/vnd.hzn-3d-crossword">
+    <glob pattern="*.x3d"/>
+  </mime-type>
+  <mime-type type="application/vnd.ibm.afplinedata"/>
+  <mime-type type="application/vnd.ibm.electronic-media"/>
+  <mime-type type="application/vnd.ibm.minipay">
+    <glob pattern="*.mpy"/>
+  </mime-type>
+  <mime-type type="application/vnd.ibm.modcap">
+    <glob pattern="*.afp"/>
+    <glob pattern="*.listafp"/>
+    <glob pattern="*.list3820"/>
+  </mime-type>
+  <mime-type type="application/vnd.ibm.rights-management">
+    <glob pattern="*.irm"/>
+  </mime-type>
+  <mime-type type="application/vnd.ibm.secure-container">
+    <glob pattern="*.sc"/>
+  </mime-type>
+  <mime-type type="application/vnd.iccprofile">
+    <glob pattern="*.icc"/>
+    <glob pattern="*.icm"/>
+  </mime-type>
+  <mime-type type="application/vnd.igloader">
+    <glob pattern="*.igl"/>
+  </mime-type>
+  <mime-type type="application/vnd.immervision-ivp">
+    <glob pattern="*.ivp"/>
+  </mime-type>
+  <mime-type type="application/vnd.immervision-ivu">
+    <glob pattern="*.ivu"/>
+  </mime-type>
+  <mime-type type="application/vnd.informedcontrol.rms+xml"/>
+  <mime-type type="application/vnd.informix-visionary"/>
+  <mime-type type="application/vnd.intercon.formnet">
+    <glob pattern="*.xpw"/>
+    <glob pattern="*.xpx"/>
+  </mime-type>
+  <mime-type type="application/vnd.intertrust.digibox"/>
+  <mime-type type="application/vnd.intertrust.nncp"/>
+  <mime-type type="application/vnd.intu.qbo">
+    <glob pattern="*.qbo"/>
+  </mime-type>
+  <mime-type type="application/vnd.intu.qfx">
+    <glob pattern="*.qfx"/>
+  </mime-type>
+  <mime-type type="application/vnd.iptc.g2.catalogitem+xml"/>
+  <mime-type type="application/vnd.iptc.g2.conceptitem+xml"/>
+  <mime-type type="application/vnd.iptc.g2.knowledgeitem+xml"/>
+  <mime-type type="application/vnd.iptc.g2.newsitem+xml"/>
+    
+  <mime-type type="application/vnd.iptc.g2.newsmessage+xml">
+    <root-XML localName="newsMessage"/>
+    <root-XML localName="newsMessage" namespaceURI="http://iptc.org/std/nar/2006-10-01/"/>
+    <sub-class-of type="application/xml"/>
+    <_comment>XML syntax for IPTC NewsMessages</_comment>
+    <glob pattern="*.nar"/>
+  </mime-type>
+  
+  <mime-type type="application/vnd.iptc.g2.packageitem+xml"/>
+  <mime-type type="application/vnd.iptc.g2.planningitem+xml"/>
+
+  <mime-type type="application/vnd.ipunplugged.rcprofile">
+    <glob pattern="*.rcprofile"/>
+  </mime-type>
+  <mime-type type="application/vnd.irepository.package+xml">
+    <glob pattern="*.irp"/>
+  </mime-type>
+  <mime-type type="application/vnd.is-xpr">
+    <glob pattern="*.xpr"/>
+  </mime-type>
+  <mime-type type="application/vnd.jam">
+    <glob pattern="*.jam"/>
+  </mime-type>
+  <mime-type type="application/vnd.japannet-directory-service"/>
+  <mime-type type="application/vnd.japannet-jpnstore-wakeup"/>
+  <mime-type type="application/vnd.japannet-payment-wakeup"/>
+  <mime-type type="application/vnd.japannet-registration"/>
+  <mime-type type="application/vnd.japannet-registration-wakeup"/>
+  <mime-type type="application/vnd.japannet-setstore-wakeup"/>
+  <mime-type type="application/vnd.japannet-verification"/>
+  <mime-type type="application/vnd.japannet-verification-wakeup"/>
+  <mime-type type="application/vnd.jcp.javame.midlet-rms">
+    <glob pattern="*.rms"/>
+  </mime-type>
+  <mime-type type="application/vnd.jisp">
+    <glob pattern="*.jisp"/>
+  </mime-type>
+  <mime-type type="application/vnd.joost.joda-archive">
+    <glob pattern="*.joda"/>
+  </mime-type>
+  <mime-type type="application/vnd.kahootz">
+    <glob pattern="*.ktz"/>
+    <glob pattern="*.ktr"/>
+  </mime-type>
+  <mime-type type="application/vnd.kde.karbon">
+    <glob pattern="*.karbon"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.kde.kchart">
+    <alias type="application/x-kchart"/>
+    <_comment>KChart File</_comment>
+    <glob pattern="*.chrt"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.kde.kformula">
+    <glob pattern="*.kfo"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.kde.kivio">
+    <glob pattern="*.flw"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.kde.kontour">
+    <glob pattern="*.kon"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.kde.kpresenter">
+    <alias type="application/x-kpresenter"/>
+    <_comment>KPresenter File</_comment>
+    <glob pattern="*.kpr"/>
+    <glob pattern="*.kpt"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.kde.kspread">
+    <alias type="application/x-kspread"/>
+    <_comment>KSpread File</_comment>
+    <glob pattern="*.ksp"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.kde.kword">
+    <alias type="application/x-kword"/>
+    <_comment>KWord File</_comment>
+    <glob pattern="*.kwd"/>
+    <glob pattern="*.kwt"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.kenameaapp">
+    <glob pattern="*.htke"/>
+  </mime-type>
+  <mime-type type="application/vnd.kidspiration">
+    <glob pattern="*.kia"/>
+  </mime-type>
+  <mime-type type="application/vnd.kinar">
+    <glob pattern="*.kne"/>
+    <glob pattern="*.knp"/>
+  </mime-type>
+  <mime-type type="application/vnd.koan">
+    <alias type="application/x-koan"/>
+    <_comment>SSEYO Koan File</_comment>
+    <glob pattern="*.skp"/>
+    <glob pattern="*.skd"/>
+    <glob pattern="*.skt"/>
+    <glob pattern="*.skm"/>
+  </mime-type>
+  <mime-type type="application/vnd.kodak-descriptor">
+    <glob pattern="*.sse"/>
+  </mime-type>
+  <mime-type type="application/vnd.liberty-request+xml"/>
+  <mime-type type="application/vnd.llamagraphics.life-balance.desktop">
+    <glob pattern="*.lbd"/>
+  </mime-type>
+  <mime-type type="application/vnd.llamagraphics.life-balance.exchange+xml">
+    <glob pattern="*.lbe"/>
+  </mime-type>
+  
+  <mime-type type="application/vnd.lotus-1-2-3">
+    <alias type="application/x-123"/>
+    <_comment>Lotus 1-2-3</_comment>
+    <!-- <glob pattern="*.wks"/> - conflicts with application/vnd.ms-works -->
+    <glob pattern="*.wk1"/>
+    <glob pattern="*.wk2"/>
+    <glob pattern="*.wk3"/>
+    <glob pattern="*.wk4"/>
+    <glob pattern="*.123"/>
+  </mime-type>
+  
+  <mime-type type="application/vnd.lotus-1-2-3;version=1">
+    <sub-class-of type="application/vnd.lotus-1-2-3"/>
+    <_comment>Lotus 1-2-3, version 1</_comment>
+    <magic priority="50">
+      <match value="0x000002000404" type="string" offset="0">
+      <!-- <glob pattern="*.wks"/> - conflicts with application/vnd.ms-works -->
+      </match>
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/vnd.lotus-1-2-3;version=2">
+    <sub-class-of type="application/vnd.lotus-1-2-3"/>
+    <_comment>Lotus 1-2-3, version 2</_comment>
+    <magic priority="50">
+      <match value="0x00000200060406000800" type="string" offset="0">
+      </match>
+    </magic>
+    <glob pattern="*.wk1"/>
+    <glob pattern="*.wk2"/>
+  </mime-type>
+   
+  <mime-type type="application/vnd.lotus-1-2-3;version=3">
+    <sub-class-of type="application/vnd.lotus-1-2-3"/>
+    <_comment>Lotus 1-2-3, version 3</_comment>
+    <magic priority="50">
+      <match value="0x00001A0000100400" type="string" offset="0">
+      </match>
+    </magic>
+    <glob pattern="*.wk3"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.lotus-1-2-3;version=4">
+    <sub-class-of type="application/vnd.lotus-1-2-3"/>
+    <_comment>Lotus 1-2-3, version 4-5</_comment>
+    <magic priority="50">
+      <match value="0x00001A0002100400" type="string" offset="0">
+      </match>
+    </magic>
+    <glob pattern="*.wk4"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.lotus-1-2-3;version=97+9.x">
+    <sub-class-of type="application/vnd.lotus-1-2-3"/>
+    <_comment>Lotus 1-2-3, version 97/9.x</_comment>
+    <magic priority="50">
+      <match value="0x00001A0003100400" type="string" offset="0">
+      </match>
+    </magic>
+    <glob pattern="*.123"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.lotus-approach">
+    <glob pattern="*.apr"/>
+  </mime-type>
+  <mime-type type="application/vnd.lotus-freelance">
+    <glob pattern="*.pre"/>
+  </mime-type>
+  <mime-type type="application/vnd.lotus-notes">
+    <glob pattern="*.nsf"/>
+  </mime-type>
+  <mime-type type="application/vnd.lotus-organizer">
+    <glob pattern="*.org"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.lotus-screencam">
+    <!-- <glob pattern="*.scm"/> - conflicts with text/x-scheme -->
+  </mime-type>
+
+  <mime-type type="application/vnd.lotus-wordpro">
+    <magic priority="50">
+      <match value="WordPro\0" type="string" offset="0" />
+      <match value="WordPro\r\373" type="string" offset="0" />
+    </magic>
+    <glob pattern="*.lwp"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.macports.portpkg">
+    <glob pattern="*.portpkg"/>
+  </mime-type>
+  <mime-type type="application/vnd.marlin.drm.actiontoken+xml"/>
+  <mime-type type="application/vnd.marlin.drm.conftoken+xml"/>
+  <mime-type type="application/vnd.marlin.drm.license+xml"/>
+  <mime-type type="application/vnd.marlin.drm.mdcf"/>
+  <mime-type type="application/vnd.mcd">
+    <glob pattern="*.mcd"/>
+  </mime-type>
+  <mime-type type="application/vnd.medcalcdata">
+    <glob pattern="*.mc1"/>
+  </mime-type>
+  <mime-type type="application/vnd.mediastation.cdkey">
+    <glob pattern="*.cdkey"/>
+  </mime-type>
+  <mime-type type="application/vnd.meridian-slingshot"/>
+  <mime-type type="application/vnd.mfer">
+    <glob pattern="*.mwf"/>
+  </mime-type>
+  <mime-type type="application/vnd.mfmp">
+    <glob pattern="*.mfm"/>
+  </mime-type>
+  <mime-type type="application/vnd.micrografx.flo">
+    <glob pattern="*.flo"/>
+  </mime-type>
+  <mime-type type="application/vnd.micrografx.igx">
+    <glob pattern="*.igx"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.mif">
+    <_comment>FrameMaker Interchange Format</_comment>
+    <alias type="application/x-mif"/>
+    <alias type="application/x-frame"/>
+    <magic priority="50">
+      <match value="&lt;MakerFile" type="string" offset="0" />
+      <match value="&lt;MIFFile" type="string" offset="0" />
+      <match value="&lt;MakerDictionary" type="string" offset="0" />
+      <match value="&lt;MakerScreenFont" type="string" offset="0" />
+      <match value="&lt;MML" type="string" offset="0" />
+      <match value="&lt;Book" type="string" offset="0" />
+      <match value="&lt;Maker" type="string" offset="0" />
+    </magic>
+    <glob pattern="*.mif"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.mindjet.mindmanager">
+    <_comment>MindManager</_comment>
+    <sub-class-of type="application/zip"/>
+    <glob pattern="*.mmp"/>
+    <glob pattern="*.mmap"/>
+    <glob pattern="*.mmpt"/>
+    <glob pattern="*.mmat"/>
+    <glob pattern="*.mmmp"/>
+    <glob pattern="*.mmas"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.minisoft-hp3000-save"/>
+  <mime-type type="application/vnd.mitsubishi.misty-guard.trustweb"/>
+  <mime-type type="application/vnd.mobius.daf">
+    <glob pattern="*.daf"/>
+  </mime-type>
+  <mime-type type="application/vnd.mobius.dis">
+    <glob pattern="*.dis"/>
+  </mime-type>
+  <mime-type type="application/vnd.mobius.mbk">
+    <glob pattern="*.mbk"/>
+  </mime-type>
+  <mime-type type="application/vnd.mobius.mqy">
+    <glob pattern="*.mqy"/>
+  </mime-type>
+  <mime-type type="application/vnd.mobius.msl">
+    <glob pattern="*.msl"/>
+  </mime-type>
+  <mime-type type="application/vnd.mobius.plc">
+    <glob pattern="*.plc"/>
+  </mime-type>
+  <mime-type type="application/vnd.mobius.txf">
+    <glob pattern="*.txf"/>
+  </mime-type>
+  <mime-type type="application/vnd.mophun.application">
+    <glob pattern="*.mpn"/>
+  </mime-type>
+  <mime-type type="application/vnd.mophun.certificate">
+    <glob pattern="*.mpc"/>
+  </mime-type>
+  <mime-type type="application/vnd.motorola.flexsuite"/>
+  <mime-type type="application/vnd.motorola.flexsuite.adsi"/>
+  <mime-type type="application/vnd.motorola.flexsuite.fis"/>
+  <mime-type type="application/vnd.motorola.flexsuite.gotap"/>
+  <mime-type type="application/vnd.motorola.flexsuite.kmr"/>
+  <mime-type type="application/vnd.motorola.flexsuite.ttc"/>
+  <mime-type type="application/vnd.motorola.flexsuite.wem"/>
+  <mime-type type="application/vnd.motorola.iprm"/>
+  <mime-type type="application/vnd.mozilla.xul+xml">
+    <glob pattern="*.xul"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-artgalry">
+    <glob pattern="*.cil"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-asf"/>
+  <mime-type type="application/vnd.ms-cab-compressed">
+    <magic priority="50">
+      <match value="MSCF\000\000\000\000" type="string" offset="0"/>
+    </magic>
+    <glob pattern="*.cab"/>
+    <magic priority="50">
+      <match value="MSCF" type="string" offset="0" />
+    </magic>
+  </mime-type>
+
+  <!-- http://www.iana.org/assignments/media-types/application/vnd.ms-excel -->
+  <mime-type type="application/vnd.ms-excel">
+    <!-- Use DefaultDetector / org.apache.tika.parser.microsoft.POIFSContainerDetector for more reliable detection of OLE2 documents -->
+    <alias type="application/msexcel" />
+    <_comment>Microsoft Excel Spreadsheet</_comment>
+    <magic priority="50">
+      <match value="Microsoft\ Excel\ 5.0\ Worksheet" type="string" offset="2080"/>
+      <match value="Foglio\ di\ lavoro\ Microsoft\ Exce" type="string" offset="2080"/>
+      <match value="Biff5" type="string" offset="2114"/>
+      <match value="Biff5" type="string" offset="2121"/>
+      <match value="0xd0cf11e0a1b11ae1" type="string" offset="0:8">
+         <match value="W\x00o\x00r\x00k\x00b\x00o\x00o\x00k" type="string" offset="1152:4096" />
+      </match>
+    </magic>
+    <glob pattern="*.xls"/>
+    <glob pattern="*.xlm"/>
+    <glob pattern="*.xla"/>
+    <glob pattern="*.xlc"/>
+    <glob pattern="*.xlt"/>
+    <glob pattern="*.xlw"/>
+    <glob pattern="*.xll"/>
+    <glob pattern="*.xld"/>
+    <sub-class-of type="application/x-tika-msoffice"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-excel.addin.macroenabled.12">
+    <_comment>Office Open XML Workbook Add-in (macro-enabled)</_comment>
+    <glob pattern="*.xlam"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-excel.sheet.macroenabled.12">
+    <_comment>Office Open XML Workbook (macro-enabled)</_comment>
+    <glob pattern="*.xlsm"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-excel.sheet.binary.macroenabled.12">
+    <_comment>Microsoft Excel 2007 Binary Spreadsheet</_comment>
+    <glob pattern="*.xlsb"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-excel.sheet.4">
+    <_comment>Microsoft Excel 4 Worksheet</_comment>
+    <magic priority="60">
+      <match value="0x09040600" type="string" offset="0">
+        <match value="0x00001000" type="string" offset="4"/> <!-- Sheet -->
+        <match value="0x00002000" type="string" offset="4"/> <!-- Chart -->
+        <match value="0x00004000" type="string" offset="4"/> <!-- Macro -->
+      </match>
+    </magic>
+    <sub-class-of type="application/x-tika-old-excel"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-excel.workspace.4">
+    <_comment>Microsoft Excel 4 Workspace</_comment>
+    <magic priority="60">
+      <match value="0x09040600" type="string" offset="0">
+        <match value="0x00000001" type="string" offset="4"/>
+      </match>
+    </magic>
+    <sub-class-of type="application/x-tika-old-excel"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-excel.sheet.3">
+    <_comment>Microsoft Excel 3 Worksheet</_comment>
+    <magic priority="60">
+      <match value="0x09020600" type="string" offset="0">
+        <match value="0x00001000" type="string" offset="4"/> <!-- Sheet -->
+        <match value="0x00002000" type="string" offset="4"/> <!-- Chart -->
+        <match value="0x00004000" type="string" offset="4"/> <!-- Macro -->
+      </match>
+    </magic>
+    <sub-class-of type="application/x-tika-old-excel"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-excel.workspace.3">
+    <_comment>Microsoft Excel 3 Workspace</_comment>
+    <magic priority="60">
+      <match value="0x09020600" type="string" offset="0">
+        <match value="0x00000001" type="string" offset="4"/>
+      </match>
+    </magic>
+    <sub-class-of type="application/x-tika-old-excel"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-excel.sheet.2">
+    <_comment>Microsoft Excel 2 Worksheet</_comment>
+    <magic priority="60">
+      <match value="0x09000400" type="string" offset="0">
+        <match value="0x00001000" type="string" offset="4"/> <!-- Sheet -->
+        <match value="0x00002000" type="string" offset="4"/> <!-- Chart -->
+        <match value="0x00004000" type="string" offset="4"/> <!-- Macro -->
+      </match>
+    </magic>
+    <sub-class-of type="application/x-tika-old-excel"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-fontobject">
+    <glob pattern="*.eot"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-htmlhelp">
+    <glob pattern="*.chm"/>
+    <magic priority="50">
+      <match value="ITSF" type="string" offset="0"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/vnd.ms-ims">
+    <glob pattern="*.ims"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-lrm">
+    <glob pattern="*.lrm"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-outlook">
+    <_comment>Microsoft Outlook Message</_comment>
+    <glob pattern="*.msg" />
+    <sub-class-of type="application/x-tika-msoffice"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-outlook-pst">
+    <_comment>Outlook Personal Folders File Format</_comment>
+    <magic priority="50">
+       <match value="!BDN....SM" type="string" offset="0" mask="0xFFFFFFFF00000000FFFF"/>
+    </magic>
+    <glob pattern="*.pst"/>
+    <glob pattern="*.ost"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-pki.seccat">
+    <glob pattern="*.cat"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-pki.stl">
+    <glob pattern="*.stl"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-playready.initiator+xml"/>
+
+  <!-- http://www.iana.org/assignments/media-types/application/vnd.ms-powerpoint -->
+  <mime-type type="application/vnd.ms-powerpoint">
+    <!-- Use DefaultDetector / org.apache.tika.parser.microsoft.POIFSContainerDetector for more reliable detection of OLE2 documents -->
+    <alias type="application/mspowerpoint"/>
+    <_comment>Microsoft Powerpoint Presentation</_comment>
+    <magic priority="50">
+      <match value="0xd0cf11e0a1b11ae1" type="string" offset="0:8">
+         <match value="P\x00o\x00w\x00e\x00r\x00P\x00o\x00i\x00n\x00t\x00 D\x00o\x00c\x00u\x00m\x00e\x00n\x00t" type="string" offset="1152:4096" />
+      </match>
+    </magic>
+    <glob pattern="*.ppt"/>
+    <glob pattern="*.ppz"/>
+    <glob pattern="*.pps"/>
+    <glob pattern="*.pot"/>
+    <glob pattern="*.ppa"/>
+    <sub-class-of type="application/x-tika-msoffice"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-powerpoint.addin.macroenabled.12">
+    <_comment>Office Open XML Presentation Add-in (macro-enabled)</_comment>
+    <glob pattern="*.ppam"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-powerpoint.presentation.macroenabled.12">
+    <_comment>Office Open XML Presentation (macro-enabled)</_comment>
+    <glob pattern="*.pptm"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-powerpoint.slide.macroenabled.12">
+    <glob pattern="*.sldm"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-powerpoint.slideshow.macroenabled.12">
+    <_comment>Office Open XML Presentation Slideshow (macro-enabled)</_comment>
+    <glob pattern="*.ppsm"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-powerpoint.template.macroenabled.12">
+    <glob pattern="*.potm"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-project">
+    <glob pattern="*.mpp"/>
+    <glob pattern="*.mpt"/>
+    <sub-class-of type="application/x-tika-msoffice"/>
+  </mime-type>
+
+  <mime-type type="application/x-project">
+    <glob pattern="*.mpx"/>
+    <magic priority="50">
+      <match value="MPX,Microsoft Project for Windows," type="string" offset="0"/>
+    </magic>
+    <sub-class-of type="text/plain"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-tnef">
+    <alias type="application/ms-tnef" />
+    <magic priority="50">
+      <match value="0x223e9f78" type="little32" offset="0" />
+    </magic>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-wmdrm.lic-chlg-req"/>
+  <mime-type type="application/vnd.ms-wmdrm.lic-resp"/>
+  <mime-type type="application/vnd.ms-wmdrm.meter-chlg-req"/>
+  <mime-type type="application/vnd.ms-wmdrm.meter-resp"/>
+
+  <mime-type type="application/vnd.ms-word.document.macroenabled.12">
+    <_comment>Office Open XML Document (macro-enabled)</_comment>
+    <glob pattern="*.docm"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-word.template.macroenabled.12">
+    <_comment>Office Open XML Document Template (macro-enabled)</_comment>
+    <glob pattern="*.dotm"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-works">
+    <magic priority="50">
+      <match value="0xd0cf11e0a1b11ae1" type="string" offset="0:8">
+         <match value="M\x00a\x00t\x00O\x00S\x00T" type="string" offset="1152:4096" />
+      </match>
+    </magic>
+    <glob pattern="*.wps"/>
+    <glob pattern="*.wks"/>
+    <glob pattern="*.wcm"/>
+    <glob pattern="*.wdb"/>
+    <sub-class-of type="application/x-tika-msoffice"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-wpl">
+    <glob pattern="*.wpl"/>
+  </mime-type>
+  <mime-type type="application/vnd.ms-xpsdocument">
+    <alias type="application/oxps"/>
+    <_comment>Open XML Paper Specification</_comment>
+    <glob pattern="*.xps"/>
+    <glob pattern="*.oxps"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+  <mime-type type="application/vnd.mseq">
+    <glob pattern="*.mseq"/>
+  </mime-type>
+  <mime-type type="application/vnd.msign"/>
+  <mime-type type="application/vnd.multiad.creator"/>
+  <mime-type type="application/vnd.multiad.creator.cif"/>
+  <mime-type type="application/vnd.music-niff"/>
+  <mime-type type="application/vnd.musician">
+    <glob pattern="*.mus"/>
+  </mime-type>
+  <mime-type type="application/vnd.muvee.style">
+    <glob pattern="*.msty"/>
+  </mime-type>
+  <mime-type type="application/vnd.ncd.control"/>
+  <mime-type type="application/vnd.ncd.reference"/>
+  <mime-type type="application/vnd.nervana"/>
+  <mime-type type="application/vnd.netfpx"/>
+  <mime-type type="application/vnd.neurolanguage.nlu">
+    <glob pattern="*.nlu"/>
+  </mime-type>
+  <mime-type type="application/vnd.noblenet-directory">
+    <glob pattern="*.nnd"/>
+  </mime-type>
+  <mime-type type="application/vnd.noblenet-sealer">
+    <glob pattern="*.nns"/>
+  </mime-type>
+  <mime-type type="application/vnd.noblenet-web">
+    <glob pattern="*.nnw"/>
+  </mime-type>
+  <mime-type type="application/vnd.nokia.catalogs"/>
+  <mime-type type="application/vnd.nokia.conml+wbxml"/>
+  <mime-type type="application/vnd.nokia.conml+xml"/>
+  <mime-type type="application/vnd.nokia.isds-radio-presets"/>
+  <mime-type type="application/vnd.nokia.iptv.config+xml"/>
+  <mime-type type="application/vnd.nokia.landmark+wbxml"/>
+  <mime-type type="application/vnd.nokia.landmark+xml"/>
+  <mime-type type="application/vnd.nokia.landmarkcollection+xml"/>
+  <mime-type type="application/vnd.nokia.n-gage.ac+xml"/>
+  <mime-type type="application/vnd.nokia.n-gage.data">
+    <glob pattern="*.ngdat"/>
+  </mime-type>
+  <mime-type type="application/vnd.nokia.n-gage.symbian.install">
+    <glob pattern="*.n-gage"/>
+  </mime-type>
+  <mime-type type="application/vnd.nokia.ncd"/>
+  <mime-type type="application/vnd.nokia.pcd+wbxml"/>
+  <mime-type type="application/vnd.nokia.pcd+xml"/>
+  <mime-type type="application/vnd.nokia.radio-preset">
+    <glob pattern="*.rpst"/>
+  </mime-type>
+  <mime-type type="application/vnd.nokia.radio-presets">
+    <glob pattern="*.rpss"/>
+  </mime-type>
+  <mime-type type="application/vnd.novadigm.edm">
+    <glob pattern="*.edm"/>
+  </mime-type>
+  <mime-type type="application/vnd.novadigm.edx">
+    <glob pattern="*.edx"/>
+  </mime-type>
+  <mime-type type="application/vnd.novadigm.ext">
+    <glob pattern="*.ext"/>
+  </mime-type>
+
+  <!-- =================================================================== -->
+  <!-- Open Document Format for Office Applications (OpenDocument) v1.0    -->
+  <!-- http://www.oasis-open.org/specs/index.php#opendocumentv1.0          -->
+  <!-- =================================================================== -->
+
+  <mime-type type="application/vnd.oasis.opendocument.chart">
+    <alias type="application/x-vnd.oasis.opendocument.chart"/>
+    <_comment>OpenDocument v1.0: Chart document</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.chart"/>
+      </match>
+    </magic>
+    <glob pattern="*.odc"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.chart-template">
+    <alias type="application/x-vnd.oasis.opendocument.chart-template"/>
+    <_comment>OpenDocument v1.0: Chart document used as template</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.chart-template"/>
+      </match>
+    </magic>
+    <glob pattern="*.otc"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.base">
+    <alias type="application/vnd.oasis.opendocument.database"/>
+    <glob pattern="*.odb"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.formula">
+    <alias type="application/x-vnd.oasis.opendocument.formula"/>
+    <_comment>OpenDocument v1.0: Formula document</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.formula" />
+      </match>
+    </magic>
+    <glob pattern="*.odf"/>
+    <sub-class-of type="application/zip"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.formula-template">
+    <alias type="application/x-vnd.oasis.opendocument.formula-template"/>
+    <_comment>OpenDocument v1.0: Formula document used as template</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.formula-template"/>
+      </match>
+    </magic>
+    <glob pattern="*.odft"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.graphics">
+    <alias type="application/x-vnd.oasis.opendocument.graphics"/>
+    <_comment>OpenDocument v1.0: Graphics document (Drawing)</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.graphics"/>
+      </match>
+    </magic>
+    <glob pattern="*.odg"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.graphics-template">
+    <alias type="application/x-vnd.oasis.opendocument.graphics-template"/>
+    <_comment>OpenDocument v1.0: Graphics document used as template</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.graphics-template"/>
+      </match>
+    </magic>
+    <glob pattern="*.otg"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.image">
+    <alias type="application/x-vnd.oasis.opendocument.image"/>
+    <_comment>OpenDocument v1.0: Image document</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.image"/>
+      </match>
+    </magic>
+    <glob pattern="*.odi"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.image-template">
+    <alias type="application/x-vnd.oasis.opendocument.image-template"/>
+    <_comment>OpenDocument v1.0: Image document used as template</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.image-template"/>
+      </match>
+    </magic>
+    <glob pattern="*.oti"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.presentation">
+    <alias type="application/x-vnd.oasis.opendocument.presentation"/>
+    <_comment>OpenDocument v1.0: Presentation document</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.presentation"/>
+      </match>
+    </magic>
+    <glob pattern="*.odp"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.presentation-template">
+    <alias type="application/x-vnd.oasis.opendocument.presentation-template"/>
+    <_comment>OpenDocument v1.0: Presentation document used as template</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+              value="mimetypeapplication/vnd.oasis.opendocument.presentation-template"/>
+      </match>
+    </magic>
+    <glob pattern="*.otp"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.spreadsheet">
+    <alias type="application/x-vnd.oasis.opendocument.spreadsheet"/>
+    <_comment>OpenDocument v1.0: Spreadsheet document</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.spreadsheet"/>
+      </match>
+    </magic>
+    <glob pattern="*.ods"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.spreadsheet-template">
+    <alias type="application/x-vnd.oasis.opendocument.spreadsheet-template"/>
+    <_comment>OpenDocument v1.0: Spreadsheet document used as template</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.spreadsheet-template"/>
+      </match>
+    </magic>
+    <glob pattern="*.ots"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.text">
+    <alias type="application/x-vnd.oasis.opendocument.text"/>
+    <_comment>OpenDocument v1.0: Text document</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.text"/>
+      </match>
+    </magic>
+    <glob pattern="*.odt"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.text-master">
+    <alias type="application/x-vnd.oasis.opendocument.text-master"/>
+    <_comment>OpenDocument v1.0: Global Text document</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+               value="mimetypeapplication/vnd.oasis.opendocument.text-master"/>
+      </match>
+    </magic>
+    <glob pattern="*.otm"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.text-template">
+    <alias type="application/x-vnd.oasis.opendocument.text-template"/>
+    <_comment>OpenDocument v1.0: Text document used as template</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+              value="mimetypeapplication/vnd.oasis.opendocument.text-template"/>
+      </match>
+    </magic>
+    <glob pattern="*.ott"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.oasis.opendocument.text-web">
+    <alias type="application/x-vnd.oasis.opendocument.text-web"/>
+    <_comment>OpenDocument v1.0: Text document used as template for HTML documents</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+              value="mimetypeapplication/vnd.oasis.opendocument.text-web"/>
+      </match>
+    </magic>
+    <glob pattern="*.oth"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.obn"/>
+  <mime-type type="application/vnd.olpc-sugar">
+    <glob pattern="*.xo"/>
+  </mime-type>
+  <mime-type type="application/vnd.oma-scws-config"/>
+  <mime-type type="application/vnd.oma-scws-http-request"/>
+  <mime-type type="application/vnd.oma-scws-http-response"/>
+  <mime-type type="application/vnd.oma.bcast.associated-procedure-parameter+xml"/>
+  <mime-type type="application/vnd.oma.bcast.drm-trigger+xml"/>
+  <mime-type type="application/vnd.oma.bcast.imd+xml"/>
+  <mime-type type="application/vnd.oma.bcast.ltkm"/>
+  <mime-type type="application/vnd.oma.bcast.notification+xml"/>
+  <mime-type type="application/vnd.oma.bcast.provisioningtrigger"/>
+  <mime-type type="application/vnd.oma.bcast.sgboot"/>
+  <mime-type type="application/vnd.oma.bcast.sgdd+xml"/>
+  <mime-type type="application/vnd.oma.bcast.sgdu"/>
+  <mime-type type="application/vnd.oma.bcast.simple-symbol-container"/>
+  <mime-type type="application/vnd.oma.bcast.smartcard-trigger+xml"/>
+  <mime-type type="application/vnd.oma.bcast.sprov+xml"/>
+  <mime-type type="application/vnd.oma.bcast.stkm"/>
+  <mime-type type="application/vnd.oma.dcd"/>
+  <mime-type type="application/vnd.oma.dcdc"/>
+  <mime-type type="application/vnd.oma.dd2+xml">
+    <glob pattern="*.dd2"/>
+  </mime-type>
+  <mime-type type="application/vnd.oma.drm.risd+xml"/>
+  <mime-type type="application/vnd.oma.group-usage-list+xml"/>
+  <mime-type type="application/vnd.oma.poc.detailed-progress-report+xml"/>
+  <mime-type type="application/vnd.oma.poc.final-report+xml"/>
+  <mime-type type="application/vnd.oma.poc.groups+xml"/>
+  <mime-type type="application/vnd.oma.poc.invocation-descriptor+xml"/>
+  <mime-type type="application/vnd.oma.poc.optimized-progress-report+xml"/>
+  <mime-type type="application/vnd.oma.xcap-directory+xml"/>
+  <mime-type type="application/vnd.omads-email+xml"/>
+  <mime-type type="application/vnd.omads-file+xml"/>
+  <mime-type type="application/vnd.omads-folder+xml"/>
+  <mime-type type="application/vnd.omaloc-supl-init"/>
+
+  <mime-type type="application/vnd.openofficeorg.extension">
+    <glob pattern="*.oxt"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.openofficeorg.autotext">
+    <sub-class-of type="application/zip"/>
+    <glob pattern="*.bau"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.openxmlformats-officedocument.presentationml.presentation">
+    <_comment>Office Open XML Presentation</_comment>
+    <glob pattern="*.pptx"/>
+    <glob pattern="*.thmx"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.openxmlformats-officedocument.presentationml.slide">
+    <glob pattern="*.sldx"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.openxmlformats-officedocument.presentationml.template">
+    <_comment>Office Open XML Presentation Template</_comment>
+    <glob pattern="*.potx"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.openxmlformats-officedocument.presentationml.slideshow">
+    <_comment>Office Open XML Presentation Slideshow</_comment>
+    <glob pattern="*.ppsx"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    <_comment>Office Open XML Workbook</_comment>
+    <glob pattern="*.xlsx"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.openxmlformats-officedocument.spreadsheetml.template">
+    <_comment>Office Open XML Workbook Template</_comment>
+    <glob pattern="*.xltx"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.ms-excel.template.macroenabled.12">
+    <_comment>Office Open XML Workbook Template (macro-enabled)</_comment>
+    <glob pattern="*.xltm"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+    <_comment>Office Open XML Document</_comment>
+    <glob pattern="*.docx"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.openxmlformats-officedocument.wordprocessingml.template">
+    <_comment>Office Open XML Document Template</_comment>
+    <glob pattern="*.dotx"/>
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.osa.netdeploy"/>
+  <mime-type type="application/vnd.osgi.bundle"/>
+  <mime-type type="application/vnd.osgi.dp">
+    <glob pattern="*.dp"/>
+  </mime-type>
+  <mime-type type="application/vnd.otps.ct-kip+xml"/>
+
+  <mime-type type="application/vnd.palm">
+    <!-- <glob pattern="*.pdb"/> - conflicts with chemical/x-pdb -->
+    <glob pattern="*.pqa"/>
+    <glob pattern="*.oprc"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.paos.xml"/>
+  <mime-type type="application/vnd.pg.format">
+    <glob pattern="*.str"/>
+  </mime-type>
+  <mime-type type="application/vnd.pg.osasli">
+    <glob pattern="*.ei6"/>
+  </mime-type>
+  <mime-type type="application/vnd.piaccess.application-licence"/>
+  <mime-type type="application/vnd.picsel">
+    <glob pattern="*.efif"/>
+  </mime-type>
+  <mime-type type="application/vnd.poc.group-advertisement+xml"/>
+  <mime-type type="application/vnd.pocketlearn">
+    <glob pattern="*.plf"/>
+  </mime-type>
+  <mime-type type="application/vnd.powerbuilder6">
+    <glob pattern="*.pbd"/>
+  </mime-type>
+  <mime-type type="application/vnd.powerbuilder6-s"/>
+  <mime-type type="application/vnd.powerbuilder7"/>
+  <mime-type type="application/vnd.powerbuilder7-s"/>
+  <mime-type type="application/vnd.powerbuilder75"/>
+  <mime-type type="application/vnd.powerbuilder75-s"/>
+  <mime-type type="application/vnd.preminet"/>
+  <mime-type type="application/vnd.previewsystems.box">
+    <glob pattern="*.box"/>
+  </mime-type>
+  <mime-type type="application/vnd.proteus.magazine">
+    <glob pattern="*.mgz"/>
+  </mime-type>
+  <mime-type type="application/vnd.publishare-delta-tree">
+    <glob pattern="*.qps"/>
+  </mime-type>
+  <mime-type type="application/vnd.pvi.ptid1">
+    <glob pattern="*.ptid"/>
+  </mime-type>
+  <mime-type type="application/vnd.pwg-multiplexed"/>
+  <mime-type type="application/vnd.pwg-xhtml-print+xml"/>
+  <mime-type type="application/vnd.qualcomm.brew-app-res"/>
+  <mime-type type="application/vnd.quark.quarkxpress">
+    <glob pattern="*.qxd"/>
+    <glob pattern="*.qxt"/>
+    <glob pattern="*.qwd"/>
+    <glob pattern="*.qwt"/>
+    <glob pattern="*.qxl"/>
+    <glob pattern="*.qxb"/>
+  </mime-type>
+  <mime-type type="application/vnd.rapid"/>
+  <mime-type type="application/vnd.recordare.musicxml">
+    <glob pattern="*.mxl"/>
+  </mime-type>
+  <mime-type type="application/vnd.recordare.musicxml+xml">
+    <glob pattern="*.musicxml"/>
+  </mime-type>
+  <mime-type type="application/vnd.renlearn.rlprint"/>
+  <mime-type type="application/vnd.rim.cod">
+    <glob pattern="*.cod"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.rn-realmedia">
+    <magic priority="50">
+      <match value=".RMF" type="string" offset="0" />
+    </magic>
+    <glob pattern="*.rm"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.route66.link66+xml">
+    <glob pattern="*.link66"/>
+  </mime-type>
+  <mime-type type="application/vnd.ruckus.download"/>
+  <mime-type type="application/vnd.s3sms"/>
+  <mime-type type="application/vnd.sbm.cid"/>
+  <mime-type type="application/vnd.sbm.mid2"/>
+  <mime-type type="application/vnd.scribus"/>
+  <mime-type type="application/vnd.sealed.3df"/>
+  <mime-type type="application/vnd.sealed.csf"/>
+  <mime-type type="application/vnd.sealed.doc"/>
+  <mime-type type="application/vnd.sealed.eml"/>
+  <mime-type type="application/vnd.sealed.mht"/>
+  <mime-type type="application/vnd.sealed.net"/>
+  <mime-type type="application/vnd.sealed.ppt"/>
+  <mime-type type="application/vnd.sealed.tiff"/>
+  <mime-type type="application/vnd.sealed.xls"/>
+  <mime-type type="application/vnd.sealedmedia.softseal.html"/>
+  <mime-type type="application/vnd.sealedmedia.softseal.pdf"/>
+  <mime-type type="application/vnd.seemail">
+    <glob pattern="*.see"/>
+  </mime-type>
+  <mime-type type="application/vnd.sema">
+    <glob pattern="*.sema"/>
+  </mime-type>
+  <mime-type type="application/vnd.semd">
+    <glob pattern="*.semd"/>
+  </mime-type>
+  <mime-type type="application/vnd.semf">
+    <glob pattern="*.semf"/>
+  </mime-type>
+  <mime-type type="application/vnd.shana.informed.formdata">
+    <glob pattern="*.ifm"/>
+  </mime-type>
+  <mime-type type="application/vnd.shana.informed.formtemplate">
+    <glob pattern="*.itp"/>
+  </mime-type>
+  <mime-type type="application/vnd.shana.informed.interchange">
+    <glob pattern="*.iif"/>
+  </mime-type>
+  <mime-type type="application/vnd.shana.informed.package">
+    <glob pattern="*.ipk"/>
+  </mime-type>
+  <mime-type type="application/vnd.simtech-mindmapper">
+    <glob pattern="*.twd"/>
+    <glob pattern="*.twds"/>
+  </mime-type>
+  <mime-type type="application/vnd.smaf">
+    <glob pattern="*.mmf"/>
+  </mime-type>
+  <mime-type type="application/vnd.smart.teacher">
+    <glob pattern="*.teacher"/>
+  </mime-type>
+  <mime-type type="application/vnd.software602.filler.form+xml"/>
+  <mime-type type="application/vnd.software602.filler.form-xml-zip"/>
+  <mime-type type="application/vnd.solent.sdkm+xml">
+    <glob pattern="*.sdkm"/>
+    <glob pattern="*.sdkd"/>
+  </mime-type>
+  <mime-type type="application/vnd.spotfire.dxp">
+    <glob pattern="*.dxp"/>
+  </mime-type>
+  <mime-type type="application/vnd.spotfire.sfs">
+    <glob pattern="*.sfs"/>
+  </mime-type>
+  <mime-type type="application/vnd.sss-cod"/>
+  <mime-type type="application/vnd.sss-dtf"/>
+  <mime-type type="application/vnd.sss-ntf"/>
+
+  <mime-type type="application/vnd.stardivision.calc">
+    <sub-class-of type="application/x-tika-staroffice"/>
+    <magic priority="50">
+      <match value="0xd0cf11e0a1b11ae1" type="string" offset="0:8">
+         <match value="StarCalc" type="string" offset="2048:2207" />
+      </match>
+    </magic>
+    <glob pattern="*.sdc"/>
+  </mime-type>
+  <mime-type type="application/vnd.stardivision.draw">
+    <sub-class-of type="application/x-tika-staroffice"/>
+    <magic priority="50">
+      <match value="0xd0cf11e0a1b11ae1" type="string" offset="0:8">
+         <match value="StarDraw" type="string" offset="2048:2207" />
+      </match>
+    </magic>
+    <glob pattern="*.sda"/>
+  </mime-type>
+  <mime-type type="application/vnd.stardivision.impress">
+    <sub-class-of type="application/x-tika-staroffice"/>
+    <magic priority="50">
+      <match value="0xd0cf11e0a1b11ae1" type="string" offset="0:8">
+         <match value="StarImpress" type="string" offset="2048:2207" />
+      </match>
+    </magic>
+    <glob pattern="*.sdd"/>
+  </mime-type>
+  <mime-type type="application/vnd.stardivision.math">
+    <glob pattern="*.smf"/>
+  </mime-type>
+  <mime-type type="application/vnd.stardivision.writer">
+    <sub-class-of type="application/x-tika-staroffice"/>
+    <magic priority="50">
+      <match value="0xd0cf11e0a1b11ae1" type="string" offset="0:8">
+         <match value="StarWriter" type="string" offset="2048:2207" />
+      </match>
+    </magic>
+    <glob pattern="*.sdw"/>
+  </mime-type>
+  <mime-type type="application/x-staroffice-template">
+    <sub-class-of type="application/x-tika-staroffice"/>
+    <glob pattern="*.vor"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.writer">
+    <sub-class-of type="application/zip"/>
+    <glob pattern="*.sxw"/>
+  </mime-type>
+  <!-- can't currently find any diff in contents btwn writer
+    and template. Must rely on extension -->
+  <mime-type type="application/vnd.sun.xml.writer.template">
+    <sub-class-of type="application/vnd.sun.xml.writer"/>
+    <glob pattern="*.stw"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.calc">
+    <sub-class-of type="application/zip"/>
+    <glob pattern="*.sxc"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.draw">
+    <sub-class-of type="application/zip"/>
+    <glob pattern="*.sxd"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.impress">
+    <sub-class-of type="application/zip"/>
+    <glob pattern="*.sxi"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.stardivision.writer-global">
+    <glob pattern="*.sgl"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.street-stream"/>
+  <mime-type type="application/vnd.sun.xml.calc">
+    <glob pattern="*.sxc"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.calc.template">
+    <glob pattern="*.stc"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.draw">
+    <glob pattern="*.sxd"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.draw.template">
+    <glob pattern="*.std"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.impress">
+    <glob pattern="*.sxi"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.impress.template">
+    <glob pattern="*.sti"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.math">
+    <glob pattern="*.sxm"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.sun.xml.writer">
+    <alias type="application/x-vnd.sun.xml.writer"/>
+    <_comment>OpenOffice v1.0: Writer Document</_comment>
+    <magic>
+      <match type="string" offset="0" value="PK">
+        <match type="string" offset="30"
+          value="mimetypeapplication/vnd.sun.xml.writer"/>
+      </match>
+    </magic>
+    <glob pattern="*.sxw"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.sun.xml.writer.global">
+    <glob pattern="*.sxg"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.xml.writer.template">
+    <glob pattern="*.stw"/>
+  </mime-type>
+  <mime-type type="application/vnd.sun.wadl+xml"/>
+  <mime-type type="application/vnd.sus-calendar">
+    <glob pattern="*.sus"/>
+    <glob pattern="*.susp"/>
+  </mime-type>
+  <mime-type type="application/vnd.svd">
+    <glob pattern="*.svd"/>
+  </mime-type>
+  <mime-type type="application/vnd.swiftview-ics"/>
+
+  <mime-type type="application/vnd.symbian.install">
+    <magic priority="50">
+      <match value="0x10000419" type="little32" offset="8" />
+    </magic>
+    <glob pattern="*.sis"/>
+    <glob pattern="*.sisx"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.syncml+xml">
+    <glob pattern="*.xsm"/>
+  </mime-type>
+  <mime-type type="application/vnd.syncml.dm+wbxml">
+    <glob pattern="*.bdm"/>
+  </mime-type>
+  <mime-type type="application/vnd.syncml.dm+xml">
+    <glob pattern="*.xdm"/>
+  </mime-type>
+  <mime-type type="application/vnd.syncml.dm.notification"/>
+  <mime-type type="application/vnd.syncml.ds.notification"/>
+  <mime-type type="application/vnd.tao.intent-module-archive">
+    <glob pattern="*.tao"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.tcpdump.pcap">
+    <_comment>TCPDump pcap packet capture</_comment>
+    <magic priority="50">
+      <match value="0xa1b2c3d4" type="big32" offset="0" />
+      <match value="0xd4c3b2a1" type="big32" offset="0" />
+    </magic>
+    <glob pattern="*.pcap"/>
+    <glob pattern="*.cap"/>
+    <glob pattern="*.dmp"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.tmobile-livetv">
+    <glob pattern="*.tmo"/>
+  </mime-type>
+  <mime-type type="application/vnd.trid.tpt">
+    <glob pattern="*.tpt"/>
+  </mime-type>
+  <mime-type type="application/vnd.triscape.mxs">
+    <glob pattern="*.mxs"/>
+  </mime-type>
+  <mime-type type="application/vnd.trueapp">
+    <glob pattern="*.tra"/>
+  </mime-type>
+  <mime-type type="application/vnd.truedoc"/>
+  <mime-type type="application/vnd.ufdl">
+    <glob pattern="*.ufd"/>
+    <glob pattern="*.ufdl"/>
+  </mime-type>
+  <mime-type type="application/vnd.uiq.theme">
+    <glob pattern="*.utz"/>
+  </mime-type>
+  <mime-type type="application/vnd.umajin">
+    <glob pattern="*.umj"/>
+  </mime-type>
+  <mime-type type="application/vnd.unity">
+    <glob pattern="*.unityweb"/>
+  </mime-type>
+  <mime-type type="application/vnd.uoml+xml">
+    <glob pattern="*.uoml"/>
+  </mime-type>
+  <mime-type type="application/vnd.uplanet.alert"/>
+  <mime-type type="application/vnd.uplanet.alert-wbxml"/>
+  <mime-type type="applicatio
