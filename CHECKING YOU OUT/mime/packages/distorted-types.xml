@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  This file contains supplementary media-type information compiled for DistorteD
+  and falls under the same license as the rest of the DistorteD project,
+  unlike the APL-2.0 license of the bundled `tika-mimetypes.xml`.
+
+  I will conform to fd.o's `type`-attribute naming scheme for `<magic>` elements when giving types to my `<fourcc>`s.
+  https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm45094479632208
+  https://gitlab.freedesktop.org/xdg/shared-mime-info/-/blob/master/data/freedesktop.org.xml.in
+
+  The upstream `<magic>` `type`s can be any of:
+    `string`, `host16`, `host32`, `big16`, `big32`, `little16`, `little32` or `byte`. 
+
+  The terms `host`, `big`, and `little` there refer to the endianness (byte-order) of their datum.
+  Since FourCC comes from the Apple Macintosh OSType they will almost always be big-endian like the Motorola 68000.
+
+  For example, the FourCC of MPEG Layer-3 audio with unprintable NULL byte.
+  I will store the UTF-8 String equivalent to minimize re-encoding at DD startup.
+    irb> [0x6D, 0x73, 0x00, 0x55]
+    => [109, 115, 0, 85]
+    irb> [0x6D, 0x73, 0x00, 0x55].pack('c*>')
+    => "ms\x00U"
+    irb> "ms\x00U".unpack('c*>')
+    => [109, 115, 0, 85]
+    irb(main):054:0> [0x6D, 0x73, 0x00, 0x55].pack('c*>').encoding
+    => #<Encoding:ASCII-8BIT>
+    irb(main):055:0> [0x6D, 0x73, 0x00, 0x55].pack('c*>').encode(Encoding::UTF_8)
+    => "ms\u0000U"
+    irb> [0x6D, 0x73, 0x00, 0x55].pack('c*>').encode(Encoding::UTF_8).unpack('c*>')
+    => [109, 115, 0, 85]
+
+-->
+<!--
+  # Data sources
+
+  ## FourCC
+
+  http://mp4ra.org/
+  https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap3/qtff3.html
+
+-->
+<mime-info>
+  <mime-type type="audio/mpeg">
+    <distorted:link>https://tools.ietf.org/html/rfc3003</distorted:link>
+    <distorted:fourcc type="big32" value="ms\u0000U"/>
+  </mime-type>
+</mime-info>
