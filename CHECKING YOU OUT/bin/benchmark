@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+
+require 'benchmark/ips'
+require 'memory_profiler'
+
+# Add our development CYO to LOAD_PATH so we can run it without Bundler.
+$: << File.expand_path('../../lib', __FILE__)
+
+puts
+puts "Memory stats for requiring mime/types/columnar"
+result = MemoryProfiler.report do
+  require 'mime/types/columnar'
+end
+
+puts "Total usable MIME::Types: #{MIME::Types.to_a.length}"
+puts "Total allocated: #{result.total_allocated_memsize} bytes (#{result.total_allocated} objects)"
+puts "Total retained:  #{result.total_retained_memsize} bytes (#{result.total_retained} objects)"
+
+puts
+puts "Memory stats for requiring mini_mime"
+result = MemoryProfiler.report do
+  require 'mini_mime'
+end
+
+puts "Total allocated: #{result.total_allocated_memsize} bytes (#{result.total_allocated} objects)"
+puts "Total retained:  #{result.total_retained_memsize} bytes (#{result.total_retained} objects)"
+
+puts
+puts "Memory stats for requiring CHECKING-YOU-OUT"
+result = MemoryProfiler.report do
+  require 'checking-you-out'
+end
+
+puts "Total usable CYO Types: #{CHECKING::YOU::OUT::remember_me.length}"
+puts "Total allocated: #{result.total_allocated_memsize} bytes (#{result.total_allocated} objects)"
+puts "Total retained:  #{result.total_retained_memsize} bytes (#{result.total_retained} objects)"
+puts
+
+Benchmark.ips do |bm|
+  bm.report 'cached content_type lookup MiniMime' do
+    MiniMime.lookup_by_filename("a.txt").content_type
+  end
+
+  bm.report 'content_type lookup MIME::Types' do
+    MIME::Types.type_for("a.txt")[0].content_type
+  end
+
+  bm.report 'content_type lookup CHECKING::YOU::OUT' do
+    CHECKING::YOU::OUT(".txt")
+  end
+end
