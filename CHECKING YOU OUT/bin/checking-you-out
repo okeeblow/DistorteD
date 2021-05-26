@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/checking-you-out'
+#require 'profile'
+
+abort("Be with ye") if ARGV.empty?
+
+puts CHECKING::YOU::OUT(ARGV.first)
