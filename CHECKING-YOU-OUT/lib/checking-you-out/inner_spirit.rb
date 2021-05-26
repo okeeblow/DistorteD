@@ -32,6 +32,9 @@ CHECKING::YOU::IN ||= Struct.new(
   :genus,
 )
 
+# IETF Media-Type parser and methods that use that parser.
+require_relative 'auslandsgesprach' unless defined? ::CHECKING::YOU::AUSLANDSGESPRÄCH
+
 
 # Main Struct subclass for in-memory type representation.
 # Instances of the base `CHECKING::YOU::IN` Struct will refer to only one of these,
@@ -115,5 +118,9 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     super || self.from_postfix(File.extname(pathname).delete_prefix!('.'.freeze))
 
   end
+
+
+  # Add these class methods down here so they can use `CYO::new`
+  extend ::CHECKING::YOU::AUSLANDSGESPRÄCH
 
 end
