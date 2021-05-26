@@ -31,6 +31,13 @@ Gem::Specification.new do |spec|
   # - TruffleRuby as of November 2020: https://github.com/oracle/truffleruby/issues/1591#issuecomment-729663946
   spec.add_dependency 'ox', '~> 2.14'
 
+  # ffi-xattr  —  Needed to interact with filesystem extended attributes like `user.mime_type`
+  # since the stdlib lacks that capability.
+  #
+  # Per the `Ruby-FFI` docs (https://github.com/ffi/ffi/wiki/why-use-ffi),
+  # "a Ruby-FFI extension works without changes on CRuby (MRI), JRuby, Rubinius and TruffleRuby".
+  spec.add_dependency 'ffi-xattr', '~> 0.1'
+
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'minitest', '~> 5.0'

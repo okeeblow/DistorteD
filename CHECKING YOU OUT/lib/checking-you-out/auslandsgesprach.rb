@@ -1,4 +1,8 @@
 
+# https://github.com/jarib/ffi-xattr
+require 'ffi-xattr'
+
+
 module CHECKING; end
 class CHECKING::YOU; end
 module CHECKING::YOU::AUSLANDSGESPRÄCH
@@ -75,6 +79,33 @@ module CHECKING::YOU::AUSLANDSGESPRÄCH
   def from_ietf_media_type(ietf_string)
     return if ietf_string.nil?
     FROM_IETF_TYPE.call(ietf_string)
+  end
+
+  # CHECK OUT a filesystem path.
+  # This might be a String, or might be an instance of the actual stdlib class `Pathname`:
+  # https://ruby-doc.org/stdlib/libdoc/pathname/rdoc/Pathname.html
+  def from_pathname(pathname)
+    # T0DO: Handle relative paths and all the other corner cases that could be here when given String.
+
+    # Check the filesystem extended attributes for manually-defined types.
+    #
+    # The freedesktop-dot-org specification is `user.mime_type`:
+    # https://www.freedesktop.org/wiki/CommonExtendedAttributes/
+    #
+    # At least one other application I can find (lighttpd a.k.a. "lighty")
+    # will use `Content-Type` just like would be found in an HTTP header:
+    # https://redmine.lighttpd.net/projects/1/wiki/Mimetype_use-xattrDetails
+    #
+    # Both of these should contain IETF-style `media/sub`-type Strings,
+    # but they are technically freeform and must be assumed to contain anything.
+    # It's very very unlikely that anybody will ever use one of these at all,
+    # but hey how cool is it that we will support it if they do? :)
+    #
+    # T0DO: Figure out if NTFS has anything to offer us since `ffi-xattr` does support Winders.
+    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/a82e9105-2405-4e37-b2c3-28c773902d85
+    from_ietf_media_type(
+      Xattr.new(pathname).to_h.slice('user.mime_type', 'Content-Type').values.first
+    )
   end
 
 
