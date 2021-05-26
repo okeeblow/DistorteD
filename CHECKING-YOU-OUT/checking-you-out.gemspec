@@ -21,6 +21,16 @@ Gem::Specification.new do |spec|
 
   spec.executables   = ['checking-you-out']
 
+  # Ox  —  fastest XML parser for loading `shared-mime-info` packages! https://github.com/ohler55/ox
+  # See `docs/XML.md` for my comparisons.
+  #
+  # Works on:
+  # - MRI (duh)
+  # - JRuby
+  # - Rubinius (RBX)
+  # - TruffleRuby as of November 2020: https://github.com/oracle/truffleruby/issues/1591#issuecomment-729663946
+  spec.add_dependency 'ox', '~> 2.14'
+
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'minitest', '~> 5.0'

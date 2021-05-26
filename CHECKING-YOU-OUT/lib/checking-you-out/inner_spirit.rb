@@ -35,6 +35,9 @@ CHECKING::YOU::IN ||= Struct.new(
 # IETF Media-Type parser and methods that use that parser.
 require_relative 'auslandsgesprach' unless defined? ::CHECKING::YOU::AUSLANDSGESPRÄCH
 
+# Methods for loading type data from `shared-mime-info` package XML files.
+require_relative 'ghost_revival' unless defined? ::CHECKING::YOU::GHOST_REVIVAL
+
 
 # Main Struct subclass for in-memory type representation.
 # Instances of the base `CHECKING::YOU::IN` Struct will refer to only one of these,
@@ -122,5 +125,6 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
   # Add these class methods down here so they can use `CYO::new`
   extend ::CHECKING::YOU::AUSLANDSGESPRÄCH
+  extend ::CHECKING::YOU::GHOST_REVIVAL
 
 end
