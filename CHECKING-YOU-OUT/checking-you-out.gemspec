@@ -47,6 +47,7 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'fasterer', '~> 0.9'  # https://github.com/DamirSvrtan/fasterer
   spec.add_development_dependency 'profile', '~> 0.4'  # https://github.com/ruby/profile
+  spec.add_development_dependency 'memory_profiler', '~> 1.0'  # https://github.com/SamSaffron/memory_profiler
 
   spec.required_ruby_version = '>= 2.7.0'
 

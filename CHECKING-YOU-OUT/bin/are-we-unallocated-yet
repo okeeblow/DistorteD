@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+
+require 'memory_profiler'
+
+#$: << File.expand_path('../lib', __FILE__)
+result = MemoryProfiler.report do
+  require 'checking-you-out'
+end.pretty_print
