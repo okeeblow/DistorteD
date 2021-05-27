@@ -27,8 +27,8 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     # Here's where I would put a call to `super()` a.k.a `Ox::Sax#initialize` — IF IT HAD ONE
   end
 
-  def hold
-    @hold ||= ::CHECKING::YOU::OUT::from_ietf_media_type(@scratch)
+  def cyo
+    @cyo ||= ::CHECKING::YOU::OUT::from_ietf_media_type(@scratch)
   end
 
 
@@ -69,7 +69,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     case name
     when :"mime-type"
       @scratch = nil
-      @hold = nil
+      @cyo = nil
     end
   end
 
@@ -78,11 +78,12 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     in :"mime-type", :type
       @scratch = str_value
     in :alias, :type
-      @scratch = str_value
+      self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(str_value))
     in :glob, :pattern
-      self.hold.add_postfix(str_value.to_sym) if str_value.delete_prefix!('*.'.freeze)
+      self.cyo.add_postfix(str_value.to_sym) if str_value.delete_prefix!('*.'.freeze)
     else
       # Unsupported attribute encountered.
+      # The new pattern matching syntax will raise `NoMatchingPatternError` here without this `else`.
     end
   end
 
@@ -90,7 +91,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     case name
     when :"mime-type"
       @scratch = nil
-      @hold = nil
+      @cyo = nil
     end
     raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
   end

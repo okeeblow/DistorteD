@@ -112,10 +112,22 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     #
     # `File::extname` will be an empty String for paths which contain no dotted components.
     super || self.from_postfix(File.extname(pathname).delete_prefix!('.'.freeze))
-
   end
 
+  def aka
+    @aka ||= Set.new
+  end
 
+  def add_aka(taxa)
+    cyi = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
+    self.aka.add(cyi)
+    self.class.remember_me[cyi] = self
+  end
+
+  def remove_ada(taxa)
+    cyi = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
+    self.class.remember_me.delete(cyi) if self.class.remember_me.fetch(cyi, nil) === self
+  end
 
 end
 
