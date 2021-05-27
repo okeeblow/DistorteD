@@ -73,22 +73,14 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     end
   end
 
-  def attr(name, str_value)
-    case name
-    when :type
-      case @parse_stack.last
-      when :"mime-type", :alias
-        @scratch = str_value
-      end
-    when :pattern
-      case @parse_stack.last
-      when :glob then
-        self.hold.add_postfix(str_value.to_sym) if str_value.delete_prefix!('*.'.freeze)
-      end
-    when :value
-      case @parse_stack.last
-      when :fourcc
-      end
+  def attr(attr_name, str_value)
+    case [@parse_stack.last, attr_name]
+    in :"mime-type", :type
+      @scratch = str_value
+    in :alias, :type
+      @scratch = str_value
+    in :glob, :pattern
+      self.hold.add_postfix(str_value.to_sym) if str_value.delete_prefix!('*.'.freeze)
     else
       # Unsupported attribute encountered.
     end
