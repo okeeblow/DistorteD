@@ -5,7 +5,7 @@ require 'ffi-xattr'
 
 module CHECKING; end
 class CHECKING::YOU; end
-module CHECKING::YOU::AUSLANDSGESPRÄCH
+module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
   # IETF Media-Type String parser.
   #
@@ -71,7 +71,7 @@ module CHECKING::YOU::AUSLANDSGESPRÄCH
       return my_base.dup.tap(&the_bomb)
     }
     -> (gentlemen) {
-      return ::CHECKING::YOU::OUT::new(cats.call(gentlemen))
+      return cats.call(gentlemen)
     }
   }.call
 
@@ -79,6 +79,14 @@ module CHECKING::YOU::AUSLANDSGESPRÄCH
   def from_ietf_media_type(ietf_string)
     return if ietf_string.nil?
     FROM_IETF_TYPE.call(ietf_string)
+  end
+end
+
+module CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
+
+  def from_ietf_media_type(ietf_string)
+    return if ietf_string.nil?
+    self.new(super)
   end
 
   # CHECK OUT a filesystem path.
