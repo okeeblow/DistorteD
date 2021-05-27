@@ -82,6 +82,45 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
   end
 end
 
+module CHECKING::YOU::IN::INLANDSGESPRÄCH
+  # Non-IETF-tree as a CY(I|O)'s `kingdom` signifies the need for a leading `vnd.` facet
+  # when reconstructing the Media-Type String.
+  IETF_TREES = [
+    # Current top-level registries are shown here: https://www.iana.org/assignments/media-types/media-types.xhtml
+    # The latest addition reflected here is `font` from RFC 8081: https://datatracker.ietf.org/doc/html/rfc8081
+    'application',
+    'audio',
+    'example',
+    'font',
+    'image',
+    'message',
+    'model',
+    'multipart',
+    'text',
+    'video',
+  ].map(&:freeze)
+
+  # Reconstruct an IETF Media-Type String from a loaded CYI/CYO's `#members`
+  def to_s
+    # TODO: Fragments (e.g. `;what=ever`), and syntax identifiers (e.g. `+xml`)
+    self.phylum&.to_s << '/'.freeze << case
+    when self.kingdom == :"kayo-dot" then 'x.'.freeze
+    when self.kingdom == :x then 'x-'.freeze
+    when self.kingdom == :"x-ms" then 'x-ms-'.freeze
+    when self.kingdom == :prs then 'prs.'.freeze
+    when self.kingdom == :vnd then 'vnd.'.freeze
+    when self.kingdom == :possum then nil.to_s
+    when !IETF_TREES.include?(self.kingdom) then 'vnd.' << self.kingdom.to_s << '.'
+    else self.kingdom.to_s << '.'
+    end << self.genus.to_s
+  end
+
+  # Pretty-print objects using our custom `#:to_s`
+  def inspect
+    "#<#{self.class.to_s} #{self.to_s}>"
+  end
+end
+
 module CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
 
   def from_ietf_media_type(ietf_string)
@@ -115,6 +154,5 @@ module CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
       Xattr.new(pathname).to_h.slice('user.mime_type', 'Content-Type').values.first
     )
   end
-
 
 end
