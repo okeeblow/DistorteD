@@ -48,7 +48,7 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
         when scratch.delete_prefix!('srp'.freeze) then :prs
         when scratch.delete_suffix!('-sm-x'.freeze) then :"x-ms"
         when scratch.delete_suffix!('-x'.freeze) then :x
-        when scratch.delete_suffix!('.x'.freeze) then :"kayo-dot"
+        when scratch.length == 1 && scratch.delete_suffix!('x'.freeze) then :"kayo-dot"
         else :possum
         end&.to_sym
         hold << '.'.freeze unless hold.empty? or scratch.empty?
