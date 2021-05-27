@@ -134,6 +134,7 @@ end
 # IETF Media-Type parser and methods that use that parser.
 require_relative 'auslandsgesprach' unless defined? ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 ::CHECKING::YOU::IN.extend(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
+::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::INLANDSGESPRÄCH)
 ::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH)
 
 # Methods for loading type data from `shared-mime-info` package XML files.
