@@ -6,7 +6,7 @@
 Warning[:experimental] = false
 require_relative 'ghost_revival/mr_mime' unless defined? ::CHECKING::YOU::MrMIME
 
-module CHECKING::YOU::GHOST_REVIVAL
+module CHECKING::YOU::OUT::GHOST_REVIVAL
 
   # Path fragment for finding `shared-mime-info` package files.
   # This same subdir path applies when searching *any* `PATH` for `shared-mime-info` XML,
