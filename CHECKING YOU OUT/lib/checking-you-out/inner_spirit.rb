@@ -76,13 +76,13 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
   # Memoization Hash for file extensions.
   # { Symbol => CHECKING::YOU::OUT }
-  def self.postfixes
-    @postfixes ||= Hash.new { |h,k| h[k] = Set.new }
+  def self.after_forever
+    @after_forever ||= Hash.new { |h,k| h[k] = Set.new }
   end
 
   # Get a Set[CYO] by Symbol file-extension, e.g. `:doc` => { CYO msword, CYO rtf }
   def self.from_postfix(postfix)
-    self.postfixes[case postfix
+    self.after_forever[case postfix
       when Symbol then postfix
       when String then postfix.delete_prefix('.'.freeze).to_sym
       else postfix.to_sym
@@ -97,7 +97,7 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # Add a new postfix for a specific type.
   def add_postfix(postfix)
     self.postfixes.add(postfix)
-    self.class.postfixes[postfix].add(self)
+    self.class.after_forever[postfix].add(self)
   end
 
   # Get the type of a file at a given filesystem path.
