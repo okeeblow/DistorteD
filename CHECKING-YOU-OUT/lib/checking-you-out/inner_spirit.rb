@@ -135,6 +135,8 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     self.class.remember_me.delete(cyi) if self.class.remember_me.fetch(cyi, nil) === self
   end
 
+  attr_accessor :description
+
 end
 
 # IETF Media-Type parser and methods that use that parser.
