@@ -30,7 +30,10 @@ CHECKING::YOU::IN ||= Struct.new(
   :kingdom,
   :phylum,
   :genus,
-)
+) do
+  def out; ::CHECKING::YOU::OUT::new(self); end
+  def in; self; end
+end
 
 # Main Struct subclass for in-memory type representation.
 # Instances of the base `CHECKING::YOU::IN` Struct will refer to only one of these,
@@ -73,6 +76,9 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
       taxa.is_a?(::CHECKING::YOU::IN) ? taxa : super(*taxa)
     ] ||= self.allocate.tap { |cyo| cyo.send(:initialize, *taxa) }
   end
+
+  def out; self; end
+  def in; self.class.remember_me.key(self); end
 
   # Memoization Hash for file extensions.
   # { Symbol => CHECKING::YOU::OUT }
