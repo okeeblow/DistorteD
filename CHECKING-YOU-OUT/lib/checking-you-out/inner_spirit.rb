@@ -14,7 +14,7 @@ class CHECKING::YOU; end
 # This is kind of a leaky abstraction since I want to support non-IETF type systems too,
 # but the IETF system is by far the most relevant one to us because the most exhaustive
 # source data (`shared-mime-info`) is based on that format and because, you know, Internet.
-# See the parser in the adjacent `auslandsgespräch.rb` for the parser and more info.
+# See the adjacent `auslandsgespräch.rb` for the parser and more info.
 #
 #
 # The instances of a `Struct` subclass with at most `RSTRUCT_EMBED_LEN_MAX` members
