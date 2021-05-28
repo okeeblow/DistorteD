@@ -11,6 +11,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
   # whose value will override the default defined in this Hash.
   DEFAULT_LOADS = {
     :aka => true,
+    :description => false,
     :postfix => true,
   }
 
@@ -101,6 +102,13 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     else
       # Unsupported attribute encountered.
       # The new pattern matching syntax will raise `NoMatchingPatternError` here without this `else`.
+    end
+  end
+
+  def text(element_text)
+    case @parse_stack.last
+    when :comment
+      self.cyo.description = element_text unless self.skips.include?(:description)
     end
   end
 
