@@ -130,7 +130,7 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     self.class.remember_me[cyi] = self
   end
 
-  def remove_ada(taxa)
+  def remove_aka(taxa)
     cyi = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
     self.class.remember_me.delete(cyi) if self.class.remember_me.fetch(cyi, nil) === self
   end
