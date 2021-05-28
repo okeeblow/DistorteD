@@ -7,6 +7,13 @@ require 'ox'
 # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
 class CHECKING::YOU::MrMIME < ::Ox::Sax
 
+  # `MrMIME::new` will take any of these keys as keyword arguments
+  # whose value will override the default defined in this Hash.
+  DEFAULT_LOADS = {
+    :aka => true,
+    :postfix => true,
+  }
+
   def initialize(**kwargs)
     # Per the `Ox::Sax` dox:
     # "Initializing `line` attribute in the initializer will cause that variable to
@@ -24,6 +31,11 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     # `<mime-type>`, `<alias>`, `<match>`, and `<sub-class-of>`.
     @parse_stack = Array.new
 
+    # Allow the user to control the conditions on which we ignore data from the source XML.
+    @skips = self.class::DEFAULT_LOADS.merge(kwargs.slice(*self.class::DEFAULT_LOADS.keys)).keep_if { |k,v|
+      v == false
+    }.keys.to_set
+
     # Here's where I would put a call to `super()` a.k.a `Ox::Sax#initialize` — IF IT HAD ONE
   end
 
@@ -31,6 +43,11 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     @cyo ||= ::CHECKING::YOU::OUT::from_ietf_media_type(@scratch)
   end
 
+
+  # You shouldn't abuse the power of the Solid.
+  def skips
+    @skips ||= self.class::DEFAULT_LOADS.keep_if { |k,v| v == false }.keys.to_set
+  end
 
   # Callback methods we can implement in this Handler per http://www.ohler.com/ox/Ox/Sax.html
   #
@@ -78,9 +95,9 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     in :"mime-type", :type
       @scratch = str_value
     in :alias, :type
-      self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(str_value))
+      self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(str_value)) unless self.skips.include?(:aka)
     in :glob, :pattern
-      self.cyo.add_postfix(str_value.to_sym) if str_value.delete_prefix!('*.'.freeze)
+      self.cyo.add_postfix(str_value.to_sym) if str_value.delete_prefix!('*.'.freeze) unless self.skips.include?(:postfix)
     else
       # Unsupported attribute encountered.
       # The new pattern matching syntax will raise `NoMatchingPatternError` here without this `else`.
