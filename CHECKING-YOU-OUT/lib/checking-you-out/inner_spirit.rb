@@ -51,13 +51,19 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   GEM_ROOT = proc { File.expand_path(File.join(__dir__, *Array.new(2, '..'.freeze))) }
 
   # Time object representing the day this running CYO Gem was packaged.
-  # This can be slightly misleading during development when it's not a packaged Gem version
-  # since you'd expect the result of `#date` to be "now" in UTC, but it will be always midnight UTC
-  # of the current day (also in UTC) regardless of the actual time in UTC on that day,
-  # meaning it will give you a *`date`* that's in the past until ${your-UTC-offset} hours before midnight localtime,
-  # at which time this will give you a *`day`* that seems to be in the future compared to a system clock displaying localtime,
+  #
+  # `Gem::Specification#date` can be slightly misleading when developing locally with Bundler using `bundle exec`.
+  # One might expect the result of `#date` to be "now" (including hours/minutes/seconds) in UTC for such a runtime-packaged Gem,
+  # but it will always be midnight UTC of the current day (also in UTC), i.e. a date that is always[0] in the past.
+  #
+  # After ${your-UTC-offset} hours before midnight localtime, this will give you a *day* that seems to be in the future
+  # compared to a system clock displaying localtime despite that *date* UTC still being in the past,
   # e.g. as I write this comment at 2021-05-25 22:22 PST, `GEM_PACKAGE_TIME.call` returns `2021-05-26 00:00:00 UTC`.
-  GEM_PACKAGE_TIME = proc { Gem::Specification::find_by_name('checking-you-out'.freeze).date }
+  #
+  # Rescue from `Gem::MissingSpecError`'s parent to support developing locally with just `require_relative` and no Bundler.
+  #
+  # [0]: unless you manage to `bundle exec` at exactly 00:00:00 UTC :)
+  GEM_PACKAGE_TIME = proc { begin; Gem::Specification::find_by_name('checking-you-out'.freeze).date; rescue Gem::LoadError; Time.now; end }
 
   Species = Struct.new(:name, :value) do
     def self.from_string(param_string)
