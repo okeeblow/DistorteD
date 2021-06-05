@@ -34,29 +34,31 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
     # e.g. "ttub=traf;lmbe+fnb.ppg3.dnv/noitacilppa".
     move_zig = proc { |zig|
       case zig
-      when '='.freeze then
+      when -?\u{0} then
+        my_base[:phylum] = scratch.reverse!.to_sym
+      when -?= then
         scratch.each_char.reverse_each.reduce(hold, :<<)
-      when ';'.freeze then
+      when -?; then
         scratch.clear
         hold.clear
-      when '+'.freeze then
+      when -?+ then
         scratch.clear
-      when '/'.freeze then
+      when -?/ then
         my_base[:kingdom] = case
-        when scratch.delete_prefix!('dnv'.freeze) then
+        when scratch.delete_prefix!(-'dnv') then
           File.extname(hold).empty? ? :vnd : hold.slice!((File.extname(hold).length * -1)..)[1..]
-        when scratch.delete_prefix!('srp'.freeze) then :prs
-        when scratch.delete_suffix!('-sm-x'.freeze) then :"x-ms"
-        when scratch.delete_suffix!('-x'.freeze) then :x
-        when scratch.length == 1 && scratch.delete_suffix!('x'.freeze) then :"kayo-dot"
+        when scratch.delete_prefix!(-'srp') then :prs
+        when scratch.delete_suffix!(-'-sm-x') then :"x-ms"
+        when scratch.delete_suffix!(-'-x') then :x
+        when scratch.length == 1 && scratch.delete_suffix!(-'x') then :"kayo-dot"
         else :possum
         end&.to_sym
-        hold << '.'.freeze unless hold.empty? or scratch.empty?
+        hold << -?. unless hold.empty? or scratch.empty?
         my_base[:genus] = scratch.each_char.reverse_each.reduce(hold, :<<).to_sym
         scratch.clear
         hold.clear
-      when '.'.freeze then
-        hold << '.'.freeze unless hold.empty? or scratch.empty?
+      when -'.' then
+        hold << -?. unless hold.empty? or scratch.empty?
         scratch.each_char.reverse_each.reduce(hold, :<<)
         scratch.clear
       else
@@ -66,8 +68,7 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
     # 𝘐𝘛'𝘚 𝘠𝘖𝘜 !!
     cats = ->(gentlemen) {
-      gentlemen.each_char.reverse_each(&move_zig)
-      my_base[:phylum] = scratch.each_char.reverse_each.reduce(:<<).to_sym
+      gentlemen.reverse!.<<(-?\u{0}).each_char(&move_zig)
       return my_base.dup.tap(&the_bomb)
     }
     -> (gentlemen) {
