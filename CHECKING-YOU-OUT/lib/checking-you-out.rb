@@ -1,4 +1,4 @@
-
+require 'pathname' unless defined? ::Pathname
 require_relative 'checking-you-out/inner_spirit' unless defined? ::CHECKING::YOU::IN
 
 
@@ -6,9 +6,9 @@ module CHECKING; end
 class CHECKING::YOU
   def self.OUT(unknown_identifier)
     case unknown_identifier
-    when Pathname
+    when ::Pathname
       ::CHECKING::YOU::OUT::from_pathname(unknown_identifier)
-    when String
+    when ::String
       case
       when unknown_identifier.start_with?('.'.freeze) && unknown_identifier.count('.'.freeze) == 1
         ::CHECKING::YOU::OUT::from_postfix(unknown_identifier)
