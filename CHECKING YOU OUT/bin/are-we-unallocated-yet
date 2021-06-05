@@ -3,7 +3,7 @@
 
 require 'memory_profiler'
 
-#$: << File.expand_path('../lib', __FILE__)
+$: << File.expand_path('../lib', __dir__)
 result = MemoryProfiler.report do
   require 'checking-you-out'
 end.pretty_print
