@@ -10,12 +10,15 @@ class CHECKING::YOU
       ::CHECKING::YOU::OUT::from_pathname(unknown_identifier)
     when ::String
       case
-      when unknown_identifier.start_with?('.'.freeze) && unknown_identifier.count('.'.freeze) == 1
+      when unknown_identifier.start_with?(-?.) && unknown_identifier.count(-?.) == 1
         ::CHECKING::YOU::OUT::from_postfix(unknown_identifier)
       when File.exist?(unknown_identifier)
         ::CHECKING::YOU::OUT::from_pathname(Pathname.new(unknown_identifier))
-      when unknown_identifier.count('/'.freeze)
+      when unknown_identifier.count(-?/) == 1
         ::CHECKING::YOU::OUT::from_ietf_media_type(unknown_identifier)
+      else
+        # TODO: Raise something here? Return an empty (but allocated) Set?
+        nil
       end
       # TODO: A String arg could also be a path, an extname with no leading dot,
       # or an entire file stream.
