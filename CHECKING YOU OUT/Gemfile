@@ -1,3 +1,9 @@
 source 'https://rubygems.org'
 
 gemspec
+
+
+# "Unlike :git, bundler does not compile C extensions for gems specified as paths."
+#
+# Using `:git` via `bundle config local.ox ~/Works/ox`
+#gem 'ox', :github => 'okeeblow/ox', :branch => 'develop'

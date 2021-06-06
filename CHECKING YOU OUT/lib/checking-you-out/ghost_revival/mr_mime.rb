@@ -166,6 +166,11 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
       # where `:skip_none` checks if the end of the Element has been reached but `:skip_off` doesn't.
       #   https://github.com/ohler55/ox/blob/master/ext/ox/sax.c  CTRL+F "read_text"
       #   `((NoSkip == dr->options.skip && !isEnd) || (OffSkip == dr->options.skip)))`
+      #
+      # TOD0: Probably String allocation gainz to be had inside Ox's C extension once the API is available:
+      # https://bugs.ruby-lang.org/issues/13381
+      # https://bugs.ruby-lang.org/issues/16029
+      # e.g. https://github.com/msgpack/msgpack-ruby/pull/196
       Ox.sax_parse(
         self,                     # Instance of a class that responds to `Ox::Sax`'s callback messages.
         mime_xml,                 # IO stream or String of XML to parse. Won't close File handles automatically.
