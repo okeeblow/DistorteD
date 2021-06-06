@@ -167,14 +167,14 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
       #   https://github.com/ohler55/ox/blob/master/ext/ox/sax.c  CTRL+F "read_text"
       #   `((NoSkip == dr->options.skip && !isEnd) || (OffSkip == dr->options.skip)))`
       Ox.sax_parse(
-        self,                              # Instance of a class that responds to `Ox::Sax`'s callback messages.
-        mime_xml,                          # IO stream or String of XML to parse. Won't close File handles automatically.
+        self,                     # Instance of a class that responds to `Ox::Sax`'s callback messages.
+        mime_xml,                 # IO stream or String of XML to parse. Won't close File handles automatically.
         **{
-          convert_special: true,           # [boolean] Convert encoded entities back to their unencoded form, e.g. `"&lt"` to `"<"`.
-          skip: :skip_off,                 # [:skip_none|:skip_return|:skip_white|:skip_off] (from Element text/value) Strip CRs, whitespace, or nothing.
-          smart: false,                    # [boolean] Toggle Ox's built-in hints for HTML parsing: https://github.com/ohler55/ox/blob/master/ext/ox/sax_hint.c
-          strip_namespace: 'tika'.freeze,  # [nil|String|true|false] (from Element names) Strip no namespaces, all namespaces, or a specific namespace.
-          symbolize: true,                 # [boolean] Fill callback method `name` arguments with Symbols instead of with Strings.
+          convert_special: true,  # [boolean] Convert encoded entities back to their unencoded form, e.g. `"&lt"` to `"<"`.
+          skip: :skip_off,        # [:skip_none|:skip_return|:skip_white|:skip_off] (from Element text/value) Strip CRs, whitespace, or nothing.
+          smart: false,           # [boolean] Toggle Ox's built-in hints for HTML parsing: https://github.com/ohler55/ox/blob/master/ext/ox/sax_hint.c
+          strip_namespace: nil,   # [nil|String|true|false] (from Element names) Strip no namespaces, all namespaces, or a specific namespace.
+          symbolize: true,        # [boolean] Fill callback method `name` arguments with Symbols instead of with Strings.
         }.update(kwargs),
       )
     }
