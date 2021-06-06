@@ -89,17 +89,17 @@ module CHECKING::YOU::IN::INLANDSGESPRÄCH
   IETF_TREES = [
     # Current top-level registries are shown here: https://www.iana.org/assignments/media-types/media-types.xhtml
     # The latest addition reflected here is `font` from RFC 8081: https://datatracker.ietf.org/doc/html/rfc8081
-    'application',
-    'audio',
-    'example',
-    'font',
-    'image',
-    'message',
-    'model',
-    'multipart',
-    'text',
-    'video',
-  ].map(&:freeze)
+    -'application',
+    -'audio',
+    -'example',
+    -'font',
+    -'image',
+    -'message',
+    -'model',
+    -'multipart',
+    -'text',
+    -'video',
+  ]
 
   # Reconstruct an IETF Media-Type String from a loaded CYI/CYO's `#members`
   def to_s

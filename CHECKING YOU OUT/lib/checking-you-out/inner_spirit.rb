@@ -63,11 +63,11 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # Rescue from `Gem::MissingSpecError`'s parent to support developing locally with just `require_relative` and no Bundler.
   #
   # [0]: unless you manage to `bundle exec` at exactly 00:00:00 UTC :)
-  GEM_PACKAGE_TIME = proc { begin; Gem::Specification::find_by_name('checking-you-out'.freeze).date; rescue Gem::LoadError; Time.now; end }
+  GEM_PACKAGE_TIME = proc { begin; Gem::Specification::find_by_name(-'checking-you-out').date; rescue Gem::LoadError; Time.now; end }
 
   Species = Struct.new(:name, :value) do
     def self.from_string(param_string)
-      return self.new(*param_string.split('='.freeze))
+      return self.new(*param_string.split(-?=))
     end
   end
 
@@ -123,7 +123,7 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     # Remove it here before looking up CYO objects by extension.
     #
     # `File::extname` will be an empty String for paths which contain no dotted components.
-    super || self.from_postfix(File.extname(pathname).delete_prefix!('.'.freeze))
+    super || self.from_postfix(File.extname(pathname).delete_prefix!(-?.))
   end
 
   def aka
