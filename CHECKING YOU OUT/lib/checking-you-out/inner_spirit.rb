@@ -95,9 +95,9 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # Get a Set[CYO] by Symbol file-extension, e.g. `:doc` => { CYO msword, CYO rtf }
   def self.from_postfix(postfix)
     self.after_forever[case postfix
-      when Symbol then postfix
-      when String then postfix.delete_prefix('.'.freeze).to_sym
-      else postfix.to_sym
+      when Symbol then postfix.to_s  # TODO: Ruby 3.0 Symbol#name
+      when String then postfix.delete_prefix(-?.)
+      else postfix.to_s
     end]
   end
 

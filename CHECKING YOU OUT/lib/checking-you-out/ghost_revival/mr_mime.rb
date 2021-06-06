@@ -98,7 +98,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     in :alias, :type
       self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(str_value)) unless self.skips.include?(:aka)
     in :glob, :pattern
-      self.cyo.add_postfix(str_value.to_sym) if str_value.delete_prefix!('*.'.freeze) unless self.skips.include?(:postfix)
+      self.cyo.add_postfix(-str_value) if str_value.delete_prefix!(-'*.') unless self.skips.include?(:postfix)
     else
       # Unsupported attribute encountered.
       # The new pattern matching syntax will raise `NoMatchingPatternError` here without this `else`.

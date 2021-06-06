@@ -7,17 +7,11 @@ module CHECKING; end
 class CHECKING::YOU; end
 module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
-  # IETF Media-Type String parser.
-  #
-  # TOD0: There are probably gainz to be had here. Profile more and find out.
-  #       Maybe I should freeze CYI keys instead of Symbolizing?
-  #       https://samsaffron.com/archive/2018/02/16/reducing-string-duplication-in-ruby
-  #       https://bugs.ruby-lang.org/issues/13077
-  #       https://rubytalk.org/t/psa-string-memory-use-reduction-techniques/74477
+  # Parse IETF Media-Type String → `::CHECKING::YOU::IN`
   FROM_IETF_TYPE = proc {
     # Keep these allocated instead of fragmenting our heap, since this will be called very frequently.
-    scratch = String.allocate
-    hold = String.allocate
+    scratch = Array.allocate
+    hold = Array.allocate
     my_base = ::CHECKING::YOU::IN::allocate
 
     # Clear out the contents of the above temporary vars,
@@ -30,36 +24,55 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
       }
     }
 
-    # Take a single popped character from a reversed IETF Type String,
-    # e.g. "ttub=traf;lmbe+fnb.ppg3.dnv/noitacilppa".
+    # Take a single codepoint from a reversed-then-NULL-terminated IETF Type String,
+    # e.g. "ttub=traf;lmbe+fnb.ppg3.dnv/noitacilppa#{-?\u{0}}".
+    #
+    # I switched from `String#each_char` to `String#each_codepoint` to avoid allocating single-character Strings
+    # before they could be deduplicated with `-zig`. The Integer codepoints, on the other hand,
+    # will always be the same `object_id` for the same codepoint:
+    #
+    # rb(main):162:0> -"あああ".each_char { |c| p c.object_id }
+    # 420
+    # 440
+    # 460
+    #
+    # rb(main):163:0> -"あああ".each_codepoint { |c| p c.object_id }
+    # 4709
+    # 4709
+    # 4709
     move_zig = proc { |zig|
       case zig
-      when -?\u{0} then
-        my_base[:phylum] = scratch.reverse!.to_sym
-      when -?= then
-        scratch.each_char.reverse_each.reduce(hold, :<<)
-      when -?; then
+      when 0 then  # NULL
+        my_base[:phylum] = -scratch.reverse!.pack(-'U*')
+      when 61 then  # =
+        hold.push(*scratch.reverse!)
+      when 59 then  # ;
         scratch.clear
         hold.clear
-      when -?+ then
+      when 43 then  # +
         scratch.clear
-      when -?/ then
+      when 47 then  # /
         my_base[:kingdom] = case
-        when scratch.delete_prefix!(-'dnv') then
-          File.extname(hold).empty? ? :vnd : hold.slice!((File.extname(hold).length * -1)..)[1..]
-        when scratch.delete_prefix!(-'srp') then :prs
-        when scratch.delete_suffix!(-'-sm-x') then :"x-ms"
-        when scratch.delete_suffix!(-'-x') then :x
-        when scratch.length == 1 && scratch.delete_suffix!(-'x') then :"kayo-dot"
-        else :possum
-        end&.to_sym
-        hold << -?. unless hold.empty? or scratch.empty?
-        my_base[:genus] = scratch.each_char.reverse_each.reduce(hold, :<<).to_sym
+        when scratch[..2] == (-'dnv').codepoints then
+          scratch.unshift(3); hold.rindex(46) ? -hold[hold.rindex(46)+1..].pack(-'U*') : -'vnd'
+        when scratch[..2] == (-'srp').codepoints then
+          scratch.unshift(3); -'prs'
+        when scratch[..4] == (-'-sm-x').codepoints then
+          scratch.unshift(5); -'x-ms'
+        when scratch[..1] == (-'-x').codepoints then
+          scratch.unshift(2); -?x
+        when scratch.one? && scratch.last == 100 then  # x
+          scratch.pop; -'kayo-dot'
+        else -'possum'
+        end
+        hold << 46 unless hold.empty? or scratch.empty?
+        hold.push(*scratch.reverse!)
+        my_base[:genus]= -hold.pack(-'U*')
         scratch.clear
         hold.clear
-      when -'.' then
-        hold << -?. unless hold.empty? or scratch.empty?
-        scratch.each_char.reverse_each.reduce(hold, :<<)
+      when 46 then  # .
+        hold << 46 unless hold.empty? or scratch.empty?
+        hold.push(*scratch.reverse!)
         scratch.clear
       else
         scratch << zig
@@ -68,7 +81,7 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
     # 𝘐𝘛'𝘚 𝘠𝘖𝘜 !!
     cats = ->(gentlemen) {
-      gentlemen.reverse!.<<(-?\u{0}).each_char(&move_zig)
+      gentlemen.reverse!.<<(-?\u{0}).each_codepoint(&move_zig)
       return my_base.dup.tap(&the_bomb)
     }
     -> (gentlemen) {
@@ -104,16 +117,20 @@ module CHECKING::YOU::IN::INLANDSGESPRÄCH
   # Reconstruct an IETF Media-Type String from a loaded CYI/CYO's `#members`
   def to_s
     # TODO: Fragments (e.g. `;what=ever`), and syntax identifiers (e.g. `+xml`)
-    self.phylum&.to_s << '/'.freeze << case
-    when self.kingdom == :"kayo-dot" then 'x.'.freeze
-    when self.kingdom == :x then 'x-'.freeze
-    when self.kingdom == :"x-ms" then 'x-ms-'.freeze
-    when self.kingdom == :prs then 'prs.'.freeze
-    when self.kingdom == :vnd then 'vnd.'.freeze
-    when self.kingdom == :possum then nil.to_s
-    when !IETF_TREES.include?(self.kingdom) then 'vnd.' << self.kingdom.to_s << '.'
-    else self.kingdom.to_s << '.'
-    end << self.genus.to_s
+    # Note: Explicitly calling `-''` for now until I confirm the behavior of `NilClass#to_s` in Ruby 3.0+.
+    # In Ruby 2.7 `nil.to_s` will return a deduplicated immutable empty String: https://bugs.ruby-lang.org/issues/16150
+    # added experimentally in https://github.com/ruby/ruby/commit/6ffc045a817fbdf04a6945d3c260b55b0fa1fd1e
+    # but then reverted in https://github.com/ruby/ruby/commit/bea322a352d820007dd4e6cab88af5de01854736
+    -(String.allocate << self.phylum << -'/' << case
+    when self.kingdom == -'kayo-dot' then -'x.'
+    when self.kingdom == -?x then -'x-'
+    when self.kingdom == -'x-ms' then -'x-ms-'
+    when self.kingdom == -'prs' then -'prs.'
+    when self.kingdom == -'vnd' then -'vnd.'
+    when self.kingdom == -'possum' then -''
+    when !IETF_TREES.include?(self.kingdom) then 'vnd.' << self.kingdom << -'.'
+    else self.kingdom << -'.'
+    end << self.genus)
   end
 
   # Pretty-print objects using our custom `#:to_s`
