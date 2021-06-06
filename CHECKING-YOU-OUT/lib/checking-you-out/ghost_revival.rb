@@ -12,26 +12,26 @@ module CHECKING::YOU::OUT::GHOST_REVIVAL
   # This same subdir path applies when searching *any* `PATH` for `shared-mime-info` XML,
   # e.g. '/usr/share' + 'mime/packages' <-- this part
   # For consistency the same path is used for our local data under the Gem root.
-  MIME_PACKAGES_FRAGMENT = proc { File.join('mime'.freeze, 'packages'.freeze) }
+  MIME_PACKAGES_FRAGMENT = proc { File.join(-'mime', -'packages') }
 
   # Filename for the main fdo `shared-mime-info` source XML.
   # We will look for this file in system `XDG_DATA_DIRS` and use our own bundled copy
   # if the system version is missing or outdated.
-  FDO_MIMETYPES_FILENAME = 'freedesktop.org.xml'.freeze
+  FDO_MIMETYPES_FILENAME = -'freedesktop.org.xml'
 
   # Path to our built-in custom `shared-mime-info` database.
   DD_MIMETYPES_PATH = proc { File.join(
     ::CHECKING::YOU::OUT::GEM_ROOT.call,
     MIME_PACKAGES_FRAGMENT.call,
-    'distorted-types.xml'.freeze,
+    -'distorted-types.xml',
   )}
 
   # Path to our bundled Apache Tika `shared-mime-info` database.
-  TIKA_MIMETYPES_FILENAME = 'tika-mimetypes.xml'.freeze
+  TIKA_MIMETYPES_FILENAME = -'tika-mimetypes.xml'
   TIKA_MIMETYPES_PATH = proc { File.join(
     ::CHECKING::YOU::OUT::GEM_ROOT.call,
-    'third-party'.freeze,
-    'tika-mimetypes'.freeze,
+    -'third-party',
+    -'tika-mimetypes',
     TIKA_MIMETYPES_FILENAME,
   )}
 
@@ -43,10 +43,10 @@ module CHECKING::YOU::OUT::GHOST_REVIVAL
     handler = ::CHECKING::YOU::MrMIME.new
 
     # Load our own local database of custom types.
-    handler.open(DD_MIMETYPES_PATH.call, strip_namespace: 'distorted'.freeze)
+    handler.open(DD_MIMETYPES_PATH.call, strip_namespace: -'distorted')
 
     # Load the Apache Tika type database since it is not commonly installed like `shared-mime-info` is.
-    handler.open(TIKA_MIMETYPES_PATH.call, strip_namespace: 'tika'.freeze)
+    handler.open(TIKA_MIMETYPES_PATH.call, strip_namespace: -'tika')
 
     # CYO bundles a copy of `freedesktop.org.xml` from `shared-mime-info` but will prefer a system-level copy
     # if one is available and not out of date. This flag will be disabled if we find a suitable copy,
@@ -64,7 +64,7 @@ module CHECKING::YOU::OUT::GHOST_REVIVAL
     #   Not likely to even have `XDG` environment variables or `shared-mime-info` installed.
     # - Make it possible to specify additional paths directly to CYO.
     # - Make it possible to skip certain paths/files.
-    ENV['XDG_DATA_DIRS'.freeze].split(File::PATH_SEPARATOR).map { |share_dir|
+    ENV[-'XDG_DATA_DIRS'].split(File::PATH_SEPARATOR).map { |share_dir|
 
       # The environment variable will (should) contain directories at the `share` level of the `hier(7)`,
       # e.g. `/usr/share`, so we should append the known common fragment to that for a final path of
@@ -100,8 +100,8 @@ module CHECKING::YOU::OUT::GHOST_REVIVAL
     if load_bundled_fdo_xml
       handler.open(File.join(
         ::CHECKING::YOU::OUT::GEM_ROOT.call,
-        'third-party'.freeze,
-        'shared-mime-info'.freeze,
+        -'third-party',
+        -'shared-mime-info',
         "#{FDO_MIMETYPES_FILENAME}.in",
         # Yes I know why it's `.xml.in` but I'm doing it anyway 8)
       ))
