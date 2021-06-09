@@ -7,13 +7,32 @@ require 'ox'
 # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
 class CHECKING::YOU::MrMIME < ::Ox::Sax
 
+
+  # Map of `shared-mime-info` XML Element names to our generic category names.
+  FDO_ELEMENT_CATEGORY = {
+    :magic => :content_match,
+    :match => :content_match,
+    :alias => :family_tree,
+    :comment => :textual_metadata,
+    :"sub-child-of" => :family_tree,
+    :"generic-icon" => :host_metadata,
+    :glob => :pathname_match,
+  }
+
   # `MrMIME::new` will take any of these keys as keyword arguments
   # whose value will override the default defined in this Hash.
   DEFAULT_LOADS = {
-    :aka => true,
-    :description => false,
-    :postfix => true,
+    :textual_metadata => false,
+    :host_metadata => false,
+    :pathname_match => true,
+    :content_match => true,
+    :family_tree => true,
   }
+
+  # You shouldn't abuse the power of the Solid.
+  def skips
+    @skips ||= self.class::DEFAULT_LOADS.keep_if { |k,v| v == false }.keys.to_set
+  end
 
   def initialize(**kwargs)
     # Per the `Ox::Sax` dox:
@@ -44,11 +63,6 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     @cyo ||= ::CHECKING::YOU::OUT::from_ietf_media_type(@scratch)
   end
 
-
-  # You shouldn't abuse the power of the Solid.
-  def skips
-    @skips ||= self.class::DEFAULT_LOADS.keep_if { |k,v| v == false }.keys.to_set
-  end
 
   # Callback methods we can implement in this Handler per http://www.ohler.com/ox/Ox/Sax.html
   #
@@ -84,6 +98,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
 
   def start_element(name)
     @parse_stack.push(name)
+    return if self.skips.include?(name)
     case name
     when :"mime-type"
       @scratch = nil
@@ -96,9 +111,10 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     in :"mime-type", :type
       @scratch = str_value
     in :alias, :type
-      self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(str_value)) unless self.skips.include?(:aka)
+      self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s))
     in :glob, :pattern
-      self.cyo.add_postfix(-str_value) if str_value.delete_prefix!(-'*.') unless self.skips.include?(:postfix)
+      # TODO: Make this less fragile. It assumes all`<glob>` patterns are of the form `*.ext` (they are)
+      self.cyo.add_postfix(value.as_s.delete_prefix!(-'*.')||value.as_s)
     else
       # Unsupported attribute encountered.
       # The new pattern matching syntax will raise `NoMatchingPatternError` here without this `else`.
@@ -106,19 +122,21 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
   end
 
   def text(element_text)
+    return if self.skips.include?(@parse_stack.last)
     case @parse_stack.last
     when :comment
-      self.cyo.description = element_text unless self.skips.include?(:description)
+      self.cyo.description = element_text
     end
   end
 
   def end_element(name)
+    raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
+    return if self.skips.include?(@parse_stack.last)
     case name
     when :"mime-type"
       @scratch = nil
       @cyo = nil
     end
-    raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
   end
 
   def open(path, **kwargs)
