@@ -1,9 +1,4 @@
 
-# Silence warning for MrMIME's use of pattern matching.
-# See https://ruby-doc.org/core-2.7.0/Warning.html#method-c-5B-5D for more.
-# TODO: Remove this when our minimum Ruby version is >= 3.0,
-# since pattern matching was made non-experimental in https://bugs.ruby-lang.org/issues/17260
-Warning[:experimental] = false
 require_relative 'ghost_revival/mr_mime' unless defined? ::CHECKING::YOU::MrMIME
 
 module CHECKING::YOU::OUT::GHOST_REVIVAL
