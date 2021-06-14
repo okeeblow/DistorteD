@@ -45,34 +45,72 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
       when 0 then  # NULL
         my_base[:phylum] = -scratch.reverse!.pack(-'U*')
       when 61 then  # =
-        hold.push(*scratch.reverse!)
+        # TODO: Implement Fragment-based Type variations
+        hold.push(*scratch)
+        scratch.clear
       when 59 then  # ;
+        # TODO: Implement Fragment-based Type variations
         scratch.clear
         hold.clear
       when 43 then  # +
+        #TODO: Implement tagged parent Types e.g. `+xml`
         scratch.clear
       when 47 then  # /
+        # When this character is encountered in a reversed Type String, `scratch` will contain the facet
+        # which lets us determine if this Type belongs to a vendor tree, to the e`x`perimental tree, etc.
         my_base[:kingdom] = case
-        when scratch[..2] == (-'dnv').codepoints then
-          scratch.unshift(3); hold.rindex(46) ? -hold[hold.rindex(46)+1..].pack(-'U*') : -'vnd'
-        when scratch[..2] == (-'srp').codepoints then
-          scratch.unshift(3); -'prs'
-        when scratch[..4] == (-'-sm-x').codepoints then
-          scratch.unshift(5); -'x-ms'
-        when scratch[..1] == (-'-x').codepoints then
-          scratch.unshift(2); -?x
+        when scratch[-3..] == (-'dnv').codepoints then
+          scratch.pop(3);
+          # https://datatracker.ietf.org/doc/html/rfc6838#section-3.2
+          # We will be in a vendor tree, but let's additionally inspect `hold` to count its facets.
+          # There will be only a single facet for vendor-tree types like `application/vnd.wordperfect`.
+          # There will be multiple facets for vendor-tree types like `application/vnd.tcpdump.pcap`.
+          #
+          # If we have multiple facets, split the (reversed) last facet out and use it as the vendor-tree name,
+          # e.g. for `application/vnd/tcpdump.pcap` we will use `tcpdump` as the tree naame instead of `vnd`,
+          # in fact not even storing the `vnd` at all.
+          #
+          # This increases the likelihood of `hold`'s remainder fitting inside a single RValue,
+          # e.g. for yuge Types like `application/vnd.oasis.opendocument.graphics` we will store `oasis`
+          # and `opendocument.graphics` (fits!) instead of `vnd` and `oasis.opendocument.graphics` (doesn't fit!).
+          #
+          # The dropped `vnd` will be reconstructed by `CYO#to_s` when it detects a non-standard tree name.
+          hold.rindex(46) ? -hold.slice!(hold.rindex(46)..).reverse!.tap(&:pop).pack(-'U*') : -'vnd'
+        when scratch[-3..] == (-'srp').codepoints then
+          # https://datatracker.ietf.org/doc/html/rfc6838#section-3.3
+          # "Media types created experimentally or as part of products that are not distributed commercially".
+          # This is mostly an early-Internet legacy and there are only a few of these in `shared-mime-info`,
+          # e.g. `audio/prs.sid` for the C=64 Sound Interface Device audio format,
+          # but they can still be registered.
+          scratch.pop(3); -'prs'
+        when scratch[-5..] == (-'-sm-x').codepoints then
+          # Microsoft formats like `text/x-ms-regedit`.
+          # I'm treating this separately from the IETF `x-` tree just because there are so many of them,
+          # and it's nice to keep Winders formats logically-grouped.
+          scratch.pop(5); -'x-ms'
+        when scratch[-2..] == (-'-x').codepoints then
+          # Deprecated experimental tree (`x-`): https://datatracker.ietf.org/doc/html/rfc6648
+          # I'm giving this deprecated tree the canonical `x` tree in CYO because it has legacy dating back
+          # to the mid '70s and has many many many more Types than post-2012 `x.` tree,
+          # RE: https://datatracker.ietf.org/doc/html/rfc6648#appendix-A
+          scratch.pop(2); -?x
         when scratch.one? && scratch.last == 100 then  # x
+          # Faceted experimental tree (`x.`): https://datatracker.ietf.org/doc/html/rfc6838#section-3.4
+          # There are only a few of these since "use of both `x-` and `x.` forms is discouraged",
+          # e.g. `model/x.stl-binary`, and there aren't likely to be many more.
           scratch.pop; -'kayo-dot'
-        else -'possum'
+        else
+          # Otherwise we are in the "standards" tree: https://datatracker.ietf.org/doc/html/rfc6838#section-3.1
+          -'possum'
         end
-        hold << 46 unless hold.empty? or scratch.empty?
-        hold.push(*scratch.reverse!)
-        my_base[:genus]= -hold.pack(-'U*')
+        # Everything remaining in `hold` and `scratch` will comprise the most-specific Type component.
+        hold.push(*scratch)
+        my_base[:genus]= -hold.reverse!.pack(-'U*')
         scratch.clear
         hold.clear
       when 46 then  # .
-        hold << 46 unless hold.empty? or scratch.empty?
-        hold.push(*scratch.reverse!)
+        hold << 46 unless hold.empty?
+        hold.push(*scratch)
         scratch.clear
       else
         scratch << zig
