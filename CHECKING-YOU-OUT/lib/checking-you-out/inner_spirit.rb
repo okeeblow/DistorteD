@@ -70,21 +70,21 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
   # Main memoization Hash for our loaded Type data.
   # { CHECKING::YOU::IN => CHECKING::YOU::OUT }
-  def self.remember_me
-    @remember_me ||= Hash.new
+  def self.all_night
+    @all_night ||= Hash.new
   end
 
   def self.new(taxa)
-    self.remember_me[
+    self.all_night[
       taxa.is_a?(::CHECKING::YOU::IN) ? taxa : super(*taxa)
     ] ||= self.allocate.tap { |cyo| cyo.send(:initialize, *taxa) }
   end
 
   def out; self; end
-  def in; self.class.remember_me.key(self); end
+  def in; self.class.all_night.key(self); end
 
   # Memoization Hash for file extensions.
-  # { Symbol => CHECKING::YOU::OUT }
+  # { Deduplicated frozen String => CHECKING::YOU::OUT }
   def self.after_forever
     @after_forever ||= Hash.new { |h,k| h[k] = Set.new }
   end
@@ -131,12 +131,12 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   def add_aka(taxa)
     cyi = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
     self.aka.add(cyi)
-    self.class.remember_me[cyi] = self
+    self.class.all_night[cyi] = self
   end
 
   def remove_aka(taxa)
     cyi = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
-    self.class.remember_me.delete(cyi) if self.class.remember_me.fetch(cyi, nil) === self
+    self.class.all_night.delete(cyi) if self.class.all_night.fetch(cyi, nil) === self
   end
 
   attr_accessor :description
