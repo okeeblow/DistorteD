@@ -44,6 +44,34 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     else s.to_i(10)
     end
   }
+  FDO_MAGIC_FORMATS = {
+    # "The string type supports the C character escapes (\0, \t, \n, \r, \xAB for hex, \777 for octal)."
+    -'string' => proc { |s| s },
+    -'byte' => proc { |s| BASED_STRING.call(s).chr },
+    -'little32' => proc { |s| BASED_STRING.call(s).yield_self { |value|
+      ((value & 0xFF).chr + ((value >> 8) & 0xFF).chr + ((value >> 16) & 0xFF).chr + ((value >> 24) & 0xFF).chr)
+    }},
+    -'big32' => proc { |s| BASED_STRING.call(s).yield_self { |value|
+      (((value >> 24) & 0xFF).chr + ((value >> 16) & 0xFF).chr + ((value >> 8) & 0xFF).chr + (value & 0xFF).chr)
+    }},
+    -'little16' => proc { |s| BASED_STRING.call(s).yield_self { |value|
+      ((value & 0xFF).chr + (value >> 8).chr)
+    }},
+    -'big16' => proc { |s| BASED_STRING.call(s).yield_self { |value|
+      ((value >> 8).chr + (value & 0xFF).chr)
+    }},
+  }.tap { |f|
+    # Set `host` formats according to system endianness.
+    if ORIGIN_OF_SYMMETRY.call == :BE then
+      f[-'host16'] = f[-'big16']
+      f[-'host32'] = f[-'big32']
+    else
+      f[-'host16'] = f[-'little16']
+      f[-'host32'] = f[-'little32']
+    end
+
+  }
+
   # Map of `shared-mime-info` XML Element names to our generic category names.
   FDO_ELEMENT_CATEGORY = {
     :magic => :content_match,
@@ -86,6 +114,11 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     # names to be unique. For example, `shared-mime-info` has an attribute `type` on
     # `<mime-type>`, `<alias>`, `<match>`, and `<sub-class-of>`.
     @parse_stack = Array.new
+
+    # We need a separate stack and a flag boolean for building content-match structures since the source XML
+    # represents OR and AND byte-sequence relationships as sibling and child Elements respectively, e.g.
+    # <magic><match1><match2/><match3/></match1><match4/></magic> => [m1 AND m2] OR [m1 AND m3], OR [m4].
+    @i_can_haz_magic = true
 
     # Allow the user to control the conditions on which we ignore data from the source XML.
     @skips = self.class::DEFAULT_LOADS.merge(kwargs.slice(*self.class::DEFAULT_LOADS.keys)).keep_if { |k,v|
@@ -139,6 +172,12 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     when :"mime-type"
       @media_type = nil
       @cyo = nil
+    when :match
+      # Mark any newly-added Sequence as eligible for a full match candidate.
+      @i_can_haz_magic = true
+      @weighted_action.append(::CHECKING::YOU::OUT::SequenceCat.new)
+    when :magic
+      @weighted_action = ::CHECKING::YOU::OUT::WeightedAction.new
     end
   end
 
@@ -147,6 +186,20 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     case [@parse_stack.last, attr_name]
     in :"mime-type", :type
       @media_type = value.as_s
+    in :match, :type
+      # There's no way to avoid a String allocation in `Ox::Sax::Value#as_s` rn,
+      # pending C extension API for interned Strings prolly some time in Ruby 3.x.
+      @weighted_action.last.format = FDO_MAGIC_FORMATS[value.as_s]
+    in :match, :value
+      @weighted_action.last.cat = value.as_s
+    in :match, :offset
+      @weighted_action.last.boundary = value.as_s
+    in :match, :mask
+      # The number to AND the value in the file with before comparing it to `value'.
+      # Masks for numerical types can be any number, while masks for strings must be in base 16, and start with 0x.
+      @weighted_action.last.mask = BASED_STRING.call(value.as_s)
+    in :magic, :priority
+      @weighted_action&.weight = value.as_i
     in :alias, :type
       self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s))
     in :glob, :pattern
@@ -173,6 +226,16 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     when :"mime-type"
       @media_type = nil
       @cyo = nil
+    when :match
+      # The Sequence stack represents a complete match once we start popping Sequences from it.
+      self.cyo.add_content_match(@weighted_action.dup) if @i_can_haz_magic
+      # Mark any remaining partial Sequences as ineligible to be a full match candidate,
+      # e.g. if we had a stack of [<match1/><match2/><match3/>] we would want to add a
+      # candidate [m1, m2, m3] but not the partials [m1, m2] or [m1] as we clear out the stack.
+      @i_can_haz_magic = false
+      @weighted_action.pop
+    when :magic
+      @weighted_action.clear
     end
   end
 
