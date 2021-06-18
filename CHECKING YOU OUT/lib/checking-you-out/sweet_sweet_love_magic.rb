@@ -1,6 +1,29 @@
 # Find-by-content file matching à la `libmagic`.
 # https://www.freebsd.org/cgi/man.cgi?query=magic&sektion=5
 
+module CHECKING; end
+class CHECKING::YOU
+  class MagicWithoutTears < ::Hash
+    def new()
+      super { |h,k| h[k] = self.class.new(&h.default_proc) }
+    end
+
+    def bury(*args)
+      case args.count
+      when 0, 1 then
+        # nope.avi
+      when 2 then
+        self[args.first] = args.last
+      else
+        arg = args.shift
+        self[arg] = self.class.new unless self[arg]
+        self[arg].bury(*args) unless args.empty?
+      end
+      self
+    end
+  end  # class MagicWithoutTears
+end  # class CHECKING::YOU
+
 
 module CHECKING::YOU::SweetSweet♥Magic
 
@@ -77,10 +100,18 @@ module CHECKING::YOU::SweetSweet♥Magic
 
   def add_content_match(action)
     self.cat_sequence.add(action)
+    self.class.magic_without_tears.bury(*(action.boundary.minmax), action, self)
   end
 
   def cat_sequence
     @cat_sequence ||= ::Set.new
   end
 
+end
+
+
+module CHECKING::YOU::SweetSweet♡Magic
+  def magic_without_tears
+    @magic_without_tears ||= ::CHECKING::YOU::MagicWithoutTears.new
+  end
 end
