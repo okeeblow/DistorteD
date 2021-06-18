@@ -9,6 +9,29 @@ require 'ox'
 class CHECKING::YOU::MrMIME < ::Ox::Sax
 
 
+  ORIGIN_OF_SYMMETRY = proc {
+    # Little-endian systems:
+    # - VAX
+    # - x86 / AMD64
+    # Big-endian systems:
+    # - Motorola 68k
+    # - Internet https://en.wikipedia.org/wiki/Endianness#Networking
+    # - IBM mainframes
+    # Bi-endian systems:
+    # - AArch64
+    # - PowerPC / POWER
+    # - MIPS
+    # - Alpha
+    # - PA-RISC
+    # - SuperH
+    # - Itanium
+    # - RISC-V
+    @host_endianness ||= [1].yield_self { |bliss|
+      # Pack the test Integer as a native-endianness 'I'nt and a 'N'etwork-endianess (BE) Int and compare.
+      bliss.pack(-?I) == bliss.pack(-?N) ? :BE : :LE
+    }
+  }
+
   # Map of `shared-mime-info` XML Element names to our generic category names.
   FDO_ELEMENT_CATEGORY = {
     :magic => :content_match,
