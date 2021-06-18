@@ -150,6 +150,7 @@ require_relative 'auslandsgesprach' unless defined? ::CHECKING::YOU::IN::AUSLAND
 ::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH)
 
 require_relative 'sweet_sweet_love_magic' unless defined? ::CHECKING::YOU::SweetSweet♥Magic
+::CHECKING::YOU::OUT.extend(::CHECKING::YOU::SweetSweet♡Magic)
 ::CHECKING::YOU::OUT.prepend(::CHECKING::YOU::SweetSweet♥Magic)
 
 # Methods for loading type data from `shared-mime-info` package XML files.
