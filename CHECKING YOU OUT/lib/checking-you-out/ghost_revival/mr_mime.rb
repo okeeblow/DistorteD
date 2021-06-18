@@ -5,6 +5,7 @@ require 'ox'
 # Push-event-based parser for freedesktop-dot-org `shared-mime-info`-format XML package files,
 # including the main `shared-mime-info` database itself (GPLv2+), Apache Tika (MIT), and our own (AGPLv3).
 # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
+# https://gitlab.freedesktop.org/xdg/shared-mime-info/-/blob/master/src/update-mime-database.c
 class CHECKING::YOU::MrMIME < ::Ox::Sax
 
 
@@ -60,7 +61,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
   end
 
   def cyo
-    @cyo ||= ::CHECKING::YOU::OUT::from_ietf_media_type(@scratch)
+    @cyo ||= ::CHECKING::YOU::OUT::from_ietf_media_type(@media_type)
   end
 
 
@@ -101,15 +102,16 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     return if self.skips.include?(name)
     case name
     when :"mime-type"
-      @scratch = nil
+      @media_type = nil
       @cyo = nil
     end
   end
 
-  def attr(attr_name, str_value)
+  def attr_value(attr_name, value)
+    return if self.skips.include?(@parse_stack.last)
     case [@parse_stack.last, attr_name]
     in :"mime-type", :type
-      @scratch = str_value
+      @media_type = value.as_s
     in :alias, :type
       self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s))
     in :glob, :pattern
@@ -134,7 +136,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     return if self.skips.include?(@parse_stack.last)
     case name
     when :"mime-type"
-      @scratch = nil
+      @media_type = nil
       @cyo = nil
     end
   end
