@@ -32,6 +32,18 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     }
   }
 
+  # Turn an arbitrary String into the correctly-based Integer it represents.
+  # It would be nice if I could do this directly in `Ox::Sax::Value`.
+  # Base-16 Ints can be written as literals in Ruby, e.g.
+  # irb> 0xFF
+  # => 255
+  BASED_STRING = proc { |s|
+    case
+    when s[0..1].downcase == -'0x' then s.to_i(16)
+    when s.chr == -?0 then s.to_i(8)
+    else s.to_i(10)
+    end
+  }
   # Map of `shared-mime-info` XML Element names to our generic category names.
   FDO_ELEMENT_CATEGORY = {
     :magic => :content_match,
