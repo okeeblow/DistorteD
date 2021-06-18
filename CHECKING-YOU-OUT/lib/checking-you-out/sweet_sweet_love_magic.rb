@@ -1,3 +1,6 @@
+require 'pathname' unless defined? ::Pathname
+require 'stringio' unless defined? ::StringIO
+
 # Find-by-content file matching à la `libmagic`.
 # https://www.freebsd.org/cgi/man.cgi?query=magic&sektion=5
 
@@ -114,4 +117,127 @@ module CHECKING::YOU::SweetSweet♡Magic
   def magic_without_tears
     @magic_without_tears ||= ::CHECKING::YOU::MagicWithoutTears.new
   end
+
+  # TODO: Fix all the bugs in this by running a test suite.
+  # It matches some file types but not some others I've tried. Gotta start somewhere though :)
+  # TODO: Profile this to reduce allocations.
+  WILD_IO = proc {
+    # TODO: Benchmark these buffer-size assumptions
+    hold_my_hand = String.new(encoding: Encoding::ASCII_8BIT, capacity: 2048)
+    quick_master = String.new(encoding: Encoding::ASCII_8BIT, capacity: 2048)
+    moving_on = String.new(encoding:Encoding::ASCII_8BIT, capacity: 256)
+    small_clone = String.new(encoding:Encoding::ASCII_8BIT, capacity: 256)
+
+    # Avoid re-allocating any data structure we can re-use between matches.
+    the_last_striker = 0       # Previous iteration offset, used to calculate how many cached bytes to unshift.
+    rolling_stops = Array.new  # Iteration end-points, to be sorted so we can pop the largest.
+    rolling_stop = 0           # Iteration end-point, popped in a loop off an Array.
+    my_future = Array.new      # Sub-sequence match successes and failures.
+    come_with_me = Hash.new    # Successful matches to return.
+
+    find_out = -> (wild_io) {
+      wild_io.binmode if wild_io.respond_to?(:binmode)
+
+      # The top level of keys are byte offsets at which we should start inspecting a stream, e.g:
+      # irb> CHECKING::YOU::OUT::magic_without_tears.keys.sort
+      # [0, 1, 2, 4, 5, 6, 7, 8, 10, 11, 12, 16, 20, 24, 28, 31, 36, 38, 40, 44, 60, 65, 72, 100,
+      # 102, 128, 134, 242, 256, 257, 260, 522, 546, 640, 2080, 2089, 2108, 2112, 2114, 2121]
+      #
+      # They must be sorted before use because `Hash` returns them by insertion order.
+      ::CHECKING::YOU::OUT::magic_without_tears.keys.sort.each { |rolling_start|
+
+        # It's pretty likely that the end of one iteration will already read past the start of the next one.
+        wild_io.seek(rolling_start - the_last_striker, whence=IO::SEEK_CUR) if rolling_start > wild_io.pos
+        #puts "Dropping #{rolling_start - the_last_striker} leading byte(s)"
+        hold_my_hand.slice!(rolling_start - the_last_striker)
+
+        # The second level of keys are byte offsets marking the ends of the areas we will inspect, e.g.:
+        # irb(main):004:0> CHECKING::YOU::OUT::magic_without_tears[256].keys.sort
+        # => [260, 264, 265, 268, 271]
+        #
+        # Again, they must be sorted to avoid insertion order.
+        rolling_stops = ::CHECKING::YOU::OUT::magic_without_tears[rolling_start].keys.sort
+        #puts "Reading #{rolling_stops.last - rolling_start} bytes"
+        # IO#read returns `nil` if we're at the end of the stream.
+        break if wild_io.read(rolling_stops.last - rolling_start, hold_my_hand).nil?
+
+        # Empty the stops out from highest to lowest.
+        while not rolling_stops.empty? do
+
+          # Take a disposable copy of our stream cache.
+          quick_master = hold_my_hand.dup
+
+          # This is already sorted so the `last` element is the largest.
+          rolling_stop = rolling_stops.pop
+
+          # { SweetSweet♥Magic::WeightedAction => CHECKING::YOU::OUT }
+          ::CHECKING::YOU::OUT::magic_without_tears[rolling_start][rolling_stop].each_pair { |weighted_action, cyo|
+            #puts "Testing #{weighted_action}"
+
+            # Each match possibility is composed of one or more sub-sequences, all of which must be matched.
+            # The `boundary` Range of the full action is the sum of all `boundary` Ranges of the sub-sequences, e.g.:
+            # WeightedAction[SC(5..10), SC(12..20), SC(256..512)] => WeightedAction#boundary = (5..512)
+            weighted_action.each { |sequence_cat|
+
+              # Take the sub-sequence haystack from the disposable cache.
+              moving_on = quick_master.slice(sequence_cat.boundary.min - rolling_start, sequence_cat.boundary.count)
+              #puts "Testing #{sequence_cat.boundary.count} bytes from offset #{sequence_cat.boundary.min - rolling_start} for #{sequence_cat}"
+
+              # Assume we aren't a match.
+              segment_matched = false
+
+              # These haystacks may be much larger than the size of the needles, e.g. if we are looking for
+              # a 4-byte sequence anywhere within the first 512 bytes of a hypothetical format.
+              # If that's the case, look for a match one-needle-length at a time.
+              #puts "Testing needle size #{sequence_cat.sequence.length} in #{moving_on.length}-byte haystack"
+              while (moving_on.length > sequence_cat.sequence.length) do
+                # We can always start from the beginning (`0`) of a haystack since any previous iteration
+                # would have also sliced one-needle-length off the front.
+                small_clone = moving_on.slice!(0, sequence_cat.sequence.length)
+
+                if sequence_cat.mask.nil? then
+                  segment_matched = true if small_clone == sequence_cat.sequence
+                else
+                  segment_matched = true if small_clone == sequence_cat.sequence.bytes.reduce { |int, byte| (int << 8) | byte } & sequence_cat.mask
+                end
+              end
+              # Always save the match status regardless if `true` or `false`.
+              my_future.push(segment_matched)
+            }
+
+            # Save the sequences as well as the Type if we have a match. We need to save the sequences so we can
+            # compare their `weight` in the case of multiple positives.
+            #puts "Matched #{cyo} via #{weighted_action}!" if my_future.all?(true)
+            come_with_me.store(weighted_action, cyo) if my_future.all?(true)
+            my_future.clear
+
+            # Save the start point so we know how many bytes to drop off the front of our stream cache.
+            the_last_striker = rolling_start
+
+          }  # self.magic_without_tears[rolling_start][rolling_stop].each_pair
+        end
+      }  # self.magic_without_tears.keys.sort.each
+      return come_with_me.dup.tap { |out| come_with_me.clear }
+    }  # find_out
+    -> (wild_io) {
+      return find_out.call(wild_io)
+    }
+  }.call
+
+  def from_content(unknown_io)
+    case unknown_io
+    when IO, StringIO  # `IO` is the parent class of `File`, among others.
+      # Assume for now that we should not `#close` an IO we were directly given.
+      unknown_io.advise(:sequential)
+      return WILD_IO.call(unknown_io)
+    when String, Pathname
+      # File::open takes a path, but IO::open only takes a file descriptor.
+      File.open(unknown_io, mode: File::Constants::RDONLY|File::Constants::BINARY) do |wild_io|
+        wild_io.advise(:sequential)
+        return WILD_IO.call(wild_io)
+      end
+    else nil
+    end
+  end
+
 end
