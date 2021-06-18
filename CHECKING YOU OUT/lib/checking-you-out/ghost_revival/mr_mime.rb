@@ -61,6 +61,14 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
       ((value >> 8).chr + (value & 0xFF).chr)
     }},
   }.tap { |f|
+
+      # TODO: Actually implement `stringignorecase`. This is a Tika thing not found in the fd.o XML.
+      f[-'stringignorecase'] = f[-'string']
+
+      # Returning `string` as default will probably not result in a successful match
+      # but will avoid blowing up our entire program if we encounter an unhandled format.
+      f.default = f[-'string']
+
     # Set `host` formats according to system endianness.
     if ORIGIN_OF_SYMMETRY.call == :BE then
       f[-'host16'] = f[-'big16']
@@ -178,6 +186,16 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
       @weighted_action.append(::CHECKING::YOU::OUT::SequenceCat.new)
     when :magic
       @weighted_action = ::CHECKING::YOU::OUT::WeightedAction.new
+    when :"magic-deleteall"
+      # TODO
+    when :"glob-deleteall"
+      # TODO
+    when :treemagic
+      # TODO
+    when :acronym
+      # TODO
+    when :"expanded-acronym"
+      # TODO
     end
   end
 
@@ -202,9 +220,15 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
       @weighted_action&.weight = value.as_i
     in :alias, :type
       self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s))
+    in :"sub-class-of", :type
+      # TODO
     in :glob, :pattern
       # TODO: Make this less fragile. It assumes all`<glob>` patterns are of the form `*.ext` (they are)
       self.cyo.add_postfix(value.as_s.delete_prefix!(-'*.')||value.as_s)
+    in :"root-XML", :namespaceURI
+      # TODO
+    in :"root-XML", :localName
+      # TODO
     else
       # Unsupported attribute encountered.
       # The new pattern matching syntax will raise `NoMatchingPatternError` here without this `else`.
