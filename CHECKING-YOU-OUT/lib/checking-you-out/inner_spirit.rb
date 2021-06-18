@@ -4,9 +4,6 @@ require 'set' unless defined? Set
 module CHECKING; end
 class CHECKING::YOU; end
 
-
-# Note:
-
 # This base Struct will be used as the Hash key for its matching `OUT` subclass object,
 # and its members correspond to the three major parts of an IETF "Content-Type" String,
 # e.g. "application/x-saturn-rom" → :x, :application, :"saturn-rom".
@@ -150,6 +147,9 @@ require_relative 'auslandsgesprach' unless defined? ::CHECKING::YOU::IN::AUSLAND
 ::CHECKING::YOU::IN.extend(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::INLANDSGESPRÄCH)
 ::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH)
+
+require_relative 'sweet_sweet_love_magic' unless defined? ::CHECKING::YOU::SweetSweet♥Magic
+::CHECKING::YOU::OUT.prepend(::CHECKING::YOU::SweetSweet♥Magic)
 
 # Methods for loading type data from `shared-mime-info` package XML files.
 require_relative 'ghost_revival' unless defined? ::CHECKING::YOU::GHOST_REVIVAL
