@@ -112,6 +112,7 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # Get the type of a file at a given filesystem path.
   def self.from_pathname(pathname)
     # TOD0: Convert String args to Pathname here and in IETF's `from_pathname`
+    # TODO: Implement `case-sensitive` flag.
 
     # The `File` module will take either `String` or `Pathname`, so just use it instead of detecting input Class.
     #
