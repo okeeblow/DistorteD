@@ -32,7 +32,7 @@ class CHECKING::YOU
       # Support path Strings that haven't been expanded by a shell.
       # Support fallback attempts if we think an unknown_id is something but get nil.
     when ::CHECKING::YOU::IN
-      ::CHECKING::YOU::OUT::new(unknown_identifier)
+      unknown_identifier.out
     end
   end
 end
