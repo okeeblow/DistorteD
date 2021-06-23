@@ -1,3 +1,4 @@
+require 'forwardable' unless defined? ::Forwardable
 require 'pathname' unless defined? ::Pathname
 require 'stringio' unless defined? ::StringIO
 
@@ -53,6 +54,11 @@ module CHECKING::YOU::SweetSweet♥Magic
       .yield_self { |(i,a)| Range.new(i.min, a.max) }  # …and construct a new Range bounded by the miniest min and maxiest max.
     end
 
+    # Forward Range methods to `self.boundary`: https://ruby-doc.org/core/Range.html
+    # Not forwarding `#count` since that's more appropriate for our subclassed Array.
+    extend Forwardable
+    def_instance_delegators(:boundary, :min, :max, :minmax, :size)
+
   end  # WeightedAction
 
 
@@ -97,6 +103,10 @@ module CHECKING::YOU::SweetSweet♥Magic
         self[:boundary]
       end
     end
+
+    extend Forwardable
+    def_instance_delegators(:boundary, :min, :max, :minmax, :size, :count)
+    def_instance_delegators(:sequence, :length, :bytes)
 
   end  # SequenceCat
 
@@ -180,7 +190,7 @@ module CHECKING::YOU::SweetSweet♡Magic
             weighted_action.each { |sequence_cat|
 
               # Take the sub-sequence haystack from the disposable cache.
-              moving_on = quick_master.slice(sequence_cat.boundary.min - rolling_start, sequence_cat.boundary.count)
+              moving_on = quick_master.slice(sequence_cat.min - rolling_start, sequence_cat.count)
               #puts "Testing #{sequence_cat.boundary.count} bytes from offset #{sequence_cat.boundary.min - rolling_start} for #{sequence_cat}"
 
               # Assume we aren't a match.
@@ -190,15 +200,15 @@ module CHECKING::YOU::SweetSweet♡Magic
               # a 4-byte sequence anywhere within the first 512 bytes of a hypothetical format.
               # If that's the case, look for a match one-needle-length at a time.
               #puts "Testing needle size #{sequence_cat.sequence.length} in #{moving_on.length}-byte haystack"
-              while (moving_on.length > sequence_cat.sequence.length) do
+              while (moving_on.length > sequence_cat.length) do
                 # We can always start from the beginning (`0`) of a haystack since any previous iteration
                 # would have also sliced one-needle-length off the front.
-                small_clone = moving_on.slice!(0, sequence_cat.sequence.length)
+                small_clone = moving_on.slice!(0, sequence_cat.length)
 
                 if sequence_cat.mask.nil? then
                   segment_matched = true if small_clone == sequence_cat.sequence
                 else
-                  segment_matched = true if small_clone == sequence_cat.sequence.bytes.reduce { |int, byte| (int << 8) | byte } & sequence_cat.mask
+                  segment_matched = true if small_clone == sequence_cat.bytes.reduce { |int, byte| (int << 8) | byte } & sequence_cat.mask
                 end
               end
               # Always save the match status regardless if `true` or `false`.
