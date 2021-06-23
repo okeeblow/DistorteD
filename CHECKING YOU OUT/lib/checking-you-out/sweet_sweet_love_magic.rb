@@ -108,6 +108,15 @@ module CHECKING::YOU::SweetSweet♥Magic
     def_instance_delegators(:boundary, :min, :max, :minmax, :size, :count)
     def_instance_delegators(:sequence, :length, :bytes)
 
+    def ==(otra)
+      if self[:mask].nil? then
+        return true if otra == self[:sequence]
+      else
+        return true if otra == self[:sequence].bytes.reduce { |int, byte| (int << 8) | byte } & self[:mask]
+      end
+      return false
+    end
+
   end  # SequenceCat
 
 
@@ -205,11 +214,7 @@ module CHECKING::YOU::SweetSweet♡Magic
                 # would have also sliced one-needle-length off the front.
                 small_clone = moving_on.slice!(0, sequence_cat.length)
 
-                if sequence_cat.mask.nil? then
-                  segment_matched = true if small_clone == sequence_cat.sequence
-                else
-                  segment_matched = true if small_clone == sequence_cat.bytes.reduce { |int, byte| (int << 8) | byte } & sequence_cat.mask
-                end
+                segment_matched = true if sequence_cat == small_clone
               end
               # Always save the match status regardless if `true` or `false`.
               my_future.push(segment_matched)
