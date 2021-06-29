@@ -221,7 +221,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     in :alias, :type
       self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s))
     in :"sub-class-of", :type
-      # TODO
+      self.cyo.add_parent(::CHECKING::YOU::OUT::from_ietf_media_type(value.as_s))
     in :glob, :pattern
       # TODO: Make this less fragile. It assumes all`<glob>` patterns are of the form `*.ext` (they are)
       self.cyo.add_postfix(value.as_s.delete_prefix!(-'*.')||value.as_s)
