@@ -5,7 +5,6 @@ require 'stringio' unless defined? ::StringIO
 # Find-by-content file matching à la `libmagic`.
 # https://www.freebsd.org/cgi/man.cgi?query=magic&sektion=5
 
-module CHECKING; end
 class CHECKING::YOU
   class MagicWithoutTears < ::Hash
     def new()
