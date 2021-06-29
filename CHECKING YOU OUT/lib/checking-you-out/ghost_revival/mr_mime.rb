@@ -6,6 +6,25 @@ require 'ox'
 # including the main `shared-mime-info` database itself (GPLv2+), Apache Tika (MIT), and our own (AGPLv3).
 # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
 # https://gitlab.freedesktop.org/xdg/shared-mime-info/-/blob/master/src/update-mime-database.c
+#
+#
+# Example pulled from `freedesktop.org.xml.in`:
+#
+#   <mime-type type="application/vnd.oasis.opendocument.text">
+#     <comment>ODT document</comment>
+#     <acronym>ODT</acronym>
+#     <expanded-acronym>OpenDocument Text</expanded-acronym>
+#     <sub-class-of type="application/zip"/>
+#     <generic-icon name="x-office-document"/>
+#     <magic priority="70">
+#       <match type="string" value="PK\003\004" offset="0">
+#         <match type="string" value="mimetype" offset="30">
+#           <match type="string" value="application/vnd.oasis.opendocument.text" offset="38"/>
+#         </match>
+#       </match>
+#     </magic>
+#     <glob pattern="*.odt"/>
+#   </mime-type>
 class CHECKING::YOU::MrMIME < ::Ox::Sax
 
 
