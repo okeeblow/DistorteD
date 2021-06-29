@@ -1,5 +1,9 @@
-require 'set' unless defined? Set
+require 'set' unless defined? ::Set
+require 'pathname' unless defined? ::Pathname
 
+
+# Utility Modules/procs/lambdas/etc for generic operations like checking WeightedActions.
+require_relative 'party_starter' unless defined? ::CHECKING::YOU::WeightedAction
 
 
 # This base Struct will be used as the Hash key for its matching `OUT` subclass object,
@@ -101,10 +105,26 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     @postfixes ||= Set.new
   end
 
-  # Add a new postfix for a specific type.
-  def add_postfix(postfix)
-    self.postfixes.add(postfix)
-    self.class.after_forever[postfix].add(self)
+  # We will decompose `shared-mime-info`'s `<glob>` elements into two WeightedActions.
+  # The vast majority of `<glob>`s are of the form `*.extname`, and storing them separately
+  # not only accelerates lookup by extension but allows CYOs to easily suggest extnames
+  # for themselves à la `ruby-mime-types`'s `MIME::Type#preferred_extension`.
+  # These will be stripped of their leading '*.' and stored as just the extname.
+  class Postfix < ::String; include ::CHECKING::YOU::WeightedAction; end
+  # All other globs will be stored freeform, e.g. `Makefile.*`.
+  class Glob    < ::String; include ::CHECKING::YOU::WeightedAction; end
+
+
+  # Add a new Postfix or Glob for a specific type.
+  def add_pathname_fragment(fragment)
+    case fragment
+    when Postfix then
+      ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@postfixes, fragment, self)
+      ::CHECKING::YOU::CLASS_NEEDLEMAKER.call(:@after_forever, fragment, self)
+    when Glob then
+      ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@globs, fragment, self)
+      ::CHECKING::YOU::CLASS_NEEDLEMAKER.call(:@stick_around, fragment, self)
+    end
   end
 
   # Search for Types matching an arbitrary Pathname.
