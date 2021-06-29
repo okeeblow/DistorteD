@@ -107,19 +107,16 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     self.class.after_forever[postfix].add(self)
   end
 
-  # Get the type of a file at a given filesystem path.
+  # Search for Types matching an arbitrary Pathname.
   def self.from_pathname(pathname)
-    # TOD0: Convert String args to Pathname here and in IETF's `from_pathname`
+    pathname = Pathname.new(pathname) if pathname.is_a?(::String)
     # TODO: Implement `case-sensitive` flag.
 
-    # The `File` module will take either `String` or `Pathname`, so just use it instead of detecting input Class.
-    #
-    # `File::extname` will return the last dotted component with the leading dot,
-    # e.g. `File::extname("hello.jpg")` => `".jpg"`.
-    # Remove it here before looking up CYO objects by extension.
-    #
-    # `File::extname` will be an empty String for paths which contain no dotted components.
-    super || self.from_postfix(File.extname(pathname).delete_prefix!(-?.))
+    return case self.from_postfix(pathname)
+    when self  then self.from_postfix(pathname)
+    when ::Set then self.from_postfix(pathname)
+    when nil   then self.from_glob(pathname.basename)
+    end
   end
 
   def aka
