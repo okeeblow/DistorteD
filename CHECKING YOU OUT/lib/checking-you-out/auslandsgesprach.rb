@@ -185,7 +185,7 @@ module CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
   # CHECK OUT a filesystem path.
   # This might be a String, or might be an instance of the actual stdlib class `Pathname`:
   # https://ruby-doc.org/stdlib/libdoc/pathname/rdoc/Pathname.html
-  def from_pathname(pathname)
+  def from_xattr(pathname)
     # T0DO: Handle relative paths and all the other corner cases that could be here when given String.
 
     # Check the filesystem extended attributes for manually-defined types.
