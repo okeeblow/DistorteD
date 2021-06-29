@@ -1,3 +1,6 @@
+require 'set' unless defined? ::Set
+
+
 # This file defines various utility Modules/procs/etc that should be available
 # to all other CYO components without `including`.
 # This lets be declutter the other Modules and also serves the practical purpose
@@ -30,5 +33,43 @@ class CHECKING::YOU
     include Comparable
     def <=>(otra); self.weight <=> otra.weight; end
   end  # module WeightedAction
+
+  # The following two `proc`s handle classwide-memoization and instance-level assignment
+  # for values that may be Enumerable but often refer to only a single Object.
+  #
+  # For example, most `Postfix`es (file extensions) will only ever belong to a single CYO Object,
+  # but a handful represent possibly-multiple types, like how `.doc` can be an MSWord file or WordPad RTF.
+  #
+  # These assignment procs take a storage haystack, a needle to store, and a CYO receiver the needle refers to.
+  # They will set `haystack[needle] => CYO` if that needle is unique, or they will convert
+  # an existing `haystack[needle] => CYO` assignment to `haystack[needle] => Set[existingCYO, newCYO]`.
+  #
+  # This is an admittedly-annoying complexity-for-performance tradeoff with the goal of allocating
+  # as few spurious objects as possible instead of explicitly initializing a Set for every needle.
+  CLASS_NEEDLEMAKER = proc { |haystack, needle, receiver|
+    # Create the container if this is the very first invocation.
+    receiver.class.instance_variable_set(haystack, Hash.new(nil)) unless receiver.class.instance_variable_defined?(haystack)
+
+    # Set the `haystack` Hash's `needle` key to the `receiver` if the `key` is unset, otherwise
+    # to a `Set` of the existing value plus `receiver` if that value is not `receiver` already.
+    receiver.class.instance_variable_get(haystack).tap { |awen|
+      case awen[needle]
+      when nil then awen[needle] = receiver
+      when ::Set then awen[needle].add(receiver)
+      when receiver.class then awen[needle] = Set[awen[needle], receiver] unless awen[needle] == receiver
+      end
+    }
+  }
+  # This is the instance-level version of the above, e.g. a CYO with one file extension (`Postfix`)
+  # will assign `cyo.:@postfixes = Postfix`, and one with many Postfixes will assign
+  # e.g. `cyo.:@postfixes = Set[post, fix, es, …]`.
+  INSTANCE_NEEDLEMAKER = proc { |haystack, needle, receiver|
+    if receiver.instance_variable_defined?(haystack) then
+      receiver.instance_variable_get(haystack).add(needle)
+    else
+      receiver.instance_variable_set(haystack, Set[needle])
+    end
+  }
+
 
 end  # class CHECKING::YOU
