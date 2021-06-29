@@ -185,7 +185,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
       @i_can_haz_magic = true
       @weighted_action.append(::CHECKING::YOU::OUT::SequenceCat.new)
     when :magic
-      @weighted_action = ::CHECKING::YOU::OUT::WeightedAction.new
+      @weighted_action = ::CHECKING::YOU::OUT::CatSequence.new
     when :"magic-deleteall"
       # TODO
     when :"glob-deleteall"

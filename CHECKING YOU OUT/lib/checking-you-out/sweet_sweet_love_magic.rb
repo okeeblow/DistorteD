@@ -30,17 +30,20 @@ end  # class CHECKING::YOU
 
 module CHECKING::YOU::SweetSweet♥Magic
 
+  attr_reader :cat_sequence
+
+  # Take a weighted `CatSequence`, store it locally as a possible match for this CYO,
+  # and memoize in classwide storage it for batch sequence matching.
+  def add_content_match(action)
+    self.class.magic_without_tears.bury(*(action.boundary.minmax), action, self)
+  end
 
   # Represent a container for multiple matching byte sequences along with a priority value
   # to use when there are multiple matches for a stream, in which case the highest `weight` wins.
   # Note: Array methods will return `Array` instead of `WeightedAction` since https://bugs.ruby-lang.org/issues/6087
-  class WeightedAction < ::Array
+  class CatSequence < ::Array
 
-    # In `shared-mime-info`, "The default priority value is 50, and the maximum is 100."
-    attr_accessor :weight
-    def new(weight: 50); @weight = weight; super;                        end
-    def clear;           @weight = 50;     super;                        end
-    def inspect;         "#<#{self.class.name} #{weight} #{self.to_s}>"; end
+    include ::CHECKING::YOU::WeightedAction
 
     # Get the maximum boundary Range for the sum of all sequences in our Array,
     # e.g. self[SC(5..10), SC(12..20), SC(256..512)] => (5..512)
@@ -117,18 +120,7 @@ module CHECKING::YOU::SweetSweet♥Magic
     end
 
   end  # SequenceCat
-
-
-  def add_content_match(action)
-    self.cat_sequence.add(action)
-    self.class.magic_without_tears.bury(*(action.boundary.minmax), action, self)
-  end
-
-  def cat_sequence
-    @cat_sequence ||= ::Set.new
-  end
-
-end
+end  # module CHECKING::YOU::SweetSweet♥Magic
 
 
 module CHECKING::YOU::SweetSweet♡Magic
