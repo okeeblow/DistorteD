@@ -76,7 +76,11 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     @all_night ||= Hash.new
   end
 
+  # Return a singleton instance for any CYO.
   def self.new(taxa)
+    # Support IETF String argument to this method, e.g. ::CHECKING::YOU::OUT::new('application/octet-stream')
+    return self.from_ietf_media_type(taxa) if taxa.is_a?(String)
+    # Otherwise return the memoized CYO singleton of this type.
     self.all_night[
       taxa.is_a?(::CHECKING::YOU::IN) ? taxa : super(*taxa)
     ] ||= self.allocate.tap { |cyo| cyo.send(:initialize, *taxa) }
