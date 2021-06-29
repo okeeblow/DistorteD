@@ -1,8 +1,6 @@
 require 'set' unless defined? Set
 
 
-module CHECKING; end
-class CHECKING::YOU; end
 
 # This base Struct will be used as the Hash key for its matching `OUT` subclass object,
 # and its members correspond to the three major parts of an IETF "Content-Type" String,

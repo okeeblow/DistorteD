@@ -3,8 +3,6 @@
 require 'ffi-xattr'
 
 
-module CHECKING; end
-class CHECKING::YOU; end
 module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
   # Parse IETF Media-Type String → `::CHECKING::YOU::IN`

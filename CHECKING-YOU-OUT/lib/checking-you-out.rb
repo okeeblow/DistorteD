@@ -6,10 +6,11 @@ require 'pathname' unless defined? ::Pathname
 # since pattern matching was made non-experimental in https://bugs.ruby-lang.org/issues/17260
 Warning[:experimental] = false
 
+
+class CHECKING; end
 require_relative 'checking-you-out/inner_spirit' unless defined? ::CHECKING::YOU::IN
 
 
-module CHECKING; end
 class CHECKING::YOU
   def self.OUT(unknown_identifier)
     case unknown_identifier
