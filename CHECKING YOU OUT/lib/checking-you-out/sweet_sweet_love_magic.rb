@@ -6,21 +6,22 @@ require 'stringio' unless defined? ::StringIO
 # https://www.freebsd.org/cgi/man.cgi?query=magic&sektion=5
 
 class CHECKING::YOU
+  # Hash subclass to index our find-by-content byte-sequences.
+  # Sequences define a Range of the byte boundaries where they might be found
+  # in a hypothetical file/stream. Store them in nested Hashes,
+  # e.g. {offset.min => {offset.max => {CatSequence[SequenceCat, …] => CHECKING::YOU::OUT }}}
   class MagicWithoutTears < ::Hash
     def new()
       super { |h,k| h[k] = self.class.new(&h.default_proc) }
     end
 
+    # Automatically nest additional MWT Hashes when storing Sequences.
+    # Rejected upstream, so we need to roll our own: https://bugs.ruby-lang.org/issues/11747
     def bury(*args)
       case args.count
-      when 0, 1 then
-        # nope.avi
-      when 2 then
-        self[args.first] = args.last
-      else
-        arg = args.shift
-        self[arg] = self.class.new unless self[arg]
-        self[arg].bury(*args) unless args.empty?
+        when 0, 1 then raise ArgumentError.new("Can't `bury` fewer than two arguments.")
+        when 2 then self[args.first] = args.last
+        else (self[args.shift] ||= self.class.new).bury(*args)
       end
       self
     end
