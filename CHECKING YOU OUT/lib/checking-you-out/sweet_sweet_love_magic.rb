@@ -36,6 +36,7 @@ module CHECKING::YOU::SweetSweet♥Magic
   # Take a weighted `CatSequence`, store it locally as a possible match for this CYO,
   # and memoize in classwide storage it for batch sequence matching.
   def add_content_match(action)
+    ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@cat_sequence, action, self)
     self.class.magic_without_tears.bury(*(action.boundary.minmax), action, self)
   end
 

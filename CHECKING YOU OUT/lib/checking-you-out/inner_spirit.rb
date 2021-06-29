@@ -30,6 +30,7 @@ CHECKING::YOU::IN ||= Struct.new(
   :phylum,
   :genus,
 ) do
+  # Promote any CYI to its CYO singleton. CYO has the opposites of these methods.
   def out; ::CHECKING::YOU::OUT::new(self); end
   def in; self; end
 end
@@ -72,9 +73,7 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
   # Main memoization Hash for our loaded Type data.
   # { CHECKING::YOU::IN => CHECKING::YOU::OUT }
-  def self.all_night
-    @all_night ||= Hash.new
-  end
+  def self.all_night; @all_night ||= Hash.new(nil); end
 
   # Return a singleton instance for any CYO.
   def self.new(taxa)
@@ -86,27 +85,32 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     ] ||= self.allocate.tap { |cyo| cyo.send(:initialize, *taxa) }
   end
 
+  # Demote any CYO to a CYI that can be passed around in just 40 bytes.
+  # CYI has the opposites of these methods.
   def out; self; end
   def in; self.class.all_night.key(self); end
 
-  # Memoization Hash for file extensions.
-  # { Deduplicated frozen String => CHECKING::YOU::OUT }
-  def self.after_forever
-    @after_forever ||= Hash.new { |h,k| h[k] = Set.new }
-  end
 
-  # Get a Set[CYO] by Symbol file-extension, e.g. `:doc` => { CYO msword, CYO rtf }
+  # Get a CYO, Set[CYO], or nil by file-extension, e.g. `doc` => { CYO msword, CYO rtf }
   def self.from_postfix(postfix)
-    self.after_forever[case postfix
-      when Symbol then postfix.to_s  # TODO: Ruby 3.0 Symbol#name
-      when String then postfix.delete_prefix(-?.)
+    # `:extname` will return the last dotted component with the leading dot, e.g. `File::extname("hello.jpg")` => `".jpg"`.
+    # `:extname` will be an empty String for paths which contain no dotted components.
+    self.instance_variable_get(:@after_forever)[case postfix
+      when Postfix    then postfix
+      when ::Symbol   then postfix.to_s  # TODO: Ruby 3.0 Symbol#name
+      when ::Pathname then postfix.extname.delete_prefix!(-?.) || postfix.to_s
+      when ::String   then postfix.delete_prefix(-?.) || postfix.to_s
       else postfix.to_s
     end]
   end
 
-  # Set of postfixes specific to one CYO object.
-  def postfixes
-    @postfixes ||= Set.new
+  # Get a Hash[CYO] or nil for arbitrary non-file-extension glob match of a File basename.
+  def self.from_glob(basename)
+    self.instance_variable_get(:@stick_around).select { |k,v|
+      File.fnmatch?(k, basename, File::FNM_CASEFOLD | File::FNM_DOTMATCH)
+    }.yield_self { |matched|
+      matched.empty? ? nil : matched
+    }
   end
 
   # We will decompose `shared-mime-info`'s `<glob>` elements into two WeightedActions.
@@ -143,21 +147,30 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     end
   end
 
-  def aka
-    @aka ||= Set.new
-  end
+  attr_reader :aka
 
+  # Take an additional CYI, store it locally, and memoize it as an alias for this CYO.
   def add_aka(taxa)
-    cyi = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
-    self.aka.add(cyi)
-    self.class.all_night[cyi] = self
+    taxa = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
+    ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@aka, taxa, self)
+    self.class.all_night[taxa] = self
   end
 
+  # Forget a CYI alias of this Type. Capable of unsetting the "real" CYI as well if desired.
   def remove_aka(taxa)
-    cyi = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
-    self.class.all_night.delete(cyi) if self.class.all_night.fetch(cyi, nil) === self
+    taxa = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
+    self.class.all_night.delete(taxa) if self.class.all_night.fetch(taxa, nil) === self
+  end
   end
 
+  # Storage for descriptions (`<comment>`), acrnyms, suitable iconography, and other boring metadata, e.g.:
+  #   <mime-type type="application/vnd.oasis.opendocument.text">
+  #     <comment>ODT document</comment>
+  #     <acronym>ODT</acronym>
+  #     <expanded-acronym>OpenDocument Text</expanded-acronym>
+  #     <generic-icon name="x-office-document"/>
+  #     […]
+  #   </mini-type>
   attr_accessor :description
 
 end
@@ -168,6 +181,7 @@ require_relative 'auslandsgesprach' unless defined? ::CHECKING::YOU::IN::AUSLAND
 ::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::INLANDSGESPRÄCH)
 ::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH)
 
+# Content matching à la `libmagic`/`file`.
 require_relative 'sweet_sweet_love_magic' unless defined? ::CHECKING::YOU::SweetSweet♥Magic
 ::CHECKING::YOU::OUT.extend(::CHECKING::YOU::SweetSweet♡Magic)
 ::CHECKING::YOU::OUT.prepend(::CHECKING::YOU::SweetSweet♥Magic)
