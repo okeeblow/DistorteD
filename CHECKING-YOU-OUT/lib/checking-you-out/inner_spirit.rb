@@ -161,6 +161,37 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     taxa = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
     self.class.all_night.delete(taxa) if self.class.all_night.fetch(taxa, nil) === self
   end
+
+  attr_reader :parents, :children
+
+  # Take an additional CYO, store it locally as our parent, and ask it to add ourselves as its child.
+  def add_parent(parent_cyo)
+    ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@parents, parent_cyo, self)
+    parent_cyo.add_child(self) unless parent_cyo.children&.include?(self)
+  end
+
+  # Take an additional CYO, store it locally as our child, and ask it to add ourselves as its parent.
+  def add_child(child_cyo)
+    ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@children, child_cyo, self)
+    child_cyo.add_parent(self) unless child_cyo.parents&.include?(self)
+  end
+
+  # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
+  def adults_table
+    return case @parents
+      when nil then Set[self]
+      when self.class then Set[self, @parents]
+      when ::Set then Set[self, *@parents]
+    end
+  end
+
+  # Get a `Set` of this CYO and all of its child CYOs, at minimum just `Set[self]`.
+  def kids_table
+    return case @children
+      when nil then Set[self]
+      when self.class then Set[self, @children]
+      when ::Set then Set[self, *@children]
+    end
   end
 
   # Storage for descriptions (`<comment>`), acrnyms, suitable iconography, and other boring metadata, e.g.:
