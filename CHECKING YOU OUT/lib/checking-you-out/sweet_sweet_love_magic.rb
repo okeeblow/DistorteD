@@ -72,8 +72,8 @@ module CHECKING::YOU::SweetSweet♥Magic
     # due to the way Ox works, and I can't assume deterministric callback order.
     # Use one attr_writer for the sequence, one for the format, and store the intermediate value
     # directly in `self[:sequence]` so we don't allocate outside an RValue with instance vars.
-    def cat=(cat);       self[:sequence] = self[:sequence].nil? ? -cat    : self[:sequence].call(cat).b;    end
-    def format=(format); self[:sequence] = self[:sequence].nil? ? format : format.call(self[:sequence]).b; end
+    def cat=(cat);       self[:sequence] = self[:sequence].nil? ? cat    : -self[:sequence].call(cat);    end
+    def format=(format); self[:sequence] = self[:sequence].nil? ? format : -format.call(self[:sequence]); end
 
     # "The byte offset(s) in the file to check. This may be a single number or a range in the form `start:end',
     # indicating that all offsets in the range should be checked. The range is inclusive."
@@ -97,7 +97,7 @@ module CHECKING::YOU::SweetSweet♥Magic
         # in `shared-mime-info`, but Apache's `tika-mimetypes.xml` has a couple of types without.
         # Assume a Range of `self[:sequence]`'s length from the start of the stream.
         self[:boundary] = (0..self[:sequence].length)
-      when self[:boundary]&.count == 1
+      when self[:boundary]&.size == 1
         # `shared-mime-info` specifies many offsets as start-offset only, for brevity.
         # Detect these and expand our `boundary` to the full Range that will be necessary to match.
         self[:boundary] = (self[:boundary].min..self[:boundary].max + self[:sequence].length)
@@ -107,6 +107,7 @@ module CHECKING::YOU::SweetSweet♥Magic
       end
     end
 
+    # Forward Range methods to `:boundary` and length methods to our embedded `:sequence`.
     extend Forwardable
     def_instance_delegators(:boundary, :min, :max, :minmax, :size, :count)
     def_instance_delegators(:sequence, :length, :bytes)
