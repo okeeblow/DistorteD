@@ -157,16 +157,16 @@ module CHECKING::YOU::IN::INLANDSGESPRÄCH
     # In Ruby 2.7 `nil.to_s` will return a deduplicated immutable empty String: https://bugs.ruby-lang.org/issues/16150
     # added experimentally in https://github.com/ruby/ruby/commit/6ffc045a817fbdf04a6945d3c260b55b0fa1fd1e
     # but then reverted in https://github.com/ruby/ruby/commit/bea322a352d820007dd4e6cab88af5de01854736
-    -(String.allocate << self.phylum << -'/' << case
+    -(String.allocate << self.phylum.to_s << -'/' << case
     when self.kingdom == -'kayo-dot' then -'x.'
     when self.kingdom == -?x then -'x-'
     when self.kingdom == -'x-ms' then -'x-ms-'
     when self.kingdom == -'prs' then -'prs.'
     when self.kingdom == -'vnd' then -'vnd.'
     when self.kingdom == -'possum' then -''
-    when !IETF_TREES.include?(self.kingdom) then 'vnd.' << self.kingdom << -'.'
-    else self.kingdom << -'.'
-    end << self.genus)
+    when !IETF_TREES.include?(self.kingdom.to_s) then 'vnd.' << self.kingdom.to_s << -'.'
+    else self.kingdom.to_s << -'.'
+    end << self.genus.to_s)
   end
 
   # Pretty-print objects using our custom `#:to_s`
