@@ -11,27 +11,29 @@ class CHECKING; end
 require_relative 'checking-you-out/inner_spirit' unless defined? ::CHECKING::YOU::IN
 
 
+# I'm not trying to be an exact clone of `shared-mime-info`, but I think its "Recommended checking order"
+# is pretty sane: https://specifications.freedesktop.org/shared-mime-info-spec/latest/
+#
+# In addition to the above, CYO() supports IETF-style Media Type strings like "application/xhtml+xml"
+# and supports `stat`-less testing of `.extname`-style Strings.
 class CHECKING::YOU
-  def self.OUT(unknown_identifier)
+  def self.OUT(unknown_identifier, so_deep: true)
     case unknown_identifier
     when ::Pathname
-      ::CHECKING::YOU::OUT::from_pathname(unknown_identifier)
+      TEST_EXTANT_PATHNAME.call(unknown_identifier)
     when ::String
       case
-      when unknown_identifier.start_with?(-?.) && unknown_identifier.count(-?.) == 1
-        ::CHECKING::YOU::OUT::from_postfix(unknown_identifier)
-      when File.exist?(unknown_identifier)
-        ::CHECKING::YOU::OUT::from_pathname(Pathname.new(unknown_identifier))
-      when unknown_identifier.count(-?/) == 1
-        ::CHECKING::YOU::OUT::from_ietf_media_type(unknown_identifier)
+      when unknown_identifier.count(-?/) == 1  # TODO: Additional String validation here.
+        ::CHECKING::YOU::OUT::from_ietf_media_type(+unknown_identifier)
+      when unknown_identifier.start_with?(-?.) && unknown_identifier.count(-?.)
+        ::CHECKING::YOU::OUT::from_pathname(unknown_identifier)
       else
-        # TODO: Raise something here? Return an empty (but allocated) Set?
-        nil
+        if File::exist?(File::expand_path(unknown_identifier)) and so_deep
+          TEST_EXTANT_PATHNAME.call(Pathname.new(File::expand_path(unknown_identifier)))
+        else
+          LEGENDARY_HEAVY_GLOW.call(::CHECKING::YOU::OUT::from_pathname(unknown_identifier), :weight)
+        end
       end
-      # TODO: A String arg could also be a path, an extname with no leading dot,
-      # or an entire file stream.
-      # Support path Strings that haven't been expanded by a shell.
-      # Support fallback attempts if we think an unknown_id is something but get nil.
     when ::CHECKING::YOU::IN
       unknown_identifier.out
     end
