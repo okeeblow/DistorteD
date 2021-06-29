@@ -208,6 +208,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     when :"magic-deleteall"
       # TODO
     when :glob
+      @stick_around = nil
     when :"glob-deleteall"
       # TODO
     when :treemagic
