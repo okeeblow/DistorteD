@@ -93,12 +93,18 @@ module CHECKING::YOU::SweetSweet♥Magic
       }
     end
 
-    # This is kinda hacky, but the boundary attr_reader may modify `self[:boundary]` in-place
-    # when the source XML specifies only the start byte instead of specifying a Range.
+    # The source XML specifies only the start byte offset instead of specifying a Range
+    # when that Range would be 1-byte long, but it also tends to specify single-byte
+    # Ranges for sequences that are longer than that when that single-byte offset
+    # is the only possible sequence start point,
+    # e.g. an offset '0' for a two-byte sequence sequence '\xFF\xD8' instead of offset '0:1'.
+    #
+    # Our implementation is different and relies on a known boundary that can
+    # encompass the entire possible byte Range where our sequence might be found.
     # The expanded `boundary` is based on the start byte plus the sequence length.
     # Due to the way Ox works, the sequence (and thus its length) may not be known
     # when the rangeless `boundary` is set, so I can't do this in the attr_writer.
-    def boundary
+    def boundary!
       case
       when self[:boundary].nil?
         # This shouldn't ever happen since `offset` is a required attribute for `<match>`
@@ -113,6 +119,12 @@ module CHECKING::YOU::SweetSweet♥Magic
         # Otherwise we were given a Range directly from the source XML.
         self[:boundary]
       end
+    end
+
+    # Recalculate boundary Range if our sequence has been reformatted or if we were given
+    # a single-byte Range by the source XML.
+    def boundary
+      self[:boundary]&.size == self[:sequence]&.size ? self[:boundary] : self.boundary!
     end
 
     # Forward Range methods to `:boundary` and length methods to our embedded `:sequence`.
