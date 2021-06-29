@@ -2,8 +2,6 @@ require 'forwardable' unless defined? ::Forwardable
 require 'pathname' unless defined? ::Pathname
 require 'stringio' unless defined? ::StringIO
 
-# Find-by-content file matching à la `libmagic`.
-# https://www.freebsd.org/cgi/man.cgi?query=magic&sektion=5
 
 class CHECKING::YOU
   # Hash subclass to index our find-by-content byte-sequences.
@@ -29,6 +27,8 @@ class CHECKING::YOU
 end  # class CHECKING::YOU
 
 
+# Find-by-content file matching à la `libmagic` https://www.freebsd.org/cgi/man.cgi?query=magic&sektion=5
+# Instance-level components.
 module CHECKING::YOU::SweetSweet♥Magic
 
   attr_reader :cat_sequence
@@ -61,6 +61,13 @@ module CHECKING::YOU::SweetSweet♥Magic
     # Not forwarding `#count` since that's more appropriate for our subclassed Array.
     extend Forwardable
     def_instance_delegators(:boundary, :min, :max, :minmax, :size)
+
+    def =~(otra, offset: 0)
+      self.each { |sequence_cat|
+        return false unless sequence_cat =~ otra.slice(sequence_cat.min - offset, sequence_cat.size)
+      }
+      return true
+    end
 
   end  # WeightedAction
 
@@ -112,11 +119,12 @@ module CHECKING::YOU::SweetSweet♥Magic
     def_instance_delegators(:boundary, :min, :max, :minmax, :size, :count)
     def_instance_delegators(:sequence, :length, :bytes)
 
-    def ==(otra)
+    # Match our embedded sequence against an arbitrary binary String.
+    def =~(otra)
       if self[:mask].nil? then
-        return true if otra == self[:sequence]
+        return true if otra.include?(self[:sequence])
       else
-        return true if otra == self[:sequence].bytes.reduce { |int, byte| (int << 8) | byte } & self[:mask]
+        return true if (otra.to_i & self[:mask]).to_s(2).include?(self[:sequence])
       end
       return false
     end
@@ -125,13 +133,14 @@ module CHECKING::YOU::SweetSweet♥Magic
 end  # module CHECKING::YOU::SweetSweet♥Magic
 
 
+# Find-by-content file matching à la `libmagic`. Class-level components.
 module CHECKING::YOU::SweetSweet♡Magic
   def magic_without_tears
     @magic_without_tears ||= ::CHECKING::YOU::MagicWithoutTears.new
   end
 
-  # TODO: Fix all the bugs in this by running a test suite.
-  # It matches some file types but not some others I've tried. Gotta start somewhere though :)
+  # Main find-by-content matching code, externalized for reusability.
+  # TODO: Find and fix all the bugs in this by running a test suite.
   # TODO: Profile this to reduce allocations.
   WILD_IO = proc {
     # TODO: Benchmark these buffer-size assumptions
@@ -144,7 +153,6 @@ module CHECKING::YOU::SweetSweet♡Magic
     the_last_striker = 0       # Previous iteration offset, used to calculate how many cached bytes to unshift.
     rolling_stops = Array.new  # Iteration end-points, to be sorted so we can pop the largest.
     rolling_stop = 0           # Iteration end-point, popped in a loop off an Array.
-    my_future = Array.new      # Sub-sequence match successes and failures.
     come_with_me = Hash.new    # Successful matches to return.
 
     find_out = -> (wild_io) {
@@ -160,7 +168,7 @@ module CHECKING::YOU::SweetSweet♡Magic
 
         # It's pretty likely that the end of one iteration will already read past the start of the next one.
         wild_io.seek(rolling_start - the_last_striker, whence=IO::SEEK_CUR) if rolling_start > wild_io.pos
-        #puts "Dropping #{rolling_start - the_last_striker} leading byte(s)"
+        # Drop unnecessary leading bytes from start points we've already iterated beyond.
         hold_my_hand.slice!(rolling_start - the_last_striker)
 
         # The second level of keys are byte offsets marking the ends of the areas we will inspect, e.g.:
@@ -169,55 +177,26 @@ module CHECKING::YOU::SweetSweet♡Magic
         #
         # Again, they must be sorted to avoid insertion order.
         rolling_stops = ::CHECKING::YOU::OUT::magic_without_tears[rolling_start].keys.sort
-        #puts "Reading #{rolling_stops.last - rolling_start} bytes"
         # IO#read returns `nil` if we're at the end of the stream.
         break if wild_io.read(rolling_stops.last - rolling_start, hold_my_hand).nil?
 
         # Empty the stops out from highest to lowest.
         while not rolling_stops.empty? do
 
-          # Take a disposable copy of our stream cache.
-          quick_master = hold_my_hand.dup
-
           # This is already sorted so the `last` element is the largest.
           rolling_stop = rolling_stops.pop
 
-          # { SweetSweet♥Magic::WeightedAction => CHECKING::YOU::OUT }
-          ::CHECKING::YOU::OUT::magic_without_tears[rolling_start][rolling_stop].each_pair { |weighted_action, cyo|
-            #puts "Testing #{weighted_action}"
+          # { SweetSweet♥Magic::CatSequence => CHECKING::YOU::OUT }
+          ::CHECKING::YOU::OUT::magic_without_tears[rolling_start][rolling_stop].each_pair { |cat_sequence, cyo|
 
             # Each match possibility is composed of one or more sub-sequences, all of which must be matched.
             # The `boundary` Range of the full action is the sum of all `boundary` Ranges of the sub-sequences, e.g.:
-            # WeightedAction[SC(5..10), SC(12..20), SC(256..512)] => WeightedAction#boundary = (5..512)
-            weighted_action.each { |sequence_cat|
-
-              # Take the sub-sequence haystack from the disposable cache.
-              moving_on = quick_master.slice(sequence_cat.min - rolling_start, sequence_cat.count)
-              #puts "Testing #{sequence_cat.boundary.count} bytes from offset #{sequence_cat.boundary.min - rolling_start} for #{sequence_cat}"
-
-              # Assume we aren't a match.
-              segment_matched = false
-
-              # These haystacks may be much larger than the size of the needles, e.g. if we are looking for
-              # a 4-byte sequence anywhere within the first 512 bytes of a hypothetical format.
-              # If that's the case, look for a match one-needle-length at a time.
-              #puts "Testing needle size #{sequence_cat.sequence.length} in #{moving_on.length}-byte haystack"
-              while (moving_on.length > sequence_cat.length) do
-                # We can always start from the beginning (`0`) of a haystack since any previous iteration
-                # would have also sliced one-needle-length off the front.
-                small_clone = moving_on.slice!(0, sequence_cat.length)
-
-                segment_matched = true if sequence_cat == small_clone
-              end
-              # Always save the match status regardless if `true` or `false`.
-              my_future.push(segment_matched)
-            }
+            # CatSequence[SequenceCat(5..10), SC(12..20), SC(256..512)]#boundary => (5..512)
+            quick_master = hold_my_hand.slice(cat_sequence.min - rolling_start, cat_sequence.size)
 
             # Save the sequences as well as the Type if we have a match. We need to save the sequences so we can
             # compare their `weight` in the case of multiple positives.
-            #puts "Matched #{cyo} via #{weighted_action}!" if my_future.all?(true)
-            come_with_me.store(weighted_action, cyo) if my_future.all?(true)
-            my_future.clear
+            come_with_me.store(cat_sequence, cyo) if cat_sequence.=~(quick_master, offset: rolling_start)
 
             # Save the start point so we know how many bytes to drop off the front of our stream cache.
             the_last_striker = rolling_start
@@ -225,13 +204,15 @@ module CHECKING::YOU::SweetSweet♡Magic
           }  # self.magic_without_tears[rolling_start][rolling_stop].each_pair
         end
       }  # self.magic_without_tears.keys.sort.each
-      return come_with_me.dup.tap { |out| come_with_me.clear }
+      return (come_with_me.empty? ? nil : come_with_me.dup).tap { |out| come_with_me.clear }
     }  # find_out
     -> (wild_io) {
       return find_out.call(wild_io)
     }
   }.call
 
+  # Apply the find-by-content matcher on various types of input.
+  # For example, paths representing files need to be opened for reading.
   def from_content(unknown_io)
     case unknown_io
     when IO, StringIO  # `IO` is the parent class of `File`, among others.
@@ -240,6 +221,7 @@ module CHECKING::YOU::SweetSweet♡Magic
       return WILD_IO.call(unknown_io)
     when String, Pathname
       # File::open takes a path, but IO::open only takes a file descriptor.
+      # The File handle will be closed as soon as we exit the block scope.
       File.open(unknown_io, mode: File::Constants::RDONLY|File::Constants::BINARY) do |wild_io|
         wild_io.advise(:sequential)
         return WILD_IO.call(wild_io)
