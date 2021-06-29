@@ -145,9 +145,7 @@ module CHECKING::YOU::SweetSweet♡Magic
   WILD_IO = proc {
     # TODO: Benchmark these buffer-size assumptions
     hold_my_hand = String.new(encoding: Encoding::ASCII_8BIT, capacity: 2048)
-    quick_master = String.new(encoding: Encoding::ASCII_8BIT, capacity: 2048)
-    moving_on = String.new(encoding:Encoding::ASCII_8BIT, capacity: 256)
-    small_clone = String.new(encoding:Encoding::ASCII_8BIT, capacity: 256)
+    quick_master = String.new(encoding: Encoding::ASCII_8BIT, capacity: 512)
 
     # Avoid re-allocating any data structure we can re-use between matches.
     the_last_striker = 0       # Previous iteration offset, used to calculate how many cached bytes to unshift.
