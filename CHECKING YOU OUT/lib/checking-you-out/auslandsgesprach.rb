@@ -25,6 +25,7 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
     # Take a single codepoint from a reversed-then-NULL-terminated IETF Type String,
     # e.g. "ttub=traf;lmbe+fnb.ppg3.dnv/noitacilppa#{-?\u{0}}".
     #
+    #
     # I switched from `String#each_char` to `String#each_codepoint` to avoid allocating single-character Strings
     # before they could be deduplicated with `-zig`. The Integer codepoints, on the other hand,
     # will always be the same `object_id` for the same codepoint:
@@ -38,10 +39,53 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
     # 4709
     # 4709
     # 4709
+    #
+    #
+    # Putting the codepoints back together with `Array#pack` is the fastest way I've found,
+    # but it is mildly annoying that it won't intern the packed Strings in the C `pack_pack` code,
+    # which lives here: https://github.com/ruby/ruby/blob/master/pack.c
+    #
+    # This means that interning them here in Ruby-land forces us to eat the spurious allocation
+    # and is generally slower than it needs to be, e.g. `memory_profiler` report without post-allocation interning:
+    #
+    #   Retained String Report
+    #   -----------------------------------
+    #       1038  "application"
+    #       1037  <internal:pack>:135
+    #
+    #        171  "text"
+    #        170  <internal:pack>:135
+    #
+    #        140  "image"
+    #        139  <internal:pack>:135
+    #   […]
+    #   -----------------------------------
+    #
+    # …vs `memory_profiler` report *with* post-allocation interning, where the duplicate packed Strings
+    # are now "Allocated" instead of "Retained", i.e. they will be GCed:
+    #
+    #   Allocated String Report
+    #   -----------------------------------
+    #       2863  ""
+    #       2818  /home/okeeblow/Works/DistorteD/CHECKING-YOU-OUT/lib/checking-you-out/party_starter.rb:90
+    #
+    #       2271  "application"
+    #       2269  <internal:pack>:135
+    #   […]
+    #   -----------------------------------
+    #
+    # This ends up being a difference of ~2000 Objects for us, comparing the same before/after as above:
+    #
+    #   [okeeblow@emi#CHECKING-YOU-OUT] ./bin/are-we-unallocated-yet|grep Total
+    #   Total allocated: 18178861 bytes (318640 objects)
+    #   Total retained:  1999675 bytes (26815 objects)
+    #   [okeeblow@emi#CHECKING-YOU-OUT] ./bin/are-we-unallocated-yet|grep Total
+    #   Total allocated: 18231779 bytes (319963 objects)
+    #   Total retained:  1926675 bytes (24996 objects)
     move_zig = proc { |zig|
       case zig
       when 0 then  # NULL
-        my_base[:phylum] = -scratch.reverse!.pack(-'U*')
+        my_base[:phylum] = scratch.reverse!.pack(-'U*').-@
       when 61 then  # =
         # TODO: Implement Fragment-based Type variations
         hold.push(*scratch)
@@ -100,10 +144,10 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
         else
           # Otherwise we are in the "standards" tree: https://datatracker.ietf.org/doc/html/rfc6838#section-3.1
           -'possum'
-        end
+        end.-@
         # Everything remaining in `hold` and `scratch` will comprise the most-specific Type component.
         hold.push(*scratch)
-        my_base[:genus]= -hold.reverse!.pack(-'U*')
+        my_base[:genus] = hold.reverse!.pack(-'U*').-@
         scratch.clear
         hold.clear
       when 46 then  # .
