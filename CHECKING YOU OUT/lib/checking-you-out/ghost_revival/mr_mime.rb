@@ -208,7 +208,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     when :"magic-deleteall"
       # TODO
     when :glob
-      @stick_around = nil
+      @stick_around = ::CHECKING::YOU::StickAround.new
     when :"glob-deleteall"
       # TODO
     when :treemagic
@@ -245,33 +245,15 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
       self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s))
     in :"sub-class-of", :type then
       self.cyo.add_parent(::CHECKING::YOU::OUT::from_ietf_media_type(value.as_s))
-    in :glob, :weight
-      if @stick_around.nil?
-        @stick_around = value.as_i
-      else
-        @stick_around.weight = value.as_i
-      end
-    in :glob, :pattern
+    in :glob, :weight then
+      @stick_around.weight = value.as_i
+    in :glob, :pattern then
       # The vast majority of `<glob>`s in `shared-mime-info`'s XML will represent file-extensions, e.g. `*.lol`,
       # but there are some prefixes represented, e.g. `Makefile*`, as well as the capability for arbitrary globs.
-      # We will decompose these to CYO's `Postfix`, `Prefix`, and `Infix` to allow file extensions to be stored separately.
-      @stick_around = value.as_s.yield_self { |strval|
-        # NOTE: As I write this in 2021 there are no `<glob>` patterns in fd.o with more than one asterisk,
-        # so I feel safe using `:delete_prefix`/`:delete_suffix` here.
-        # The weight IVar here will either be Integer or nil, both of which are handled.
-        case
-        when strval.delete_prefix!(-'*.') then
-          # e.g. "*.jpeg" => -"jpeg"
-          ::CHECKING::YOU::OUT::Postfix.new(str=-strval, weight: @stick_around)
-        else
-          # There are some exact patterns, e.g. "winmail.dat".
-          # There are Regexp-style patterns like "[0-9][0-9][0-9].vdr" for `video/mpeg`.
-          # There are prefix-style patterns like "Makefile.*"
-          # Instead of converting to Regexp we can use `File::fnmatch`.
-          ::CHECKING::YOU::OUT::Glob.new(str=-strval, weight: @stick_around)
-        end
-      }
-    in :"root-XML", :namespaceURI
+      @stick_around.replace(value.as_s)
+    in :glob, :"case-sensitive" then
+      @stick_around.case_sensitive = value.as_bool
+    in :"root-XML", :namespaceURI then
       # TODO
     in :"root-XML", :localName then
       # TODO

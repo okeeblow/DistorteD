@@ -5,6 +5,7 @@ require 'pathname' unless defined? ::Pathname
 # This file defines/imports various utility Modules/procs/etc that should be available
 # to all other CYO components without `including`/`extending`.
 require_relative 'party_starter/weighted_action' unless defined? ::CHECKING::YOU::WeightedAction
+require_relative 'party_starter/stick_around' unless defined? ::CHECKING::YOU::StickAround
 
 class CHECKING::YOU
 

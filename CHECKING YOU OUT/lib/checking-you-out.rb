@@ -31,7 +31,7 @@ class CHECKING::YOU
         if File::exist?(File::expand_path(unknown_identifier)) and so_deep then
           TEST_EXTANT_PATHNAME.call(Pathname.new(File::expand_path(unknown_identifier)))
         else
-          LEGENDARY_HEAVY_GLOW.call(::CHECKING::YOU::OUT::from_pathname(unknown_identifier), :weight)
+          LEGENDARY_HEAVY_GLOW.call(::CHECKING::YOU::OUT::from_glob(unknown_identifier), :weight) || ::CHECKING::YOU::OUT::from_postfix(unknown_identifier)
         end
       end
     when ::CHECKING::YOU::IN
