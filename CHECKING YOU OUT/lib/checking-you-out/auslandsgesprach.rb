@@ -161,7 +161,8 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
     # 𝘐𝘛'𝘚 𝘠𝘖𝘜 !!
     cats = ->(gentlemen) {
-      gentlemen.reverse!.<<(-?\u{0}).each_codepoint(&move_zig)
+      gentlemen.each_codepoint.reverse_each(&move_zig)
+      move_zig.call(0)
       return my_base.dup.tap(&the_bomb)
     }
     -> (gentlemen) {
