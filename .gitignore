@@ -8,3 +8,6 @@
 /tmp/
 Gemfile.lock
 *.gem
+
+# RVM / rbenv marker file for desired Ruby interpreter version.
+**/.ruby-version
