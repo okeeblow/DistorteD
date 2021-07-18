@@ -42,13 +42,16 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'minitest', '~> 5.0'
 
+  # Sibling libraries to benchmark against :)
   spec.add_development_dependency 'mime-types', '~> 3.3'  # https://github.com/mime-types/ruby-mime-types
   spec.add_development_dependency 'mini_mime', '~> 1.1'  # https://github.com/discourse/mini_mime
 
+  # Profiling t00lz
   spec.add_development_dependency 'fasterer', '~> 0.9'  # https://github.com/DamirSvrtan/fasterer
   spec.add_development_dependency 'profile', '~> 0.4'  # https://github.com/ruby/profile
   spec.add_development_dependency 'memory_profiler', '~> 1.0'  # https://github.com/SamSaffron/memory_profiler
   spec.add_development_dependency 'benchmark-ips', '~> 2.0'  # https://github.com/evanphx/benchmark-ips
+  spec.add_development_dependency 'terminal-table', '~> 3.0'  # https://github.com/tj/terminal-table
 
   spec.required_ruby_version = '>= 2.7.0'
 
