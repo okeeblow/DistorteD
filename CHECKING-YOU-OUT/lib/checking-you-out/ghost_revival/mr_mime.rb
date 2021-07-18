@@ -222,26 +222,28 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
 
   def attr_value(attr_name, value)
     return if self.skips.include?(@parse_stack.last)
+    # `parse_stack` can be empty here in which case its `#last` will be `nil`.
+    # This happens e.g. for the two attributes of the XML declaration '<?xml version="1.0" encoding="UTF-8"?>'.
     case [@parse_stack.last, attr_name]
-    in :"mime-type", :type
+    in :"mime-type", :type then
       @media_type = value.as_s
-    in :match, :type
+    in :match, :type then
       # There's no way to avoid a String allocation in `Ox::Sax::Value#as_s` rn,
       # pending C extension API for interned Strings prolly some time in Ruby 3.x.
       @weighted_action.last.format = FDO_MAGIC_FORMATS[value.as_s]
-    in :match, :value
+    in :match, :value then
       @weighted_action.last.cat = value.as_s
-    in :match, :offset
+    in :match, :offset then
       @weighted_action.last.boundary = value.as_s
-    in :match, :mask
+    in :match, :mask then
       # The number to AND the value in the file with before comparing it to `value'.
       # Masks for numerical types can be any number, while masks for strings must be in base 16, and start with 0x.
       @weighted_action.last.mask = BASED_STRING.call(value.as_s)
-    in :magic, :priority
+    in :magic, :priority then
       @weighted_action&.weight = value.as_i
-    in :alias, :type
+    in :alias, :type then
       self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s))
-    in :"sub-class-of", :type
+    in :"sub-class-of", :type then
       self.cyo.add_parent(::CHECKING::YOU::OUT::from_ietf_media_type(value.as_s))
     in :glob, :weight
       if @stick_around.nil?
@@ -271,7 +273,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
       }
     in :"root-XML", :namespaceURI
       # TODO
-    in :"root-XML", :localName
+    in :"root-XML", :localName then
       # TODO
     else
       # Unsupported attribute encountered.
