@@ -23,12 +23,12 @@ class CHECKING::YOU
       TEST_EXTANT_PATHNAME.call(unknown_identifier)
     when ::String
       case
-      when unknown_identifier.count(-?/) == 1  # TODO: Additional String validation here.
-        ::CHECKING::YOU::OUT::from_ietf_media_type(+unknown_identifier)
-      when unknown_identifier.start_with?(-?.) && unknown_identifier.count(-?.)
+      when unknown_identifier.count(-?/) == 1 then  # TODO: Additional String validation here.
+        ::CHECKING::YOU::OUT::from_ietf_media_type(unknown_identifier)
+      when unknown_identifier.start_with?(-?.) && unknown_identifier.count(-?.) == 1 then
         ::CHECKING::YOU::OUT::from_pathname(unknown_identifier)
       else
-        if File::exist?(File::expand_path(unknown_identifier)) and so_deep
+        if File::exist?(File::expand_path(unknown_identifier)) and so_deep then
           TEST_EXTANT_PATHNAME.call(Pathname.new(File::expand_path(unknown_identifier)))
         else
           LEGENDARY_HEAVY_GLOW.call(::CHECKING::YOU::OUT::from_pathname(unknown_identifier), :weight)
