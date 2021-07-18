@@ -46,6 +46,6 @@ Benchmark.ips do |bm|
   end
 
   bm.report 'content_type lookup CHECKING::YOU::OUT' do
-    CHECKING::YOU::OUT::from_postfix(".txt")
+    CHECKING::YOU::OUT::from_postfix("txt")
   end
 end
