@@ -166,7 +166,7 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
       return my_base.dup.tap(&the_bomb)
     }
     -> (gentlemen) {
-      return cats.call(gentlemen)
+      return cats.call((gentlemen.encoding == Encoding::UTF_8) ? gentlemen : gentlemen.encode(Encoding::UTF_8))
     }
   }.call
 
@@ -202,7 +202,7 @@ module CHECKING::YOU::IN::INLANDSGESPRÄCH
     # In Ruby 2.7 `nil.to_s` will return a deduplicated immutable empty String: https://bugs.ruby-lang.org/issues/16150
     # added experimentally in https://github.com/ruby/ruby/commit/6ffc045a817fbdf04a6945d3c260b55b0fa1fd1e
     # but then reverted in https://github.com/ruby/ruby/commit/bea322a352d820007dd4e6cab88af5de01854736
-    -(String.allocate << self.phylum.to_s << -'/' << case
+    -(String.new(encoding: Encoding::UTF_8, capacity: 128) << self.phylum.to_s << -'/' << case
     when self.kingdom == -'kayo-dot' then -'x.'
     when self.kingdom == -?x then -'x-'
     when self.kingdom == -'x-ms' then -'x-ms-'
