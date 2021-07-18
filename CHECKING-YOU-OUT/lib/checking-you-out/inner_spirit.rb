@@ -91,63 +91,53 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   def in; self.class.all_night.key(self); end
 
 
-  # Get a CYO, Set[CYO], or nil by file-extension, e.g. `doc` => { CYO msword, CYO rtf }
-  def self.from_postfix(postfix)
-    # `:extname` will return the last dotted component with the leading dot, e.g. `File::extname("hello.jpg")` => `".jpg"`.
-    # `:extname` will be an empty String for paths which contain no dotted components.
-    self.instance_variable_get(:@after_forever)[case postfix
-      when Postfix    then postfix
-      when ::Symbol   then postfix.to_s  # TODO: Ruby 3.0 Symbol#name
-      when ::Pathname then postfix.extname.delete_prefix!(-?.) || postfix.to_s
-      when ::String   then postfix.delete_prefix(-?.) || postfix.to_s
-      else postfix.to_s
-    end]
+  # Get a CYO, Set[CYO], or nil by file-extension, e.g. `doc` => { CYO msword, CYO rtf }.
+  POSTFIX_KEY = proc {
+    # Re-use a single search structure to avoid allocating an Object per search.
+    scratch = ::CHECKING::YOU::StickAround.new(-'')
+    # Additionally accelerate multiple searches for the same thing by avoiding `StickAround#replace`
+    # if the new search key already matches the previous search key.
+    # Mark `case_sensitive: false` here for testing arbitrarily-named input.
+    -> { scratch.eql?(_1) ? scratch : scratch.replace(_1, case_sensitive: false) }
+  }.call
+  def self.from_postfix(stick_around)
+    self.instance_variable_get(:@after_forever)[POSTFIX_KEY.call(stick_around)]
   end
 
   # Get a Hash[CYO] or nil for arbitrary non-file-extension glob match of a File basename.
-  def self.from_glob(basename)
+  def self.from_glob(stick_around)
     self.instance_variable_get(:@stick_around).select { |k,v|
-      File.fnmatch?(k, basename, File::FNM_CASEFOLD | File::FNM_DOTMATCH)
+      k.eql?(stick_around)
     }.yield_self { |matched|
       matched.empty? ? nil : matched
     }
   end
 
-  # We will decompose `shared-mime-info`'s `<glob>` elements into two WeightedActions.
-  # The vast majority of `<glob>`s are of the form `*.extname`, and storing them separately
-  # not only accelerates lookup by extension but allows CYOs to easily suggest extnames
-  # for themselves à la `ruby-mime-types`'s `MIME::Type#preferred_extension`.
-  # These will be stripped of their leading '*.' and stored as just the extname.
-  class Postfix < ::String; include ::CHECKING::YOU::WeightedAction; end
-  # All other globs will be stored freeform, e.g. `Makefile.*`.
-  class Glob    < ::String; include ::CHECKING::YOU::WeightedAction; end
+  def self.from_pathname(pathname)
+    return self.from_glob(pathname) || self.from_postfix(pathname)
+  end
 
 
   # Add a new Postfix or Glob for a specific type.
   def add_pathname_fragment(fragment)
-    case fragment
-    when Postfix then
+    if fragment.start_with?(-'*.') and fragment.count(-?.) == 1 and fragment.count(-?*) == 1 then
       ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@postfixes, fragment, self)
       ::CHECKING::YOU::CLASS_NEEDLEMAKER.call(:@after_forever, fragment, self)
-    when Glob then
+    else
       ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@globs, fragment, self)
       ::CHECKING::YOU::CLASS_NEEDLEMAKER.call(:@stick_around, fragment, self)
     end
   end
 
-  # Search for Types matching an arbitrary Pathname.
-  def self.from_pathname(pathname)
-    pathname = Pathname.new(pathname) if pathname.is_a?(::String)
-    # TODO: Implement `case-sensitive` flag.
 
-    return case self.from_postfix(pathname)
-    when self  then self.from_postfix(pathname)
-    when ::Set then self.from_postfix(pathname)
-    when nil   then self.from_glob(pathname.basename)
+  # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
+  def aka
+    return case @aka
+      when nil then Set[self.in]
+      when self.class, self.class.superclass then Set[self.in, @aka]
+      when ::Set then Set[self.in, *@aka]
     end
   end
-
-  attr_reader :aka
 
   # Take an additional CYI, store it locally, and memoize it as an alias for this CYO.
   def add_aka(taxa)
@@ -159,7 +149,7 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # Forget a CYI alias of this Type. Capable of unsetting the "real" CYI as well if desired.
   def remove_aka(taxa)
     taxa = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
-    self.class.all_night.delete(taxa) if self.class.all_night.fetch(taxa, nil) === self
+    self.class.all_night.delete(taxa) if self.class.all_night[taxa] === self
   end
 
   attr_reader :parents, :children
@@ -180,7 +170,7 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   def adults_table
     return case @parents
       when nil then Set[self]
-      when self.class then Set[self, @parents]
+      when self.class, self.class.superclass then Set[self, @parents]
       when ::Set then Set[self, *@parents]
     end
   end
@@ -189,7 +179,7 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   def kids_table
     return case @children
       when nil then Set[self]
-      when self.class then Set[self, @children]
+      when self.class, self.class.superclass then Set[self, @children]
       when ::Set then Set[self, *@children]
     end
   end
