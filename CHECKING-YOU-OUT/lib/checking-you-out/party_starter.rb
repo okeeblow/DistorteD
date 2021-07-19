@@ -120,17 +120,26 @@ class CHECKING::YOU
     # if either input is `nil`, will be a single CYO if there is only one union match,
     # or a `Set` if there are still multiple possibilities.
     magic_children = proc { |glob, magic|
+      # NOTE: CYO deviates from `shared-mime-info`'s behavior very slightly here!
+      #
+      # `shared-mime-info`'s "Recommended checking order" documentation sez:
       # "If any of the mimetypes resulting from a glob match is equal to or a subclass of the result
       #  from the magic sniffing, use this as the result. This allows us for example to distinguish text files
       #  called 'foo.doc' from MS-Word files with the same name, as the magic match for the MS-Word file would be 
       #  `application/x-ole-storage` which the MS-Word type inherits."
+      #
+      # Our behavior is identical except it allows glob matches which are a *superclass* of a
+      # magic-match in addition to subclass or equal-to, i.e. using `:family_tree` for comparison here
+      # instead of using `:kids_table`. There might be a downside to this that I haven't found yet
+      # but it allows CYO to better match some things, e.g. matching a `'.flv'` video file as
+      # `'video/x-flv'` instead of as `'video/x-javafx'`, since fd.o has the latter as a subclass of the former.
       case [glob, magic]
         in ::NilClass,           *                    then nil
         in *,                    ::NilClass           then nil
-        in ::Set,                ::Hash               then glob & magic.values.to_set.map(&:kids_table).reduce(&:&)
+        in ::Set,                ::Hash               then glob & magic.values.to_set.map(&:family_tree).reduce(&:&)
         in ::Set,                ::CHECKING::YOU::OUT then glob & magic.kids_table
-        in ::Hash,               ::Hash               then glob.values.to_set & magic.values.to_set.map(&:kids_table).reduce(&:&)
-        in ::CHECKING::YOU::OUT, ::Hash               then magic.values.to_set.map(&:kids_table).reduce(&:&)&.include?(glob) ? glob : nil
+        in ::Hash,               ::Hash               then glob.values.to_set & magic.values.to_set.map(&:family_tree).reduce(&:&)
+        in ::CHECKING::YOU::OUT, ::Hash               then magic.values.to_set.map(&:family_tree).reduce(&:&)&.include?(glob) ? glob : nil
         in ::Hash,               ::CHECKING::YOU::OUT then glob.values.to_set & magic.kids_table
         in ::CHECKING::YOU::OUT, ::CHECKING::YOU::OUT then glob == magic ? glob : nil
         else nil
