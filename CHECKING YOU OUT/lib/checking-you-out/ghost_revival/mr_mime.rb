@@ -58,7 +58,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
   # => 255
   BASED_STRING = proc { |s|
     case
-    when s[0..1].downcase == -'0x' then s.to_i(16)
+    when -s[0..1].downcase == -'0x' then s.to_i(16)
     when s.chr == -?0 then s.to_i(8)
     else s.to_i(10)
     end
