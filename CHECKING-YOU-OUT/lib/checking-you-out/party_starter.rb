@@ -182,7 +182,8 @@ class CHECKING::YOU
           # Choose the union-matched type having the heaviest glob-matched weight,
           # and then additionally the longest glob string if there are still multiple matches.
           LEGENDARY_HEAVY_GLOW.call(glob_matched.keep_if { |_glob, cyo| magic_children.include?(cyo) }, [:weight, :length])
-        in ::CHECKING::YOU::OUT, ::Hash,     *                                     then
+        in ::CHECKING::YOU::OUT, ::Hash,     ::NilClass                            then glob_matched
+        in ::CHECKING::YOU::OUT, ::Hash,     ::Set => magic_children               then
           # Choose the single glob-matched type iff it was also magic-matched,
           # otherwise choose the heaviest magic-matched type.
           magic_matched.values.include?(glob_matched) ? glob_matched : LEGENDARY_HEAVY_GLOW.call(magic_matched, :weight)
