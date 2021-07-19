@@ -49,9 +49,14 @@ class CHECKING::YOU
 
     # This class needs to support being instantiated without a value due to the way our XML data gets loaded,
     # but the superclass `String` has a default `str=""` argument here that works perfectly for that need.
-    def initialize(*args, case_sensitive: DEFAULT_SENSITIVITY, **kwargs)
+    def initialize(str=-'', *args, case_sensitive: DEFAULT_SENSITIVITY, **kwargs)
+      # Prime `#replace` to treat its next `String` as case-sensitive iff we were told.
       instance_variable_set(:@case_sensitive, case_sensitive) if case_sensitive == true
-      super(*args, **kwargs)
+
+      # Don't pass an initial `str` value to `super` if we were given one,
+      # because `#replace` has case-sensitivity-handling functionality that must be called.
+      super(-'', *args, **kwargs)
+      self.replace(str) unless str.empty?
     end
 
     # Mark intent to be case-sensitive. Our source data's `<glob>` Attributes are parsed one at a time,
@@ -99,12 +104,21 @@ class CHECKING::YOU
       #
       # If the computed key is already downcase we could still be case-sensitive if we were boolean-marked as such,
       # otherwise we have no need for the IVar and can remove it if one is set.
-      if super(-newbuild.downcase(:fold)) === newbuild or (case_sensitive == false and instance_variable_get(:@case_sensitive) != true)
-        remove_instance_variable(:@case_sensitive) if instance_variable_defined?(:@case_sensitive)
-      else
+      #
+      # Explicitly check if the IVar == `true`, not just truthiness, because it may also be a `String`
+      # if we are `#replace`ing a previous case-sensitive value.
+      #
+      # NOTE: There is a hole in the logic here where any non-downcased input will cause case-sensitivity,
+      # but this is necessary since our XML parsing might give us a `pattern` attribute callback
+      # before we'd had a chance to set a `case-insensitive` mark.
+      # All of the `case-sensitive="true"` `<glob>`s in current fd.o XML have an upper-case component,
+      # so this hack will make sure we don't discard the proper-cased `String` if we see that callback before the mark.
+      if (super(-newbuild.downcase(:fold)) != newbuild) or case_sensitive or (instance_variable_get(:@case_sensitive) == true) then
         instance_variable_set(:@case_sensitive, newbuild)
+      else
+        remove_instance_variable(:@case_sensitive) if instance_variable_defined?(:@case_sensitive)
       end
-      self
+      self  # return the new downcased value we just set when we called `super`
     end  # replace
 
     # Return a boolean describing our case-sensitivity status.
