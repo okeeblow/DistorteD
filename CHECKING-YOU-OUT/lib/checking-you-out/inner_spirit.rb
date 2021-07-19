@@ -184,6 +184,9 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     end
   end
 
+  # Get a `Set` of this CYO and all parents and children, at minimum just `Set[self]`.
+  def family_tree; self.kids_table | self.adults_table; end
+
   # Storage for descriptions (`<comment>`), acrnyms, suitable iconography, and other boring metadata, e.g.:
   #   <mime-type type="application/vnd.oasis.opendocument.text">
   #     <comment>ODT document</comment>
