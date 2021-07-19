@@ -15,12 +15,13 @@ class CHECKING::YOU
   # For example, most `Postfix`es (file extensions) will only ever belong to a single CYO Object,
   # but a handful represent possibly-multiple types, like how `.doc` can be an MSWord file or WordPad RTF.
   #
-  # These assignment procs take a storage haystack, a needle to store, and a CYO receiver the needle refers to.
-  # They will set `haystack[needle] => CYO` if that needle is unique, or they will convert
-  # an existing `haystack[needle] => CYO` assignment to `haystack[needle] => Set[existingCYO, newCYO]`.
+  # These assignment procs take a storage haystack, a needle to store, and the CYO receiver to which the needle refers.
+  # They will set `haystack[needle] => CYO` if that needle is unique and unset, or they will convert
+  # an existing single `haystack[needle] => CYO` assignment to `haystack[needle] => Set[existingCYO, newCYO]`.
   #
   # This is an admittedly-annoying complexity-for-performance tradeoff with the goal of allocating
-  # as few spurious objects as possible instead of explicitly initializing a Set for every needle.
+  # as few spurious containers as possible instead of explicitly initializing a Set for every needle
+  # when most of them would wastefully be a Set of just a single thing.
   CLASS_NEEDLEMAKER = proc { |haystack, needle, receiver|
     # Create the container if this is the very first invocation.
     receiver.class.instance_variable_set(haystack, Hash.new(nil)) unless receiver.class.instance_variable_defined?(haystack)
@@ -35,8 +36,9 @@ class CHECKING::YOU
       end
     }
   }
-  # This is the instance-level version of the above, e.g. a CYO with one file extension (`Postfix`)
-  # will assign `cyo.:@postfixes = Postfix`, and one with many Postfixes will assign
+
+  # This is the instance-level version of the above, e.g. a CYO with only one Postfix
+  # will assign `cyo.:@postfixes = Postfix`, and a CYO with many Postfixes will assign
   # e.g. `cyo.:@postfixes = Set[post, fix, es, …]`.
   INSTANCE_NEEDLEMAKER = proc { |haystack, needle, receiver|
     if receiver.instance_variable_defined?(haystack) then
@@ -80,17 +82,19 @@ class CHECKING::YOU
     # Never return empty Enumerables.
     # Yielding-self to this proc will `nil`-ify anything that's `:empty?`
     # and will pass any non-Enumerable Objects through.
+    point_zero = proc { _1.respond_to?(:empty) ? (_1.empty? ? nil : _1) : _1 }
+
+    # Our matching block will return a single CYO when possible, and can optionally
+    # return multiple CYO matches for ambiguous files/streams.
+    # Multiple matching must be opted into with `only_one_match: false` so it doesn't need to be
+    # checked by every caller that's is fine with best-effort and wants to minimize allocations.
     one_or_eight = proc { |huh|
       case
       when huh.nil? then nil
       when huh.respond_to?(:empty?), huh.respond_to?(:first?)
-        # Our matching block will return a single CYO when possible, and can optionally
-        # return multiple CYO matches for ambiguous files/streams.
-        # Multiple matching must be opted into with `only_one_match: false` so it doesn't need to be
-        # checked by every caller that's is fine with best-effort and wants to minimize allocations.
         if huh.empty? then nil
-        elsif huh.size == 1 then huh.first
-        elsif huh.size > 1 and only_one_match then huh.first
+        elsif huh.size == 1 then huh.is_a?(::Hash) ? huh.values.first : huh.first
+        elsif huh.size > 1 and only_one_match then huh.is_a?(::Hash) ? huh.values.first : huh.first
         else huh
         end
       else huh
@@ -102,7 +106,6 @@ class CHECKING::YOU
     # e.g. using a `.doc` Postfix-match to choose a `text-plain` glob-match for non-Word `.doc` files
     #      or to choose a `application/msword` glob-match over a more generic `application/x-ole-storage`
     #      magic-match when the magic weights alone are not enough information to make the correct choice.
-    #
     # irb> ::CHECKING::YOU::OUT::from_postfix('doc')
     # => #<Set: {#<CHECKING::YOU::OUT application/msword>, #<CHECKING::YOU::OUT text/plain>}>
     #
@@ -131,7 +134,7 @@ class CHECKING::YOU
         in ::Hash,               ::CHECKING::YOU::OUT then glob.values.to_set & magic.kids_table
         in ::CHECKING::YOU::OUT, ::CHECKING::YOU::OUT then glob == magic ? glob : nil
         else nil
-      end.yield_self(&one_or_eight)
+      end.yield_self(&point_zero)
     }
 
     # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
