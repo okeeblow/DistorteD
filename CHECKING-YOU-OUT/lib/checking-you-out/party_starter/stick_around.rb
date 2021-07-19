@@ -207,7 +207,13 @@ class CHECKING::YOU
         otra.itself,           # Needle
         File::FNM_DOTMATCH  |
           File::FNM_EXTGLOB |
-          (self.case_sensitive? ? 0 : File::FNM_CASEFOLD)
+          (
+            # Support testing `otra` as either another `StickAround` or as a plain `String`,
+            # in which case it will not have a method `#case_sensitive?`.
+            # Use our own case-sensitivity setting when comparing against plain `Strings`.
+            (self.case_sensitive? or (otra.respond_to?(:case_sensitive?) ? otra.case_sensitive? : self.case_sensitive?)) ?
+            0 : File::FNM_CASEFOLD
+          )
       )
     end  # eql?
 
