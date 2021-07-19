@@ -111,10 +111,10 @@ module CHECKING::YOU::SweetSweet♥Magic
         # in `shared-mime-info`, but Apache's `tika-mimetypes.xml` has a couple of types without.
         # Assume a Range of `self[:sequence]`'s length from the start of the stream.
         self[:boundary] = (0..self[:sequence].length)
-      when self[:boundary]&.size == 1
+      when self[:boundary]&.size == 1 && self[:sequence].size > 1
         # `shared-mime-info` specifies many offsets as start-offset only, for brevity.
         # Detect these and expand our `boundary` to the full Range that will be necessary to match.
-        self[:boundary] = (self[:boundary].min..self[:boundary].max + self[:sequence].length)
+        self[:boundary] = (self[:boundary].min..self[:boundary].max + self[:sequence].size)
       else
         # Otherwise we were given a Range directly from the source XML.
         self[:boundary]
