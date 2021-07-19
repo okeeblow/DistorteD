@@ -352,6 +352,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
           smart: false,           # [boolean] Toggle Ox's built-in hints for HTML parsing: https://github.com/ohler55/ox/blob/master/ext/ox/sax_hint.c
           strip_namespace: nil,   # [nil|String|true|false] (from Element names) Strip no namespaces, all namespaces, or a specific namespace.
           symbolize: true,        # [boolean] Fill callback method `name` arguments with Symbols instead of with Strings.
+          intern_strings: true,   # [boolean] Intern (freeze and deduplicate) String return values.
         }.update(kwargs),
       )
     }
