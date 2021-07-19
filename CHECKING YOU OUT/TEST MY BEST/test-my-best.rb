@@ -12,3 +12,6 @@ require_relative '../lib/checking-you-out'
 # These files should contain a subclass of `Test::Unit::TestCase` with methods named like `test_whatever`
 # which `test/unit` will automatically discover and execute as long as they're loaded.
 Dir.glob("**/tmb_*.rb").each { load _1 }
+
+# Built-in assertion methods are listed here:
+# https://www.rubydoc.info/github/test-unit/test-unit/Test/Unit/Assertions
