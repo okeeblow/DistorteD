@@ -10,7 +10,6 @@ if it's not implemented 𝅘𝅥𝅮
 ## Specifics
 
 - TESTS TESTS TESTS — TDD sucks but that doesn't mean no tests ever.
-- Rename contentious-old-default-Git-branch to something less bad once I can get down to zero local changes.
 - Support operating on a single member of multi-stream files like Zip archives or Mac Resources
   - Glue FourCC support on to MIME::Types
 
