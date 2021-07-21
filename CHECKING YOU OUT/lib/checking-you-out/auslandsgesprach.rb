@@ -177,7 +177,7 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
   end
 end
 
-module CHECKING::YOU::IN::INLANDSGESPRÄCH
+module CHECKING::YOU::IN::INLANDGESPRÄCH
   # Non-IETF-tree as a CY(I|O)'s `kingdom` signifies the need for a leading `vnd.` facet
   # when reconstructing the Media-Type String.
   IETF_TREES = [
