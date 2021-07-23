@@ -55,7 +55,7 @@ class CHECKING::YOU
 
       # Don't pass an initial `str` value to `super` if we were given one,
       # because `#replace` has case-sensitivity-handling functionality that must be called.
-      super(-'', *args, **kwargs)
+      super(str, *args, **kwargs)
       self.replace(str) unless str.empty?
     end
 
