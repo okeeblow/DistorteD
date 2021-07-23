@@ -240,42 +240,45 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     return if self.skips.include?(@parse_stack.last)
     # `parse_stack` can be empty here in which case its `#last` will be `nil`.
     # This happens e.g. for the two attributes of the XML declaration '<?xml version="1.0" encoding="UTF-8"?>'.
-    case [@parse_stack.last, attr_name]
-    in :"mime-type", :type then
-      @media_type.replace(value.as_s)
-    in :match, :type then
-      # There's no way to avoid a String allocation in `Ox::Sax::Value#as_s` rn,
-      # pending C extension API for interned Strings prolly some time in Ruby 3.x.
-      @speedy_cat.last.format = FDO_MAGIC_FORMATS[value.as_s]
-    in :match, :value then
-      @speedy_cat.last.cat = value.as_s
-    in :match, :offset then
-      @speedy_cat.last.boundary = value.as_s
-    in :match, :mask then
-      # The number to AND the value in the file with before comparing it to `value'.
-      # Masks for numerical types can be any number, while masks for strings must be in base 16, and start with 0x.
-      @speedy_cat.last.mask = BASED_STRING.call(value.as_s)
-    in :magic, :priority then
-      @speedy_cat&.weight = value.as_i
-    in :alias, :type then
-      self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s))
-    in :"sub-class-of", :type then
-      self.cyo.add_parent(::CHECKING::YOU::OUT::from_ietf_media_type(value.as_s))
-    in :glob, :weight then
-      @stick_around.weight = value.as_i
-    in :glob, :pattern then
-      # The vast majority of `<glob>`s in `shared-mime-info`'s XML will represent file-extensions, e.g. `*.lol`,
-      # but there are some prefixes represented, e.g. `Makefile*`, as well as the capability for arbitrary globs.
-      @stick_around.replace(value.as_s)
-    in :glob, :"case-sensitive" then
-      @stick_around.case_sensitive = value.as_bool
-    in :"root-XML", :namespaceURI then
-      # TODO
-    in :"root-XML", :localName then
-      # TODO
-    else
-      # Unsupported attribute encountered.
-      # The new pattern matching syntax will raise `NoMatchingPatternError` here without this `else`.
+    #
+    # Avoid the `Array` allocation necessary when using pattern matching `case` syntax.
+    # I'd still like to refactor this to avoid the redundant `attr_name` `case`s.
+    # Maybe a `Hash` of `proc`s?
+    case @parse_stack.last
+    when :"mime-type" then
+      case attr_name
+      when :type then @media_type.replace(value.as_s)
+      end
+    when :match then
+      case attr_name
+      when :type then @speedy_cat.last.format = FDO_MAGIC_FORMATS[value.as_s]
+      when :value then @speedy_cat.last.cat = value.as_s
+      when :offset then @speedy_cat.last.boundary = value.as_s
+      when :mask then @speedy_cat.last.mask = BASED_STRING.call(value.as_s)
+      end
+    when :magic then
+      case attr_name
+      when :priority then @speedy_cat&.weight = value.as_i
+      end
+    when :alias then
+      case attr_name
+      when :type then self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s))
+      end
+    when :"sub-class-of" then
+      case attr_name
+      when :type then self.cyo.add_parent(::CHECKING::YOU::OUT::from_ietf_media_type(value.as_s))
+      end
+    when :glob then
+      case attr_name
+      when :weight then @stick_around.weight = value.as_i
+      when :pattern then @stick_around.replace(value.as_s)
+      when :"case-sensitive" then @stick_around.case_sensitive = value.as_bool
+      end
+    when :"root-XML" then
+      #case attr_name
+      #when :namespaceURI then  # TODO
+      #when :localName then  # TODO
+      #end
     end
   end
 
