@@ -56,12 +56,28 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
   # Base-16 Ints can be written as literals in Ruby, e.g.
   # irb> 0xFF
   # => 255
-  BASED_STRING = proc { |s|
-    case
-    when -s[0..1].downcase == -'0x' then s.to_i(16)
-    when s.chr == -?0 then s.to_i(8)
-    else s.to_i(10)
-    end
+  BASED_STRING = proc {
+    # Operate on codepoints to avoid `String` allocation from slicing, e.g. `_1[...1]`
+    # would allocate a new two-character `String` before we have chance to dedupe it.
+    # The `shared-mime-info` XML is explicitly only in UTF-8, so this is safe.
+    #
+    # The below is equivalent to:
+    # ```case
+    # when -s[0..1].downcase == -'0x' then s.to_i(16)
+    # when s.chr == -?0 then s.to_i(8)
+    # else s.to_i(10)
+    # end```
+    #
+    # …but rewritten to check for first-codepoint `'0'`, then second-codepoint `'x'/'X'`:
+    #   irb> ?0.ord => 48
+    #   irb> [?X.ord, ?x.ord] => [88, 120]
+    #
+    # Relies on the fact that `#ord` of a long `String` is the same as `#ord` of its first character:
+    #   irb> 'l'.ord => 108
+    #   irb> 'lmfao'.ord => 108
+    (_1.ord == 48) ?
+      ([88, 120].include?(_1.codepoints[1]) ? _1.to_i(16) : _1.to_i(8)) :
+      _1.to_i(10)
   }
   FDO_MAGIC_FORMATS = {
     # "The string type supports the C character escapes (\0, \t, \n, \r, \xAB for hex, \777 for octal)."
@@ -196,26 +212,26 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     @parse_stack.push(name)
     return if self.skips.include?(name)
     case name
-    when :"mime-type"
-      @media_type = nil
+    when :"mime-type" then
+      @media_type = String.new if @media_type.nil?
       @cyo = nil
-    when :match
+    when :match then
       # Mark any newly-added Sequence as eligible for a full match candidate.
       @i_can_haz_magic = true
-      @weighted_action.append(::CHECKING::YOU::OUT::SequenceCat.new)
-    when :magic
-      @weighted_action = ::CHECKING::YOU::OUT::CatSequence.new
-    when :"magic-deleteall"
+      @speedy_cat.append(::CHECKING::YOU::OUT::SequenceCat.new)
+    when :magic then
+      @speedy_cat = ::CHECKING::YOU::OUT::SpeedyCat.new if @speedy_cat.nil?
+    when :"magic-deleteall" then
       # TODO
-    when :glob
+    when :glob then
       @stick_around = ::CHECKING::YOU::StickAround.new
-    when :"glob-deleteall"
+    when :"glob-deleteall" then
       # TODO
-    when :treemagic
+    when :treemagic then
       # TODO
-    when :acronym
+    when :acronym then
       # TODO
-    when :"expanded-acronym"
+    when :"expanded-acronym" then
       # TODO
     end
   end
@@ -226,21 +242,21 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     # This happens e.g. for the two attributes of the XML declaration '<?xml version="1.0" encoding="UTF-8"?>'.
     case [@parse_stack.last, attr_name]
     in :"mime-type", :type then
-      @media_type = value.as_s
+      @media_type.replace(value.as_s)
     in :match, :type then
       # There's no way to avoid a String allocation in `Ox::Sax::Value#as_s` rn,
       # pending C extension API for interned Strings prolly some time in Ruby 3.x.
-      @weighted_action.last.format = FDO_MAGIC_FORMATS[value.as_s]
+      @speedy_cat.last.format = FDO_MAGIC_FORMATS[value.as_s]
     in :match, :value then
-      @weighted_action.last.cat = value.as_s
+      @speedy_cat.last.cat = value.as_s
     in :match, :offset then
-      @weighted_action.last.boundary = value.as_s
+      @speedy_cat.last.boundary = value.as_s
     in :match, :mask then
       # The number to AND the value in the file with before comparing it to `value'.
       # Masks for numerical types can be any number, while masks for strings must be in base 16, and start with 0x.
-      @weighted_action.last.mask = BASED_STRING.call(value.as_s)
+      @speedy_cat.last.mask = BASED_STRING.call(value.as_s)
     in :magic, :priority then
-      @weighted_action&.weight = value.as_i
+      @speedy_cat&.weight = value.as_i
     in :alias, :type then
       self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s))
     in :"sub-class-of", :type then
@@ -266,7 +282,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
   def text(element_text)
     return if self.skips.include?(@parse_stack.last)
     case @parse_stack.last
-    when :comment
+    when :comment then
       self.cyo.description = element_text
     end
   end
@@ -275,20 +291,30 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
     raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
     return if self.skips.include?(@parse_stack.last)
     case name
-    when :"mime-type"
-      @media_type = nil
+    when :"mime-type" then
+      @media_type.clear
       @cyo = nil
-    when :match
-      # The Sequence stack represents a complete match once we start popping Sequences from it.
-      self.cyo.add_content_match(@weighted_action.dup) if @i_can_haz_magic
+    when :match then
+      # The Sequence stack represents a complete match once we start popping Sequences from it,
+      # which we can know because every `<match>` stack push sets `@i_can_haz_magic = true`.
+      # If there is only a single sub-sequence we can just add that instead of the container.
+      self.cyo.add_content_match(
+        # Add single-sequences directly instead of adding their container.
+        @speedy_cat.one? ?
+          # Transfer any non-default `weight` from the container to that single-sequence.
+          @speedy_cat.pop.tap { _1.weight = @speedy_cat.weight } :
+          # Otherwise go ahead and add a copy of the container while also preparing the
+          # local container for a possible next-branch to the `<magic>` tree.
+          @speedy_cat.dup.tap { @speedy_cat.pop }
+      ) if @i_can_haz_magic
       # Mark any remaining partial Sequences as ineligible to be a full match candidate,
       # e.g. if we had a stack of [<match1/><match2/><match3/>] we would want to add a
       # candidate [m1, m2, m3] but not the partials [m1, m2] or [m1] as we clear out the stack.
       @i_can_haz_magic = false
-      @weighted_action.pop
-    when :magic
-      @weighted_action.clear
-    when :glob
+    when :magic then
+      # `SpeedyCat#clear` will unset any non-default `weight` so we can re-use it cleanly.
+      @speedy_cat.clear
+    when :glob then
       self.cyo.add_pathname_fragment(@stick_around) unless @stick_around.nil?
     end
   end
