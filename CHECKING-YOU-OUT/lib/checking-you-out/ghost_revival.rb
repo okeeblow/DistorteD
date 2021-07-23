@@ -110,9 +110,9 @@ module CHECKING::YOU::OUT::GHOST_REVIVAL
       String::new(str=-"\xFF\xFE\x00\x00", encoding: Encoding::ASCII_8BIT),  # UTF-32LE
       String::new(str=-"\x00\x00\xFE\xFF", encoding: Encoding::ASCII_8BIT),  # UTF-32BE
     ].each_with_object(::CHECKING::YOU::OUT::from_ietf_media_type('text/plain')) { |sequence, textslashplain|
-      textslashplain.add_content_match(::CHECKING::YOU::SweetSweet♥Magic::CatSequence::new.append(
+      textslashplain.add_content_match(
         ::CHECKING::YOU::SweetSweet♥Magic::SequenceCat::new(sequence, (0...sequence.size), nil)  # `nil` `:mask`
-      ))
+      )
     }
   end  # def self.extended
 end  # module CHECKING::YOU::OUT::GHOST_REVIVAL
