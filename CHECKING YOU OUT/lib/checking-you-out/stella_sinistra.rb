@@ -93,7 +93,7 @@ class CHECKING::YOU
       #  or only have a leading dot, e.g. `File::extname(".bash_profile") => `""`.
       newbuild = case otra
         when self.class then -otra.to_s
-        when ::Symbol   then -otra.to_s  # TODO: Ruby 3.0 Symbol#name
+        when ::Symbol   then -otra.name
         when ::Pathname then otra.extname.empty? ? otra.basename.to_s.-@ : otra.extname.prepend(-?*).-@
         when ::String   then (File.extname(otra).empty? or -otra[-1] == -?*) ? -otra : -File.extname(otra).prepend(-?*)
         else -otra.to_s

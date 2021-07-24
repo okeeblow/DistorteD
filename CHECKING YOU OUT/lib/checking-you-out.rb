@@ -1,9 +1,8 @@
 require 'pathname' unless defined? ::Pathname
 
-# Silence warning for pattern matching used in several Modules of this library.
-# See https://ruby-doc.org/core-2.7.0/Warning.html#method-c-5B-5D for more.
-# TODO: Remove this when our minimum Ruby version is >= 3.0,
-# since pattern matching was made non-experimental in https://bugs.ruby-lang.org/issues/17260
+# Silence warning for Ractor use in Ruby 3.0.
+# See https://ruby-doc.org/core/Warning.html#method-c-5B-5D for more.
+# TODO: Remove this when Ractors are "stable".
 Warning[:experimental] = false
 
 

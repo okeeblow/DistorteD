@@ -19,6 +19,8 @@ Gem::Specification.new do |spec|
   spec.test_files    = Dir['test/**/*']
   spec.require_paths = ['lib']
 
+  spec.required_ruby_version = '>= 3.0.0'
+
   spec.executables   = ['checking-you-out']
 
   # Ox  —  fastest XML parser for loading `shared-mime-info` packages! https://github.com/ohler55/ox
@@ -52,7 +54,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'memory_profiler', '~> 1.0'  # https://github.com/SamSaffron/memory_profiler
   spec.add_development_dependency 'benchmark-ips', '~> 2.0'  # https://github.com/evanphx/benchmark-ips
   spec.add_development_dependency 'terminal-table', '~> 3.0'  # https://github.com/tj/terminal-table
-
-  spec.required_ruby_version = '>= 2.7.0'
 
 end

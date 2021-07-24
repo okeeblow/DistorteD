@@ -198,17 +198,13 @@ module CHECKING::YOU::IN::INLANDGESPRÄCH
   # Reconstruct an IETF Media-Type String from a loaded CYI/CYO's `#members`
   def to_s
     # TODO: Fragments (e.g. `;what=ever`), and syntax identifiers (e.g. `+xml`)
-    # Note: Explicitly calling `-''` for now until I confirm the behavior of `NilClass#to_s` in Ruby 3.0+.
-    # In Ruby 2.7 `nil.to_s` will return a deduplicated immutable empty String: https://bugs.ruby-lang.org/issues/16150
-    # added experimentally in https://github.com/ruby/ruby/commit/6ffc045a817fbdf04a6945d3c260b55b0fa1fd1e
-    # but then reverted in https://github.com/ruby/ruby/commit/bea322a352d820007dd4e6cab88af5de01854736
     -(String.new(encoding: Encoding::UTF_8, capacity: 128) << self.phylum.to_s << -'/' << case
     when self.kingdom == -'kayo-dot' then -'x.'
     when self.kingdom == -?x then -'x-'
     when self.kingdom == -'x-ms' then -'x-ms-'
     when self.kingdom == -'prs' then -'prs.'
     when self.kingdom == -'vnd' then -'vnd.'
-    when self.kingdom == -'possum' then -''
+    when self.kingdom == -'possum' then nil.to_s
     when !IETF_TREES.include?(self.kingdom.to_s) then 'vnd.' << self.kingdom.to_s << -'.'
     else self.kingdom.to_s << -'.'
     end << self.genus.to_s)
