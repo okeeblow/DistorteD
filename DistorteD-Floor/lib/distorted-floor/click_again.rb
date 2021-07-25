@@ -297,7 +297,7 @@ class Cooltrainer::DistorteD::ClickAgain
           type = CHECKING::YOU::OUT[out]
         end
 
-        type_options = combined_outer_options&.fetch(type, Hash.new)
+        type_options = combined_outer_options&.fetch(type, Hash.new(nil))
         supported_options = [
           Cooltrainer::DistorteD::IMPLANTATION(:LOWER_WORLD, type_options[:molecule])&.slice(*type_mars)&.values&.reduce(&:merge),
           Cooltrainer::DistorteD::IMPLANTATION(:OUTER_LIMITS, type_options[:molecule])&.fetch(type, nil)
