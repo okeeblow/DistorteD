@@ -1,5 +1,14 @@
 #!/usr/bin/env ruby
 
+# TODO: Make benchmarking a permanent and nicer option:
+# https://stackoverflow.com/questions/4736546/rails-3-speed-up-console-loading-time
+#require 'benchmark'
+#def require(file)
+#  puts Benchmark.measure("") {
+#    super
+#  }.format("%t require #{file}")
+#end
+
 require 'distorted/click_again'
 
 click = Cooltrainer::DistorteD::ClickAgain.new(ARGV, File.basename(__FILE__))
