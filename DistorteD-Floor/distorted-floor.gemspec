@@ -39,6 +39,9 @@ Gem::Specification.new do |spec|
 
   # https://github.com/dmendel/bindata will probably be useful.
 
+  # Ours
+  spec.add_dependency 'checking-you-out', "~> #{Cooltrainer::DistorteD::VERSION}"
+
   # Common
   spec.add_dependency 'mime-types', '~> 3.3'  # https://github.com/mime-types/ruby-mime-types
   spec.add_dependency 'ruby-filemagic', '~> 0.7'  # http://blackwinter.github.io/ruby-filemagic/ https://github.com/blackwinter/ruby-filemagic
