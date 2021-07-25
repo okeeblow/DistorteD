@@ -27,3 +27,10 @@
   xref_urls:
     - "https://docs.microsoft.com/en-us/typography/opentype/spec/otff#filenames"
   registered: false
+
+
+- !ruby/object:MIME::Type
+  content-type: font/datafork-truetype
+  extensions:
+  - dfont
+  registered: false
