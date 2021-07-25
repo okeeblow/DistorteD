@@ -379,7 +379,7 @@ class CHECKING::YOU::MrMIME < ::Ox::Sax
           convert_special: true,  # [boolean] Convert encoded entities back to their unencoded form, e.g. `"&lt"` to `"<"`.
           skip: :skip_off,        # [:skip_none|:skip_return|:skip_white|:skip_off] (from Element text/value) Strip CRs, whitespace, or nothing.
           smart: false,           # [boolean] Toggle Ox's built-in hints for HTML parsing: https://github.com/ohler55/ox/blob/master/ext/ox/sax_hint.c
-          strip_namespace: nil,   # [nil|String|true|false] (from Element names) Strip no namespaces, all namespaces, or a specific namespace.
+          strip_namespace: true,  # [nil|String|true|false] (from Element names) Strip no namespaces, all namespaces, or a specific namespace.
           symbolize: true,        # [boolean] Fill callback method `name` arguments with Symbols instead of with Strings.
           intern_strings: true,   # [boolean] Intern (freeze and deduplicate) String return values.
         }.update(kwargs),

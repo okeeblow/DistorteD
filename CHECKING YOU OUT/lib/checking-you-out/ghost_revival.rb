@@ -1,34 +1,13 @@
 
 require_relative 'ghost_revival/mr_mime' unless defined? ::CHECKING::YOU::MrMIME
+require_relative 'ghost_revival/xross_infection' unless defined? ::CHECKING::YOU::OUT::XROSS_INFECTION
 
 module CHECKING::YOU::OUT::GHOST_REVIVAL
-
-  # Path fragment for finding `shared-mime-info` package files.
-  # This same subdir path applies when searching *any* `PATH` for `shared-mime-info` XML,
-  # e.g. '/usr/share' + 'mime/packages' <-- this part
-  # For consistency the same path is used for our local data under the Gem root.
-  MIME_PACKAGES_FRAGMENT = proc { File.join(-'mime', -'packages') }
 
   # Filename for the main fdo `shared-mime-info` source XML.
   # We will look for this file in system `XDG_DATA_DIRS` and use our own bundled copy
   # if the system version is missing or outdated.
   FDO_MIMETYPES_FILENAME = -'freedesktop.org.xml'
-
-  # Path to our built-in custom `shared-mime-info` database.
-  DD_MIMETYPES_PATH = proc { File.join(
-    ::CHECKING::YOU::OUT::GEM_ROOT.call,
-    MIME_PACKAGES_FRAGMENT.call,
-    -'distorted-types.xml',
-  )}
-
-  # Path to our bundled Apache Tika `shared-mime-info` database.
-  TIKA_MIMETYPES_FILENAME = -'tika-mimetypes.xml'
-  TIKA_MIMETYPES_PATH = proc { File.join(
-    ::CHECKING::YOU::OUT::GEM_ROOT.call,
-    -'third-party',
-    -'tika-mimetypes',
-    TIKA_MIMETYPES_FILENAME,
-  )}
 
   # For now, unconditionally load all available files at startup.
   # TODO: Support partial on-the-fly loading à la `mini_mime`.
@@ -37,12 +16,6 @@ module CHECKING::YOU::OUT::GHOST_REVIVAL
     # for our multiple data files. I will just read them sequentially for now.
     handler = ::CHECKING::YOU::MrMIME.new
 
-    # Load our own local database of custom types.
-    handler.open(DD_MIMETYPES_PATH.call, strip_namespace: -'distorted')
-
-    # Load the Apache Tika type database since it is not commonly installed like `shared-mime-info` is.
-    handler.open(TIKA_MIMETYPES_PATH.call, strip_namespace: -'tika')
-
     # CYO bundles a copy of `freedesktop.org.xml` from `shared-mime-info` but will prefer a system-level copy
     # if one is available and not out of date. This flag will be disabled if we find a suitable copy,
     # otherwise our bundled copy will be loaded after we finish scanning the PATHs givin in our environment.
@@ -50,57 +23,49 @@ module CHECKING::YOU::OUT::GHOST_REVIVAL
 
     # Search `XDG_DATA_DIRS` for any additional `shared-mime-info`-format data files we can load,
     # hopefully including the all-important `freedesktop.org.xml`.
-    # T0DOs:
-    # - Check if Homebrew sets this env var for its "/opt/homebrew/share" path
-    #   or if I will have to include it manually with OS detection.
-    # - Check if this code breaks on Winders where `PATH_SEPARATOR` is `;`
-    #   and individual paths contain a drive letter and colon.
-    # - Find a different data source on Windows?
-    #   Not likely to even have `XDG` environment variables or `shared-mime-info` installed.
-    # - Make it possible to specify additional paths directly to CYO.
-    # - Make it possible to skip certain paths/files.
-    ENV[-'XDG_DATA_DIRS'].split(File::PATH_SEPARATOR).map { |share_dir|
+    ::CHECKING::YOU::OUT::XROSS_INFECTION::XDG.DATA.push(
+      # Append out Gem-local path to the very end (lowest priority)
+      ::CHECKING::YOU::OUT::GEM_ROOT.call
+    ).map {
+      # Add path fragments for finding `shared-mime-info` package files.
+      # This same subdir path applies when searching *any* `PATH` for `shared-mime-info` XML,
+      # e.g. '/usr/share' + 'mime/packages' <-- this part
+      # For consistency the same path is used for our local data under the Gem root.
+      _1.join(-'mime', -'packages')
+    }.flat_map {
+      # Find all XML files under all subdirectories of all given `Pathname`s.
+      #
+      # `#glob` follows the same conventions as `File::fnmatch?`:
+      # https://ruby-doc.org/core-3.0.2/File.html#method-c-fnmatch
+      #
+      # `EXTGLOB` enables the brace-delimited glob syntax, used here to allow an optional `'.in'` extname
+      # as found on the `'freedesktop.org.xml.in'` bundled with our Gem since I don't want to rename
+      # the file from the XDG repo even though that extname means they don't want us to use that file directly.
+      _1.glob(File.join(-'**', -'*.xml{.in,}'), File::FNM_EXTGLOB)
+    }.each_with_object(::CHECKING::YOU::OUT::GEM_ROOT.call) { |xml_path, gem_root|
 
-      # The environment variable will (should) contain directories at the `share` level of the `hier(7)`,
-      # e.g. `/usr/share`, so we should append the known common fragment to that for a final path of
-      # e.g. `/usr/share/mime/packages`!
-      File.join(share_dir, MIME_PACKAGES_FRAGMENT.call)
-
-    }.each { |mime_packages_dir|
-
-      # Assume (for now) that every XML file in one of these paths will be something we want.
-      Dir.glob('*.xml'.freeze, base: mime_packages_dir) { |xml_filename|
-
-        # Get the absolute path to each candidate file.
-        xml_path = File.join(mime_packages_dir, xml_filename)
-
-        # Load the bundled `shared-mime-info` database if the system-level one exists but is out of date compared to our Gem.
-        #
-        # If the xml filename is `freedesktop.org.xml` aka `shared-mime-info`, compare its `mtime` to the build date
-        # obtained from CYO's Gem::Specification. This will be a `Time` object but rounded down to midnight of the day it was built.
-        # For development using a local tree that date will always be the current day.
-        # NOTE: This assumes I will be timely about syncing upstream XML changes to my repo lol
-        if File.basename(xml_path) == FDO_MIMETYPES_FILENAME
-          if ::CHECKING::YOU::OUT::GEM_PACKAGE_TIME.call > File.mtime(xml_path)
-            #puts "Skipping #{xml_path} because it is out of date (#{File.mtime(xml_path)}) compared to bundled copy (#{GEM_PACKAGE_TIME})"
-          else
-            load_bundled_fdo_xml = false
-          end
+      # Load the bundled `shared-mime-info` database if the system-level one exists but is out of date
+      # compared to our Gem. Using `String#include?` here since the system-level file will be
+      # `'freedesktop.org.xml'` but the bundled copy will be `'freedesktop.org.xml.in'`.
+      if xml_path.basename.to_s.include?(FDO_MIMETYPES_FILENAME)
+        # `Pathname#ascend` returns an `Enumerator` of `Pathname`s up one level at a time until reaching fs root.
+        # If *any* of these are equal to `GEM_ROOT` then we have found the bundled copy, otherwise system copy.
+        if (xml_path.ascend { break true if _1 ==  gem_root} || false) then
+          # Found bundled copy.
+          # A new-enough system-level copy will disable this flag to prevent loading outdated bundled data.
+          next unless load_bundled_fdo_xml
+        else
+          # Found system-level copy.
+          # Use this if it's newer than our Gem, and set a flag to prevent loading the bundled copy if so.
+          next if ::CHECKING::YOU::OUT::GEM_PACKAGE_TIME.call > xml_path.mtime
+          load_bundled_fdo_xml = false
         end
-        handler.open(xml_path)
-      }  # Dir::glob
-    }  # ENV.each
+      end
 
-    # If no suitable `shared-mime-info` was discovered in the environment, load our bundled copy.
-    if load_bundled_fdo_xml
-      handler.open(File.join(
-        ::CHECKING::YOU::OUT::GEM_ROOT.call,
-        -'third-party',
-        -'shared-mime-info',
-        "#{FDO_MIMETYPES_FILENAME}.in",
-        # Yes I know why it's `.xml.in` but I'm doing it anyway 8)
-      ))
-    end
+      # If we made it here (no `next` above) then we should load the file.
+      handler.open(xml_path)
+
+    }  # each_with_object
 
     # Detect UTF BOMs https://docs.microsoft.com/en-us/windows/win32/intl/using-byte-order-marks
     Array [

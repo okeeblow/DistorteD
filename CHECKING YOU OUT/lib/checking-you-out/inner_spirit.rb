@@ -48,7 +48,7 @@ end
 class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
   # Absolute path to the root of the Gem — the directory containing `bin`,`docs`,`lib`, etc.
-  GEM_ROOT = proc { File.expand_path(File.join(__dir__, *Array.new(2, '..'.freeze))) }
+  GEM_ROOT = proc { ::Pathname.new(__dir__).join(*Array.new(2, -'..')).expand_path.realpath }
 
   # Time object representing the day this running CYO Gem was packaged.
   #
