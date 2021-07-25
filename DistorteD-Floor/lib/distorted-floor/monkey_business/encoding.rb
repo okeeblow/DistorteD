@@ -261,6 +261,7 @@ class Encoding
 
   }  # ADDITIONAL_ENCODING_CODE_PAGE_IDS
 
+  # TODO: Mac OS Script Codes http://www.mods.com.au/budapi/mac_language_codes.htm
 
   # Box-drawing characters for various Encodings, including single/double pipe characters,
   # area-sharing characters, and basically anything that could/would be used for art direction
@@ -295,6 +296,22 @@ class Encoding
         # since it consists of terminal graphics, arrows, and segmented digits.
       ].reduce(&:chain),  # https://www.unicode.org/charts/PDF/U1FB00.pdf
     ].reduce(&:chain),
+  }
+
+
+  # Example Strings for various Encodings, used for things such as font previews.
+  # These are more language-specific than Encoding-specific, but I don't have
+  # any better way to index them for now.
+  PANGRAMS = {
+    Encoding::ISO_8859_1 => [
+    ],
+    # Celtic languages, such as Irish, Manx, Scottish Gaelic, Welsh, Cornish, and Breton.
+    Encoding::ISO_8859_14 => [
+      'Parciais fy jac codi baw hud llawn dŵr ger tŷ Mabon.',  # Welsh
+    ],
+    Encoding::ISO_8859_15 => [
+      'Buvez de ce whisky que le patron juge fameux.',
+    ],
   }
 
 
