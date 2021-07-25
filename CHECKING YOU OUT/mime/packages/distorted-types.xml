@@ -45,4 +45,24 @@
     <distorted:link>https://tools.ietf.org/html/rfc3003</distorted:link>
     <distorted:fourcc type="big32" value="ms\u0000U"/>
   </mime-type>
+  <mime-type type="text/plain">
+    <magic priority="33">
+      <!--
+        There must be a reason fd.o and Tika both don't identify these.
+        I haven't found a conflict yet but this seems too simultaneously
+        important and basic to overlook unintentionally  v(._. )v
+
+        https://www.unicode.org/faq/utf_bom.html
+        https://en.wikipedia.org/wiki/Byte_order_mark
+        https://docs.microsoft.com/en-us/windows/win32/intl/using-byte-order-marks
+      -->
+      <match type="host16" value="0xFFFE" offset="0"/>      <!-- UTF-16 -->
+      <match type="host32" value="0xFFFE0000" offset="0"/>  <!-- UTF-32 -->
+      <match type="byte" value="0xEF" offset="0">
+        <match type="byte" value="0xBB" offset="1">
+          <match type="byte" value="0xBF" offset="2"/>      <!-- UTF-8  -->
+        </match>
+      </match>
+    </magic>
+  </mime-type>
 </mime-info>
