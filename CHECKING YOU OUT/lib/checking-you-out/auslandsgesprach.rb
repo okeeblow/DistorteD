@@ -163,7 +163,7 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
     cats = ->(gentlemen) {
       gentlemen.each_codepoint.reverse_each(&move_zig)
       move_zig.call(0)
-      return my_base.dup.tap(&the_bomb)
+      return my_base.dup.freeze.tap(&the_bomb)
     }
     -> (gentlemen) {
       return cats.call((gentlemen.encoding == Encoding::UTF_8) ? gentlemen : gentlemen.encode(Encoding::UTF_8))
