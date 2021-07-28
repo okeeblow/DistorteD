@@ -40,6 +40,8 @@ end
 handler = IETFTypeChecker.new
 fdo_types = handler.open(File.join(
   ::CHECKING::YOU::OUT::GEM_ROOT.call,
+  -'mime',
+  -'packages',
   -'third-party',
   -'shared-mime-info',
   "#{::CHECKING::YOU::OUT::GHOST_REVIVAL::FDO_MIMETYPES_FILENAME}.in",
