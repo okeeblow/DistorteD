@@ -129,6 +129,26 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     end
   end
 
+  # Returns our file extensions minus the leading asterisk.
+  # Always returns a `Set`.
+  def postfixes
+    @postfixes&.is_a?(::Enumerable) ?
+      @postfixes.map { _1.delete_prefix(-?*) } :
+      ::Set[@postfixes.delete_prefix(-?*)]
+  end
+
+  # Returns the "primary" file extension for this type.
+  # For now we'll assume the `#first` extname is the primary.
+  def extname
+    case @postfixes
+    when ::NilClass then nil
+    when ::Symbol then @postfixes.to_s
+    when ::String then @postfixes
+    when ::Set then @postfixes.first
+    else nil
+    end&.delete_prefix(-?*)
+  end
+
 
   # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
   def aka
