@@ -9,6 +9,7 @@
 #  }.format("%t require #{file}")
 #end
 
+require 'bundler/setup'
 require 'distorted/click_again'
 
 click = Cooltrainer::DistorteD::ClickAgain.new(ARGV, File.basename(__FILE__))
