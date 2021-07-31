@@ -173,7 +173,12 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
   # Call the above singleton Proc to do the thing.
   def from_ietf_media_type(ietf_string)
     return if ietf_string.nil?
-    FROM_IETF_TYPE.call(ietf_string)
+    # `#to_s` is a no-op for `String`s, so make sure we call it to support `Symbol`s and other input types here.
+    #   irb> oid = proc { p "#{_1} is object_id #{_1.object_id}" } => #<Proc:0x00005640ef7b0440 (irb):7>
+    #   irb> 'lol'.tap(&oid).to_s.tap(&oid)
+    #   "lol is object_id 1340"
+    #   "lol is object_id 1340"
+    FROM_IETF_TYPE.call(ietf_string.to_s)
   end
 end
 
