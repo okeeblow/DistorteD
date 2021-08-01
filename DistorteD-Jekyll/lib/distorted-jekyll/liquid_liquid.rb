@@ -7,6 +7,9 @@ rescue LoadError
   # This is an optional dependency: https://github.com/Shopify/liquid-c
 end
 
+require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
+
 
 module Cooltrainer
 
@@ -35,7 +38,7 @@ module Cooltrainer
   # end
   # fragment.to_html
   #
-  # But the way DistorteD works (with MIME::Type#distorted_template_method)
+  # But the way DistorteD works (with `::CHECKING::YOU::OUT#distorted_template_method`)
   # means we would need a way to collate child elements anyway, since each call
   # to a :distorted_template_method should generate only one variation,
   # meaning we'd end up with a bunch of <source> tag Strings but would
@@ -81,7 +84,7 @@ module Cooltrainer
       }
     end
 
-    # Hash[String] => Integer containing weights for MIME::Type#sub_type sorting weights.
+    # Hash[String] => Integer containing weights for ::CHECKING::YOU::OUT sorting.
     # Weights are assigned in auto-incrementing Array order and will be called from :<=>.
     # Sub-types near the beginning will sort before sub-types near the bottom.
     # This is important for things like <picture> tags where the first supported <source> child
@@ -96,7 +99,7 @@ module Cooltrainer
       'jpeg'.freeze,
       'gif'.freeze,
     ].map.with_index.to_h
-    # Return a static 0 weight for unknown sub_types.
+    # Return a static 0 weight for unknown types.
     SORT_WEIGHTS.default_proc = Proc.new { 0 }
 
     # Elements should sort themselves under their parent when rendering.
@@ -108,7 +111,7 @@ module Cooltrainer
     #   irb> SORT_WEIGHTS['avif'] <=> SORT_WEIGHTS['png']
     #   => -1
     def <=>(otra)
-      SORT_WEIGHTS[self.change&.type&.sub_type] <=> SORT_WEIGHTS[otra&.change&.type&.sub_type]
+      SORT_WEIGHTS[self.change&.type&.genus] <=> SORT_WEIGHTS[otra&.change&.type&.genus]
     end
 
     # Generic Liquid template loader
@@ -255,7 +258,7 @@ module Cooltrainer
       @change = change
     end
     def initialism
-      @initialism ||= @change.type&.sub_type&.to_s.split(MIME::Type::SUB_TYPE_SEPARATORS)[0].upcase
+      @initialism ||= @change.type&.genus&.to_s.split(::CHECKING::YOU::OUT::type_separators)[0].upcase
     end
     def attr
       # Use a ChangeAttrDrop to avoid emitting keys for empty values.

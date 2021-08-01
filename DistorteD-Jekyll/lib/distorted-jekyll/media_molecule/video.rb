@@ -1,3 +1,5 @@
+require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 require 'distorted/media_molecule/video'
 
 
@@ -23,13 +25,13 @@ module Jekyll::DistorteD::Molecule::Video
       case change.type
       # Treat HLS and MPEG-DASH the same, with slightly different naming conventions.
       # Add their main playlist file, but then also glob any segments that happen to exist.
-      when CHECKING::YOU::OUT['application/dash+xml']
+      when ::CHECKING::YOU::OUT::from_ietf_media_type('application/dash+xml')
         hls_dir = File.join(dd_dest, "#{basename}.hls")
         wanted.add(File.join(hls_dir, "#{basename}.m3u8"))
         if Dir.exist?(hls_dir)
           Dir.entries(hls_dir).to_set.subtract(Set["#{basename}.m3u8"]).each { |hls| wanted.add(File.join(hls_dir, hls)) }
         end
-      when CHECKING::YOU::OUT['application/vnd.apple.mpegurl']
+      when ::CHECKING::YOU::OUT::from_ietf_media_type('application/vnd.apple.mpegurl')
         dash_dir = File.join(dd_dest, "#{basename}.dash")
         wanted.add(File.join(dash_dir, "#{basename}.mpd"))
         if Dir.exist?(dash_dir)

@@ -9,6 +9,7 @@ require 'distorted/modular_technology/ttfunk'
 require 'distorted/modular_technology/vips/save'
 
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 
 
 module Cooltrainer; end
@@ -81,10 +82,16 @@ module Cooltrainer::DistorteD::Molecule::Text
   }
 
 
-  LOWER_WORLD = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash.transform_values { |v| Hash[
+  LOWER_WORLD = {
+    ::CHECKING::YOU::OUT::from_ietf_media_type('text/plain') => nil,
+    ::CHECKING::YOU::OUT::from_ietf_media_type('text/x-nfo') => nil,
+  }.transform_values { |v| Hash[
     :encoding => Cooltrainer::Compound.new(:encoding, valid: Encoding, blurb: 'Character encoding used in this document. (default: automatically detect)', default: nil),
   ]}
-  OUTER_LIMITS = CHECKING::YOU::IN(/^text\/(plain|x-nfo)/).to_hash.merge(
+  OUTER_LIMITS = {
+    ::CHECKING::YOU::OUT::from_ietf_media_type('text/plain') => nil,
+    ::CHECKING::YOU::OUT::from_ietf_media_type('text/x-nfo') => nil,
+  }.merge(
     Cooltrainer::DistorteD::Technology::Vips::Save::OUTER_LIMITS.dup.transform_values{ |v| Hash[
       :spacing => Cooltrainer::Compound.new(:spacing, blurb: 'Document-wide character spacing style.', valid: Set[:monospace, :proportional]),
       :dpi => Cooltrainer::Compound.new(:dpi, blurb: 'Dots per inch for text rendering.', valid: Integer, default: 144),
@@ -94,6 +101,7 @@ module Cooltrainer::DistorteD::Molecule::Text
 
   self::LOWER_WORLD.keys.each { |t|
     define_method(t.distorted_file_method) { |dest_root, change|
+      p change.paths(dest_root)
       copy_file(change.paths(dest_root).first)
     }
   }
@@ -155,7 +163,7 @@ module Cooltrainer::DistorteD::Molecule::Text
         # Fix files with ASCII/ANSI art (like NFOs) from being detected as ISO-8859-1
         # when they should be IBM437 to display properly.
         [
-          type_mars.include?(CHECKING::YOU::OUT['text/x-nfo']),  # Only certain souce file types.
+          type_mars.include?(::CHECKING::YOU::OUT::from_ietf_media_type('text/x-nfo')),  # Only certain souce file types.
           detected == Encoding::ISO_8859_1,  # Only if ICU detects ISO-8859-1.
           oobe?(Encoding::IBM437),  # Does this look like IBM437 based on box-drawing characters?
         ].all? ? Encoding::IBM437 : detected

@@ -1,5 +1,7 @@
 require 'set'
 
+require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 require 'distorted/media_molecule/pdf'
 
 
@@ -57,7 +59,7 @@ opened.'),
   ]
 
   OUTER_LIMITS = Hash[
-    CHECKING::YOU::OUT['application/pdf'] => PDF_OPEN_PARAMS.concat(CONTAINER_ATTRIBUTES).reduce(Hash[]) {|aka, compound|
+    ::CHECKING::YOU::OUT::from_ietf_media_type(-'application/pdf') => PDF_OPEN_PARAMS.concat(CONTAINER_ATTRIBUTES).reduce(Hash[]) {|aka, compound|
       aka.tap { |a| a.store(compound.element, compound) }
     }
   ]
@@ -99,7 +101,7 @@ opened.'),
   # showing only the first page with transparency and stretched to the
   # size of the container element.
   # We will need something like PDF.js in an <iframe> to handle this.
-  define_method(CHECKING::YOU::OUT['application/pdf'].distorted_template_method) { |change|
+  define_method(::CHECKING::YOU::OUT::from_ietf_media_type('application/pdf').distorted_template_method) { |change|
     Cooltrainer::ElementalCreation.new(:object, change, children: [:embed, :anchor_inline]).tap { |e|
       e.fragment = pdf_open_params.empty? ? ''.freeze : "##{pdf_open_params_url}"
     }

@@ -2,8 +2,9 @@
 # Our custom Exceptions
 require 'distorted/error_code'
 
-# MIME::Typer
+# File Typer
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 require 'distorted/media_molecule'
 
 # Set.to_hash
@@ -13,7 +14,7 @@ require 'set'
 Cooltrainer::DistorteD::GEM_ROOT = File.expand_path(File.join(__dir__, '..'.freeze, '..'.freeze))
 
 module Cooltrainer::DistorteD::Invoker
-  # Returns a Hash[MIME::Type] => Hash[MediaMolecule] => Hash[param_alias] => Compound
+  # Returns a Hash[CHECKING::YOU::OUT] => Hash[MediaMolecule] => Hash[param_alias] => Compound
   def lower_world
     Cooltrainer::DistorteD::IMPLANTATION(:LOWER_WORLD).each_with_object(
       Hash.new { |pile, type| pile[type] = Hash[] }
@@ -22,7 +23,7 @@ module Cooltrainer::DistorteD::Invoker
     }
   end
 
-  # Returns a Hash[MediaMolecule] => Hash[MIME::Type] => Hash[param_alias] => Compound
+  # Returns a Hash[MediaMolecule] => Hash[CHECKING::YOU::OUT] => Hash[param_alias] => Compound
   def outer_limits(all: false)
     Cooltrainer::DistorteD::IMPLANTATION(
       :OUTER_LIMITS,
@@ -39,20 +40,21 @@ module Cooltrainer::DistorteD::Invoker
     File.basename(@name, '.*')
   end
 
-  # Returns a Set of MIME::Types common to the source file and our supported MediaMolecules.
+  # Returns a `::Set` of `::CHECKING::YOU::OUT` objects common to the source file and our supported MediaMolecules.
   # Each of these Molecules will be plugged to the current instance.
   def type_mars
-    @type_mars ||= CHECKING::YOU::OUT(path, so_deep: true) & lower_world.keys.to_set
+    # TODO: Get rid of the redundant `Set[…].flatten` here once I stabilize CYO API.
+    @type_mars ||= Set[::CHECKING::YOU::OUT(path, so_deep: true)].flatten & lower_world.keys.to_set
     raise MediaTypeNotImplementedError.new(@name) if @type_mars.empty?
     @type_mars
   end
 
   # MediaMolecule file-type plugger.
-  # Any call to a MIME::Type's distorted_method will end up here unless
+  # Any call to a ::CHECKING::YOU::OUT's distorted_method will end up here unless
   # the Molecule that defines it has been `prepend`ed to our instance.
   def method_missing(meth, *args, **kwargs, &block)
     # Only consider method names with our prefixes.
-    if MIME::Type::DISTORTED_METHOD_PREFIXES.values.map(&:to_s).include?(meth.to_s.split(MIME::Type::SUB_TYPE_SEPARATORS)[0])
+    if ::CHECKING::YOU::OUT::distorted_method_prefixes.values.map(&:to_s).include?(meth.to_s.split(::CHECKING::YOU::OUT::type_separators)[0])
       # TODO: Might need to handle cases here where the Set[Molecule]
       # exists but none of them defined our method.
       unless self.singleton_class.instance_variable_get(:@media_molecules)
@@ -89,10 +91,10 @@ module Cooltrainer::DistorteD::Invoker
     # irb(main)> 'to_application_pdf'.split('_')
     # => ["to", "application", "pdf"]
     #
-    # irb(main)> CHECKING::YOU::OUT('.docx').first.distorted_file_method.to_s.split('_')
+    # irb(main)> ::CHECKING::YOU::OUT('.docx').first.distorted_file_method.to_s.split('_')
     # => ["write", "application", "vnd", "openxmlformats", "officedocument", "wordprocessingml", "document"]
-    parts = meth.to_s.split(MIME::Type::SUB_TYPE_SEPARATORS)
-    MIME::Type::DISTORTED_METHOD_PREFIXES.values.map(&:to_s).include?(parts[0]) && parts.length > 2 || super(meth, *a)
+    parts = meth.to_s.split(::CHECKING::YOU::OUT::type_separators)
+    ::CHECKING::YOU::OUT::distorted_method_prefixes.values.map(&:to_s).include?(parts[0]) && parts.length > 2 || super(meth, *a)
   end
 
 end

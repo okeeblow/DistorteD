@@ -109,7 +109,7 @@ module Cooltrainer::DistorteD::Technology::Vips
                 element = param_spec[:name].to_sym
 
                 # `magicksave` takes an argument `format` to choose one of its many supported types,
-                # but that selection in DistorteD-land is via our MIME::Types, so this option should be dropped.
+                # but that selection in DistorteD-land is via `::CHECKING::YOU::OUT()`, so this option should be dropped.
                 # https://github.com/libvips/libvips/blob/4de9b56725862edf872ae503a3dfb4cf05da9e77/libvips/foreign/magicksave.c#L455~L460
                 next if element == :format
 
@@ -148,15 +148,18 @@ module Cooltrainer::DistorteD::Technology::Vips
       }
     end
 
-    # Returns a Set[MIME::Type] based on our suffixes.
+    # Returns a Set[CHECKING::YOU::OUT] based on our suffixes.
     def types
       @types ||= begin
-        # We will likely get duplicate suffixes for a single MIME::Type, but we may also get suffixes for multiple Types:
+        # We will likely get duplicate suffixes for a single `::CHECKING::YOU::OUT`, but we may also get suffixes for multiple Types:
         # irb> Cooltrainer::DistorteD::Technology::Vips::FFI::VipsType.new('VipsForeignSaveJpegFile').suffixes
         # => [".jpg", ".jpeg", ".jpe"]
         # irb> Cooltrainer::DistorteD::Technology::Vips::FFI::VipsType.new('VipsForeignSaveMagickFile').suffixes
         # => [".gif", ".bmp"]
-        self.suffixes&.map(&CHECKING::YOU::method(:OUT))&.reduce(:merge)
+        # TODO: CYO shouldn't make us prepend '*'.
+        # TODO: Warn when we don't have a CYO match for a VIPS suffix (taken care of by `#compact` for now).
+        # TODO: Fix mis-detection of Radiance HDR and fix handling of `Set`s here (currently `#flatten`ed)
+        self.suffixes&.map { _1.prepend(-?*) }.map(&::CHECKING::YOU::OUT::method(:from_postfix)).compact.to_set.flatten
       end
     end  # types
 
@@ -188,27 +191,27 @@ module Cooltrainer::DistorteD::Technology::Vips
       }
     end
 
-    # Returns an Array[VipsType] of loaders/savers given a filename, suffix, or MIME::Type.
+    # Returns an `Array[VipsType]` of loaders/savers given a filename, suffix, or `::CHECKING::YOU::OUT`.
     def self.loader_for(given); self.foreign_for(TOP_LEVEL_LOADER, given); end
     def self.saver_for(given);  self.foreign_for(TOP_LEVEL_SAVER,  given); end
 
-    # Returns a Hash[MIME::Type] => Set[VipsType] of loaders/savers.
+    # Returns a Hash[CHECKING::YOU::OUT] => Set[VipsType] of loaders/savers.
     def self.loader_types; self.foreign_types(TOP_LEVEL_LOADER); end
     def self.saver_types;  self.foreign_types(TOP_LEVEL_SAVER);  end
 
     private
 
-    # Helper method that returns an Array[VipsType] given a top-level VipsType and a filename, suffix, or MIME::Type.
+    # Helper method that returns an `Array[VipsType]` given a top-level `VipsType` and a filename, suffix, or `::CHECKING::YOU::OUT`.
     def self.foreign_for(top_level, given)
       search = case given
       when Array then given
-      when MIME::Type then Array[given]
-      when String then given.include?('/'.freeze) ? Array[CHECKING::YOU::OUT[given]] : CHECKING::YOU::OUT(given)
+      when ::CHECKING::YOU::OUT then Array[given]
+      when String then given.include?('/'.freeze) ? Array[::CHECKING::YOU::OUT::from_ietf_media_type(given)] : ::CHECKING::YOU::OUT(given)
       end
       self.new(top_level).family_reunion.select { |vt| vt.types&.intersection(search)&.length&.method(:>)&.call(0) }
     end
 
-    # Helper method that returns a Hash[MIME::Type] => Set[VipsType] given a top-level VipsType.
+    # Helper method that returns a Hash[CHECKING::YOU::OUT] => Set[VipsType] given a top-level VipsType.
     def self.foreign_types(top_level)
       self.new(top_level).family_reunion.each_with_object(
         Hash.new { |h,k| h[k] = Set.new }

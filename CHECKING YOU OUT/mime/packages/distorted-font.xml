@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mime-info>
+
+  <!--
+    RFC8081 defines the top-level `font` media-type and includes
+    definitions for font/ttf, font/otf, and font/collection,
+    but neglects to include the OpenType Collection (.otc)
+    file extension, meaning the IANA DB's font/collection
+    only covers TTC and not OTC:
+
+    https://tools.ietf.org/html/rfc8081#section-4.4.4
+    "Type name:  font
+     Subtype name:  collection
+     Required parameters:  None
+     Optional parameters
+        Name: outlines
+        Values: a comma-separated subset of TTF, CFF, and SVG
+
+    https://docs.microsoft.com/en-us/typography/opentype/spec/otff
+    "OpenType fonts may have the extension .OTF, .TTF, .OTC or .TTC.
+    The extensions .OTC and .TTC should only be used for font collection files."
+
+    `*.otc` can also be `application/oasis.opendocument.chart-template`.
+  -->
+  <mime-type type="font/collection">
+    <glob pattern="*.otc"/>
+  </mime-type>
+
+  <mime-type type="application/x-dfont">
+    <glob pattern="*.dfont"/>
+  </mime-type>
+
+</mime-info>

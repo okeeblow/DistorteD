@@ -3,6 +3,7 @@ require 'set'
 require 'hexapdf'
 
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 
 
 module Cooltrainer; end
@@ -14,7 +15,7 @@ module Cooltrainer::DistorteD::Molecule::PDF
   # https://hexapdf.gettalong.org/documentation/reference/api/HexaPDF/Document/index.html#method-c-new
   # https://hexapdf.gettalong.org/documentation/reference/api/HexaPDF/index.html#DefaultDocumentConfiguration
   # https://hexapdf.gettalong.org/documentation/reference/api/HexaPDF/Task/Optimize.html
-  PDF_TYPE = CHECKING::YOU::OUT['application/pdf']
+  PDF_TYPE = ::CHECKING::YOU::OUT::from_ietf_media_type('application/pdf')
   LOWER_WORLD = Hash[
     PDF_TYPE => nil,
   ]

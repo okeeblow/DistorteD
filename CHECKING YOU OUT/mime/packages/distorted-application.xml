@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mime-info>
+  <!--
+    https://www.loc.gov/preservation/digital/formats/fdd/fdd000440.shtml
+    http://justsolve.archiveteam.org/wiki/MAT
+  -->
+  <mime-type type="application/x-matlab-data">
+    <magic priority="50">
+      <match type="string" value="MATLAB 5.0 MAT-file" offset="0"/>
+      <match type="string" value="MATLAB 7.0 MAT-file" offset="0"/>
+    </magic>
+    <glob pattern="*.mat"/>
+  </mime-type>
+
+</mime-info>

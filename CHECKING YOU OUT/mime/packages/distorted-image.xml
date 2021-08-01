@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mime-info>
+  <!--
+    VIPS native file format: https://libvips.github.io/libvips/API/current/file-format.html
+
+    "VIPS magic number: `08 f2 a6 b6`, or `b6 a6 f2 08`"
+    "If the first four bytes of the file are in order 08 f2 a6 b6, the image data is stored in
+     Intel byte order (LSB first) and will need to be swapped if read on a SPARC-style machine (MSB first).
+     If the magic number is b6 a6 f2 08, the image data is in SPARC order and will need to swapped
+     if read on an Intel-style machine. libvips does this swapping automatically."
+
+    `*.v` can also be `text/x-verilog`
+  -->
+  <mime-type type="image/vips">
+    <magic priority="66">
+      <match type="host32" value="0x08f2a6b6" offset="0"/>
+    </magic>
+    <glob pattern="*.vips"/>
+    <glob pattern="*.v"/>
+  </mime-type>
+
+  <!-- fd.o has an `image/fits` definition but only with `*.fits` glob. -->
+  <mime-type type="image/fits">
+    <glob pattern="*.fts"/>
+    <glob pattern="*.fit"/>
+  </mime-type>
+
+  <!--
+    - https://openslide.org/formats/aperio/
+    - https://docs.openmicroscopy.org/bio-formats/latest/formats/aperio-svs-tiff.html
+    - http://justsolve.archiveteam.org/wiki/Aperio_SVS
+  -->
+  <mime-type type="image/vnd.scanscope.virtual.slide">
+    <glob pattern="*.svs"/>
+    <!--<glob pattern="*.tiff"/>--> <!-- Disabled until I have some magic bytes to match -->
+  </mime-type>
+
+  <!-- https://openslide.org/formats/hamamatsu/ -->
+  <mime-type type="image/vnd.hamamatsu">
+    <glob pattern="*.vms"/>
+    <glob pattern="*.vmu"/>
+    <glob pattern="*.hdpi"/>
+  </mime-type>
+
+  <!-- https://openslide.org/formats/sakura/ -->
+  <mime-type type="image/vnd.sakura">
+    <glob pattern="*.svslide"/>
+  </mime-type>
+
+  <!-- https://openslide.org/formats/mirax/ -->
+  <mime-type type="image/vnd.mirax">
+    <glob pattern="*.mrxs"/>
+  </mime-type>
+
+  <!-- https://openslide.org/formats/leica/ -->
+  <mime-type type="image/vnd.leica">
+    <glob pattern="*.scn"/>
+  </mime-type>
+
+  <!-- https://openslide.org/formats/ventana/ -->
+  <mime-type type="image/vnd.ventana">
+    <glob pattern="*.bif"/>
+  </mime-type>
+
+  <!--
+    http://msdn.microsoft.com/en-us/library/cc645077(VS.95).aspx
+    I made this content-type up based on the convention of other `vnd.microsoft` Types,
+    e.g. `application/vnd.microsoft.windows.thumbnail-cache`
+  -->
+  <mime-type type="image/vnd.microsoft.deep-zoom+xml">
+    <sub-class-of type="application/xml"/>
+    <glob pattern="*.dz"/>
+    <glob pattern="*.dzi"/>
+    <glob pattern="*.dzc"/>
+    <!--<glob pattern="*.xml"/>--> <!-- Need more info / `root-XML` before enabling -->
+  </mime-type>
+
+</mime-info>

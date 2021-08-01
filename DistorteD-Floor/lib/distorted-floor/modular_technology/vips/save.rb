@@ -1,6 +1,7 @@
 require 'set'
 
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 
 require 'distorted/modular_technology/vips/operation'
 
@@ -15,7 +16,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # As I write this—running libvips 8.8—the :get_suffixes function does not include
   # its own '.vips' as a supported extension.
   # There also (as of mid 2020) seems to be no official media-type assigned
-  # for VIPS format, so I am going to make one up in CHECKING::YOU::OUT's local-data.
+  # for VIPS format, so I am going to make one up in `::CHECKING::YOU::OUT`'s local-data.
   # - Raw pixel data
   #
   # [RAW]: https://libvips.github.io/libvips/API/current/VipsForeignSave.html#vips-rawload
@@ -63,13 +64,14 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
     # Suffix-based Loader detection with the `mime-types` library/database we use
     # causes us to detect a Netpbm PortableFloatmap as an Adobe Printer Font Metrics file:
     # https://en.wikipedia.org/wiki/Netpbm#32-bit_extensions
-    type.media_type != 'text'.freeze and not type.sub_type.include?('font'.freeze)
+    !type.to_s.include?(-'text') and !type.to_s.include?(-'font')
   }.transform_values { |v| v.map(&:options).reduce(&:merge) }
 
-  # Define a to_<mediatype>_<subtype> method for each MIME::Type supported by libvips,
+  # Define a to_<mediatype>_<subtype> method for each `::CHECKING::YOU::OUT` supported by libvips,
   # e.g. a supported Type 'image/png' will define a method :to_image_png in any
   # context where this module is included.
   self::OUTER_LIMITS.each_key { |t|
+    next if t.nil?
     define_method(t.distorted_file_method) { |dest_root, change|
       # Find a VipsType Struct for the saver operation
       vips_operation = Cooltrainer::DistorteD::Technology::Vips::VipsType::saver_for(change.type).first
@@ -94,10 +96,10 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
       # HACK: MagickSave needs us to specify the 'delegate' (ImageMagick-speak)
       # via the :format VipsAttribute that we skipped when generating Compounds.
       # TODO: Use VipsType#parents once it exists instead of checking :include? on a String.
-      # TODO: Choose the delegate more directly/intelligently than by just downcasing the sub_type,
+      # TODO: Choose the delegate more directly/intelligently than by just downcasing the type,
       # e.g. 'GIF -> 'gif'. It does work, but this seems fragile.
       if vips_operation.to_s.include?('VipsForeignSaveMagick')
-        options.store(:format, change.type.sub_type.downcase)
+        options.store(:format, change.type.genus.downcase)
       end
 
       loaded_image = to_vips_image(change)

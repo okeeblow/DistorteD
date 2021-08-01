@@ -72,7 +72,7 @@ module Jekyll
     # to be spurious and will get purged.
     #
     # Work around this by merging Jekyll::Cleaner#keep_file_regex with a second Regexp
-    # based on the :preferred_extension for every MIME::Type DistorteD can output.
+    # based on the :postfix for every `::CHECKING::YOU::OUT` DistorteD can output.
     mr_regular = instance_method(:keep_file_regex)
     define_method(:keep_file_regex) do
       begin
@@ -86,18 +86,18 @@ module Jekyll
         # since the Regexp approach may preserve unwanted files, but "Some unwanted files"
         # is way nicer than "fifteen minutes rebuilding everything" rofl
         if site&.incremental?
-          # Discover every supported output MIME::Type based on every loaded MediaMolecule.
+          # Discover every supported output `::CHECKING::YOU::OUT` based on every loaded MediaMolecule.
           outer_limits = Cooltrainer::DistorteD::IMPLANTATION(
             :OUTER_LIMITS,
             Cooltrainer::DistorteD::media_molecules,
           ).values.flat_map(&:keys)
 
-          # Build a new Regexp globbing the preferred extension of every Type we support, e.g.:
+          # Build a new Regexp globbing the extname of every Type we support, e.g.:
           # (?-mix:\A/home/okeeblow/Works/cooltrainer/_site/.*(txt|nfo|v|ppm|pgm|pbm|hdr|png|jpg|webp|tiff|fits|gif|bmp|ttf|svg|pdf|mpd|m3u8|mp4))
           #
-          # Some Types may have duplicate preferred_extensions, and some might have nil
+          # Some Types may have duplicate extensions, and some might have nil
           # (e.g. our own application/x.distorted.never-let-you-down), so :uniq and :compact them out.
-          outer_regexp = %r!\A#{Regexp.quote(site.dest)}/.*(#{Regexp.union(outer_limits&.map(&:preferred_extension).uniq.compact).source})!
+          outer_regexp = %r!\A#{Regexp.quote(site.dest)}/.*(#{Regexp.union(outer_limits&.map(&:extname).uniq.compact).source})!
 
           # Do the thing.
           combined_regexp = Regexp.union(outer_regexp, super_regexp)

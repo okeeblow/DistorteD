@@ -4,8 +4,9 @@ require 'distorted/error_code'
 # Molecule loading and plugging functionality
 require 'distorted/invoker'
 
-# MIME::Typer
+# File Typer
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 
 # Configuration-loading code
 require 'distorted-jekyll/the_setting_sun'
@@ -77,12 +78,13 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
 
   end
 
-  # Returns a Set of DD MIME::Types descriving our file,
+  # Returns a `::Set` of `::CHECKING::YOU::OUT` objects describing our file,
   # optionally falling through to a plain file copy.
   def type_mars
-    @type_mars ||= (CHECKING::YOU::OUT(path, so_deep: true) & lower_world.keys.to_set).tap { |gemini|
+    # TODO: Get rid of the redundant `Set[…].flatten` here once I stabilize CYO API.
+    @type_mars ||= (Set[::CHECKING::YOU::OUT(path, so_deep: true)].flatten & lower_world.keys.to_set).tap { |gemini|
       if gemini.empty? && the_setting_sun(:never_let_you_down)
-        gemini << CHECKING::YOU::OUT['application/x.distorted.never-let-you-down']
+        gemini << ::CHECKING::YOU::OUT::from_ietf_media_type('application/x.distorted.never-let-you-down')
       end
     }
     raise MediaTypeNotImplementedError.new(@name) if @type_mars.empty?
@@ -99,11 +101,13 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
     # and the templates/markup here in the Jekyll level.
     @changes ||= type_mars.each_with_object(Array[]) { |lower, wanted|
       # Query our configuration for Type changes, e.g. image/webp to (image/png and image/webp).
-      # Handle empty sub_types by compacting and splatting a sub-Array.
+      # Handle empty sub-types by compacting and splatting a sub-Array.
       change_config = the_setting_sun(:changes, *(lower.settings_paths))
       # If there is no config, treat it as a change to the same Type as the input,
-      # otherwise instantiate each "mediatype/subtype" config String to a MIME::Type.
-      ((change_config.nil? || change_config&.empty?) ? Set[lower] : change_config.map {|t| CHECKING::YOU::OUT[t]}).each { |type|
+      # otherwise instantiate each "mediatype/subtype" config `String` to a `::CHECKING::YOU::OUT`.
+      ((change_config.nil? || change_config&.empty?) ? Set[lower] : change_config.map { |t|
+        ::CHECKING::YOU::OUT::from_ietf_media_type(t)
+      }).each { |type|
         # Query our configuration again for variations on each Type.
         # For example, one single image Type may want multiple resolutions to enable responsive <picture> tags,
         # or a single video Type may want multiple bitrates for adaptive streaming.
@@ -209,7 +213,7 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
     roots_of_my_way = Cooltrainer::ElementalCreation.new(:root).tap { |wrapper|
       wrapper.dan = "distorted #{changes.reduce(Set[]) { |classes, change|
         classes.add(change.molecule&.name.split('::'.freeze).last.downcase)
-        classes.add(change.type.sub_type.to_s.split(MIME::Type::SUB_TYPE_SEPARATORS)[0])
+        classes.add(change.type.genus.to_s.split(::CHECKING::YOU::OUT::type_separators)[0])
       }.to_a.join(' ')}"
     }
 

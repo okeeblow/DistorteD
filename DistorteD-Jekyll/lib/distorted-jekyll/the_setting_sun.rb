@@ -4,6 +4,7 @@ require 'set'
 
 require 'distorted/monkey_business/hash'
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 
 
 module Jekyll; end
@@ -164,7 +165,7 @@ module Jekyll::DistorteD
       case key_path.first.to_sym
       when :jekyll, :Jekyll then key_path.drop(1)
       when CONFIG_ROOT_KEY then key_path.map(&:to_sym)
-      else key_path.unshift(CONFIG_ROOT_KEY).map(&:to_sym)
+      else key_path.unshift(CONFIG_ROOT_KEY).compact.map(&:to_sym)
       end
     }
 

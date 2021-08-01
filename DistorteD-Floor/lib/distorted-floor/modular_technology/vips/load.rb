@@ -2,6 +2,7 @@
 require 'set'
 
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 require 'distorted/modular_technology/vips/operation'
 require 'distorted/modular_technology/vips/save'
 
@@ -11,7 +12,7 @@ module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Technology; end
 module Cooltrainer::DistorteD::Technology::Vips::Load
 
-  # Returns a Set of MIME::Types based on libvips LipsForeignLoad capabilities.
+  # Returns a `::Set` of `::CHECKING::YOU::OUT` based on libvips `VipsForeignLoad` capabilities.
   # NOTE: libvips only declares support (via :get_suffixes) for the "saver" types,
   #   but libvips can use additional external libraries for wider media-types support, e.g.:
   #
@@ -107,13 +108,13 @@ module Cooltrainer::DistorteD::Technology::Vips::Load
     # TODO: Support loading image CSV
     # TODO: Make this more robust/automatic.
     Array[
-      type.media_type != 'application'.freeze,  # e.g. application/pdf
-      type.media_type != 'text'.freeze,  # e.g. text/csv
+      type.phylum != -'application',  # e.g. application/pdf
+      type.phylum != -'text',  # e.g. text/csv
     ].all? && Array[
-      type.sub_type.include?('zip'.freeze),
+      type.genus.include?(-'zip'),
       # Skip declaring SVG here since I want to handle it in a Vector-only Molecule
       # and will re-declare this there. Prolly need to think up a better way to do this.
-      type.sub_type.include?('svg'.freeze),
+      type.genus.include?(-'svg'),
     ].none?
   }.transform_values { |v| v.map(&:options).reduce(&:merge) }
 

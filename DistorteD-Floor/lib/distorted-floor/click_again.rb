@@ -6,6 +6,7 @@ require 'shellwords'  # Necessary for inclusion in OptionParser coercions list.
 
 require 'distorted/invoker'
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 require 'distorted/element_of_media/compound'
 
 
@@ -119,9 +120,8 @@ class Cooltrainer::DistorteD::ClickAgain
       }.join("\n")
     when @global_options.has_key?(:"outer-limits")
       # Trigger this help message on `-o` iff that switch is used bare.
-      # If `-o` is given an argument it will inform the MIME::Type
-      # of the same-index output file, e.g.
-      # `-o image/png -o image/webp pngnoextension webpnoextension`
+      # If `-o` is given an argument it will inform `::CHECKING::YOU::OUT` of the same-index output file,
+      # e.g. `-o image/png -o image/webp pngnoextension webpnoextension`
       # will work exactly as that example implies.
       @global_options.dig(:"outer-limits")&.empty? ?
       outer_subcommands.values.map { |o|
@@ -250,24 +250,28 @@ class Cooltrainer::DistorteD::ClickAgain
     end
   end
 
+  # Stubs for CYO port. TODO: make obsolete.
+  def the_setting_sun(...); nil; end
+  def context_arguments(...); nil; end
+
   # Returns an Array[Change] for every intended output variation.
   def changes
     @changes ||= begin
       # TODO: Handle loewr_options and outer_options separately
       # once I have some idea of what kind of Change chaining I want to do.
-      # :@lower_options will be a Hash[MIME::Type] => Hash[MediaMolecule] => given options, e.g.
-      #   {#<MIME::Type: text/x-nfo>=>{Cooltrainer::DistorteD::Molecule::Text=>{:encoding=>"IBM437", :molecule=>Cooltrainer::DistorteD::Molecule::Text}}}
+      # :@lower_options will be a Hash[CHECKING::YOU::OUT] => Hash[MediaMolecule] => given options, e.g.
+      #   {#<CYO: text/x-nfo>=>{Cooltrainer::DistorteD::Molecule::Text=>{:encoding=>"IBM437", :molecule=>Cooltrainer::DistorteD::Molecule::Text}}}
       #
       # Combine all Molecule options into one for now since we don't have multi-Molecule or Change-chaining.
       # TODO: Don't combine them, because it's currently possible for same-key options to interfere.
       combined_lower_options = @lower_options.slice(*type_mars)&.values&.reduce(&:merge)&.values&.reduce(&:merge)
 
-      # :@outer_options will be a Hash[MediaMolecule] => Hash[MIME::Type] => given options,
+      # :@outer_options will be a Hash[MediaMolecule] => Hash[CHECKING::YOU::OUT] => given options,
       # with the given options duplicated among each supported Type, e.g.
       #   {Cooltrainer::DistorteD::Molecule::Text=>{
-      #     #<MIME::Type: image/png>=>{:dpi=>"144", :molecule=>Cooltrainer::DistorteD::Molecule::Text},
-      #     #<MIME::Type: image/jpeg>=>{:dpi=>"144", :molecule=>Cooltrainer::DistorteD::Molecule::Text},
-      #     #<MIME::Type: image/webp>=>{:dpi=>"144", :molecule=>Cooltrainer::DistorteD::Molecule::Text},
+      #     #<CYO: image/png>=>{:dpi=>"144", :molecule=>Cooltrainer::DistorteD::Molecule::Text},
+      #     #<CYO: image/jpeg>=>{:dpi=>"144", :molecule=>Cooltrainer::DistorteD::Molecule::Text},
+      #     #<CYO: image/webp>=>{:dpi=>"144", :molecule=>Cooltrainer::DistorteD::Molecule::Text},
       #     …
       #   }
       #
@@ -285,22 +289,22 @@ class Cooltrainer::DistorteD::ClickAgain
       @get_out.each_with_object(Array[]) { |out, wanted|
         # An output's positional argument may be:
         # - A destination path, in which case we get the Type from the extension.
-        # - A MIME::Type identifier String, e.g. 'image/png'.
+        # - A `::CHECKING::YOU::OUT` identifier String, e.g. 'image/png'.
         #
         # TODO: Nice way to check format for Type string here and fail
         # if we aren't given enough info to identify the wanted output Type.
-        if CHECKING::YOU::OUT[out].nil?
+        # TODO: Get rid of `#prepend` here once I fix that method.
+        unless ::CHECKING::YOU::OUT::from_postfix(File.extname(out).prepend(-?*)).nil?
           name = out
-          type = CHECKING::YOU::OUT(out).first
+          type = ::CHECKING::YOU::OUT::from_postfix(File.extname(out).prepend(-?*))
         else
           name = @name
-          type = CHECKING::YOU::OUT[out]
+          type = ::CHECKING::YOU::OUT::from_ietf_media_type(out)
         end
 
-        type_options = combined_outer_options&.fetch(type, Hash.new(nil))
         supported_options = [
-          Cooltrainer::DistorteD::IMPLANTATION(:LOWER_WORLD, type_options[:molecule])&.slice(*type_mars)&.values&.reduce(&:merge),
-          Cooltrainer::DistorteD::IMPLANTATION(:OUTER_LIMITS, type_options[:molecule])&.fetch(type, nil)
+          Cooltrainer::DistorteD::IMPLANTATION(:LOWER_WORLD, combined_lower_options[:molecule])&.slice(*type_mars)&.values&.reduce(&:merge),
+          Cooltrainer::DistorteD::IMPLANTATION(:OUTER_LIMITS, combined_outer_options[:molecule])&.fetch(type, nil)
         ].compact.reduce(&:merge)
 
         atoms = supported_options.each_pair.with_object(Hash.new) { |(aka, compound), atoms|
@@ -310,7 +314,8 @@ class Cooltrainer::DistorteD::ClickAgain
           # and check those values against the Compound for validity.
           atoms.store(compound.element, Cooltrainer::Atom.new(compound.isotopes.reduce(nil) { |value, isotope|
             # TODO: Compound#valid?, and cast non-Strings to the correct :valid class.
-            value || type_options&.delete(isotope) || combined_lower_options&.fetch(isotope, nil)
+            #value || type_options&.delete(isotope) || combined_lower_options&.fetch(isotope, nil)
+            value || combined_lower_options&.fetch(isotope, nil)
           }, compound.default))
         }
         wanted.push(Cooltrainer::Change.new(type, src: @name, dir: Cooltrainer::Atom.new(File.dirname(name)), **atoms))
@@ -374,7 +379,7 @@ class Cooltrainer::DistorteD::ClickAgain
     }
   }
 
-  # Generate a Hash[MIME::Type] => Hash[MediaMolecule] => OptionParser
+  # Generate a Hash[CHECKING::YOU::OUT] => Hash[MediaMolecule] => OptionParser
   # for file-specific input options.
   def lower_subcommands
     type_mars.each_with_object(Hash[]) { |type, commands|
@@ -386,7 +391,7 @@ class Cooltrainer::DistorteD::ClickAgain
     }
   end
 
-  # Generate a Hash[MediaMolecule] => Hash[MIME::Type] => OptionParser
+  # Generate a Hash[MediaMolecule] => Hash[CHECKING::YOU::OUT] => OptionParser
   # for file-specific output options.
   def outer_subcommands(all: false)
     outer_limits(all: all).each_with_object(Hash[]) { |(molecule, types), commands|

@@ -9,8 +9,8 @@ module Cooltrainer
   BOOLEAN_VALUES = Set[false, true]
 
 
-  # Struct to encapsulate all the data needed to perform one (1) MIME::Type transformation
-  # of a source media file into any supported MIME::Type, possibly even the same type as input.
+  # Struct to encapsulate all the data needed to perform one (1) `::CHECKING::YOU::OUT` transformation
+  # of a source media file into any supported `::CHECKING::YOU::OUT`, possibly even the same type as input.
   Change = Struct.new(:type, :src, :basename, :molecule, :tag, :breaks, :atoms, keyword_init: true) do
 
     # Customize the destination filename and other values before doing the normal Struct setup.
@@ -34,11 +34,8 @@ module Cooltrainer
       super(type: type, src: src, basename: basename, molecule: molecule, tag: tag, breaks: breaks, atoms: atoms)
     end
 
-    # Returns the Change Type's :preferred_extension as a String with leading dot (.)
-    def extname
-      dot = '.'.freeze unless type.preferred_extension.nil? || type.preferred_extension&.empty?
-      "#{dot}#{type.preferred_extension}"
-    end
+    # Returns the Change Type's file extension as a String with leading dot (.)
+    def extname; type.extname; end
 
     # Returns an Array[String] of filenames this Change should generate,
     # one 'full'/'original' plus any limit-breaks,

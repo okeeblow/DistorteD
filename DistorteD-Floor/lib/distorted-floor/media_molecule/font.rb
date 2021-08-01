@@ -7,6 +7,7 @@ require 'distorted/modular_technology/pango'
 require 'distorted/modular_technology/ttfunk'
 require 'distorted/modular_technology/vips/save'
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 
 
 module Cooltrainer; end
@@ -20,8 +21,12 @@ module Cooltrainer::DistorteD::Molecule::Font
   # and later switching to Harfbuzz from Freetype:
   # https://gitlab.gnome.org/GNOME/pango/-/issues/386
   # https://blogs.gnome.org/mclasen/2019/05/25/pango-future-directions/
-  LOWER_WORLD = CHECKING::YOU::IN(/^font\/ttf/).to_hash
-  OUTER_LIMITS = CHECKING::YOU::IN(/^font\/ttf/).to_hash
+  LOWER_WORLD = {
+    ::CHECKING::YOU::OUT::from_ietf_media_type('font/ttf') => nil,
+  }
+  OUTER_LIMITS = {
+    ::CHECKING::YOU::OUT::from_ietf_media_type('font/ttf') => nil,
+  }
 
   ATTRIBUTES = Set[
     :alt,

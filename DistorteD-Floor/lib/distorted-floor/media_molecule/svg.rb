@@ -3,6 +3,7 @@ require 'set'
 require 'svg_optimizer'  # https://github.com/fnando/svg_optimizer
 
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 require 'distorted/modular_technology/vips/save'
 
 
@@ -13,7 +14,7 @@ module Cooltrainer::DistorteD::Molecule::SVG
 
   include Cooltrainer::DistorteD::Technology::Vips::Save
 
-  SVG_TYPE = CHECKING::YOU::OUT['image/svg+xml']
+  SVG_TYPE = ::CHECKING::YOU::OUT::from_ietf_media_type('image/svg+xml')
 
   LOWER_WORLD = Hash[
     SVG_TYPE => Cooltrainer::DistorteD::Technology::Vips::VipsType::loader_for(SVG_TYPE).map(&:options).reduce(&:merge)

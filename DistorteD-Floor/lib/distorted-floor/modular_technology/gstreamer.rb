@@ -1,6 +1,7 @@
 require 'set'
 
 require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 
 require 'distorted/triple_counter'
 GST_MINIMUM_VER = TripleCounter.new(1, 18, 0)
@@ -32,11 +33,11 @@ module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Technology; end
 module Cooltrainer::DistorteD::Technology::GStreamer
 
-  OUTER_LIMITS = CHECKING::YOU::IN(Set[
+  OUTER_LIMITS = Set[
     'application/dash+xml',
     'application/vnd.apple.mpegurl',
     'video/mp4',
-  ])
+  ].map(&::CHECKING::YOU::OUT::method(:from_ietf_media_type))
 
 
   def write_video_mp4(dest_root, change)

@@ -1,8 +1,10 @@
-
 require 'fileutils'
 require 'set'
 
 require 'distorted/error_code'
+
+require 'distorted/checking_you_out'
+using ::DistorteD::CHECKING::YOU::OUT
 
 
 module Jekyll; end
@@ -104,7 +106,7 @@ module Jekyll::DistorteD::StaticState
         # breaking downstream callers that want a Struct they can call arbitrary key methods on.
         # https://www.ruby-lang.org/en/news/2019/12/12/separation-of-positional-and-keyword-arguments-in-ruby-3-0/
         self.send(change.type.distorted_file_method, dest_root, change, **{})
-      elsif extname == ".#{change.type.preferred_extension}"
+      elsif extname == change.type.extname
         Jekyll.logger.debug(@name, <<~RAWCOPY
             No #{change.type.distorted_file_method} method is defined,
             but the intended output type #{change.type.to_s} is the same
