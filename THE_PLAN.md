@@ -6,6 +6,7 @@ if it's not implemented 𝅘𝅥𝅮
 
 # Currently Thinking About…
 
+- `Ractor` architecture for DistorteD 0.8+
 
 ## Specifics
 
