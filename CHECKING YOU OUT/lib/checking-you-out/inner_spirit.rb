@@ -185,10 +185,6 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
 end
 
-# Assorted specialty data structure classes / modules.
-require_relative(-'party_starter/weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
-require_relative(-'party_starter/stick_around') unless defined?(::CHECKING::YOU::OUT::StickAround)
-
 # IETF Media-Type parser and methods that use that parser.
 require_relative(-'auslandsgesprach') unless defined?(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.extend(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)

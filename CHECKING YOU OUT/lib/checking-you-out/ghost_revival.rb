@@ -4,6 +4,10 @@ require(-'pathname') unless defined?(::Pathname)
 # https://github.com/jarib/ffi-xattr
 require(-'ffi-xattr') unless defined?(::Xattr)
 
+# Assorted specialty data structure classes / modules.
+require_relative(-'ghost_revival/weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
+require_relative(-'ghost_revival/stick_around') unless defined?(::CHECKING::YOU::OUT::StickAround)
+
 # Components for locating `shared-mime-info` XML packages system-wide and locally to CYO.
 require_relative(-'ghost_revival/discover_the_life') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo)
 require_relative(-'ghost_revival/xross_infection') unless defined?(::CHECKING::YOU::OUT::XROSS_INFECTION)

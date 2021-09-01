@@ -2,7 +2,7 @@ require(-'forwardable') unless defined?(::Forwardable)
 require(-'pathname') unless defined?(::Pathname)
 require(-'stringio') unless defined?(::StringIO)
 
-require_relative(-'party_starter/weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
+require_relative(-'ghost_revival/weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
 
 
 # Find-by-content file matching à la `libmagic` https://www.freebsd.org/cgi/man.cgi?query=magic&sektion=5
