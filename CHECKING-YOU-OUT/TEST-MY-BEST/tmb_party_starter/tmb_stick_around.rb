@@ -1,9 +1,9 @@
 class TestStickAround < Test::Unit::TestCase
   def setup
-    @stick_around_insensitive_down = ::CHECKING::YOU::StickAround.new('doc')
-    @stick_around_insensitive_up = ::CHECKING::YOU::StickAround.new('DOC')
-    @stick_around_sensitive_down = ::CHECKING::YOU::StickAround.new('doc', case_sensitive: true)
-    @stick_around_sensitive_up = ::CHECKING::YOU::StickAround.new('DOC', case_sensitive: true)
+    @stick_around_insensitive_down = ::CHECKING::YOU::OUT::StickAround.new('doc')
+    @stick_around_insensitive_up = ::CHECKING::YOU::OUT::StickAround.new('DOC')
+    @stick_around_sensitive_down = ::CHECKING::YOU::OUT::StickAround.new('doc', case_sensitive: true)
+    @stick_around_sensitive_up = ::CHECKING::YOU::OUT::StickAround.new('DOC', case_sensitive: true)
   end
 
   # `StickAround` vs. `StickAround`

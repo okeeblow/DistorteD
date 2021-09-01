@@ -1,4 +1,4 @@
-require 'pathname' unless defined?(::Pathname)
+require(-'pathname') unless defined?(::Pathname)
 
 
 # Cross-OS / Cross-Desktop / Cross-Ruby t00lz.
@@ -6,7 +6,7 @@ class ::CHECKING::YOU::OUT::XROSS_INFECTION
 
   # Host operating system detection.
   class SYSTEM
-    require 'rbconfig'
+    require(-'rbconfig')
 
     # I used to check `RUBY_PLATFORM` alone until I learned about `RbConfig`:
     # https://idiosyncratic-ruby.com/42-ruby-config.html
@@ -18,15 +18,15 @@ class ::CHECKING::YOU::OUT::XROSS_INFECTION
       # This is misleading because it will be e.g. `'Java'` for JRuby,
       # and the paths we care about are more OS-dependent than Ruby-dependent.
       RUBY_PLATFORM
-    when defined?(ENV) && ENV&.has_key?('OS') then
+    when defined?(ENV) && ENV&.has_key?(-'OS') then
       ENV[-'OS']  # I've seen examples where this is `'Windows_NT'` but don't expect it on *nix.
     else
       begin
         # Try to `require` something that will definitely fail on non-Windows:
         # https://ruby-doc.org/stdlib/libdoc/win32ole/rdoc/WIN32OLE.html
-        require 'win32ole'
+        require(-'win32ole')
       rescue ::LoadError
-        'Winders'
+        -'Winders'
       end
     end  # CHAIN
 
@@ -47,7 +47,7 @@ class ::CHECKING::YOU::OUT::XROSS_INFECTION
     end
 
     def self.OS∕2?
-      # This could also be DOS, but I'll assume OS/2:
+      # This could also be DOS, but I'll assume OS∕2/ArcaOS 'cause I like it:
       # http://emx.sourceforge.net/
       # http://www.os2ezine.com/20020716/page_7.html
       (self::CHAIN =~ /emx/i) != nil

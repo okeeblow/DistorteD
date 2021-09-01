@@ -1,15 +1,13 @@
 
-# https://github.com/jarib/ffi-xattr
-require 'ffi-xattr'
-
-
-module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
+# IETF Media-Type `String`-handling components.
+# CYI class-level components.
+module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
   # Parse IETF Media-Type String → `::CHECKING::YOU::IN`
-  FROM_IETF_TYPE = proc {
+  FROM_IETF_TYPE = ::Ractor.make_shareable(proc {
     # Keep these allocated instead of fragmenting our heap, since this will be called very frequently.
-    scratch = Array.allocate
-    hold = Array.allocate
+    scratch = ::Array.allocate
+    hold    = ::Array.allocate
     my_base = ::CHECKING::YOU::IN::allocate
 
     # Clear out the contents of the above temporary vars,
@@ -166,9 +164,9 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
       return my_base.dup.freeze.tap(&the_bomb)
     }
     -> (gentlemen) {
-      return cats.call((gentlemen.encoding == Encoding::UTF_8) ? gentlemen : gentlemen.encode(Encoding::UTF_8))
+      return cats.call((gentlemen.encoding == ::Encoding::UTF_8) ? gentlemen : gentlemen.encode(::Encoding::UTF_8))
     }
-  }.call
+  })
 
   # Call the above singleton Proc to do the thing.
   def from_ietf_media_type(ietf_string)
@@ -178,11 +176,16 @@ module CHECKING::YOU::IN::AUSLANDSGESPRÄCH
     #   irb> 'lol'.tap(&oid).to_s.tap(&oid)
     #   "lol is object_id 1340"
     #   "lol is object_id 1340"
-    FROM_IETF_TYPE.call(ietf_string.to_s)
+    #
+    # This parser will be initialized in the class namespace of the main `Ractor`
+    # and should not be touched from `area` `Ractor`s.
+    (@ietf_parser ||= FROM_IETF_TYPE.call).call(ietf_string.to_s)
   end
 end
 
-module CHECKING::YOU::IN::INLANDGESPRÄCH
+
+# CYI instance-level components.
+module ::CHECKING::YOU::IN::INLANDGESPRÄCH
   # Non-IETF-tree as a CY(I|O)'s `kingdom` signifies the need for a leading `vnd.` facet
   # when reconstructing the Media-Type String.
   IETF_TREES = [
@@ -198,12 +201,12 @@ module CHECKING::YOU::IN::INLANDGESPRÄCH
     -'multipart',
     -'text',
     -'video',
-  ]
+  ].freeze
 
   # Reconstruct an IETF Media-Type String from a loaded CYI/CYO's `#members`
   def to_s
     # TODO: Fragments (e.g. `;what=ever`), and syntax identifiers (e.g. `+xml`)
-    -(String.new(encoding: Encoding::UTF_8, capacity: 128) << self.phylum.to_s << -'/' << case
+    -(::String.new(encoding: ::Encoding::UTF_8, capacity: 128) << self.phylum.to_s << -'/' << case
     when self.kingdom == -'kayo-dot' then -'x.'
     when self.kingdom == -?x then -'x-'
     when self.kingdom == -'x-ms' then -'x-ms-'
@@ -216,43 +219,15 @@ module CHECKING::YOU::IN::INLANDGESPRÄCH
   end
 
   # Pretty-print objects using our custom `#:to_s`
-  def inspect
-    "#<#{self.class.to_s} #{self.to_s}>"
-  end
+  def inspect; "#<#{self.class.to_s} #{self.to_s}>"; end
 end
 
+
+# CYO class-level components.
 module CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
-
-  def from_ietf_media_type(ietf_string)
+  # Return a `::CHECKING::YOU::OUT` object from a given `::Ractor` pool.
+  def from_ietf_media_type(ietf_string, area_code: ::CHECKING::YOU::IN::GHOST_REVIVAL::DEFAULT_AREA_CODE)
     return if ietf_string.nil?
-    self.new(super)
+    self.areas[area_code].send(ietf_string).take
   end
-
-  # CHECK OUT a filesystem path.
-  # This might be a String, or might be an instance of the actual stdlib class `Pathname`:
-  # https://ruby-doc.org/stdlib/libdoc/pathname/rdoc/Pathname.html
-  def from_xattr(pathname)
-    # T0DO: Handle relative paths and all the other corner cases that could be here when given String.
-
-    # Check the filesystem extended attributes for manually-defined types.
-    #
-    # The freedesktop-dot-org specification is `user.mime_type`:
-    # https://www.freedesktop.org/wiki/CommonExtendedAttributes/
-    #
-    # At least one other application I can find (lighttpd a.k.a. "lighty")
-    # will use `Content-Type` just like would be found in an HTTP header:
-    # https://redmine.lighttpd.net/projects/1/wiki/Mimetype_use-xattrDetails
-    #
-    # Both of these should contain IETF-style `media/sub`-type Strings,
-    # but they are technically freeform and must be assumed to contain anything.
-    # It's very very unlikely that anybody will ever use one of these at all,
-    # but hey how cool is it that we will support it if they do? :)
-    #
-    # T0DO: Figure out if NTFS has anything to offer us since `ffi-xattr` does support Winders.
-    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/a82e9105-2405-4e37-b2c3-28c773902d85
-    from_ietf_media_type(
-      Xattr.new(pathname).to_h.slice('user.mime_type', 'Content-Type').values.first
-    )
-  end
-
 end

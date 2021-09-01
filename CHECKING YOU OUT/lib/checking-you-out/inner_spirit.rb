@@ -1,9 +1,5 @@
-require 'set' unless defined? ::Set
-require 'pathname' unless defined? ::Pathname
-
-
-# Utility Modules/procs/lambdas/etc for generic operations like checking WeightedActions.
-require_relative 'party_starter' unless defined? ::CHECKING::YOU::WeightedAction
+require(-'set') unless defined?(::Set)
+require(-'pathname') unless defined?(::Pathname)
 
 
 # This base Struct will be used as the Hash key for its matching `OUT` subclass object,
@@ -23,7 +19,9 @@ require_relative 'party_starter' unless defined? ::CHECKING::YOU::WeightedAction
 # For more info see:
 # - https://github.com/ruby/ruby/blob/master/gc.c
 # - http://patshaughnessy.net/2013/2/8/ruby-mri-source-code-idioms-3-embedded-objects
-CHECKING::YOU::IN ||= Struct.new(
+class ::CHECKING; end
+class ::CHECKING::YOU; end
+::CHECKING::YOU::IN = ::Struct.new(
   # Intentionally avoiding naming taxonomic ranks like "domain", "class", or "order"
   # whose names are already common in computing.
   :kingdom,
@@ -31,8 +29,17 @@ CHECKING::YOU::IN ||= Struct.new(
   :genus,
 ) do
   # Promote any CYI to its CYO singleton. CYO has the opposites of these methods.
-  def out; ::CHECKING::YOU::OUT::new(self); end
+  def out; self.class.areas[area_code].send(self).take; end
   def in; self; end
+
+  # e.g. irb> CYI::from_ietf_media_type('image/jpeg') == 'image/jpeg' => true
+  def eql?(otra)
+    case otra
+    when ::String then self.to_s.eql?(otra)
+    else super(otra)
+    end
+  end
+  alias_method(:==, :eql?)
 end
 
 # Main Struct subclass for in-memory type representation.
@@ -48,7 +55,7 @@ end
 class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
   # Absolute path to the root of the Gem — the directory containing `bin`,`docs`,`lib`, etc.
-  GEM_ROOT = proc { ::Pathname.new(__dir__).join(*Array.new(2, -'..')).expand_path.realpath }
+  GEM_ROOT = proc { ::Pathname.new(__dir__).join(*::Array.new(2, -'..')).expand_path.realpath }
 
   # Time object representing the day this running CYO Gem was packaged.
   #
@@ -63,79 +70,30 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # Rescue from `Gem::MissingSpecError`'s parent to support developing locally with just `require_relative` and no Bundler.
   #
   # [0]: unless you manage to `bundle exec` at exactly 00:00:00 UTC :)
-  GEM_PACKAGE_TIME = proc { begin; Gem::Specification::find_by_name(-'checking-you-out').date; rescue Gem::LoadError; Time.now; end }
+  GEM_PACKAGE_TIME = proc { begin; ::Gem::Specification::find_by_name(-'checking-you-out').date; rescue ::Gem::LoadError; ::Time.now; end }
 
-  Species = Struct.new(:name, :value) do
-    def self.from_string(param_string)
-      return self.new(*param_string.split(-?=))
-    end
-  end
-
-  # Main memoization Hash for our loaded Type data.
-  # { CHECKING::YOU::IN => CHECKING::YOU::OUT }
-  def self.all_night; @all_night ||= Hash.new(nil); end
-
-  # Return a singleton instance for any CYO.
-  def self.new(taxa)
-    # Support IETF String argument to this method, e.g. ::CHECKING::YOU::OUT::new('application/octet-stream')
-    return self.from_ietf_media_type(taxa) if taxa.is_a?(String)
-    # Otherwise return the memoized CYO singleton of this type.
-    self.all_night[
-      taxa.is_a?(::CHECKING::YOU::IN) ? taxa : super(*taxa)
-    ] ||= self.allocate.tap { |cyo| cyo.send(:initialize, *taxa) }
-  end
 
   # Demote any CYO to a CYI that can be passed around in just 40 bytes.
   # CYI has the opposites of these methods.
   def out; self; end
-  def in; self.class.all_night.key(self); end
+  def in; self.class.superclass.new(*self.values); end
 
-
-  # Get a CYO, Set[CYO], or nil by file-extension, e.g. `doc` => { CYO msword, CYO rtf }.
-  POSTFIX_KEY = proc {
-    # Re-use a single search structure to avoid allocating an Object per search.
-    scratch = ::CHECKING::YOU::StickAround.new(-'')
-    # Additionally accelerate multiple searches for the same thing by avoiding `StickAround#replace`
-    # if the new search key already matches the previous search key.
-    # Mark `case_sensitive: false` here for testing arbitrarily-named input.
-    -> { scratch.eql?(_1) ? scratch : scratch.replace(_1, case_sensitive: false) }
-  }.call
-  def self.from_postfix(stick_around)
-    self.instance_variable_get(:@after_forever)[POSTFIX_KEY.call(stick_around)]
+  # Construct a bare CYO object not necessarily part of any `Ractor` pool.
+  def self.new(taxa)
+    taxa.is_a?(self.superclass) ? super(*taxa.values) : super(taxa)
   end
 
-  # Get a Hash[CYO] or nil for arbitrary non-file-extension glob match of a File basename.
-  def self.from_glob(stick_around)
-    self.instance_variable_get(:@stick_around).select { |k,v|
-      k.eql?(stick_around)
-    }.yield_self { |matched|
-      matched.empty? ? nil : matched
-    }
-  end
-
-  def self.from_pathname(pathname)
-    return self.from_glob(pathname) || self.from_postfix(pathname)
-  end
-
-
-  # Add a new Postfix or Glob for a specific type.
+  # Add a new filename-match to a specific type.
   def add_pathname_fragment(fragment)
-    if fragment.start_with?(-'*.') and fragment.count(-?.) == 1 and fragment.count(-?*) == 1 then
-      ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@postfixes, fragment, self)
-      ::CHECKING::YOU::CLASS_NEEDLEMAKER.call(:@after_forever, fragment, self)
+    # Store single-extname "postfix" matches separately from more complex "globs"
+    # so we can list out file extensions easily.
+    if fragment.postfix? then
+      self.awen(:@postfixes, fragment)
     else
-      ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@globs, fragment, self)
-      ::CHECKING::YOU::CLASS_NEEDLEMAKER.call(:@stick_around, fragment, self)
+      self.awen(:@globs, fragment)
     end
   end
-
-  # Returns our file extensions minus the leading asterisk.
-  # Always returns a `Set`.
-  def postfixes
-    @postfixes&.is_a?(::Enumerable) ?
-      @postfixes.map { _1.delete_prefix(-?*) } :
-      ::Set[@postfixes.delete_prefix(-?*)]
-  end
+  attr_reader(:postfixes, :globs)
 
   # Returns the "primary" file extension for this type.
   # For now we'll assume the `#first` extname is the primary.
@@ -153,61 +111,53 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
   def aka
     return case @aka
-      when nil then Set[self.in]
-      when self.class, self.class.superclass then Set[self.in, @aka]
-      when ::Set then Set[self.in, *@aka]
+      when nil then ::Set[self.in]
+      when self.class, self.class.superclass then ::Set[self.in, @aka]
+      when ::Set then ::Set[self.in, *@aka]
     end
   end
 
-  # Take an additional CYI, store it locally, and memoize it as an alias for this CYO.
-  def add_aka(taxa)
-    taxa = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
-    ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@aka, taxa, self)
-    self.class.all_night[taxa] = self
+  # Take an additional CYI as an alias for this CYO.
+  def add_aka(taxa); self.awen(:@aka, taxa); end
+
+
+  # CYO-to-CYI relationship mappings.
+  attr_reader(:parents, :children)
+
+  # Take an additional CYI as our parent, e.g. `application/xml` for an XML-based type.
+  def add_parent(parent_cyi)
+    self.awen(:@parents, parent_cyi)
   end
 
-  # Forget a CYI alias of this Type. Capable of unsetting the "real" CYI as well if desired.
-  def remove_aka(taxa)
-    taxa = taxa.is_a?(::CHECKING::YOU::IN) ? taxa : self.class.superclass.new(*taxa)
-    self.class.all_night.delete(taxa) if self.class.all_night[taxa] === self
-  end
-
-  attr_reader :parents, :children
-
-  # Take an additional CYO, store it locally as our parent, and ask it to add ourselves as its child.
-  def add_parent(parent_cyo)
-    ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@parents, parent_cyo, self)
-    parent_cyo.add_child(self) unless parent_cyo.children&.include?(self)
-  end
-
-  # Take an additional CYO, store it locally as our child, and ask it to add ourselves as its parent.
-  def add_child(child_cyo)
-    ::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@children, child_cyo, self)
-    child_cyo.add_parent(self) unless child_cyo.parents&.include?(self)
+  # Take an additional CYI as our child type.
+  def add_child(child_cyi)
+    self.awen(:@children, child_cyi)
   end
 
   # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
   def adults_table
     return case @parents
-      when nil then Set[self]
-      when self.class, self.class.superclass then Set[self, @parents]
-      when ::Set then Set[self, *@parents]
+      when nil then ::Set[self]
+      when self.class, self.class.superclass then ::Set[self, @parents]
+      when ::Set then ::Set[self, *@parents]
     end
   end
 
   # Get a `Set` of this CYO and all of its child CYOs, at minimum just `Set[self]`.
   def kids_table
     return case @children
-      when nil then Set[self]
-      when self.class, self.class.superclass then Set[self, @children]
-      when ::Set then Set[self, *@children]
+      when nil then ::Set[self]
+      when self.class, self.class.superclass then ::Set[self, @children]
+      when ::Set then ::Set[self, *@children]
     end
   end
 
   # Get a `Set` of this CYO and all parents and children, at minimum just `Set[self]`.
   def family_tree; self.kids_table | self.adults_table; end
 
-  # Storage for descriptions (`<comment>`), acrnyms, suitable iconography, and other boring metadata, e.g.:
+  # Storage for freeform type descriptions (`<comment>` elements), type acrnyms,
+  # suitable iconography, and other boring metadata, e.g.:
+  #
   #   <mime-type type="application/vnd.oasis.opendocument.text">
   #     <comment>ODT document</comment>
   #     <acronym>ODT</acronym>
@@ -215,21 +165,42 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   #     <generic-icon name="x-office-document"/>
   #     […]
   #   </mini-type>
-  attr_accessor :description
+  attr_accessor(:description)
+
+
+  # Avoid allocating spurious containers for keys that will only contain one value.
+  # Given a key-name and a value, set the value for the key iff unset, otherwise promote the key
+  # to a `Set` containing the previous plus the new values.
+  def awen(haystack, needle)
+    case self.instance_variable_get(haystack)
+    when ::NilClass then
+      self.instance_variable_set(haystack, needle)
+    when ::Set then
+      self.instance_variable_get(haystack).add(needle)
+    else
+      self.instance_variable_set(haystack, ::Set[self.instance_variable_get(haystack), needle])
+    end
+  end
+  private(:awen)
 
 end
 
+# Assorted specialty data structure classes / modules.
+require_relative(-'party_starter/weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
+require_relative(-'party_starter/stick_around') unless defined?(::CHECKING::YOU::OUT::StickAround)
+
 # IETF Media-Type parser and methods that use that parser.
-require_relative 'auslandsgesprach' unless defined? ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
+require_relative(-'auslandsgesprach') unless defined?(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.extend(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::INLANDGESPRÄCH)
 ::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH)
 
 # Content matching à la `libmagic`/`file`.
-require_relative 'sweet_sweet_love_magic' unless defined? ::CHECKING::YOU::SweetSweet♥Magic
-::CHECKING::YOU::OUT.extend(::CHECKING::YOU::SweetSweet♡Magic)
-::CHECKING::YOU::OUT.prepend(::CHECKING::YOU::SweetSweet♥Magic)
+require_relative(-'sweet_sweet_love_magic') unless defined?(::CHECKING::YOU::OUT::SweetSweet♥Magic)
+::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::SweetSweet♡Magic)
+::CHECKING::YOU::OUT.prepend(::CHECKING::YOU::OUT::SweetSweet♥Magic)
 
 # Methods for loading type data from `shared-mime-info` package XML files.
-require_relative 'ghost_revival' unless defined? ::CHECKING::YOU::GHOST_REVIVAL
-::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::GHOST_REVIVAL)
+require_relative(-'ghost_revival') unless defined?(::CHECKING::YOU::GHOST_REVIVAL)
+::CHECKING::YOU::IN.singleton_class.prepend(::CHECKING::YOU::IN::GHOST_REVIVAL)
+::CHECKING::YOU::OUT.singleton_class.prepend(::CHECKING::YOU::OUT::GHOST_REVIVAL)
