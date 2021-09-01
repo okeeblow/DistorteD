@@ -1,10 +1,15 @@
-# https://saveriomiroddi.github.io/Installing-ruby-tk-bindings-gem-on-ubuntu/
-require 'tk'
 require 'tmpdir'
 
 require 'distorted/invoker'
 require 'distorted/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
+
+# https://saveriomiroddi.github.io/Installing-ruby-tk-bindings-gem-on-ubuntu/
+#
+# Require `tk` last to avoid massive slowdown if `RUN_EVENTLOOP_ON_MAIN_THREAD == false`:
+# https://github.com/ruby/tk/issues/26
+require 'tk'
+
 
 module Cooltrainer; end
 module Cooltrainer::DistorteD; end
