@@ -186,18 +186,18 @@ end
 
 # CYI instance-level components.
 module ::CHECKING::YOU::IN::INLANDGESPRÄCH
-  # Non-IETF-tree as a CY(I|O)'s `kingdom` signifies the need for a leading `vnd.` facet
-  # when reconstructing the Media-Type String.
-  IETF_TREES = [
-    # Current top-level registries are shown here: https://www.iana.org/assignments/media-types/media-types.xhtml
-    # The latest addition reflected here is `font` from RFC 8081: https://datatracker.ietf.org/doc/html/rfc8081
+  # An unknown primary-type as a `CY(I|O)`'s `:kingdom` signifies the need for
+  # a leading `vnd.` facet when reconstructing the Media-Type `String`.
+  PRIMARY_CONTENT_TYPES = [
+    # Current top-level IANA registries are shown here: https://www.iana.org/assignments/media-types/media-types.xhtml
     -'application',
     -'audio',
+    -'chemical',     # Non-IANA Chemical MIME project: https://www.ch.ic.ac.uk/chemime/
     -'example',
-    -'font',
+    -'font',         # RFC 8081: https://datatracker.ietf.org/doc/html/rfc8081
     -'image',
     -'message',
-    -'model',
+    -'model',        # RFC 2077: https://datatracker.ietf.org/doc/html/rfc2077
     -'multipart',
     -'text',
     -'video',
@@ -213,7 +213,7 @@ module ::CHECKING::YOU::IN::INLANDGESPRÄCH
     when self.kingdom == -'prs' then -'prs.'
     when self.kingdom == -'vnd' then -'vnd.'
     when self.kingdom == -'possum' then nil.to_s
-    when !IETF_TREES.include?(self.kingdom.to_s) then 'vnd.' << self.kingdom.to_s << -'.'
+    when !PRIMARY_CONTENT_TYPES.include?(self.kingdom.to_s) then 'vnd.' << self.kingdom.to_s << -'.'
     else self.kingdom.to_s << -'.'
     end << self.genus.to_s)
   end
