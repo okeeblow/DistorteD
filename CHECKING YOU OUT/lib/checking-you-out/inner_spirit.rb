@@ -28,8 +28,16 @@ class ::CHECKING::YOU; end
   :phylum,
   :genus,
 ) do
+
+  # Default `::Ractor` CYO data area name.
+  # This will be the area used for all synchronous method invocations that do not specify otherwise.
+  self::DEFAULT_AREA_CODE = -'CHECKING YOU OUT'
+
   # Promote any CYI to its CYO singleton. CYO has the opposites of these methods.
-  def out; self.class.areas[area_code].send(self).take; end
+  def out(area_code: self.class::DEFAULT_AREA_CODE)
+    self.class.areas[area_code].send(self)
+    ::Ractor.receive
+  end
   def in; self; end
 
   # e.g. irb> CYI::from_ietf_media_type('image/jpeg') == 'image/jpeg' => true

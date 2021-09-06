@@ -44,9 +44,9 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
 
 
   # Instantiate parsing environment.
-  def initialize(parent_ractor, ietf_parser, **kwargs)
+  def initialize(receiver_ractor, *handler_args, **handler_kwargs)
     # `MIMEjr.initialize` sets up pretty much everything for us
-    super(parent_ractor, ietf_parser, **kwargs)
+    super(receiver_ractor, *handler_args, **handler_kwargs)
 
     # …except we should override the output container with a `::Hash`.
     # `MIMEjr` just uses a flat `::Set` subclass, but `MrMIME` needs `{CYI => CYO}`.
@@ -69,15 +69,22 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
   def start_element(name)
     @parse_stack.push(name)
     return if self.skips.include?(name)
+
+    # Since we no longer explicitly load all `<mime-type>`s we can avoid a lot of `ObjectSpace` churn
+    # by skipping this Element iff no match was made, i.e. iff `@cyi` is `nil`.
+    # Of course this means we can't skip `<mime-type>` itself because the match is made based on
+    # the `type` attribute to that Element, handled in the `attr_value` method below.
     return unless @cyi or name == :"mime-type"
     case name
     when :"mime-type" then
+      # Nullify any previous `<mime-type>`'s match when entering a new type Element.
       @cyi = nil
     when :match then
       # Mark any newly-added Sequence as eligible for a full match candidate.
       @i_can_haz_magic = true
       @speedy_cat.append(::CHECKING::YOU::OUT::SequenceCat.new)
     when :magic then
+      # To avoid an extra allocation, re-use a previous `@speedy_cat` if it is left emptied.
       @speedy_cat = ::CHECKING::YOU::OUT::SpeedyCat.new if @speedy_cat.nil?
     when :"magic-deleteall" then
       # TODO
@@ -112,18 +119,18 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     when :"mime-type" then @cyi = @ietf_parser.call(value.as_s) if attr_name == :type and self.awen?(value.as_s)
     when :match then
       case attr_name
-      when :type then @speedy_cat.last.format = self.magic_eye[value.as_s]
-      when :value then @speedy_cat.last.cat = value.as_s
+      when :type   then @speedy_cat.last.format = self.magic_eye[value.as_s]
+      when :value  then @speedy_cat.last.cat = value.as_s
       when :offset then @speedy_cat.last.boundary = value.as_s
-      when :mask then @speedy_cat.last.mask = BASED_STRING.call(value.as_s)
+      when :mask   then @speedy_cat.last.mask = BASED_STRING.call(value.as_s)
       end
-    when :magic then @speedy_cat&.weight = value.as_i if attr_name == :priority
-    when :alias then self.cyo.add_aka(@ietf_parser.call(value.as_s)) if attr_name == :type
+    when :magic          then @speedy_cat&.weight = value.as_i if attr_name == :priority
+    when :alias          then self.cyo.add_aka(@ietf_parser.call(value.as_s)) if attr_name == :type
     when :"sub-class-of" then self.cyo.add_parent(@ietf_parser.call(value.as_s)) if attr_name == :type
     when :glob then
       case attr_name
-      when :weight then @stick_around.weight = value.as_i
-      when :pattern then @stick_around.replace(value.as_s)
+      when :weight           then @stick_around.weight = value.as_i
+      when :pattern          then @stick_around.replace(value.as_s)
       when :"case-sensitive" then @stick_around.case_sensitive = value.as_bool
       end
     when :"root-XML" then
@@ -182,6 +189,25 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     when :glob then
       self.cyo.add_pathname_fragment(@stick_around) unless @stick_around.nil?
     end
+  end
+
+  # Trigger a search for all needles received by our `::Ractor` since the last `#search`.
+  # See the overridden `self.new` for more details of our `::Ractor`'s message-handling loop.
+  def do_the_thing(the_trigger_of_innocence)
+    return if @needles.values.map(&:nil?).all?
+    self.parse_mime_packages
+
+    # We can't send our built CYOs in on-the-fly because a single type's data can be spread out
+    # over any number of our enabled `SharedMIMEinfo` XML package files.
+    # The only way we can trust that we have it all is to wait and do them here all at once.
+    @out.transform_values!(&Ractor.method(:make_shareable))
+    @out.each_value { @receiver_ractor.send(_1, move: true) }
+
+    # Clean ourselves up and then forward the trigger message back to the main message-loop
+    # to signify the completion of our parsing.
+    @needles.clear
+    @out.clear
+    @receiver_ractor.send(the_trigger_of_innocence, move: true)
   end
 end
 

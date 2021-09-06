@@ -3,10 +3,8 @@ require(-'set') unless defined?(::Set)
 
 require_relative(-'xross_infection') unless defined?(::CHECKING::YOU::OUT::XROSS_INFECTION)
 
-
 # Define a custom `Set` subclass to identify the return values from `MIMEjr` that should be passed to `MrMIME`.
 ::CHECKING::YOU::OUT::BatonPass = ::Class.new(::Set)
-
 
 # Push-event-based parser for freedesktop-dot-org `shared-mime-info`-format XML package files,
 # including the main `shared-mime-info` database itself (GPLv2+), Apache Tika (MIT), and our own (AGPLv3).
@@ -193,8 +191,44 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     @skips ||= self.class::DEFAULT_LOADS.keep_if { |k,v| v == false }.keys.to_set
   end
 
+  # Override the normal instantiation of our handler to wrap it in a `::Ractor`.
+  def self.new(
+    *handler_args,               # Will be passed to the handler's normal `::instantiate`.
+    trainer: ::Ractor.current,   # `Ractor` in whose context we are instantiated.
+    receiver: ::Ractor.current,  # `Ractor` to whom we will send our parse result messages.
+    **handler_kwargs             # Will be passed to the handler's normal `::instantiate`.
+  )
+    # When we `::initialize` our handler `::Class` we will actually get a `::Ractor` instance,
+    # and the normal handler instance will be wrapped inside it controlled by a simple message-handling loop.
+    ::Ractor::new(
+      self,      # Handler `Class` to be wrapped by `Ractor::new`.
+      receiver,  # `Ractor` to whom we will send our parse result messages.
+      *handler_args,
+      name: "#{trainer.name} — #{self.name.split(-'::')[-1]}",  # e.g. `"CHECKING YOU OUT — MIMEjr"`.
+      **handler_kwargs,
+    ) { |handler_class, receiver_ractor, *handler_args, **handler_kwargs|
+
+      # Do the thing `self.new` usually does, just wrapped inside this `Ractor` context.
+      handler = handler_class.allocate.tap { _1.send(:initialize, receiver_ractor, *handler_args, **handler_kwargs) }
+
+      # Forward `shared-mime-info` `::Pathname` subclasses from the main message-bus `Ractor`.
+      # All parsers in our party MUST have the same `SharedMIMEinfo` state or we will get confusing results,
+      # but the main message-bus `Ractor` will have send the same message to all other parsers too.
+      #
+      # Spool search needles with `#awen`, and trigger a search for those needles when we are sent
+      # our haystack-containing `::Set` subclass (`BatonPass`) or `true` if no haystack is needed.
+      while message = ::Ractor.receive
+        case message
+        when ::CHECKING::YOU::OUT::BatonPass, ::TrueClass       then handler.do_the_thing(message)
+        when ::CHECKING::YOU::IN::GHOST_REVIVAL::SharedMIMEinfo then handler.toggle_package(message)
+        else                                                         handler.awen(message)
+        end
+      end
+    }  # ::Ractor::new
+  end
+
   # Instantiate parse environment for `MIMEjr` and also for `MrMIME` (subclass).
-  def initialize(parent_ractor, ietf_parser, **kwargs)
+  def initialize(receiver_ractor, *handler_args, **handler_kwargs)
     # Per the `Ox::Sax` dox:
     # "Initializing `line` attribute in the initializer will cause that variable to
     #    be updated before each callback with the XML line number.
@@ -206,8 +240,8 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     #@column = nil
 
     # `::Ractor`-specific stuff.
-    @parent_ractor = parent_ractor
-    @ietf_parser = ietf_parser
+    @receiver_ractor = receiver_ractor
+    @ietf_parser = ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::FROM_IETF_TYPE.call
 
     # Container for enabled `SharedMIMEinfo` paths and their opened `IO` streams.
     @mime_packages = ::Hash.new
@@ -217,8 +251,10 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # iff we have a match.
     @media_type = ::String.new
 
-    # Container `::Hash` for search queries, containing one `::Set` per `class` of needle.
-    @needles = ::Hash.new { _1[_2] = ::Set.new }
+    # Container `::Hash` for search queries, containing one `::Set` subclass per `class` of needle.
+    # I am using a subclass here so the handlers' `::Ractor` message loops can easily distinguish
+    # `::Ractor`-to-`::Ractor` communication from outside `::Set` messages.
+    @needles = ::Hash.new { _1[_2] = ::CHECKING::YOU::OUT::BatonPass.new }
     # Clear all member `::Set`s when `#clear`ing the `::Hash` itself.
     @needles.define_singleton_method(:clear) {
       self.values.each(&:clear)
@@ -231,31 +267,28 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # `<mime-type>`, `<alias>`, `<match>`, and `<sub-class-of>`.
     @parse_stack = ::Array.new
 
-    # We need a separate stack and a flag boolean for building content-match structures since the source XML
-    # represents OR and AND byte-sequence relationships as sibling and child Elements respectively, e.g.
-    # <magic><match1><match2/><match3/></match1><match4/></magic> => [m1 AND m2] OR [m1 AND m3], OR [m4].
+    # We need a separate stack (`@speedy_cat`) and a flag boolean for building content-match structures since
+    # the source XML represents OR and AND byte-sequence relationships as sibling and child Elements respectively,
+    # e.g. `<magic><match1><match2/><match3/></match1><match4/></magic>` => `[m1 AND m2]` OR `[m1 AND m3]`, OR `[m4]`.
+    # When the flag is set, any call to `#pop` from the `@speedy_cat` stack (in our `end_element` method)
+    # should first save the complete stack as a content-match candidate. If the flag is not set, just `#pop` but then stop.
     @i_can_haz_magic = true
 
-    # Allow the user to control the conditions on which we ignore data from the source XML.
-    @skips = self.class::DEFAULT_LOADS.merge(kwargs.slice(*self.class::DEFAULT_LOADS.keys)).keep_if { |k,v|
+    # Allow the user to control the conditions on which we ignore Elements from the source XML.
+    @skips = self.class::DEFAULT_LOADS.merge(handler_kwargs.slice(*self.class::DEFAULT_LOADS.keys)).keep_if { |k,v|
       v == false
     }.keys.to_set
-
-    # Container for positively-matched objects to be returned to the caller.
-    @out = ::CHECKING::YOU::OUT::BatonPass.new
 
     # Here's where I would put a call to `super()` a.k.a `Ox::Sax#initialize` — IF IT HAD ONE
   end
 
   # Decompose search needles into a retained container based on each needle's `class`.
+  # Support single needle messages and messages containing an `Enumerable` of needles.
   def awen(needle)
     case needle
-    when ::Array, ::Set then needle.each {
-      @needles[_1.class].add(_1)
-    }
+    when ::Array, ::Set then needle.each { @needles[_1.class].add(_1) }
     else @needles[needle.class].add(needle)
     end
-    @needles
   end
 
   # Enable/disable a certain `shared-mime-info` XML package file.
@@ -272,7 +305,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     end
   end
 
-  # Open an XML package file for reading given its `Pathname` and return the `IO` stream object.
+  # Open an XML package file for reading given its `::Pathname` and return the `::IO` stream object.
   def open_package(pathname, **kwargs)
     pathname.open(mode=File::Constants::RDONLY).tap {
       # "Announce an intention to access data from the current file in a specific pattern.
@@ -300,14 +333,16 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   # This handler will only need to parse the container `<mime-info>`/`<mime-type>` elements,
   # `<glob>` elements (for filename matching), and `<magic>`/`<match>` elements (for content matching).
   def start_element(name)
+    # Record the current state of the parser Element stack regardless of our decision to skip its contents.
     @parse_stack.push(name)
     return if self.skips.include?(name)
 
-    # No need to bother with content-match elements if we have no `IO`-like needles.
-    return if (name == :magic or name == :match) and @needles[::File].empty?
-
-    # No need to bother with filename-match elements if we have no `Pathname` needles.
-    return if name == :glob and (@needles[::Pathname].empty? and @needles[::CHECKING::YOU::OUT::StickAround].empty?)
+    # Skip this Element iff we have no relevant needles,
+    # e.g. skip `<magic>`/`<match>` elements if we have no `IO`-like content-match needles,
+    #      and skip `<glob>` elements if we have no `::Pathname`-like filename-match needles.
+    # This SHOULD be exactly repeated in `attr_value` and `end_element` for full benefits.
+    return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O].empty?
+    return if name == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?
 
     # Otherwise set up needed container objects.
     case name
@@ -326,13 +361,15 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # NOTE: `parse_stack` can be empty here in which case its `#last` will be `nil`.
     # This happens e.g. for the two attributes of the XML declaration '<?xml version="1.0" encoding="UTF-8"?>'.
     return if self.skips.include?(@parse_stack.last)
-    return if (@parse_stack.last == :magic or @parse_stack.last == :match) and @needles[::File].empty?
-    return if @parse_stack.last == :glob and (@needles[::Pathname].empty? and @needles[::CHECKING::YOU::OUT::StickAround].empty?)
+    return if (@parse_stack.last == :magic or @parse_stack.last == :match) and @needles[::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O].empty?
+    return if @parse_stack.last == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?
 
     case @parse_stack.last
     when :"mime-type" then @media_type.replace(value.as_s) if attr_name == :type
     when :match then
       # Parse the actual matching byte sequences.
+      # Our `SpeedyCat`/`SequenceCat` `::Struct`s are written to handle these in any order,
+      # which is why `#format` passes in a `proc` to be used if the order is `format` and then `value` :)
       case attr_name
       when :type   then @speedy_cat.last.format = self.magic_eye[value.as_s]
       when :value  then @speedy_cat.last.cat = value.as_s
@@ -340,7 +377,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       when :mask   then @speedy_cat.last.mask = BASED_STRING.call(value.as_s)
       end
     when :magic then
-      # Content-match byte-sequence container element which can specufy a weight 0–100.
+      # Content-match byte-sequence container Element can specufy a weight 0–100.
       @speedy_cat&.weight = value.as_i if attr_name == :priority
     when :glob then
       # Parse filename matches.
@@ -358,32 +395,43 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # The element won't be in the `parse_stack` if we skipped it in `start_element` too.
     return if self.skips.include?(@parse_stack.last)
     raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
-    return if (name == :magic or name == :match) and @needles[::File].empty?
-    return if name == :glob and (@needles[::Pathname].empty? and @needles[::CHECKING::YOU::OUT::StickAround].empty?)
+    return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O].empty?
+    return if name == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?
 
     case name
     when :match then
       # The Sequence stack represents a complete match once we start popping Sequences from it,
       # which we can know because every `<match>` stack push sets `@i_can_haz_magic = true`.
       if @i_can_haz_magic
-        @out.add(@ietf_parser.call(@media_type)) if @needles[::File].map { @speedy_cat.=~(_1, offset: @speedy_cat.min) }.any?
+        @receiver_ractor.send(@ietf_parser.call(@media_type), move: true) if @needles[::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O].map(&:stream).map! {
+          @speedy_cat.=~(_1, offset: @speedy_cat.min)
+        }.any?
       end
       @speedy_cat.pop
       @i_can_haz_magic = false
     when :magic then
       @speedy_cat.clear
     when :glob then
-      @out.add(@ietf_parser.call(@media_type)) if (
-        @needles[::Pathname].map(&@stick_around.method(:eql?)).any? or
+      @receiver_ractor.send(@ietf_parser.call(@media_type), move: true) if (
+        @needles[::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O].map(&:stick_around).map!(&@stick_around.method(:eql?)).any? or
         @needles[::CHECKING::YOU::OUT::StickAround].map(&@stick_around.method(:eql?)).any?
       )
     end
   end
 
-  # Take an arbitrary set of `CYI`/`String`/`Regexp` needles
-  # and return `CYI` key `Struct`s for all available matching types.
-  def search(query, so_deep: true, **kwargs)
-    @needles = awen(query)
+  # Trigger a search for all needles received by our `::Ractor` since the last `#search`.
+  # See the overridden `self.new` for more details of our `::Ractor`'s message-handling loop.
+  def do_the_thing(the_trigger_of_innocence)
+    self.parse_mime_packages
+
+    # Trigger the receiver's own parsing by sending it a new combined `::Set` of *all* of our needles
+    # regardless of their `#class`, e.g. `#<Set: {StickAround, Wild_I∕O}>` etc.
+    @receiver_ractor.send(@needles.values.reduce(&:|), move: true)
+    @needles.clear
+  end
+
+  # Kick off the actual process of parsing our enabled `SharedMIMEinfo` XML packages.
+  def parse_mime_packages(**kwargs)
     @mime_packages.each_pair { |xml_pathname, mime_xml|
       # Docs: http://www.ohler.com/ox/Ox.html#method-c-sax_parse
       #
@@ -403,7 +451,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # where `:skip_none` checks if the end of the Element has been reached but `:skip_off` doesn't.
       #   https://github.com/ohler55/ox/blob/master/ext/ox/sax.c  CTRL+F "read_text"
       #   `((NoSkip == dr->options.skip && !isEnd) || (OffSkip == dr->options.skip)))`
-      Ox.sax_parse(
+      ::Ox::sax_parse(
         self,                     # Instance of a class that responds to `Ox::Sax`'s callback messages.
         mime_xml || self.open_package(xml_pathname),  # IO stream or String of XML to parse. Won't close File handles automatically.
         **{
@@ -413,14 +461,11 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
           strip_namespace: true,  # [nil|String|true|false] (from Element names) Strip no namespaces, all namespaces, or a specific namespace.
           symbolize: true,        # [boolean] Fill callback method `name` arguments with Symbols instead of with Strings.
           intern_strings: true,   # [boolean] Intern (freeze and deduplicate) String return values.
-        }.update(kwargs),
+        }.update(kwargs),         # Let the sender override any of these defaults.
       )
+      # We MUST `#rewind` each package's `::IO` stream if we are keeping the file handles open between parses,
+      # otherwise subsequent calls to the sequential `::Ox::sax_parse` will complete instantly with no actual parsing.
       @keep_packages_open ? mime_xml.rewind : mime_xml.close
-    }
-    (@out.is_a?(::Hash) ? @out.values : @out).map!(&Ractor.method(:make_shareable))
-    return @out.dup.tap {
-      @out.clear
-      @needles.clear
     }
   end
 end
