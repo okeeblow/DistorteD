@@ -53,8 +53,8 @@ class IETFTypeChecker < ::Ox::Sax
   end
 end
 
-::CHECKING::YOU::OUT::send(/.*/)
 area_code = 'TEST MY BEST'
+::CHECKING::YOU::OUT::send(/.*/, area_code: area_code)
 
 handler = IETFTypeChecker.new
 fdo_types = handler.open(fdo_mime)
