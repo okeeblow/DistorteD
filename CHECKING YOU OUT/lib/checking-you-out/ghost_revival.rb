@@ -1,5 +1,6 @@
-require(-'set') unless defined?(::Set)
+require(-'file') unless defined?(::File)
 require(-'pathname') unless defined?(::Pathname)
+require(-'set') unless defined?(::Set)
 
 # https://github.com/jarib/ffi-xattr
 require(-'ffi-xattr') unless defined?(::Xattr)
@@ -55,10 +56,15 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
   end
 
 
-  # Never return empty Enumerables.
+  # Never return empty `::Enumerable`s.
   # Yielding-self to this proc will `nil`-ify anything that's `:empty?`
+  # and will pass any non-`::Enumerable` `::Object`s through.
+  POINT_ZERO = ::Ractor.make_shareable(proc { _1.respond_to?(:empty?) ? (_1.empty? ? nil : _1) : _1 })
+
+  # Never `::Enumerable`s with fewer than two members.
+  # Yielding-self to this proc will `nil`-ify anything that's `#size` >= 2
   # and will pass any non-Enumerable Objects through.
-  POINT_ZERO = ::Ractor.make_shareable(proc { _1.respond_to?(:empty) ? (_1.empty? ? nil : _1) : _1 })
+  XANADU_OF_TWO = ::Ractor.make_shareable(proc { _1.respond_to?(:size) ? (_1.size >= 2 ? _1 : nil) : _1 })
 
   # Our matching block will return a single CYO when possible, and can optionally
   # return multiple CYO matches for ambiguous files/streams.
@@ -188,7 +194,21 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
               as_above.so_below(needle.stream),
             )
           end
-        end
+        when ::String then
+          # This kinda sucks because it will allocate increasingly more `::String`s as we load type data.
+          all_night.values.lazy.select { ::File.fnmatch?(needle, _1.to_s) }.to_set.yield_self(
+            # If the needle `::String` contains a wildcard (`*` character) we must return `nil`
+            # unless we match two or more types.
+            # This is the simplest defense against returning poor results for wildcard queries
+            # when we have already loaded some matching types,
+            # e.g. if we load just `"image/jpeg"` but then try to match `"image/*"`.
+            #
+            # T0DO: The possibility of an incomplete match still exists here!
+            #       All it would take it pre-loading more than one matching type.
+            #       It might be better to explicitly XML-parse when we get wildcard needles.
+            &(needle.include?(-?*) ? XANADU_OF_TWO : ONE_OR_EIGHT)
+          )
+        end  # case needle
       }
 
       # Cache recent results to minimize denial-of-service risk if we get sent an unmatchable message in a loop.
@@ -226,7 +246,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
         unless message.is_a?(::CHECKING::YOU::OUT::BatonPass) then
         if last_message.has_key?(message.hash) then
           # TODO: Support specifying receiver `::Ractor` here (see comment on `promise_for_life`).
-          golden_i.send(last_message[message.hash], move: true)
+          golden_i.send(last_message[message.hash], move: ::Ractor.shareable?(last_message[message.hash]) ? true : false)
           next
         end
         end
@@ -270,7 +290,10 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
 
             # Then fulfill our promise using (but not evicting) the just-cached value to avoid the match logic.
             # TODO: Confirm if `move: true` will cause any problems here when dealing with multiple receivers.
-            promise_for_life.delete(needle.hash)&.send(last_message.fetch(needle.hash), move: true)
+            promise_for_life.delete(needle.hash)&.send(
+              last_message.fetch(needle.hash),
+              move: ::Ractor.shareable?(last_message.fetch(needle.hash)) ? true : false,
+            )
           }
 
         when SharedMIMEinfo then
@@ -323,7 +346,32 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
       @postfix_key.freeze
     end
     self.areas[area_code].send(@postfix_key, move: true)
-    ::Ractor.receive
+
+    # TODO: Genericize this into a `proc` ASAP because it's gross lol
+    #       Also because p much the same logic will apply everywhere we're `::receive_if`-ing,
+    #       just with minor variations in needle `::Class` and match verification method.
+    #       This also seems to be very slow based on how much it lowered my ips-count. Maybe due to `#any?`?
+    ::Ractor.receive_if { |message|
+      case message
+      when ::CHECKING::YOU::OUT then
+        case message.postfixes
+        when ::NilClass then false
+        when ::CHECKING::YOU::OUT::StickAround then message.postfixes.eql?(@postfix_key)
+        when ::Set then message.postfixes.any? { _1.eql?(@postfix_key) }
+        else false
+        end
+      when ::Set then
+        message.all? { |msg|
+          case msg.postfixes
+          when ::NilClass then false
+          when ::CHECKING::YOU::OUT::StickAround then msg.postfixes.eql?(@postfix_key)
+          when ::Set then msg.postfixes.any? { _1.eql?(@postfix_key) }
+          else false
+          end
+        }
+      else false
+      end
+    }
   end
 
   # Blocking method to return the `::CHECKING::YOU::OUT` type for a given `::Pathname` based on all possible

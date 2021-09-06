@@ -1,3 +1,4 @@
+require(-'file') unless defined?(::File)
 
 # IETF Media-Type `String`-handling components.
 # CYI class-level components.
@@ -226,10 +227,16 @@ end
 # CYO class-level components.
 module CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
   # Return a `::CHECKING::YOU::OUT` object from a given `::Ractor` pool.
-  def from_ietf_media_type(ietf_string, area_code: ::CHECKING::YOU::IN::GHOST_REVIVAL::DEFAULT_AREA_CODE)
+  def from_ietf_media_type(ietf_string, area_code: self.superclass::DEFAULT_AREA_CODE)
     return if ietf_string.nil?
     # Don't `move` in case the caller wants to do further operations on their given `::String`.
     self.areas[area_code].send(ietf_string)
-    ::Ractor.receive
+    ::Ractor.receive_if { |message|
+      case message
+      when ::CHECKING::YOU::OUT then ::File.fnmatch?(ietf_string, message.to_s)
+      when ::Set then message.all? { ::File.fnmatch?(ietf_string, _1.to_s) }
+      else false
+      end
+    }
   end
 end
