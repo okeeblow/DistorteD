@@ -246,7 +246,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
         unless message.is_a?(::CHECKING::YOU::OUT::BatonPass) then
         if last_message.has_key?(message.hash) then
           # TODO: Support specifying receiver `::Ractor` here (see comment on `promise_for_life`).
-          golden_i.send(last_message[message.hash], move: ::Ractor.shareable?(last_message[message.hash]) ? true : false)
+          golden_i.send(last_message[message.hash], move: ::Ractor.shareable?(last_message[message.hash]))
           next
         end
         end
@@ -292,7 +292,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
             # TODO: Confirm if `move: true` will cause any problems here when dealing with multiple receivers.
             promise_for_life.delete(needle.hash)&.send(
               last_message.fetch(needle.hash),
-              move: ::Ractor.shareable?(last_message.fetch(needle.hash)) ? true : false,
+              move: ::Ractor.shareable?(last_message.fetch(needle.hash)),
             )
           }
 
