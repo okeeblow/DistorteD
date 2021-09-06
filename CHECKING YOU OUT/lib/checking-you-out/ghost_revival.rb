@@ -238,7 +238,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
         # T0DO: If I can get `::Pathname`s to match completely against `::StickAround` `::Hash` keys
         #       then I'd like to avoid an extra allocation by killing the `::Struct`,
         #       subclassing `::Pathname` itself, and keeping the stream around as an IVar.
-        #       Then I can also move this wrapping step out to `CYO::from_pathname` where there
+        #       Then I could also move this wrapping step out to `CYO::from_pathname` where there
         #       is already an explicit allocation of a new wrapper `::Pathname`.
         message = ::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O.new(message) if
           message.is_a?(::Pathname) and not message.is_a?(SharedMIMEinfo)

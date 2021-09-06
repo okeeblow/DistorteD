@@ -4,6 +4,10 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
   # Wrap `::Pathname`s alongside their `::IO` stream (from `#open`) and their extname-glob
   # so we can pass the entire thing around as a single unit.
   #
+  # A lot of `::Pathname` is in C: https://github.com/ruby/ruby/blob/master/ext/pathname/pathname.c
+  #             …and some in Ruby: https://github.com/ruby/ruby/blob/master/ext/pathname/lib/pathname.rb
+  # Note the `rb_ext_ractor_safe(true);` :D
+  #
   # TODO: Implement some sort of sliding-window `::IO#read` functionality here
   #       so `SequenceCat#=~` doesn't have to allocate and `#read` a throwaway byte `::String`
   #       for every matching attempt.
