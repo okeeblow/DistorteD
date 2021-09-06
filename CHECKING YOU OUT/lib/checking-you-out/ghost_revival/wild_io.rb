@@ -7,6 +7,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
   # TODO: Implement some sort of sliding-window `::IO#read` functionality here
   #       so `SequenceCat#=~` doesn't have to allocate and `#read` a throwaway byte `::String`
   #       for every matching attempt.
+  #       https://blog.appsignal.com/2018/07/10/ruby-magic-slurping-and-streaming-files.html
   Wild_I∕O = ::Struct.new(:pathname, :stream, :stick_around) do
 
     def initialize(pathname)
