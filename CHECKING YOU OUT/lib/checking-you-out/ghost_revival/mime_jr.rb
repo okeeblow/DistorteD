@@ -228,7 +228,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   end
 
   # Instantiate parse environment for `MIMEjr` and also for `MrMIME` (subclass).
-  def initialize(receiver_ractor, *handler_args, **handler_kwargs)
+  def initialize(receiver_ractor, *handler_args, keep_packages_open: true, **handler_kwargs)
     # Per the `Ox::Sax` dox:
     # "Initializing `line` attribute in the initializer will cause that variable to
     #    be updated before each callback with the XML line number.
@@ -245,7 +245,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
 
     # Container for enabled `SharedMIMEinfo` paths and their opened `IO` streams.
     @mime_packages = ::Hash.new
-    @keep_packages_open = true
+    @keep_packages_open = keep_packages_open
 
     # Scratch `String` for the currently-parsing Media-Type, used to instantiate `self.cyo`
     # iff we have a match.
@@ -325,7 +325,22 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # https://www.freebsd.org/cgi/man.cgi?query=posix_fadvise&sektion=2
       # https://cgit.freebsd.org/src/tree/sys/kern/vfs_syscalls.c
       # https://cgit.freebsd.org/src/tree/sys/compat/linux/linux_file.c
-      _1.advise(:sequential)
+      #
+      # Other interesting-though-not-particularly-useful-or-relevant links:
+      # https://pubs.opengroup.org/onlinepubs/007904975/functions/posix_fadvise.html  (2004 edition)
+      # https://pubs.opengroup.org/onlinepubs/9699919799/functions/posix_fadvise.html (2018 edition)
+      # https://groups.google.com/g/lucky.linux.fsdevel/c/5aBm_HWW6zI                 (2002 Lunix discussion)
+      # https://en.wikipedia.org/wiki/Open_(system_call)                              (The system call Ruby wraps)
+      # https://en.wikipedia.org/wiki/File_descriptor                                 (That to which the advise applies)
+      #
+      # Per `man 2 posix_fadvise`:
+      #   "`POSIX_FADV_SEQUENTIAL` — The application expects to access the specified data sequentially
+      #                              (with lower offsets read before higher ones)."
+      #   "`POSIX_FADV_WILLNEED`  — initiates a nonblocking read of the specified region into the page cache."
+      #
+      # Choose `:willneed` if we are opening a file descriptor and keeping it open even while not actively parsing.
+      # Choose `:sequential` if we are opening a new file descriptor every time we do a parse.
+      _1.advise(@keep_packages_open ? :willneed : :sequential)
     }
   end
 
@@ -432,7 +447,27 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
 
   # Kick off the actual process of parsing our enabled `SharedMIMEinfo` XML packages.
   def parse_mime_packages(**kwargs)
-    @mime_packages.each_pair { |xml_pathname, mime_xml|
+
+    # Welcome to `::Class` 17!
+    # Your file descriptor has been opened — or *re*opened — to parse one of our finest
+    # remaining `shared-mime-info` XML packages.
+    @mime_packages.each_pair { |(xml_pathname, xml_fd)|
+      # This is where I would use `::Hash#transform_pair!` if there were such a method.
+      # There are `#transform_values!` and `#transform_keys!` methods to alter `self` in place,
+      # but I need to have the `xml_pathname` key to be able to set its value.
+      # There is regular-old-`#map`, but that allocates a new `::Hash`, and I want to alter this one.
+      if xml_fd.nil? then
+        # Open and tell the kernel how we plan to use this file descriptor.
+        @mime_packages.store(xml_pathname, self.open_package(xml_pathname))
+      elsif xml_fd.closed? then
+        # AFAICT we don't need to re-`fadvise` when reopening the same file descriptor.
+        @mime_packages[xml_pathname].reopen(xml_pathname)
+      else next  # Nothing to do if the file descriptor is already open.
+      end
+    }
+
+    # Send each file descriptor through `::Ox`'s `sax_parse` method using our own `self` as the handler.
+    @mime_packages.each_pair { |xml_pathname, xml_fd|
       # Docs: http://www.ohler.com/ox/Ox.html#method-c-sax_parse
       #
       # Code for this method is defined in Ox's C extension, not in Ox's Ruby lib:
@@ -453,7 +488,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       #   `((NoSkip == dr->options.skip && !isEnd) || (OffSkip == dr->options.skip)))`
       ::Ox::sax_parse(
         self,                     # Instance of a class that responds to `Ox::Sax`'s callback messages.
-        mime_xml || self.open_package(xml_pathname),  # IO stream or String of XML to parse. Won't close File handles automatically.
+        xml_fd,                   # IO stream or String of XML to parse. Won't close File descriptors automatically.
         **{
           convert_special: true,  # [boolean] Convert encoded entities back to their unencoded form, e.g. `"&lt"` to `"<"`.
           skip: :skip_off,        # [:skip_none|:skip_return|:skip_white|:skip_off] (from Element text/value) Strip CRs, whitespace, or nothing.
@@ -463,10 +498,13 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
           intern_strings: true,   # [boolean] Intern (freeze and deduplicate) String return values.
         }.update(kwargs),         # Let the sender override any of these defaults.
       )
-      # We MUST `#rewind` each package's `::IO` stream if we are keeping the file handles open between parses,
-      # otherwise subsequent calls to the sequential `::Ox::sax_parse` will complete instantly with no actual parsing.
-      @keep_packages_open ? mime_xml.rewind : mime_xml.close
-    }
+
+      # We MUST `#rewind` each package's `::IO` stream if we are keeping the file descriptors open between parses,
+      # otherwise subsequent calls to the sequential `::Ox::sax_parse` will complete instantly with no actual parsing
+      # because it reads sequentially and doesn't reset the stream position itself.
+      # If we aren't keeping file descriptors open we can just `#close` because the position will be reset to `0` when `#reopen`ing.
+      @keep_packages_open ? xml_fd.rewind : xml_fd.close
+    }  # @mime_packages.each_pair
   end
 end
 
