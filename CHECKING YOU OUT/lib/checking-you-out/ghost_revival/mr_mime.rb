@@ -202,12 +202,19 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     # The only way we can trust that we have it all is to wait and do them here all at once.
     @out.transform_values!(&Ractor.method(:make_shareable))
     @out.each_value { @receiver_ractor.send(_1, move: true) }
-
-    # Clean ourselves up and then forward the trigger message back to the main message-loop
-    # to signify the completion of our parsing.
-    @needles.clear
     @out.clear
-    @receiver_ractor.send(the_trigger_of_innocence, move: true)
+
+    # Forward a trigger message back to the main message-loop to signify the completion of our parsing.
+    # This is kinda hacky, but if the trigger value was `true` then send the `@needles` to our receiver
+    # in the same way `MIMEjr` sent its needles to us.
+    # This lets us fulfill Promises for `::String` and `::Regexp` needles since we support spooling
+    # an arbitrary number of those one-message-at-a-time before kicking off a single parse pass with `true`.
+    if the_trigger_of_innocence.is_a?(::TrueClass) then
+      @receiver_ractor.send(@needles.values.reduce(&:|), move: true)
+    else
+      @receiver_ractor.send(the_trigger_of_innocence, move: true)
+    end
+    @needles.clear
   end
 end
 
