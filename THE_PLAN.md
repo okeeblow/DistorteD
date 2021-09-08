@@ -6,7 +6,8 @@ if it's not implemented 𝅘𝅥𝅮
 
 # Currently Thinking About…
 
-- `Ractor` architecture for DistorteD 0.8+
+- `Ractor` architecture ~~for DistorteD 0.8+~~
+  - There's no way I'll be able to `Ractor`-ize everything any time soon due to lack of support in both `Fiddle` and the more-popular `FFI` gem.
 
 ## Specifics
 
