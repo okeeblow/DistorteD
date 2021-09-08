@@ -114,13 +114,10 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
     # `::Ractor.new` won't take arbitrary named arguments, just positional.
     ::Ractor.new(::Ractor.current, max_burning = DEFAULT_CACHE_SIZE, name: area_code) { |golden_i, max_burning|
 
-      # These `Hash` sub-classes needs to be defined in the `Ractor` scope afaict because of the additional methods,
-      # otherwise trying to `:merge` or `:bury` results in a `defined in a different Ractor (RuntimeError)`.
-      #
-      # Using the `class SetMeFree < ::Hash; def whatever` syntax instead of `#define_method` didn't change anything.
-      # Using a generator method to pass in a `Ractor`-specific `Class` as an argument to `Ractor::new`
-      # didn't change anything, since the generator method is still in the outer context when called.
-      # It seems the actual code has to be `instance_eval`ed here in the `Ractor` scope v(._. )v
+      # These `::Hash` sub-classes needs to be defined in the `::Ractor` scope because the block argument to `:define_method`
+      # is un-shareable, otherwise trying to `:merge` or `:bury` results in a `defined in a different Ractor (RuntimeError)`:
+      # - https://bugs.ruby-lang.org/issues/17722 
+      # - https://github.com/ruby/ruby/pull/4771/commits/b92c26a56fb515c9225cfd11e965abffe583e0a5
       set_me_free         = self.instance_eval(&SET_ME_FREE)
       magic_without_tears = self.instance_eval(&::CHECKING::YOU::OUT::SweetSweet♡Magic::MAGIC_WITHOUT_TEARS)
 
