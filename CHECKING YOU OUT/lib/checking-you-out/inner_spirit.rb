@@ -112,6 +112,12 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     end&.delete_prefix(-?*)
   end
 
+  # Unset the IVars for Postfixes and Complexes.
+  def clear_pathname_fragments
+    self.remove_instance_variable(:@postfixes)
+    self.remove_instance_variable(:@complexes)
+  end
+
 
   # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
   def aka
