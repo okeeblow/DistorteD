@@ -33,6 +33,11 @@ class ::CHECKING::YOU; end
   # This will be the area used for all synchronous method invocations that do not specify otherwise.
   self::DEFAULT_AREA_CODE = -'CHECKING YOU OUT'
 
+  # Symbolize our `::Struct` values if they're given separately (not as a CYI/CYO).
+  def initialize(*taxa)
+    super(*(taxa.first.is_a?(::CHECKING::YOU::IN) ? taxa : taxa.map!(&:to_sym)))
+  end
+
   # Promote any CYI to its CYO singleton. CYO has the opposites of these methods.
   def out(area_code: self.class::DEFAULT_AREA_CODE)
     self.class.areas[area_code].send(self)
@@ -44,6 +49,7 @@ class ::CHECKING::YOU; end
   def eql?(otra)
     case otra
     when ::String then self.to_s.eql?(otra)
+    when ::CHECKING::YOU::IN, ::CHECKING::YOU::OUT then self.values.eql?(otra.values)
     else super(otra)
     end
   end
@@ -85,11 +91,6 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # CYI has the opposites of these methods.
   def out; self; end
   def in; self.class.superclass.new(*self.values); end
-
-  # Construct a bare CYO object not necessarily part of any `Ractor` pool.
-  def self.new(taxa)
-    taxa.is_a?(self.superclass) ? super(*taxa.values) : super(taxa)
-  end
 
   # Add a new filename-match to a specific type.
   def add_pathname_fragment(fragment)

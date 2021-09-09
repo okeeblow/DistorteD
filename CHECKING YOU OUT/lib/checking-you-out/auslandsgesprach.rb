@@ -1,5 +1,3 @@
-require(-'file') unless defined?(::File)
-
 # IETF Media-Type `String`-handling components.
 # CYI class-level components.
 module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
@@ -84,7 +82,7 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
     move_zig = proc { |zig|
       case zig
       when 0 then  # NULL
-        my_base[:phylum] = scratch.reverse!.pack(-'U*').-@
+        my_base[:phylum] = scratch.reverse!.pack(-'U*').to_sym
       when 61 then  # =
         # TODO: Implement Fragment-based Type variations
         hold.push(*scratch)
@@ -116,37 +114,37 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
           # and `opendocument.graphics` (fits!) instead of `vnd` and `oasis.opendocument.graphics` (doesn't fit!).
           #
           # The dropped `vnd` will be reconstructed by `CYO#to_s` when it detects a non-standard tree name.
-          hold.rindex(46) ? -hold.slice!(hold.rindex(46)..).reverse!.tap(&:pop).pack(-'U*') : -'vnd'
+          hold.rindex(46) ? -hold.slice!(hold.rindex(46)..).reverse!.tap(&:pop).pack(-'U*').to_sym : :vnd
         when scratch[-3..] == (-'srp').codepoints then
           # https://datatracker.ietf.org/doc/html/rfc6838#section-3.3
           # "Media types created experimentally or as part of products that are not distributed commercially".
           # This is mostly an early-Internet legacy and there are only a few of these in `shared-mime-info`,
           # e.g. `audio/prs.sid` for the C=64 Sound Interface Device audio format,
           # but they can still be registered.
-          scratch.pop(3); -'prs'
+          scratch.pop(3); :prs
         when scratch[-5..] == (-'-sm-x').codepoints then
           # Microsoft formats like `text/x-ms-regedit`.
           # I'm treating this separately from the IETF `x-` tree just because there are so many of them,
           # and it's nice to keep Winders formats logically-grouped.
-          scratch.pop(5); -'x-ms'
+          scratch.pop(5); :"x-ms"
         when scratch[-2..] == (-'-x').codepoints then
           # Deprecated experimental tree (`x-`): https://datatracker.ietf.org/doc/html/rfc6648
           # I'm giving this deprecated tree the canonical `x` tree in CYO because it has legacy dating back
           # to the mid '70s and has many many many more Types than post-2012 `x.` tree,
           # RE: https://datatracker.ietf.org/doc/html/rfc6648#appendix-A
-          scratch.pop(2); -?x
+          scratch.pop(2); :x
         when scratch.one? && scratch.last == 100 then  # x
           # Faceted experimental tree (`x.`): https://datatracker.ietf.org/doc/html/rfc6838#section-3.4
           # There are only a few of these since "use of both `x-` and `x.` forms is discouraged",
           # e.g. `model/x.stl-binary`, and there aren't likely to be many more.
-          scratch.pop; -'kayo-dot'
+          scratch.pop; :"kayo-dot"
         else
           # Otherwise we are in the "standards" tree: https://datatracker.ietf.org/doc/html/rfc6838#section-3.1
-          -'possum'
-        end.-@
+          :possum
+        end
         # Everything remaining in `hold` and `scratch` will comprise the most-specific Type component.
         hold.push(*scratch)
-        my_base[:genus] = hold.reverse!.pack(-'U*').-@
+        my_base[:genus] = hold.reverse!.pack(-'U*').to_sym
         scratch.clear
         hold.clear
       when 46 then  # .
@@ -191,29 +189,29 @@ module ::CHECKING::YOU::IN::INLANDGESPRÄCH
   # a leading `vnd.` facet when reconstructing the Media-Type `String`.
   PRIMARY_CONTENT_TYPES = [
     # Current top-level IANA registries are shown here: https://www.iana.org/assignments/media-types/media-types.xhtml
-    -'application',
-    -'audio',
-    -'chemical',     # Non-IANA Chemical MIME project: https://www.ch.ic.ac.uk/chemime/
-    -'example',
-    -'font',         # RFC 8081: https://datatracker.ietf.org/doc/html/rfc8081
-    -'image',
-    -'message',
-    -'model',        # RFC 2077: https://datatracker.ietf.org/doc/html/rfc2077
-    -'multipart',
-    -'text',
-    -'video',
+    :application,
+    :audio,
+    :chemical,     # Non-IANA Chemical MIME project: https://www.ch.ic.ac.uk/chemime/
+    :example,
+    :font,         # RFC 8081: https://datatracker.ietf.org/doc/html/rfc8081
+    :image,
+    :message,
+    :model,        # RFC 2077: https://datatracker.ietf.org/doc/html/rfc2077
+    :multipart,
+    :text,
+    :video,
   ].freeze
 
   # Reconstruct an IETF Media-Type String from a loaded CYI/CYO's `#members`
   def to_s
     # TODO: Fragments (e.g. `;what=ever`), and syntax identifiers (e.g. `+xml`)
     -(::String.new(encoding: ::Encoding::UTF_8, capacity: 128) << self.phylum.to_s << -'/' << case
-    when self.kingdom == -'kayo-dot' then -'x.'
-    when self.kingdom == -?x then -'x-'
-    when self.kingdom == -'x-ms' then -'x-ms-'
-    when self.kingdom == -'prs' then -'prs.'
-    when self.kingdom == -'vnd' then -'vnd.'
-    when self.kingdom == -'possum' then nil.to_s
+    when self.kingdom == :"kayo-dot" then -'x.'
+    when self.kingdom == :x then -'x-'
+    when self.kingdom == :"x-ms" then -'x-ms-'
+    when self.kingdom == :prs then -'prs.'
+    when self.kingdom == :vnd then -'vnd.'
+    when self.kingdom == :possum then nil.to_s
     when !PRIMARY_CONTENT_TYPES.include?(self.kingdom.to_s) then 'vnd.' << self.kingdom.to_s << -'.'
     else self.kingdom.to_s << -'.'
     end << self.genus.to_s)
@@ -233,8 +231,8 @@ module CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
     self.areas[area_code].send(ietf_string)
     ::Ractor.receive_if { |message|
       case message
-      when ::CHECKING::YOU::OUT then ::File.fnmatch?(ietf_string, message.to_s)
-      when ::Set then message.all? { ::File.fnmatch?(ietf_string, _1.to_s) }
+      when ::CHECKING::YOU::OUT then message.eql?(ietf_string)
+      when ::Set then message.all? { _a.eql?(ietf_string) }
       else false
       end
     }
