@@ -1,8 +1,8 @@
 # This is how we're testing.
-require 'test/unit'
+require('test/unit') unless defined?(::Test::Unit)
 
 # This is what we're testing.
-require_relative '../lib/checking-you-out'
+require_relative('../lib/checking-you-out') unless defined?(::CHECKING::YOU::OUT)
 
 # Use `Kernel#load` for discovered tests instead of `Kernel#require` or `#require_relative`,
 # because `#load` supports paths relative to CWD in addition to just to `$LOAD_PATH` (like `#require`)
