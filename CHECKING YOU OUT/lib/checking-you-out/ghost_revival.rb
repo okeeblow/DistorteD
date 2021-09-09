@@ -125,7 +125,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
       # Instances of the above classes to hold our type data.
       all_night     = set_me_free.new          # Main `{CYI => CYO}` container.
       postfixes     = set_me_free.new          # `{StickAround => CYO}` container for Postfixes (extnames).
-      globs         = set_me_free.new          # `{StickAround => CYO}` container for more complex filename globs.
+      complexes     = set_me_free.new          # `{StickAround => CYO}` container for more complex filename fragments.
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
       ietf_parser   = ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::FROM_IETF_TYPE.call  # Parse `String`s into `CYI`s.
 
@@ -156,10 +156,10 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
         # Main memoization `Hash` keyed by `CYI`.
         all_night.bury(cyo.in, cyo)
 
-        # Memoize single-extname "postfixes" separately from more complex filename globs
+        # Memoize single-extname "postfixes" separately from more complex filename fragments
         # to allow work and record-keeping with pure extnames.
         postfixes.bury(cyo.postfixes, cyo)
-        globs.bury(cyo.globs, cyo)
+        complexes.bury(cyo.complexes, cyo)
 
         # Memoize content-match byte sequences in nested `Hash`es based on the starting and ending
         # byte offset where each byte sequence may be found in a hypothetical file/stream.
@@ -177,7 +177,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
       # the first time that needle is seen (or if it has been purged from our cache).
       remember_you  = proc { |needle|
         case needle
-        when ::CHECKING::YOU::OUT::StickAround then globs[needle] || postfixes[needle]
+        when ::CHECKING::YOU::OUT::StickAround then complexes[needle] || postfixes[needle]
         when ::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O then
           # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
           #  an extended attribute or some other means) then that should be used instead of guessing."
@@ -187,7 +187,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
           unless xattr.nil? or xattr&.empty? then xattr.first
           else
             ::CHECKING::YOU::IN::GHOST_REVIVAL::MAGIC_CHILDREN.call(
-              (globs[needle.stick_around] || postfixes[needle.stick_around]),
+              (complexes[needle.stick_around] || postfixes[needle.stick_around]),
               as_above.so_below(needle.stream),
             )
           end
@@ -372,7 +372,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
   end
 
   # Blocking method to return the `::CHECKING::YOU::OUT` type for a given `::Pathname` based on all possible
-  # matching conditions (file extname, complex filename glob, and content match iff the file exists).
+  # matching conditions (file extname, complex filename fragment, and content match iff the file exists).
   def from_pathname(stick_around, area_code: self::DEFAULT_AREA_CODE)
     # Explicitly construct a new `::Pathname` to allow us to handle `::String` and other input,
     # Normally I would avoid allocating additional objects when given the needed type,

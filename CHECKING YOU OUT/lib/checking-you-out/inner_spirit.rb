@@ -93,15 +93,11 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
   # Add a new filename-match to a specific type.
   def add_pathname_fragment(fragment)
-    # Store single-extname "postfix" matches separately from more complex "globs"
+    # Store single-extname "postfix" matches separately from more complex matches
     # so we can list out file extensions easily.
-    if fragment.postfix? then
-      self.awen(:@postfixes, fragment)
-    else
-      self.awen(:@globs, fragment)
-    end
+    self.awen(fragment.postfix? ? :@postfixes : :@complexes, fragment)
   end
-  attr_reader(:postfixes, :globs)
+  attr_reader(:postfixes, :complexes)
 
   # Returns the "primary" file extension for this type.
   # For now we'll assume the `#first` extname is the primary.

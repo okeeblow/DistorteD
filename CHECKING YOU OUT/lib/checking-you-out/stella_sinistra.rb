@@ -3,9 +3,9 @@ require(-'pathname') unless defined?(::Pathname)
 require_relative(-'weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
 
 
-# Provide case-optional String-like keys for Postfixes, Globs, etc.
+# Provide case-optional `::String`-like keys for Postfix and Complex filename fragments.
 #
-# From Ruby's `Hash` docs: "Two objects refer to the same hash key when their hash value is identical
+# From Ruby's `::Hash` docs: "Two objects refer to the same hash key when their hash value is identical
 # and the two objects are eql? to each other"
 # I tried to subclass String and just override `:eql?` and `:hash` for case-insensitive lookups,
 # but it turns out not be that easy due to MRI's C comparison functions for String, Symbol, etc.
