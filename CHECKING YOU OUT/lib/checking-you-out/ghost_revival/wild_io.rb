@@ -35,6 +35,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
     # The `::Pathname` is the only one assumed to be set at all times, so `#hash` based on that.
     def hash; self[:pathname].hash; end
 
+    # Empty out the `::Struct` so it can be re-used.
+    def clear; self.tap { |get_wild| get_wild.members.each { |m| get_wild[m] = nil } }; end
+
   end  # Wild_I∕O
 
 end  # module ::CHECKING::YOU::IN::GHOST_REVIVAL
