@@ -236,28 +236,6 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
   # `Hash`-key usage depends on `#eql?`, but `:==` should have identical behavior for our own uses.
   alias_method(:==, :eql?)
 
-  # Return an `Integer` hash value for this object. This method and `#eql?` are used by `Hash`, `Set`, and `#uniq` to
-  # associate separate Objects with each other for deduplication or for use as `Hash` keys.
-  # The `eql?` method will be called only *after* two `#hash` values match!
-  #
-  # NOTE: MRI will not use this function in many cases!
-  # It has C implementations of methods like `rb_str_hash_cmp` for `Hash` lookups, and this is usually a Good Thing™
-  # since it makes `Hash`es fast when using `String` or `Symbol` as keys.
-  # Subclassing built-in types like `String` allows/forces us to use these same accelerated code paths,
-  # and it was incredibly confusing for me why my custom String subclass was behaving so strangely
-  # when used as a Hash key until I had a hunch to read MRI's `string.c` and `hash.c` and confirmed.
-  # I found this write-up once I knew to search for "rb_str_hash_cmp": https://kate.io/blog/strange-hash-instances-in-ruby/
-  #
-  # I'm going to define this anyway because it could still be useful in certain corner cases, but be aware of the above!
-  # This is the reason I explicitly `downcase` our self value in `#replace`, because otherwise the Hash keys will never match
-  # and `#eql?` will never even be called.
-  def hash
-    if self.include?(-?*) and not self.start_with?(-?*) then self[...6].downcase!.hash
-    elsif self.include?(-?*) and not File.extname(self).empty? then File.extname(self).delete_prefix!(-?.)
-    else super
-    end
-  end
-
   # Return a boolean describing if we are a single-extname only vs. if we are a more complex glob.
   def postfix?; self.start_with?(-'*.') and self.count(-?.) == 1 and self.count(-?*) == 1; end
 
