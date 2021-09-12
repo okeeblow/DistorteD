@@ -1,5 +1,13 @@
 require(-'ox') unless defined?(::Ox)
+require('test/unit') unless defined?(::Test::Unit)
+require_relative('../lib/checking-you-out') unless defined?(::CHECKING::YOU::OUT)
 
+# This file contains tests for our IETF Media-Type `String` parsing and reassembly round-trip,
+# e.g. `"application/vnd.ms-word"`
+#        →  `#<struct CHECKING::YOU::OUT kingdom=:vnd, phylum=:application, genus=:"ms-word">`
+#          →  `"application/vnd.ms-word"`
+
+# Path to CYO's bundled `shared-mime-info` main-package.
 fdo_mime = ::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo.new(::File.join(
   ::CHECKING::YOU::OUT::GEM_ROOT.call,
   -'mime',
@@ -9,6 +17,8 @@ fdo_mime = ::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo.new(::File.join(
   "#{::CHECKING::YOU::OUT::GHOST_REVIVAL::FDO_MIMETYPES_FILENAME}.in",
 ))
 
+# Override discovery of systemwide and user-specific MIME packages
+# so we test only the single `fdo_mime` package.
 module OnlyOnePackage
   refine ::CHECKING::YOU::OUT::GHOST_REVIVAL do
     def discover_fdo_xml; ::Array.new.push(fdo_mime); end
@@ -16,6 +26,9 @@ module OnlyOnePackage
 end
 using OnlyOnePackage
 
+# Quick-'n'-dirty barebones `MrMIME`-equivalent.
+# All this version does is list out all `String` sttribute values from `<mime-type attr="whatever"/>`,
+# then we can tell if our `String` parsing works properly iff that same type exists via CYO.
 class IETFTypeChecker < ::Ox::Sax
   def initialize(...)
     @out = Array.new
@@ -35,9 +48,9 @@ class IETFTypeChecker < ::Ox::Sax
     end
   end
   def open(path, **kwargs)
-    File.open(path, File::Constants::RDONLY) { |mime_xml|
+    ::File.open(path, ::File::Constants::RDONLY) { |mime_xml|
       mime_xml.advise(:sequential)
-      Ox.sax_parse(
+      ::Ox.sax_parse(
         self,                     # Instance of a class that responds to `Ox::Sax`'s callback messages.
         mime_xml,                 # IO stream or String of XML to parse. Won't close File handles automatically.
         **{
@@ -53,15 +66,20 @@ class IETFTypeChecker < ::Ox::Sax
   end
 end
 
+# Separate this test from the normal CYO area to ensure data quality
+# with the single-MIME-package refinement.
 area_code = 'TEST MY BEST'
-::CHECKING::YOU::OUT::send(/.*/, area_code: area_code)
 
+# Pre-load all available types
+::CHECKING::YOU::OUT[/.*/, area_code: area_code]
+
+# Load all `<mime-type>` IETF Media-Type `String`s from the same test package.
 handler = IETFTypeChecker.new
 fdo_types = handler.open(fdo_mime)
 
 # Define a test for every `<mime-type>` element in `shared-mime-info`'s XML
 # asserting that CYO's `#to_s` outputs an identical `String` for that type.
-TestAuslandsgesprach = fdo_types.each_with_object(Class.new(Test::Unit::TestCase)) { |type, classkey_csupó|
+TestAuslandsgesprach = fdo_types.each_with_object(::Class.new(::Test::Unit::TestCase)) { |type, classkey_csupó|
   classkey_csupó.define_method("test_#{type.downcase.gsub(/[\/\-_+\.=;]/, ?_)}_ietf_type_decomposition") {
     # TODO: Fix suffixed types (remove `unless` guard)
     assert_equal(type, ::CHECKING::YOU::OUT::from_ietf_media_type(type, area_code: area_code).to_s) unless type.include?(?+)

@@ -194,8 +194,9 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
   # Trigger a search for all needles received by our `::Ractor` since the last `#search`.
   # See the overridden `self.new` for more details of our `::Ractor`'s message-handling loop.
   def do_the_thing(the_trigger_of_innocence)
-    return if @needles.values.map(&:nil?).all?
-    self.parse_mime_packages
+    # Don't bother parsing anything if there's nothing for us to match.
+    # This can happen if `MIMEjr` passed to us after not matching anything itself.
+    self.parse_mime_packages unless @needles.values.map(&:nil?).all?
 
     # We can't send our built CYOs in on-the-fly because a single type's data can be spread out
     # over any number of our enabled `SharedMIMEinfo` XML package files.
@@ -205,15 +206,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     @out.clear
 
     # Forward a trigger message back to the main message-loop to signify the completion of our parsing.
-    # This is kinda hacky, but if the trigger value was `true` then send the `@needles` to our receiver
-    # in the same way `MIMEjr` sent its needles to us.
-    # This lets us fulfill Promises for `::String` and `::Regexp` needles since we support spooling
-    # an arbitrary number of those one-message-at-a-time before kicking off a single parse pass with `true`.
-    if the_trigger_of_innocence.is_a?(::TrueClass) then
-      @receiver_ractor.send(@needles.values.reduce(&:|), move: true)
-    else
-      @receiver_ractor.send(the_trigger_of_innocence, move: true)
-    end
+    @receiver_ractor.send(the_trigger_of_innocence, move: true)
     @needles.clear
   end
 end

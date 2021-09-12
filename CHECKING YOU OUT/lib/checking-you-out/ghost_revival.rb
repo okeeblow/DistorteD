@@ -80,7 +80,17 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   })
 
 
+  # Message `::Struct` for inter-`::Ractor` communication. These will be sent with `move: true`
+  # and will be mutable. The receiver `::Ractor` will take the `:request`, mutate the message
+  # to contain the resulting `:response`, and send the mutated message to the `:destination`.
   #
+  # TODO: Re-evaluate this in Ruby 3.1+ depending on the outcome of https://bugs.ruby-lang.org/issues/17298
+  EverlastingMessage = ::Struct.new(:destination, :request, :response) do
+    # Hash the entire message based on the `#hash` of its `:request` member.
+    # The resulting `::Integer` will be used in the cache `::Hash`/`::Set` because the message
+    # object itself will become a `::Ractor::MovedObject` after it's sent to `:destination`.
+    def hash; self[:request].hash; end
+  end
 
 
   # Construct a `Ractor` container for a single area of type data, chosen by the `area_code` parameter.
@@ -183,121 +193,65 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         end  # case needle
       }
 
-      # Cache recent results to minimize denial-of-service risk if we get sent an unmatchable message in a loop.
+      # Cache recent results to avoid re-running matching logic.
       # Use a `Hash` to store the last return value for a configurable number of previous query messages.
       # Use `Thread::Queue` to handle cache eviction of oldest keys from the `Hash`.
       last_message = ::Hash.new
       refrain      = ::Thread::Queue.new
-
-      # Remember the destination `::Ractor` for every needle which isn't immediately matched.
-      # An uncached unmatchable needle will trigger the `MIMEjr` → `MrMIME` → `self` parsing loop,
-      # then we will try matching the needle again and send the result to the `::Ractor` recorded here
-      # even if that result is `nil`.
-      #
-      # The destination `::Ractor` will be blocking on `::Ractor.receive` until we send something,
-      # so a `nil` result can still be important :)
-      #
-      # Key on the needle's `#hash` (i.e. `::Integer` => `::Ractor`) instead of the needle `::Object` itself,
-      # because we will lose access to the real `::Object` after `::Ractor.send(move: true)`-ing it.
-      #
-      # TODO: All of the `#values` here will be `golden_i` (the `::Ractor` who created our `::Ractor`) for now
-      #       until I come up with some structure to specify the intended receiver `::Ractor` for a query.
-      #       I avoided doing that for now to avoid both:
-      #         - the extra allocation necessary to wrap every message since `#send` only takes one argument.
-      #         - the complexity of handling both wrapped and unwrapped messages.
-      #       idk if it's possible to avoid both of them forever lol
-      promise_for_life = ::Hash.new
+      # Cache unmatchable messages to minimize denial-of-service risk if we get sent an unmatchable message in a loop.
+      nφ_crime     = ::Set.new
 
 
       # Main message loop to process incoming `::Ractor` message queue for instructions.
       # This will block when the queue empties.
       while message = ::Ractor.receive
 
-        # Return a cached value if we have one, and short-circuit the entire rest of processing this message.
-        # The cached value can be `nil`, a single CYO, or an `::Enumerable` (e.g. for `::Regexp` needles).
-        unless message.is_a?(::CHECKING::YOU::OUT::BatonPass) then
-        if last_message.has_key?(message.hash) then
-          # TODO: Support specifying receiver `::Ractor` here (see comment on `promise_for_life`).
-          golden_i.send(last_message[message.hash], move: ::Ractor.shareable?(last_message[message.hash]))
-          next
-        end
-        end
-
-        # HACK: Wrap `::Pathname` needle messages into our own `::Struct` so we can pass around
-        #       the `::Pathname` itself, its `::IO` stream (from `::Pathname#open` iff extant file),
-        #       and its `::StickAround` all as a single unit.
-        #
-        # T0DO: If I can get `::Pathname`s to match completely against `::StickAround` `::Hash` keys
-        #       then I'd like to avoid an extra allocation by killing the `::Struct`,
-        #       subclassing `::Pathname` itself, and keeping the stream around as an IVar.
-        #       Then I could also move this wrapping step out to `CYO::from_pathname` where there
-        #       is already an explicit allocation of a new wrapper `::Pathname`.
-        message = ::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O.new(message) if
-          message.is_a?(::Pathname) and not message.is_a?(SharedMIMEinfo)
-
-
-        # Otherwise handle the message in two tiers depending on its `::Class`.
-        # The first tier of `::Class`es represent housekeeping messages, i.e. those where another `::Ractor`
-        # did not block waiting for a response immediately after `#send`ing to us).
-        # The second tier represent "needle"s which should immediately trigger a CYO type-matching attempt,
-        # first against our in-memory types and then against the enabled `SharedMIMEinfo` packages.
         case message
         when ::CHECKING::YOU::OUT then remember_me.call(message)          # Memoize a new fully-loaded CYO.
         when ::CHECKING::YOU::IN  then mr_mime.send(message, move: true)  # Spool a type to load on the next XML parse.
-        when ::CHECKING::YOU::OUT::BatonPass then
-
-          # The end-of-parsing `::Set` subclass will contain all needles which triggered the parse,
-          # e.g. `#<BatonPass: {#<Wild_I∕O pathname=#<Pathname:/home/okeeblow/hello.jpg>}>`.
-          #
-          # If a needle made it here it means there was not an initial cached value, triggering an XML search,
-          # so we can explicitly memoize whatever the new result is here (even if it's `nil`).
-          message.each { |needle|
-            # Memoize the needle's `#hash` `::Integer` instead of the needle `::Object` itself,
-            # because we will lose access to the real `::Object` after `::Ractor.send(move: true)`-ing it.
-            last_message.store(needle.hash, remember_you.call(needle))
-            refrain.push(needle.hash)
-
-            # Evict the oldest cached needle/value iff the cache overflows its size limit.
-            last_message.delete(refrain.pop) if refrain.size > max_burning
-
-            # Then fulfill our promise using (but not evicting) the just-cached value to avoid the match logic.
-            # TODO: Confirm if `move: true` will cause any problems here when dealing with multiple receivers.
-            promise_for_life.delete(needle.hash)&.send(
-              last_message.fetch(needle.hash),
-              move: ::Ractor.shareable?(last_message.fetch(needle.hash)),
-            )
-          }
-
         when SharedMIMEinfo then
           # `::Pathname` subclass representing a `shared-mime-info`-format XML package. Toggle them in both parsers.
           mime_jr.send(message)
           mr_mime.send(message)
         when ::TrueClass, ::FalseClass, ::NilClass then next
-        else
-
-          # Begin second-tier type matching for an uncached needle.
-          i_member = remember_you.call(message)
-          if i_member.nil? then
-            # If we have no match, first memoize which `::Ractor` wants an answer, and then get ready to parse.
-            promise_for_life.store(message.hash, golden_i)
+        when EverlastingMessage then
+          # An `EverlastingMessage` is a `::Struct` message we MUST respond to, either with a CYO, a `::Set` of CYOs, or `nil`.
+          # We will fill in its `#response` member with the result of running its `#request` through our type-matching logic,
+          # then send the mutated message to the `::Ractor` specified in its `#destination` member.
+          i_member = last_message[message.hash] || remember_you.call(message.request)
+          if nφ_crime.delete?(message.hash) or not i_member.nil? then
+            unless last_message.has_key?(message.hash)
+              refrain.push(message.hash)
+              # Ensure shareability of our response value or we will hit a `::Ractor::MovedObject`
+              # the second (cached) time we try to return it since we would have assigned it
+              # by reference to the first message which was returned with `move: true`.
+              last_message.store(message.hash, ::Ractor.make_shareable(i_member))
+              last_message.delete(refrain.pop) if refrain.size > max_burning
+            end
+            message.response = i_member
+            message.destination.send(message, move: true)
           else
-            # If we have a match from already-loaded types, return that without triggering XML parsing.
-            # TODO: Support specifying receiver `::Ractor` here (see comment on `promise_for_life`).
-            golden_i.send(i_member)
-            next
-          end
+            # NOTE: This relies on an implementation detail of MRI where `::Set`s maintain insertion order:
+            # irb> lol = Set[:a, :b, :c] => #<Set: {:a, :b, :c}>
+            # irb> lol.delete(lol.first) => #<Set: {:b, :c}>
+            # irb> lol.delete(lol.first) => #<Set: {:c}>
+            # irb> lol.delete(lol.first) => #<Set: {}>
+            nφ_crime.delete(nφ_crime.first) if nφ_crime.size > max_burning
+            nφ_crime.add(message.hash)
 
-          case message
-          when ::CHECKING::YOU::OUT::StickAround, Wild_I∕O then
-            mime_jr.send(message, move: true)
-            mime_jr.send(true, move: true)
-          when ::String, ::Regexp then
-            mr_mime.send(message, move: true)
-            mr_mime.send(true, move: true)
-          else p "Unhandled `#{message.class}` message: #{message}"
-          end
+            case message.request
+            when ::CHECKING::YOU::OUT::StickAround, Wild_I∕O then
+              mime_jr.send(message.request, move: false)
+              mime_jr.send(message, move: true)
+            when ::String, ::Regexp then
+              mr_mime.send(message.request, move: false)
+              mr_mime.send(message, move: true)
+            else p "Unhandled `#{message.request.class}` EverlastingMessage request: #{message}"
+            end  # case message.request
+          end  # if i_member
 
-        end  # outer `case message`
+        else p "Unhandled `#{message.class}` message: #{message}"; next
+        end  # case message
       end  # while message = ::Ractor.receive
     }  # ::Ractor.new
   end  # def new_area
@@ -317,49 +271,38 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       @postfix_key.prepend(-?*) unless @postfix_key.include?(-?*)
       @postfix_key.freeze
     end
-    self.areas[area_code].send(@postfix_key, move: true)
-
-    # TODO: Genericize this into a `proc` ASAP because it's gross lol
-    #       Also because p much the same logic will apply everywhere we're `::receive_if`-ing,
-    #       just with minor variations in needle `::Class` and match verification method.
-    #       This also seems to be very slow based on how much it lowered my ips-count. Maybe due to `#any?`?
-    ::Ractor.receive_if { |message|
-      case message
-      when ::CHECKING::YOU::OUT then
-        case message.postfixes
-        when ::NilClass then false
-        when ::CHECKING::YOU::OUT::StickAround then message.postfixes.eql?(@postfix_key)
-        when ::Set then message.postfixes.any? { _1.eql?(@postfix_key) }
-        else false
-        end
-      when ::Set then
-        message.all? { |msg|
-          case msg.postfixes
-          when ::NilClass then false
-          when ::CHECKING::YOU::OUT::StickAround then msg.postfixes.eql?(@postfix_key)
-          when ::Set then msg.postfixes.any? { _1.eql?(@postfix_key) }
-          else false
-          end
-        }
-      else false
-      end
-    }
+    self.areas[area_code].send(
+      EverlastingMessage.new(::Ractor.current, @postfix_key),
+      move: true,
+    )
+    ::Ractor.receive_if {
+      |msg| msg.is_a?(EverlastingMessage) and msg.request == @postfix_key
+    }.response
   end
 
   # Blocking method to return the `::CHECKING::YOU::OUT` type for a given `::Pathname` based on all possible
   # matching conditions (file extname, complex filename fragment, and content match iff the file exists).
   def from_pathname(stick_around, area_code: self::DEFAULT_AREA_CODE)
-    # Explicitly construct a new `::Pathname` to allow us to handle `::String` and other input,
-    # Normally I would avoid allocating additional objects when given the needed type,
-    # but `::Ractor#send` will copy the message object anyway by default (avoided here with `move: true`).
-    self.areas[area_code].send(::Pathname.new(stick_around), move: true)
-    ::Ractor.receive
+    # HACK: Wrap `::Pathname` needle messages into our own `::Struct` so we can pass around the `::Pathname` itself,
+    # its `::IO` stream (from `#open` iff it represents an extant file), and its `::StickAround` as a single unit.
+    pathname_key = ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O.new(stick_around)
+    wanted = pathname_key.hash
+    self.areas[area_code].send(
+      EverlastingMessage.new(::Ractor.current, pathname_key),
+      move: true,
+    )
+    ::Ractor.receive_if {
+      |msg| msg.is_a?(EverlastingMessage) and msg.request.hash == wanted
+    }.response
   end
 
   # Generic blocking `:send` method for arbitrary messages to an area `::Ractor`.
   # Useful for testing.
   def [](only_one_arg, area_code: self.superclass::DEFAULT_AREA_CODE)
-    self.areas[area_code].send(only_one_arg)
-    ::Ractor.receive
+    wanted = only_one_arg.hash
+    self.areas[area_code].send(EverlastingMessage.new(::Ractor.current, only_one_arg), move: true)
+    ::Ractor.receive_if {
+      |msg| msg.is_a?(EverlastingMessage) and msg.request.hash == wanted
+    }.response
   end
 end  # module CHECKING::YOU::OUT::GHOST_REVIVAL

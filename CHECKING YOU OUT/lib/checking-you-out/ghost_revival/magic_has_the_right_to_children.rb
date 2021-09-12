@@ -42,7 +42,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   # "Note: Checking the first 128 bytes of the file for ASCII control characters is a good way to guess
   #  whether a file is binary or text, but note that files with high-bit-set characters should still be
   #  treated as text since these can appear in UTF-8 text, unlike control characters.
-  MAGIC_CHILDREN = Ractor.make_shareable(proc { |glob, magic|
+  MAGIC_CHILDREN = ::Ractor.make_shareable(proc { |glob, magic|
     case [glob, magic]
       in ::NilClass,           ::Hash               then magic.push_up
       in ::CHECKING::YOU::OUT, ::NilClass,          then glob

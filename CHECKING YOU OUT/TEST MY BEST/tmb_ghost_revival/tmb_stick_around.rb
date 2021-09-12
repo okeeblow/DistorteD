@@ -36,7 +36,7 @@ class TestStickAround < Test::Unit::TestCase
     assert_equal(hash[@stick_around_sensitive_down], :hey)
     assert_equal(hash[@stick_around_insensitive_down], :hey)
     assert_equal(hash[@stick_around_sensitive_up], :sup)
-    assert_equal(hash[@stick_around_insensitive_up], :hey)  # Nondeterministic depending on insert order. We inserted insensitive-lower first.
+    assert_equal(hash[@stick_around_insensitive_up], :hey)  # Depends on insert order. We inserted insensitive-lower first.
     assert_not_equal(hash[@stick_around_sensitive_down], :sup)
     assert_not_equal(hash[@stick_around_sensitive_up], :hey)
 

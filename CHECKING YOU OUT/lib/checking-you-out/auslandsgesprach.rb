@@ -227,14 +227,12 @@ module CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
   # Return a `::CHECKING::YOU::OUT` object from a given `::Ractor` pool.
   def from_ietf_media_type(ietf_string, area_code: self.superclass::DEFAULT_AREA_CODE)
     return if ietf_string.nil?
-    # Don't `move` in case the caller wants to do further operations on their given `::String`.
-    self.areas[area_code].send(ietf_string)
-    ::Ractor.receive_if { |message|
-      case message
-      when ::CHECKING::YOU::OUT then message.eql?(ietf_string)
-      when ::Set then message.all? { _a.eql?(ietf_string) }
-      else false
-      end
-    }
+    self.areas[area_code].send(
+      ::CHECKING::YOU::OUT::GHOST_REVIVAL::EverlastingMessage.new(::Ractor.current, -ietf_string),
+      move: true,
+    )
+    ::Ractor.receive_if { |msg|
+      msg.is_a?(::CHECKING::YOU::OUT::GHOST_REVIVAL::EverlastingMessage) and msg.request == ietf_string
+    }.response
   end
 end

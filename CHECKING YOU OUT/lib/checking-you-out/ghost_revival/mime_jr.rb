@@ -219,7 +219,8 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # our haystack-containing `::Set` subclass (`BatonPass`) or `true` if no haystack is needed.
       while message = ::Ractor.receive
         case message
-        when ::CHECKING::YOU::OUT::BatonPass, ::TrueClass       then handler.do_the_thing(message)
+        when ::CHECKING::YOU::OUT::GHOST_REVIVAL::EverlastingMessage then handler.do_the_thing(message)
+        when ::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo     then handler.toggle_package(message)
         else                                                              handler.awen(message)
         end
       end
@@ -440,7 +441,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
 
     # Trigger the receiver's own parsing by sending it a new combined `::Set` of *all* of our needles
     # regardless of their `#class`, e.g. `#<Set: {StickAround, Wild_I∕O}>` etc.
-    @receiver_ractor.send(@needles.values.reduce(&:|), move: true)
+    @receiver_ractor.send(the_trigger_of_innocence, move: true)
     @needles.clear
   end
 
