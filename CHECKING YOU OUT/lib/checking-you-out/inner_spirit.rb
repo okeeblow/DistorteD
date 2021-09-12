@@ -35,7 +35,7 @@ class ::CHECKING::YOU; end
 
   # Symbolize our `::Struct` values if they're given separately (not as a CYI/CYO).
   def initialize(*taxa)
-    super(*(taxa.first.is_a?(::CHECKING::YOU::IN) ? taxa : taxa.map!(&:to_sym)))
+    super(*(taxa.first.is_a?(::CHECKING::YOU::IN) ? taxa.first : taxa.map!(&:to_sym)))
   end
 
   # Promote any CYI to its CYO singleton. CYO has the opposites of these methods.
