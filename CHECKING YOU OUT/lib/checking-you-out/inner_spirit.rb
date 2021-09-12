@@ -77,7 +77,7 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # One might expect the result of `#date` to be "now" (including hours/minutes/seconds) in UTC for such a runtime-packaged Gem,
   # but it will always be midnight UTC of the current day (also in UTC), i.e. a date that is always[0] in the past.
   #
-  # After ${your-UTC-offset} hours before midnight localtime, this will give you a *day* that seems to be in the future
+  # After ${negative-UTC-offset} hours before midnight localtime, this will give you a *day* that seems to be in the future
   # compared to a system clock displaying localtime despite that *date* UTC still being in the past,
   # e.g. as I write this comment at 2021-05-25 22:22 PST, `GEM_PACKAGE_TIME.call` returns `2021-05-26 00:00:00 UTC`.
   #
