@@ -1,16 +1,16 @@
 require(-'ox') unless defined?(::Ox)
 
-fdo_mime = ::CHECKING::YOU::IN::GHOST_REVIVAL::SharedMIMEinfo.new(::File.join(
+fdo_mime = ::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo.new(::File.join(
   ::CHECKING::YOU::OUT::GEM_ROOT.call,
   -'mime',
   -'packages',
   -'third-party',
   -'shared-mime-info',
-  "#{::CHECKING::YOU::IN::GHOST_REVIVAL::FDO_MIMETYPES_FILENAME}.in",
+  "#{::CHECKING::YOU::OUT::GHOST_REVIVAL::FDO_MIMETYPES_FILENAME}.in",
 ))
 
 module OnlyOnePackage
-  refine ::CHECKING::YOU::IN::GHOST_REVIVAL do
+  refine ::CHECKING::YOU::OUT::GHOST_REVIVAL do
     def discover_fdo_xml; ::Array.new.push(fdo_mime); end
   end
 end

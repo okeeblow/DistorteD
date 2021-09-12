@@ -2,7 +2,7 @@ require(-'pathname') unless defined?(::Pathname)
 
 
 # Methods for finding all appropriate source data files in the running environment.
-module ::CHECKING::YOU::IN::GHOST_REVIVAL
+module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
   # Filename for the main fdo `shared-mime-info` source XML.
   # We will look for this file in system `XDG_DATA_DIRS` and use our own bundled copy

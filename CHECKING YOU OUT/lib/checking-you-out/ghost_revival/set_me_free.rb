@@ -1,13 +1,13 @@
 require(-'set') unless defined?(::Set)
 
 
-module ::CHECKING::YOU::IN::GHOST_REVIVAL
+module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
   # `::Hash` subclass with integrated single-value-to-`Set` upgrading for duplicate keys.
   # Used as the data store for CYO's filename-matching structures.
   # It's defined this way to work around a `defined in a different Ractor` `RuntimeError`.
-  SET_ME_FREE = Ractor.make_shareable(proc {
-    Class.new(::Hash).tap {
+  SET_ME_FREE = ::Ractor.make_shareable(proc {
+    ::Class.new(::Hash).tap {
 
       # Equivalent to `::Hash#store` for unset keys.
       # Subsequent stores for the same key will result in a `::Set` containing all values.
@@ -35,7 +35,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
       }
 
       # Support retrieving the heaviest `WeightedAction` given a list of weight methods.
-      _1.const_set(:LEGENDARY_HEAVY_GLOW, Ractor.make_shareable(proc { |action, weights|
+      _1.const_set(:LEGENDARY_HEAVY_GLOW, ::Ractor.make_shareable(proc { |action, weights|
         weights.select!.with_object(
           (weights.is_a?(::Hash) ? weights.keys : weights).max.send(action)
         ) { |(weight, _), max| weight.send(action) >= max }

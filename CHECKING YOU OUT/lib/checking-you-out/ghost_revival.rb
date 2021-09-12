@@ -36,7 +36,7 @@ require_relative(-'ghost_revival/magic_has_the_right_to_children') unless define
 #
 #       In fact `Ractor`-ization took CYO in my synthetic benchmark from being the fastest
 #       file-typing library to being the slowest, but that's Not The Point™
-module ::CHECKING::YOU::IN::GHOST_REVIVAL
+module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
   # We will remember our computed answer to a configurable number of recently-seen needles
   # (e.g. `::Pathname`s or `:IO` streams) for performance, especially with unmatchable needles.
@@ -178,7 +178,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
       remember_you  = proc { |needle|
         case needle
         when ::CHECKING::YOU::OUT::StickAround then complexes[needle] || postfixes[needle]
-        when ::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O then
+        when ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O then
           # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
           #  an extended attribute or some other means) then that should be used instead of guessing."
           # This will probably always be `nil` since this is a niche feature, but we have to test it first.
@@ -186,7 +186,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
           xattr = nil#EXTEND_JOY.call(needle).values.map(&ietf_parser.method(:call))
           unless xattr.nil? or xattr&.empty? then xattr.first
           else
-            ::CHECKING::YOU::IN::GHOST_REVIVAL::MAGIC_CHILDREN.call(
+            ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
               (complexes[needle.stick_around] || postfixes[needle.stick_around]),
               as_above.so_below(needle.stream),
             )
@@ -381,10 +381,6 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
     ::Ractor.receive
   end
 
-end  # CHECKING::YOU::IN::GHOST_REVIVAL
-
-
-module CHECKING::YOU::OUT::GHOST_REVIVAL
   # Generic blocking `:send` method for arbitrary messages to an area `::Ractor`.
   # Useful for testing.
   def [](only_one_arg, area_code: self.superclass::DEFAULT_AREA_CODE)

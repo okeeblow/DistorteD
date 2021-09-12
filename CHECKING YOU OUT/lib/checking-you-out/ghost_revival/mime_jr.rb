@@ -220,8 +220,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       while message = ::Ractor.receive
         case message
         when ::CHECKING::YOU::OUT::BatonPass, ::TrueClass       then handler.do_the_thing(message)
-        when ::CHECKING::YOU::IN::GHOST_REVIVAL::SharedMIMEinfo then handler.toggle_package(message)
-        else                                                         handler.awen(message)
+        else                                                              handler.awen(message)
         end
       end
     }  # ::Ractor::new
@@ -356,7 +355,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # e.g. skip `<magic>`/`<match>` elements if we have no `IO`-like content-match needles,
     #      and skip `<glob>` elements if we have no `::Pathname`-like filename-match needles.
     # This SHOULD be exactly repeated in `attr_value` and `end_element` for full benefits.
-    return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O].empty?
+    return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     return if name == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?
 
     # Otherwise set up needed container objects.
@@ -376,7 +375,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # NOTE: `parse_stack` can be empty here in which case its `#last` will be `nil`.
     # This happens e.g. for the two attributes of the XML declaration '<?xml version="1.0" encoding="UTF-8"?>'.
     return if self.skips.include?(@parse_stack.last)
-    return if (@parse_stack.last == :magic or @parse_stack.last == :match) and @needles[::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O].empty?
+    return if (@parse_stack.last == :magic or @parse_stack.last == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     return if @parse_stack.last == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?
 
     case @parse_stack.last
@@ -410,7 +409,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # The element won't be in the `parse_stack` if we skipped it in `start_element` too.
     return if self.skips.include?(@parse_stack.last)
     raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
-    return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O].empty?
+    return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     return if name == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?
 
     case name
@@ -418,7 +417,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # The Sequence stack represents a complete match once we start popping Sequences from it,
       # which we can know because every `<match>` stack push sets `@i_can_haz_magic = true`.
       if @i_can_haz_magic
-        @receiver_ractor.send(@ietf_parser.call(@media_type), move: true) if @needles[::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O].map(&:stream).map! {
+        @receiver_ractor.send(@ietf_parser.call(@media_type), move: true) if @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:stream).map! {
           @speedy_cat.=~(_1, offset: @speedy_cat.min)
         }.any?
       end
@@ -428,7 +427,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @speedy_cat.clear
     when :glob then
       @receiver_ractor.send(@ietf_parser.call(@media_type), move: true) if (
-        @needles[::CHECKING::YOU::IN::GHOST_REVIVAL::Wild_I∕O].map(&:stick_around).map!(&@stick_around.method(:eql?)).any? or
+        @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:stick_around).map!(&@stick_around.method(:eql?)).any? or
         @needles[::CHECKING::YOU::OUT::StickAround].map(&@stick_around.method(:eql?)).any?
       )
     end

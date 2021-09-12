@@ -209,5 +209,4 @@ require_relative(-'sweet_sweet_love_magic') unless defined?(::CHECKING::YOU::OUT
 
 # Methods for loading type data from `shared-mime-info` package XML files.
 require_relative(-'ghost_revival') unless defined?(::CHECKING::YOU::GHOST_REVIVAL)
-::CHECKING::YOU::IN.singleton_class.prepend(::CHECKING::YOU::IN::GHOST_REVIVAL)
 ::CHECKING::YOU::OUT.singleton_class.prepend(::CHECKING::YOU::OUT::GHOST_REVIVAL)

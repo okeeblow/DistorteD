@@ -1,5 +1,5 @@
 
-module ::CHECKING::YOU::IN::GHOST_REVIVAL
+module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
   # Wrap `::Pathname`s alongside their `::IO` stream (from `#open`) and their extname-glob
   # so we can pass the entire thing around as a single unit.
@@ -20,7 +20,7 @@ module ::CHECKING::YOU::IN::GHOST_REVIVAL
 
     def stream
       if self[:pathname].exist? then
-        self[:stream] ||= self[:pathname].open(mode=File::Constants::RDONLY|File::Constants::BINARY).tap {
+        self[:stream] ||= self[:pathname].open(mode=::File::Constants::RDONLY|::File::Constants::BINARY).tap {
           # Tell the GC to close this stream when it goes out of scope.
           _1.autoclose = true
         }

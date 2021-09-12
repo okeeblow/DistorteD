@@ -6,7 +6,7 @@ require(-'set') unless defined?(::Set)
 # Compare to `shared-mime-info` documentation's "Recommended checking order":
 # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
 # (Not deep-linking because this page's section anchor names are auto-generated orz)
-module ::CHECKING::YOU::IN::GHOST_REVIVAL
+module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
   # NOTE: CYO deviates from `shared-mime-info`'s behavior very slightly here!
   #
