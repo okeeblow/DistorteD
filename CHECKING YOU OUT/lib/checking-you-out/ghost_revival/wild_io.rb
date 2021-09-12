@@ -15,7 +15,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   Wild_I∕O = ::Struct.new(:pathname, :stream, :stick_around) do
 
     def initialize(pathname)
-      super(pathname, nil, nil)
+      super(pathname.is_a?(::Pathname) ? pathname : ::Pathname.new(pathname), nil, nil)
     end
 
     def stream
