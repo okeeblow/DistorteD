@@ -18,6 +18,7 @@ require_relative(-'ghost_revival/mr_mime') unless defined?(::CHECKING::YOU::OUT:
 
 # Decision-making matrix for various combinations of filename- and content-matches.
 require_relative(-'ghost_revival/magic_has_the_right_to_children') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN)
+require_relative(-'ghost_revival/filter_house') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::ONE_OR_EIGHT)
 
 
 # This module contains the core data-loading components for turning source data into usable in-memory structures
@@ -51,33 +52,6 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           }
     }
   end
-
-
-  # Never return empty `::Enumerable`s.
-  # Yielding-self to this proc will `nil`-ify anything that's `:empty?`
-  # and will pass any non-`::Enumerable` `::Object`s through.
-  POINT_ZERO = ::Ractor.make_shareable(proc { _1.respond_to?(:empty?) ? (_1.empty? ? nil : _1) : _1 })
-
-  # Never `::Enumerable`s with fewer than two members.
-  # Yielding-self to this proc will `nil`-ify anything that's `#size` >= 2
-  # and will pass any non-Enumerable Objects through.
-  XANADU_OF_TWO = ::Ractor.make_shareable(proc { _1.respond_to?(:size) ? (_1.size >= 2 ? _1 : nil) : _1 })
-
-  # Our matching block will return a single CYO when possible, and can optionally
-  # return multiple CYO matches for ambiguous files/streams.
-  # Multiple matching must be opted into with `only_one_match: false` so it doesn't need to be
-  # checked by every caller that's is fine with best-effort and wants to minimize allocations.
-  ONE_OR_EIGHT = ::Ractor.make_shareable(proc { |huh|
-    case
-    when huh.nil? then nil
-    when huh.respond_to?(:empty?), huh.respond_to?(:first?)
-      if huh.empty? then nil
-      elsif huh.size == 1 then huh.is_a?(::Hash) ? huh.values.first : huh.first
-      else huh
-      end
-    else huh
-    end
-  })
 
 
   # Message `::Struct` for inter-`::Ractor` communication. These will be sent with `move: true`
