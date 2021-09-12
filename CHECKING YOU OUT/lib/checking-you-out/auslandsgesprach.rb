@@ -114,7 +114,7 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
           # and `opendocument.graphics` (fits!) instead of `vnd` and `oasis.opendocument.graphics` (doesn't fit!).
           #
           # The dropped `vnd` will be reconstructed by `CYO#to_s` when it detects a non-standard tree name.
-          hold.rindex(46) ? -hold.slice!(hold.rindex(46)..).reverse!.tap(&:pop).pack(-'U*').to_sym : :vnd
+          hold.rindex(46) ? hold.slice!(hold.rindex(46)..).reverse!.tap(&:pop).pack(-'U*').to_sym : :vnd
         when scratch[-3..] == (-'srp').codepoints then
           # https://datatracker.ietf.org/doc/html/rfc6838#section-3.3
           # "Media types created experimentally or as part of products that are not distributed commercially".
