@@ -38,6 +38,15 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
     # Empty out the `::Struct` so it can be re-used.
     def clear; self.tap { |get_wild| get_wild.members.each { |m| get_wild[m] = nil } }; end
 
+    def eql?(otra)
+      # TODO: Add `::IO`,`::String` etc here.
+      case otra
+      when ::Pathname then self[:pathname].eql?(otra)
+      else super(otra)
+      end
+    end
+    alias_method(:==, :eql?)
+
   end  # Wild_I∕O
 
 end  # module ::CHECKING::YOU::IN::GHOST_REVIVAL
