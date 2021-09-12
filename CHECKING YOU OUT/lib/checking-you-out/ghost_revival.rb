@@ -2,9 +2,6 @@ require(-'file') unless defined?(::File)
 require(-'pathname') unless defined?(::Pathname)
 require(-'set') unless defined?(::Set)
 
-# https://github.com/jarib/ffi-xattr
-require(-'ffi-xattr') unless defined?(::Xattr)
-
 # Assorted specialty data structure classes / modules for storing loaded type data in-memory in a usable way.
 require_relative(-'ghost_revival/set_me_free') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::SET_ME_FREE)
 require_relative(-'ghost_revival/stick_around') unless defined?(::CHECKING::YOU::OUT::StickAround)
@@ -83,29 +80,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   })
 
 
-  # Check the filesystem extended attributes for manually-defined types.
   #
-  # These should contain IETF-style `media/sub`-type Strings,
-  # but they are technically freeform and must be assumed to contain anything.
-  # It's very very unlikely that anybody will ever use one of these at all,
-  # but hey how cool is it that we will support it if they do? :)
-  #
-  # T0DO: Figure out if NTFS has anything to offer us since `ffi-xattr` does support Winders.
-  # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/a82e9105-2405-4e37-b2c3-28c773902d85
-  #
-  # TODO: Re-write this to make it work in `Ractor`-land. This is currently broken.
-  #       Possibly using `::Fiddle` in stdlib?
-  EXTEND_JOY = ::Ractor.make_shareable(proc { |pathname|
-    ::Xattr.new(pathname).to_h.slice(
-      # The freedesktop-dot-org specification is `user.mime_type`:
-      # https://www.freedesktop.org/wiki/CommonExtendedAttributes/
-      -'user.mime_type',
-      # At least one other application I can find (lighttpd a.k.a. "lighty")
-      # will use `Content-Type` just like would be found in an HTTP header:
-      # https://redmine.lighttpd.net/projects/1/wiki/Mimetype_use-xattrDetails
-      -'Content-Type',
-    )
-  })
 
 
   # Construct a `Ractor` container for a single area of type data, chosen by the `area_code` parameter.
