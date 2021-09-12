@@ -3,7 +3,7 @@ require('pathname') unless defined?(::Pathname)
 require('set') unless defined?(::Set)
 require_relative('../lib/checking-you-out') unless defined?(::CHECKING::YOU::OUT)
 
-class TestStickAround < Test::Unit::TestCase
+class TestInnerSpirit < Test::Unit::TestCase
 
   def test_metadata_generators
     assert_kind_of(::Proc, ::CHECKING::YOU::OUT::GEM_ROOT)
