@@ -33,6 +33,11 @@ Gem::Specification.new do |spec|
   # - TruffleRuby as of November 2020: https://github.com/oracle/truffleruby/issues/1591#issuecomment-729663946
   spec.add_dependency 'ox', '~> 2.0'
 
+  # Needed to interact with filesystem extended attributes like `user.mime_type` since the stdlib lacks that capability.
+  # https://github.com/dearblue/ruby-extattr
+  # TODO: Make this a runtime dependency once a ver 0.4 Gem is pushed.
+  #spec.add_dependency 'extattr', '~> 0.3'
+  spec.add_development_dependency 'extattr', '~> 0.3'
 
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rake', '~> 10.0'

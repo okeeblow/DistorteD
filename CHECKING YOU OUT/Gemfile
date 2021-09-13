@@ -7,3 +7,7 @@ gemspec
 #
 # Using `:git` via `bundle config local.ox ~/Works/ox`
 #gem 'ox', :github => 'okeeblow/ox', :branch => 'intern_string'
+
+# Bundler doesn't understand this Gem's GEM_STUB thing afaict, but installing it manually works:
+# `bundle exec gem install ../../ruby-extattr/extattr-0.4.TRYOUT.20210911.113237.gem`
+#gem 'extattr', :github => 'okeeblow/ruby-extattr', :branch => 'master'
