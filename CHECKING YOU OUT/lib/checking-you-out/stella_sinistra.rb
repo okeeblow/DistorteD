@@ -77,6 +77,10 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
     instance_variable_get(:@case_sensitive)&.is_a?(::String) ? instance_variable_get(:@case_sensitive) : self
   end
 
+  # Handle `String` coercion via `self.itself` when case-sensitive.
+  def to_s; instance_variable_get(:@case_sensitive)&.is_a?(::String) ? self.itself.to_s : super; end
+  alias_method(:to_str, :to_s)
+
   # Return our case-sensitive `String` variation iff one exists, otherwise `nil`.
   def case_sensitive
     instance_variable_get(:@case_sensitive)&.is_a?(::String) ? instance_variable_get(:@case_sensitive) : nil
