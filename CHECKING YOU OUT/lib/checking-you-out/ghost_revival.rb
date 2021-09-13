@@ -241,8 +241,6 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   def from_postfix(stick_around, area_code: self::DEFAULT_AREA_CODE)
     unless @postfix_key&.end_with?(stick_around) then
       @postfix_key = ::CHECKING::YOU::OUT::StickAround.new(stick_around, case_sensitive: false)
-      @postfix_key.prepend(-?.) unless @postfix_key.include?(-?.)
-      @postfix_key.prepend(-?*) unless @postfix_key.include?(-?*)
       @postfix_key.freeze
     end
     self.areas[area_code].send(

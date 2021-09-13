@@ -110,9 +110,23 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
     #  or only have a leading dot, e.g. `File::extname(".bash_profile") => `""`.
     newbuild = case otra
       when self.class then -otra.to_s
-      when ::Symbol   then -otra.name
-      when ::Pathname then otra.extname.empty? ? otra.basename.to_s.-@ : otra.extname.prepend(-?*).-@
-      when ::String   then (File.extname(otra).empty? or -otra[-1] == -?*) ? -otra : -File.extname(otra).prepend(-?*)
+      when ::Symbol   then otra.name.dup.insert(0, -?.).insert(0, -?*)  # Assume `::Symbol` is an extname.
+      when ::Pathname then otra.extname.empty? ? otra.basename.to_s.-@ : otra.extname.insert(0, -?*).-@
+      when ::String   then
+        case
+        when (::File::extname(otra).empty? and otra.include?(-?*)) then -otra
+        when (::File::extname(otra).empty? and otra.include?(::File::SEPARATOR.-@)) then ::File::basename(otra).-@
+        when (
+          ::File::extname(otra).empty? and
+          otra.include?(::File::ALT_SEPARATOR.to_s.-@) and  # Explicit `#to_s` to handle `nil` `ALT_SEPARATOR` (non-Winders)
+          not ::File::ALT_SEPARATOR.nil?
+        ) then ::File::basename(otra).-@
+        when (::File::extname(otra).empty? and not otra.include?(-?*)) then otra.dup.tap {
+          _1.insert(0, -?.) unless _1.start_with?(-?.)
+          _1.insert(0, -?*) unless _1.start_with?(-?*)
+        }.-@
+        else ::File::extname(otra).insert(0, -?*).-@
+        end
       else -otra.to_s
     end
 
