@@ -220,19 +220,3 @@ module ::CHECKING::YOU::IN::INLANDGESPRÄCH
   # Pretty-print objects using our custom `#:to_s`
   def inspect; "#<#{self.class.to_s} #{self.to_s}>"; end
 end
-
-
-# CYO class-level components.
-module CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
-  # Return a `::CHECKING::YOU::OUT` object from a given `::Ractor` pool.
-  def from_ietf_media_type(ietf_string, area_code: self.superclass::DEFAULT_AREA_CODE)
-    return if ietf_string.nil?
-    self.areas[area_code].send(
-      ::CHECKING::YOU::OUT::GHOST_REVIVAL::EverlastingMessage.new(::Ractor.current, -ietf_string),
-      move: true,
-    )
-    ::Ractor.receive_if { |msg|
-      msg.is_a?(::CHECKING::YOU::OUT::GHOST_REVIVAL::EverlastingMessage) and msg.request == ietf_string
-    }.response
-  end
-end

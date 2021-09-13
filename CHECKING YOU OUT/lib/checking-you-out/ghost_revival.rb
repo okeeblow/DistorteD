@@ -17,23 +17,13 @@ require_relative(-'ghost_revival/mime_jr') unless defined?(::CHECKING::YOU::OUT:
 require_relative(-'ghost_revival/mr_mime') unless defined?(::CHECKING::YOU::OUT::MrMIME)
 
 # Decision-making matrix for various combinations of filename- and content-matches.
-require_relative(-'ghost_revival/magic_has_the_right_to_children') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN)
 require_relative(-'ghost_revival/filter_house') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::ONE_OR_EIGHT)
+require_relative(-'ghost_revival/magic_has_the_right_to_children') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN)
+require_relative(-'ghost_revival/round_and_round') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND)
 
 
-# This module contains the core data-loading components for turning source data into usable in-memory structures
-# and performing matching between those structures and user-given `::Pathname` or `IO`-like objects.
-#
-# NOTE: This interface is likely to change as I `Ractor`-ize the rest of DistorteD!
-#       Right now it basically emulates the old synchronous method interface with
-#       blocking `::Ractor.take` calls which really provides zero benefit at all
-#       in that programming model over non-`Ractor`-ized CYO :)
-#
-#       The interface methods are very serial for now and will be refactored to better handle
-#       things like preloading of several types at once from a DistorteD Lens.
-#
-#       In fact `Ractor`-ization took CYO in my synthetic benchmark from being the fastest
-#       file-typing library to being the slowest, but that's Not The Point™
+# This module contains the core data-loading components for turning source data into usable in-memory structures.
+# TL;DR: Anything having to do with CYO `::Ractor` communication goes in here.
 module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
   # We will remember our computed answer to a configurable number of recently-seen needles
@@ -230,46 +220,13 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
     }  # ::Ractor.new
   end  # def new_area
 
+
   # Generic non-blocking `:send` method for arbitrary messages to an area `::Ractor`.
-  # Useful for testing.
   def send(message, area_code: self::DEFAULT_AREA_CODE)
     self.areas[area_code].send(message)
   end
 
-  # Blocking method to return the `CHECKING::YOU::OUT` type for a given file extension
-  # (may be a `StickAround` or even just a `::String` or `::Pathname`.
-  def from_postfix(stick_around, area_code: self::DEFAULT_AREA_CODE)
-    unless @postfix_key&.end_with?(stick_around) then
-      @postfix_key = ::CHECKING::YOU::OUT::StickAround.new(stick_around, case_sensitive: false)
-      @postfix_key.freeze
-    end
-    self.areas[area_code].send(
-      EverlastingMessage.new(::Ractor.current, @postfix_key),
-      move: true,
-    )
-    ::Ractor.receive_if {
-      |msg| msg.is_a?(EverlastingMessage) and msg.request == @postfix_key
-    }.response
-  end
-
-  # Blocking method to return the `::CHECKING::YOU::OUT` type for a given `::Pathname` based on all possible
-  # matching conditions (file extname, complex filename fragment, and content match iff the file exists).
-  def from_pathname(stick_around, area_code: self::DEFAULT_AREA_CODE)
-    # HACK: Wrap `::Pathname` needle messages into our own `::Struct` so we can pass around the `::Pathname` itself,
-    # its `::IO` stream (from `#open` iff it represents an extant file), and its `::StickAround` as a single unit.
-    pathname_key = ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O.new(stick_around)
-    wanted = pathname_key.hash
-    self.areas[area_code].send(
-      EverlastingMessage.new(::Ractor.current, pathname_key),
-      move: true,
-    )
-    ::Ractor.receive_if {
-      |msg| msg.is_a?(EverlastingMessage) and msg.request.hash == wanted
-    }.response
-  end
-
-  # Generic blocking `:send` method for arbitrary messages to an area `::Ractor`.
-  # Useful for testing.
+  # Generic blocking `:send` method for arbitrary message round-trip to and from an area `::Ractor`.
   def [](only_one_arg, area_code: self.superclass::DEFAULT_AREA_CODE)
     wanted = only_one_arg.hash
     self.areas[area_code].send(EverlastingMessage.new(::Ractor.current, only_one_arg), move: true)
@@ -277,4 +234,43 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       |msg| msg.is_a?(EverlastingMessage) and msg.request.hash == wanted
     }.response
   end
+
+  # Generate blocking, `::Class`-instance, round-trip `::Ractor`-messaging methods to
+  # load CYO type definitions from our source data…
+  #
+  # …based on a file name:
+  # - Single-extname `Postfix` fragments, e.g. `*.jpg`.
+  # - More `Complex` fragments representing:
+  #   - Multiple paired extnames (e.g. `*.tar.gz`).
+  #   - Mid-filename or `Regexp`-like wildcards (e.g. `[Mm]akefile*`)
+  #   - TODO: `<treemagic>`
+  define_method(
+    :from_postfix,
+    ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND.call(
+      :@postfix_key,
+      ::CHECKING::YOU::OUT::StickAround,
+      request_eql_method: :end_with?,
+    )
+  )
+  # …based on a full file path:
+  # - Filename match like the above.
+  # - File content match à la `libmagic`.
+  # - Extended filesystem attributes.
+  define_method(
+    :from_pathname,
+    ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND.call(
+      :@pathname_key,
+      ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O,
+    )
+  )
+  # …or based on an IETF-style "Media-Type"/"Content-Type" `::String`,
+  # e.g. `"image/jpeg"`, `"application/vnd.ms-word"`, `"application/vnd.comicbook+zip"`.
+  define_method(
+    :from_ietf_media_type,
+    ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND.call(
+      :@ietf_string_key,
+      ::String,
+    )
+  )
+
 end  # module CHECKING::YOU::OUT::GHOST_REVIVAL

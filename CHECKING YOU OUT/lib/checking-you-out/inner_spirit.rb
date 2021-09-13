@@ -200,7 +200,6 @@ end
 require_relative(-'auslandsgesprach') unless defined?(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.extend(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::INLANDGESPRÄCH)
-::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH)
 
 # Content matching à la `libmagic`/`file`.
 require_relative(-'sweet_sweet_love_magic') unless defined?(::CHECKING::YOU::OUT::SweetSweet♥Magic)
