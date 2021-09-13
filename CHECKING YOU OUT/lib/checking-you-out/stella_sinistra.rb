@@ -56,7 +56,7 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
 
     # Don't pass an initial `str` value to `super` if we were given one,
     # because `#replace` has case-sensitivity-handling functionality that must be called.
-    super(str, *args, **kwargs)
+    super(nil.to_s, *args, capacity: str.to_s.size, **kwargs)
     self.replace(str) unless str.empty?
   end
 
