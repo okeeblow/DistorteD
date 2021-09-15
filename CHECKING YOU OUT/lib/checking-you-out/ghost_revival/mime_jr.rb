@@ -242,7 +242,6 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
 
     # `::Ractor`-specific stuff.
     @receiver_ractor = receiver_ractor
-    @ietf_parser = ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::FROM_IETF_TYPE.call
 
     # Container for enabled `SharedMIMEinfo` paths and their opened `IO` streams.
     @mime_packages = ::Hash.new
@@ -419,7 +418,10 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # The Sequence stack represents a complete match once we start popping Sequences from it,
       # which we can know because every `<match>` stack push sets `@i_can_haz_magic = true`.
       if @i_can_haz_magic
-        @receiver_ractor.send(@ietf_parser.call(@media_type), move: true) if @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:stream).map! {
+        ::CHECKING::YOU::IN::from_ietf_media_type(
+          @media_type.dup,
+          receiver: @receiver_ractor,
+        ) if @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:stream).map! {
           @speedy_cat.=~(_1, offset: @speedy_cat.min)
         }.any?
       end
@@ -428,7 +430,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     when :magic then
       @speedy_cat.clear
     when :glob then
-      @receiver_ractor.send(@ietf_parser.call(@media_type), move: true) if (
+      ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:stick_around).map!(&@stick_around.method(:eql?)).any? or
         @needles[::CHECKING::YOU::OUT::StickAround].map(&@stick_around.method(:eql?)).any?
       )
@@ -438,15 +440,17 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   # Trigger a search for all needles received by our `::Ractor` since the last `#search`.
   # See the overridden `self.new` for more details of our `::Ractor`'s message-handling loop.
   def do_the_thing(the_trigger_of_innocence)
+    # Parse our enabled `shared-mime-info` packages for filename glob matches and content (magic) matches.
     self.parse_mime_packages
 
-    # Trigger the receiver's own parsing by sending it a new combined `::Set` of *all* of our needles
-    # regardless of their `#class`, e.g. `#<Set: {StickAround, Wild_I∕O}>` etc.
+    # Any matched `::CHECKING::YOU::IN`s are forwarded to `@receiver_ractor` at time of `:end_element`,
+    # so once we've exhausted all possible matches we can tell `@receiver_ractor` to do its own parse.
+    # It's much faster to wait and do a single pass rather than trigger `@receiver_ractor` on-the-fly.
     @receiver_ractor.send(the_trigger_of_innocence, move: true)
     @needles.clear
   end
 
-  # Kick off the actual process of parsing our enabled `SharedMIMEinfo` XML packages.
+  # Kick off the actual process of parsing our enabled `SharedMIMEinfo` XML packages against any enabled `@needle`s.
   def parse_mime_packages(**kwargs)
 
     # Welcome to `::Class` 17!

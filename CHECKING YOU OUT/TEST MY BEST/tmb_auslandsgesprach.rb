@@ -82,6 +82,7 @@ fdo_types = handler.open(fdo_mime)
 TestAuslandsgesprach = fdo_types.each_with_object(::Class.new(::Test::Unit::TestCase)) { |type, classkey_csupó|
   classkey_csupó.define_method("test_#{type.downcase.gsub(/[\/\-_+\.=;]/, ?_)}_ietf_type_decomposition") {
     # TODO: Fix suffixed types (remove `unless` guard)
+    assert_equal(type, ::CHECKING::YOU::IN::from_ietf_media_type(type).to_s) unless type.include?(?+)
     assert_equal(type, ::CHECKING::YOU::OUT::from_ietf_media_type(type, area_code: area_code).to_s) unless type.include?(?+)
     #assert_include(::CHECKING::YOU::OUT::from_ietf_media_type(type).aka.map(&:to_s), type) unless type.include?(?+)
   }

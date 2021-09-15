@@ -33,6 +33,18 @@ class ::CHECKING::YOU; end
   # This will be the area used for all synchronous method invocations that do not specify otherwise.
   self::DEFAULT_AREA_CODE = -'CHECKING YOU OUT'
 
+  # Message `::Struct` for inter-`::Ractor` communication. These will be sent with `move: true`
+  # and will be mutable. The receiver `::Ractor` will take the `:request`, mutate the message
+  # to contain the resulting `:response`, and send the mutated message to the `:destination`.
+  #
+  # TODO: Re-evaluate this in Ruby 3.1+ depending on the outcome of https://bugs.ruby-lang.org/issues/17298
+  self::EverlastingMessage = ::Struct.new(:destination, :request, :response) do
+    # Hash the entire message based on the `#hash` of its `:request` member.
+    # The resulting `::Integer` will be used in the cache `::Hash`/`::Set` because the message
+    # object itself will become a `::Ractor::MovedObject` after it's sent to `:destination`.
+    def hash; self[:request].hash; end
+  end
+
   # Symbolize our `::Struct` values if they're given separately (not as a CYI/CYO).
   def initialize(*taxa)
     super(*(taxa.first.is_a?(::CHECKING::YOU::IN) ? taxa.first : taxa.map!(&:to_sym)))
@@ -40,8 +52,7 @@ class ::CHECKING::YOU; end
 
   # Promote any CYI to its CYO singleton. CYO has the opposites of these methods.
   def out(area_code: self.class::DEFAULT_AREA_CODE)
-    self.class.areas[area_code].send(self)
-    ::Ractor.receive
+    ::CHECKING::YOU::OUT[self, area_code: area_code]
   end
   def in; self; end
 

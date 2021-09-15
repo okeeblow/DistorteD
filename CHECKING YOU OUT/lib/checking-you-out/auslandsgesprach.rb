@@ -2,8 +2,8 @@
 # CYI class-level components.
 module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
-  # Parse IETF Media-Type String → `::CHECKING::YOU::IN`
-  FROM_IETF_TYPE = ::Ractor.make_shareable(proc {
+  # Parse IETF Media-Type `::String` → `::CHECKING::YOU::IN`
+  GOLDEN_I = ::Ractor.make_shareable(proc {
     # Keep these allocated instead of fragmenting our heap, since this will be called very frequently.
     scratch = ::Array.allocate
     hold    = ::Array.allocate
@@ -19,11 +19,11 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
       }
     }
 
-    # Take a single codepoint from a reversed-then-NULL-terminated IETF Type String,
+    # Take a single codepoint from a reversed-then-NULL-terminated IETF Type `String`,
     # e.g. "ttub=traf;lmbe+fnb.ppg3.dnv/noitacilppa#{-?\u{0}}".
     #
     #
-    # I switched from `String#each_char` to `String#each_codepoint` to avoid allocating single-character Strings
+    # I switched from `String#each_char` to `String#each_codepoint` to avoid allocating single-character `String`s
     # before they could be deduplicated with `-zig`. The Integer codepoints, on the other hand,
     # will always be the same `object_id` for the same codepoint:
     #
@@ -158,27 +158,45 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
     # 𝘐𝘛'𝘚 𝘠𝘖𝘜 !!
     cats = ->(gentlemen) {
-      gentlemen.each_codepoint.reverse_each(&move_zig)
+      gentlemen.encode!(::Encoding::UTF_8).each_codepoint.reverse_each(&move_zig)
       move_zig.call(0)
       return my_base.dup.freeze.tap(&the_bomb)
     }
-    -> (gentlemen) {
-      return cats.call((gentlemen.encoding == ::Encoding::UTF_8) ? gentlemen : gentlemen.encode(::Encoding::UTF_8))
-    }
+    while message = ::Ractor::receive
+      message.response = cats.call(message.request)
+      message.destination.send(message, move: true)
+    end
   })
 
-  # Call the above singleton Proc to do the thing.
-  def from_ietf_media_type(ietf_string)
-    return if ietf_string.nil?
-    # `#to_s` is a no-op for `String`s, so make sure we call it to support `Symbol`s and other input types here.
-    #   irb> oid = proc { p "#{_1} is object_id #{_1.object_id}" } => #<Proc:0x00005640ef7b0440 (irb):7>
-    #   irb> 'lol'.tap(&oid).to_s.tap(&oid)
-    #   "lol is object_id 1340"
-    #   "lol is object_id 1340"
-    #
-    # This parser will be initialized in the class namespace of the main `Ractor`
-    # and should not be touched from `area` `Ractor`s.
-    (@ietf_parser ||= FROM_IETF_TYPE.call).call(ietf_string.to_s)
+  # Supervise the IETF-parser `::Ractor` and restart it if it stops receiving our messages.
+  ULTRAVISITOR = ::Ractor.new(name: -'CYI::ULTRAVISITOR') {
+    golden_i = ::Ractor::new(name: -'CYI::GOLDEN_I', &::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::GOLDEN_I)
+    while message = ::Ractor::receive
+      # Forward all messages to the real parser, and restart+retry on failure.
+      begin
+        golden_i.send(message, move: true)
+      rescue ::Ractor::ClosedError
+        # TOD0: Handle multiple recurring failures here since if a particular `::String`
+        #       makes our parser raise an error then sending it again probably won't help.
+        golden_i = ::Ractor::new(name: -'CYI::GOLDEN_I', &::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::GOLDEN_I)
+        retry
+      end
+    end
+  }
+
+  # Calling-`::Ractor`-agnostic `::String`-to-`CYI` method.
+  #
+  # Normally this is a blocking/synchronous method, but it will immediately return `nil`
+  # if the `:receiver` is a `::Ractor` other than the one calling the method.
+  # This is kind of hacky but allows e.g. `MIMEjr` to not have to block waiting for our reply
+  # only to forward that reply immediately to its real destination.
+  def from_ietf_media_type(ietf_string, receiver: ::Ractor::current)
+    return if ietf_string.nil? or ietf_string&.empty?
+    wanted = ietf_string.hash if receiver == ::Ractor.current
+    ULTRAVISITOR.send(::CHECKING::YOU::IN::EverlastingMessage::new(receiver, ietf_string.dup), move: true)
+    (receiver == ::Ractor.current) ? ::Ractor::receive_if {
+      _1.is_a?(::CHECKING::YOU::IN::EverlastingMessage) and _1.request.hash == wanted
+    }.response : nil
   end
 end
 

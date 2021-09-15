@@ -43,25 +43,11 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
     }
   end
 
-
-  # Message `::Struct` for inter-`::Ractor` communication. These will be sent with `move: true`
-  # and will be mutable. The receiver `::Ractor` will take the `:request`, mutate the message
-  # to contain the resulting `:response`, and send the mutated message to the `:destination`.
-  #
-  # TODO: Re-evaluate this in Ruby 3.1+ depending on the outcome of https://bugs.ruby-lang.org/issues/17298
-  EverlastingMessage = ::Struct.new(:destination, :request, :response) do
-    # Hash the entire message based on the `#hash` of its `:request` member.
-    # The resulting `::Integer` will be used in the cache `::Hash`/`::Set` because the message
-    # object itself will become a `::Ractor::MovedObject` after it's sent to `:destination`.
-    def hash; self[:request].hash; end
-  end
-
-
   # Construct a `Ractor` container for a single area of type data, chosen by the `area_code` parameter.
   # This allows separate areas for separate services/workflows running within the same Ruby interpreter.
   def new_area(area_code: DEFAULT_AREA_CODE)
     # `::Ractor.new` won't take arbitrary named arguments, just positional.
-    ::Ractor.new(::Ractor.current, max_burning = DEFAULT_CACHE_SIZE, name: area_code) { |golden_i, max_burning|
+    ::Ractor.new(max_burning = DEFAULT_CACHE_SIZE, name: area_code) { |max_burning|
 
       # These `::Hash` sub-classes needs to be defined in the `::Ractor` scope because the block argument to `:define_method`
       # is un-shareable, otherwise trying to `:merge` or `:bury` results in a `defined in a different Ractor (RuntimeError)`:
@@ -76,7 +62,6 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       postfixes     = set_me_free.new          # `{StickAround => CYO}` container for Postfixes (extnames).
       complexes     = set_me_free.new          # `{StickAround => CYO}` container for more complex filename fragments.
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
-      ietf_parser   = ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::FROM_IETF_TYPE.call  # Parse `String`s into `CYI`s.
 
 
       # Two-step `shared-mime-info` XML parsers.
@@ -126,6 +111,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       # the first time that needle is seen (or if it has been purged from our cache).
       remember_you  = proc { |needle|
         case needle
+        when ::CHECKING::YOU::IN then all_night[needle]
         when ::CHECKING::YOU::OUT::StickAround then complexes[needle] || postfixes[needle]
         when ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O then
           # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
@@ -178,7 +164,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           mime_jr.send(message)
           mr_mime.send(message)
         when ::TrueClass, ::FalseClass, ::NilClass then next
-        when EverlastingMessage then
+        when ::CHECKING::YOU::IN::EverlastingMessage then
           # An `EverlastingMessage` is a `::Struct` message we MUST respond to, either with a CYO, a `::Set` of CYOs, or `nil`.
           # We will fill in its `#response` member with the result of running its `#request` through our type-matching logic,
           # then send the mutated message to the `::Ractor` specified in its `#destination` member.
@@ -207,7 +193,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             when ::CHECKING::YOU::OUT::StickAround, Wild_I∕O then
               mime_jr.send(message.request, move: false)
               mime_jr.send(message, move: true)
-            when ::String, ::Regexp then
+            when ::String, ::Regexp, ::CHECKING::YOU::IN then
               mr_mime.send(message.request, move: false)
               mr_mime.send(message, move: true)
             else p "Unhandled `#{message.request.class}` EverlastingMessage request: #{message}"
@@ -229,9 +215,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   # Generic blocking `:send` method for arbitrary message round-trip to and from an area `::Ractor`.
   def [](only_one_arg, area_code: self.superclass::DEFAULT_AREA_CODE)
     wanted = only_one_arg.hash
-    self.areas[area_code].send(EverlastingMessage.new(::Ractor.current, only_one_arg), move: true)
+    self.areas[area_code].send(::CHECKING::YOU::IN::EverlastingMessage.new(::Ractor.current, only_one_arg), move: true)
     ::Ractor.receive_if {
-      |msg| msg.is_a?(EverlastingMessage) and msg.request.hash == wanted
+      |msg| msg.is_a?(::CHECKING::YOU::IN::EverlastingMessage) and msg.request.hash == wanted
     }.response
   end
 

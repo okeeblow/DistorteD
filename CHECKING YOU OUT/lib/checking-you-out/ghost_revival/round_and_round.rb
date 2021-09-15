@@ -30,7 +30,7 @@
         # This is called "instance" variable, but it can be on a `::Class` instance too — they're the same thing!
         instance_variable_name,
         # The envelope itself is mutable, but its contents might not be.
-        ::CHECKING::YOU::OUT::GHOST_REVIVAL::EverlastingMessage.new(
+        ::CHECKING::YOU::IN::EverlastingMessage.new(
           # Destination `::Ractor` where CYO will send the mutated `EverlastingMessage` envelope.
           # This can be any `::Ractor`, but using `::current` makes it a round-trip back to here.
           ::Ractor.current,
@@ -50,7 +50,7 @@
         # …otherwise discard the previous `:request` and `:response` and get ready to Do The Thing.
         self.instance_variable_get(instance_variable_name).tap {
           # Wrap the generated-method's argument into the `::Class` defined at outer-lambda-call-time.
-          # NOTE: This wrapping is important for despite the explicit allocation:
+          # NOTE: This wrapping is important despite its explicit extra allocation:
           #       - Callers might want to keep using the `request_value` argument `::Object` by reference,
           #         so it would be inappropriate to `::Ractor#send(move: true)` it out from under them
           #         without at least doing a shallow-copy (`#dup` or `#initialize_copy`) anyway.
@@ -87,7 +87,7 @@
         self.instance_variable_set(
           instance_variable_name,
           ::Ractor.receive_if {
-            _1.is_a?(::CHECKING::YOU::OUT::GHOST_REVIVAL::EverlastingMessage) and _1.request.hash == wanted
+            _1.is_a?(::CHECKING::YOU::IN::EverlastingMessage) and _1.request.hash == wanted
           }
         )
         # The generated method should return just the `#response`, not the whole `EverlastingMessage`.

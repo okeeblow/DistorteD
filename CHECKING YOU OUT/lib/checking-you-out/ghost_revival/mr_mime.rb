@@ -116,7 +116,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     # I'd still like to refactor this to avoid the redundant `attr_name` `case`s.
     # Maybe a `Hash` of `proc`s?
     case @parse_stack.last
-    when :"mime-type" then @cyi = @ietf_parser.call(value.as_s) if attr_name == :type and self.awen?(value.as_s)
+    when :"mime-type" then @cyi = ::CHECKING::YOU::IN::from_ietf_media_type(value.as_s) if attr_name == :type and self.awen?(value.as_s)
     when :match then
       case attr_name
       when :type   then @speedy_cat.last.format = self.magic_eye[value.as_s]
@@ -125,8 +125,8 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       when :mask   then @speedy_cat.last.mask = BASED_STRING.call(value.as_s)
       end
     when :magic          then @speedy_cat&.weight = value.as_i if attr_name == :priority
-    when :alias          then self.cyo.add_aka(@ietf_parser.call(value.as_s)) if attr_name == :type
-    when :"sub-class-of" then self.cyo.add_parent(@ietf_parser.call(value.as_s)) if attr_name == :type
+    when :alias          then self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s)) if attr_name == :type
+    when :"sub-class-of" then self.cyo.add_parent(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s)) if attr_name == :type
     when :glob then
       case attr_name
       when :weight           then @stick_around.weight = value.as_i
@@ -195,7 +195,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
   # See the overridden `self.new` for more details of our `::Ractor`'s message-handling loop.
   def do_the_thing(the_trigger_of_innocence)
     # Don't bother parsing anything if there's nothing for us to match.
-    # This can happen if `MIMEjr` passed to us after not matching anything itself.
+    # `MIMEjr` will trigger us even if it didn't send us any needles first.
     self.parse_mime_packages unless @needles.values.map(&:nil?).all?
 
     # We can't send our built CYOs in on-the-fly because a single type's data can be spread out
