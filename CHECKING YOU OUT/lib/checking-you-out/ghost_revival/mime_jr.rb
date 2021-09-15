@@ -219,9 +219,10 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # our haystack-containing `::Set` subclass (`BatonPass`) or `true` if no haystack is needed.
       while message = ::Ractor.receive
         case message
-        when ::CHECKING::YOU::OUT::GHOST_REVIVAL::EverlastingMessage then handler.do_the_thing(message)
-        when ::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo     then handler.toggle_package(message)
-        else                                                              handler.awen(message)
+        when ::CHECKING::YOU::IN::EverlastingMessage then
+          (message.destination == self) ? handler.awen(message.response) : handler.do_the_thing(message)
+        when ::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo then handler.toggle_package(message)
+        else handler.awen(message)
         end
       end
     }  # ::Ractor::new
