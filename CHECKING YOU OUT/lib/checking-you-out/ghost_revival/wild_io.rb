@@ -1,3 +1,5 @@
+require(-'forwardable') unless defined?(::Forwardable)
+require(-'pathname') unless defined?(::Pathname)
 
 module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
@@ -31,6 +33,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
     def stick_around
       self[:stick_around] ||= ::CHECKING::YOU::OUT::StickAround.new(self[:pathname].to_s)
     end
+
+    extend(::Forwardable)
+    def_instance_delegators(:pathname, *::Pathname::instance_methods(false))
 
     # The `::Pathname` is the only one assumed to be set at all times, so `#hash` based on that.
     def hash; self[:pathname].hash; end
