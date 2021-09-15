@@ -1,56 +1,16 @@
 #!/usr/bin/env ruby
 
 require 'benchmark/ips'
-require 'memory_profiler'
+require 'mini_mime'
+require 'mime/types/columnar'
+require 'checking-you-out'
+
+::CHECKING::YOU::OUT::from_postfix('jpg')
+sleep(0.2)
 
 # Add our development CYO to LOAD_PATH so we can run it without Bundler.
 $: << File.expand_path('../../lib', __FILE__)
 
-puts
-puts "Memory stats for requiring mime/types/columnar"
-result = MemoryProfiler.report do
-  require 'mime/types/columnar'
-end
-
-# Note: Some creative accounting is necessary to accurately count the number of unique `Mime::Type`s
-# included in this library's data, since it treats aliases as separate types, e.g.:
-#  "doc"=>[#<MIME::Type: application/msword>, #<MIME::Type: application/word>, #<MIME::Type: application/x-msword>, #<MIME::Type: application/x-word>],
-#  "rtf"=>[#<MIME::Type: application/rtf>, #<MIME::Type: application/x-rtf>, #<MIME::Type: text/rtf>, #<MIME::Type: text/x-rtf>],
-#  "csv"=>[#<MIME::Type: text/comma-separated-values>, #<MIME::Type: text/csv>],
-#
-# I recognize that there is some overlap between `:preferred_extension`s where the types are *not*
-# the same thing, but this is the best way I have to get a count anywhere close to correct.
-# You can see for yourself with `MIME::Types.to_a.group_by(&:preferred_extension)` to double-check me.
-#
-# There are also many many `MIME::Type`s with no recorded extname at all, and I am intentionally
-# not counting them because this library doesn't do content-matching, meaning without that filename
-# metadata there's no other way we could identify files of that type with this library.
-#   irb> MIME::Types.to_a.group_by(&:preferred_extension)[nil].size => 1350
-puts "Total known file extensions: #{MIME::Types.to_a.group_by(&:preferred_extension).size}"
-puts "Total allocated: #{result.total_allocated_memsize} bytes (#{result.total_allocated} objects)"
-puts "Total retained:  #{result.total_retained_memsize} bytes (#{result.total_retained} objects)"
-
-puts
-puts "Memory stats for requiring mini_mime"
-result = MemoryProfiler.report do
-  require 'mini_mime'
-end
-
-puts "Total known file extensions: #{File.readlines(MiniMime::Configuration.ext_db_path).size}"
-puts "Total allocated: #{result.total_allocated_memsize} bytes (#{result.total_allocated} objects)"
-puts "Total retained:  #{result.total_retained_memsize} bytes (#{result.total_retained} objects)"
-
-puts
-puts "Memory stats for requiring CHECKING-YOU-OUT"
-result = MemoryProfiler.report do
-  require 'checking-you-out'
-end
-
-# Disable CYO type count until I figure out a good way to do it for `Ractor`-ized CYO.
-#puts "Total known file extensions: #{CHECKING::YOU::OUT::instance_variable_get(:@after_forever).size}"
-puts "Total allocated: #{result.total_allocated_memsize} bytes (#{result.total_allocated} objects)"
-puts "Total retained:  #{result.total_retained_memsize} bytes (#{result.total_retained} objects)"
-puts
 
 Benchmark.ips do |bm|
   bm.report 'cached content_type lookup MiniMime' do
