@@ -116,10 +116,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         when ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O then
           # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
           #  an extended attribute or some other means) then that should be used instead of guessing."
-          # This will probably always be `nil` since this is a niche feature, but we have to test it first.
-          # TODO: Find/write some kind of xattr support that works in `::Ractor`-land.
-          xattr = nil#EXTEND_JOY.call(needle).values.map(&ietf_parser.method(:call))
-          unless xattr.nil? or xattr&.empty? then xattr.first
+          # This will probably always be an empty `::Array` since this is a niche feature, but we have to test it first.
+          steel_needles = ::CHECKING::YOU::OUT::GHOST_REVIVAL::STEEL_NEEDLE.call(needle).map!(&all_night::method(:[]))
+          unless steel_needles.nil? or steel_needles&.empty? then steel_needles.first
           else
             ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
               (complexes[needle.stick_around] || postfixes[needle.stick_around]),
