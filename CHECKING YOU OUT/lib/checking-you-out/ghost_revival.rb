@@ -65,24 +65,29 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
 
       # Two-step `shared-mime-info` XML parsers.
-      # `Ractor`-ized CYO supports partial loading of type data à la `mini_mime` to conserve memory
-      # and minimize object allocations (formerly ~18k objects to load the entire fd.o set vs ~3k for a basic set now).
+      # `Ractor`-ized CYO supports partial loading of type data à la `mini_mime` to conserve memory and minimize allocations
+      # (formerly ~18k retained objects to load all available types from all available packages vs. ~3k retained for a basic set now).
       #
-      # It isn't as simple as parsing the XML against a given `Pathname`/`IO` on the fly and returning
-      # the matching CYO objects as they are parsed, because a single type's definition can be spread out
-      # over any number of XML package files. We may have passed by and discarded parts of a type by the time
-      # we get to the XML package having a positive filename or content match.
-      # The `shared-mime-info` format also allows XML packages to alter/delete the content loaded from previously-
-      # parsed packages, e.g. with the `<glob-deleteall>` and the `<magic-deleteall>` elements.
+      # Partial-loading isn't as simple as parsing the discovered XML packages against a given `Pathname`/`IO` on the fly
+      # and returning any matching CYO objects as they are parsed, because a single type's definition can be spread out
+      # over any number of XML package files. We may have passed by and discarded parts of a type's definition by the time
+      # we get to the XML package having a positive filename or content match for that type.
+      # Additionally, the `shared-mime-info` specification allows XML packages to alter or purge certain parts of a type's
+      # definition loaded from a previously-parsed package, e.g. the `<glob-deleteall>` and the `<magic-deleteall>` elements,
+      # so CYO can't load only the fragment of a matched type's definition that comes from the package containing the match.
       #
-      # To support this I split the XML parser into two parts.
-      # - The first parser takes a `Pathname` or `IO`-like stream (e.g. from `File.open`), performs on-the-fly-but-partial
-      #   filename and content matching, and returns `CHECKING::YOU::IN` key `Struct`s of any matched types.
-      # - The second parser takes `CHECKING::YOU::IN` (or a `String` or `Regexp`!) objects and does the traditional full
-      #   build of `CHECKING::YOU::OUT` type objects from all available XML package files, even those which do not define
-      #   the filename globs or content byte sequences that were matched!
-      mr_mime       = ::CHECKING::YOU::OUT::MrMIME::new(::CHECKING::YOU::IN)  # …and `CYI` => `CYO`.
-      mime_jr       = ::CHECKING::YOU::OUT::MIMEjr::new(Wild_I∕O, receiver: mr_mime)  # `Pathname`/`IO` => `CYI`
+      # To support this I split the XML parser into two parts:
+      # - `MrMIME` is the traditional parser which builds fully-defined `::CHECKING::YOU::OUT` type objects from the source XML,
+      #   but now instead of just loading all available types it takes `CHECKING::YOU::IN` (or a `String` or `Regexp`!) "needles"
+      #   and loads only the types matching those needles — e.g. a `::String` `"*jpeg"` will match `image/jpeg` and `video/x-mjpeg`.
+      # - `MIMEjr` is the newer parser which takes a `Pathname` or `IO`-like stream (e.g. from `File.open`) and performs on-the-fly
+      #   filename and content matching — generating `CHECKING::YOU::IN` key `Struct`s representing the matched types.
+      #   It sends those `CYI`s to `MrMIME` as the needles for its next parse and then triggers `MrMIME` to parse.
+      #
+      # This is faster than the traditional load of all available types despite doing two parse passes of all XML packages,
+      # because both parsers intentionally throw away as much data as possible and incur vastly fewer allocations!
+      mr_mime       = ::CHECKING::YOU::OUT::MrMIME::new                     # `CYI`/`String`/`Regexp` => `CYO`.
+      mime_jr       = ::CHECKING::YOU::OUT::MIMEjr::new(receiver: mr_mime)  # `Pathname`/`IO`         => `CYI`.
 
 
       # Memoize a single new `::CHECKING::YOU::OUT` type instance.
