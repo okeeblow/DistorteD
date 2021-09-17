@@ -45,9 +45,13 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
   # Construct a `Ractor` container for a single area of type data, chosen by the `area_code` parameter.
   # This allows separate areas for separate services/workflows running within the same Ruby interpreter.
-  def new_area(area_code: DEFAULT_AREA_CODE)
+  def new_area(
+    area_code:   DEFAULT_AREA_CODE,   # Unique name for each separate a pool of CYO types.
+    max_burning: DEFAULT_CACHE_SIZE,  # Number of type definitions to keep in memory. No limit iff `0`.
+    how_long:    DEFAULT_CACHE_SIZE   # Number of queries and their type-match-responses to keep in memory.
+  )
     # `::Ractor.new` won't take arbitrary named arguments, just positional.
-    ::Ractor.new(max_burning = DEFAULT_CACHE_SIZE, name: area_code) { |max_burning|
+    ::Ractor.new(max_burning, how_long, name: area_code) { |max_burning, how_long|
 
       # These `::Hash` sub-classes needs to be defined in the `::Ractor` scope because the block argument to `:define_method`
       # is un-shareable, otherwise trying to `:merge` or `:bury` results in a `defined in a different Ractor (RuntimeError)`:
@@ -56,13 +60,11 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       set_me_free         = self.instance_eval(&SET_ME_FREE)
       magic_without_tears = self.instance_eval(&::CHECKING::YOU::OUT::SweetSweet♡Magic::MAGIC_WITHOUT_TEARS)
 
-
       # Instances of the above classes to hold our type data.
       all_night     = set_me_free.new          # Main `{CYI => CYO}` container.
       postfixes     = set_me_free.new          # `{StickAround => CYO}` container for Postfixes (extnames).
       complexes     = set_me_free.new          # `{StickAround => CYO}` container for more complex filename fragments.
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
-
 
       # Two-step `shared-mime-info` XML parsers.
       # `Ractor`-ized CYO supports partial loading of type data à la `mini_mime` to conserve memory and minimize allocations
@@ -89,10 +91,22 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       mr_mime       = ::CHECKING::YOU::OUT::MrMIME::new                     # `CYI`/`String`/`Regexp` => `CYO`.
       mime_jr       = ::CHECKING::YOU::OUT::MIMEjr::new(receiver: mr_mime)  # `Pathname`/`IO`         => `CYI`.
 
+      # Evict a single `::CHECKING::YOU::IN`'s related data from all memoization structures.
+      kick_out_仮面 = proc { |cyi|
+        all_night.delete(cyi).tap { |cyo|
+          postfixes.baleet(cyo.postfixes, cyo)
+          complexes.baleet(cyo.complexes, cyo)
+          case cyo.cat_sequence
+          when ::NilClass then next
+          when ::Set then cyo.cat_sequence&.each { |action| as_above.baleet(action.min, action.max, action, cyo) }
+          else as_above.baleet(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
+          end
+        }
+      }
 
       # Memoize a single new `::CHECKING::YOU::OUT` type instance.
       remember_me   = proc { |cyo|
-        # Main memoization `Hash` keyed by `CYI`.
+        # Main memoization `::Hash`.
         all_night.bury(cyo.in, cyo)
 
         # Memoize single-extname "postfixes" separately from more complex filename fragments
@@ -104,11 +118,11 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         # byte offset where each byte sequence may be found in a hypothetical file/stream.
         case cyo.cat_sequence
         when ::NilClass then next
-        when ::Set then
-          cyo.cat_sequence&.each { |action| as_above.bury(action.min, action.max, action, cyo) }
-        else
-          as_above.bury(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
+        when ::Set then cyo.cat_sequence&.each { |action| as_above.bury(action.min, action.max, action, cyo) }
+        else as_above.bury(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
         end
+
+        kick_out_仮面.call(all_night.keys.first) if all_night.size > max_burning and max_burning > 0
       }
 
       # Return the best guess for a given needle's type based on our currently-loaded data.
@@ -150,10 +164,10 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       # Cache recent results to avoid re-running matching logic.
       # Use a `Hash` to store the last return value for a configurable number of previous query messages.
       # Use `Thread::Queue` to handle cache eviction of oldest keys from the `Hash`.
-      last_message = ::Hash.new
-      refrain      = ::Thread::Queue.new
+      last_message  = ::Hash.new
+      refrain       = ::Thread::Queue.new
       # Cache unmatchable messages to minimize denial-of-service risk if we get sent an unmatchable message in a loop.
-      nφ_crime     = ::Set.new
+      nφ_crime      = ::Set.new
 
 
       # Main message loop to process incoming `::Ractor` message queue for instructions.
@@ -163,6 +177,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         case message
         when ::CHECKING::YOU::OUT then remember_me.call(message)          # Memoize a new fully-loaded CYO.
         when ::CHECKING::YOU::IN  then mr_mime.send(message, move: true)  # Spool a type to load on the next XML parse.
+        when ::Integer            then max_burning = message              # Control CYO cache length (for loaded types).
         when SharedMIMEinfo then
           # `::Pathname` subclass representing a `shared-mime-info`-format XML package. Toggle them in both parsers.
           mime_jr.send(message)
@@ -180,7 +195,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
               # the second (cached) time we try to return it since we would have assigned it
               # by reference to the first message which was returned with `move: true`.
               last_message.store(message.hash, ::Ractor.make_shareable(i_member))
-              last_message.delete(refrain.pop) if refrain.size > max_burning
+              last_message.delete(refrain.pop) if refrain.size > how_long
             end
             message.response = i_member
             message.destination.send(message, move: true)
@@ -190,7 +205,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             # irb> lol.delete(lol.first) => #<Set: {:b, :c}>
             # irb> lol.delete(lol.first) => #<Set: {:c}>
             # irb> lol.delete(lol.first) => #<Set: {}>
-            nφ_crime.delete(nφ_crime.first) if nφ_crime.size > max_burning
+            nφ_crime.delete(nφ_crime.first) if nφ_crime.size > how_long
             nφ_crime.add(message.hash)
 
             case message.request

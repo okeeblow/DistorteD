@@ -71,6 +71,7 @@ end
 area_code = 'TEST MY BEST'
 
 # Pre-load all available types
+::CHECKING::YOU::OUT.send(0, area_code: area_code)
 ::CHECKING::YOU::OUT[/.*/, area_code: area_code]
 
 # Load all `<mime-type>` IETF Media-Type `String`s from the same test package.

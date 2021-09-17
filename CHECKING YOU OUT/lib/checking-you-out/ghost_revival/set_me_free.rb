@@ -34,6 +34,25 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         }
       }
 
+      # Do the reverse of `:bury`, deleting values for given keys.
+      _1.define_method(:baleet) { |haystack, needle|
+        return if haystack.nil? or needle.nil?
+        if haystack.is_a?(::Set) then
+          haystack.each { |straw| self.baleet(straw, needle) }
+        elsif self.has_key?(haystack) then
+          if self[haystack].is_a?(::Set) then
+            if self[haystack].one? then
+              self.delete(haystack)
+            else
+              #TOD0: Figure out why these `Set`s are ending up frozen.
+              #self[haystack].delete(needle)
+              self.store(haystack, ::Set[*self[haystack].reject(&needle.method(:===))])
+            end
+          elsif self[haystack] == needle then self.delete(haystack)
+          end
+        end
+      }
+
       # Support retrieving the heaviest `WeightedAction` given a list of weight methods.
       _1.const_set(:LEGENDARY_HEAVY_GLOW, ::Ractor.make_shareable(proc { |action, weights|
         weights.select!.with_object(

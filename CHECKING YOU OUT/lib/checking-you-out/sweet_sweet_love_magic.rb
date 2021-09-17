@@ -139,7 +139,7 @@ module ::CHECKING::YOU::OUT::SweetSweet♡Magic
     # Sequences define a Range of the byte boundaries where they might be found
     # in a hypothetical file/stream. Store them in nested Hashes,
     # e.g. {offset.min => {offset.max => {CatSequence[SequenceCat, …] => CHECKING::YOU::OUT }}}
-    Class.new(::Hash).tap {
+    ::Class.new(::Hash).tap {
       _1.define_method(:new) {
         super { |h,k| h[k] = self.class.new(&h.default_proc) }
       }
@@ -148,7 +148,7 @@ module ::CHECKING::YOU::OUT::SweetSweet♡Magic
       # Rejected upstream, so we need to roll our own: https://bugs.ruby-lang.org/issues/11747
       _1.define_method(:bury) { |*args|
         case args.count
-          when 0, 1 then raise ArgumentError.new("Can't `bury` fewer than two arguments.")
+          when 0, 1 then raise ::ArgumentError.new("Can't `bury` fewer than two arguments.")
           when 2 then
             if self.has_key?(args.first) then
               if self.fetch(args.first).is_a?(::Array) then
@@ -162,6 +162,28 @@ module ::CHECKING::YOU::OUT::SweetSweet♡Magic
           else (self[args.shift] ||= self.class.new).bury(*args)
         end
         self
+      }
+
+      # Do the reverse of `:bury`, deleting objects and empty keys while walking up to the root.
+      _1.define_method(:baleet) { |*haystack, needle|
+        return unless haystack.size > 0
+        lower_world = haystack.slice(...-1)
+        case self.dig(*haystack)
+        in ::NilClass then break
+        in ::Array => tip then
+          if tip.empty? and not lower_world.empty? then
+            self.dig(*lower_world)&.delete(tip)
+          else tip.delete(needle)
+          end
+        in ::Hash => tip then
+          if tip.empty? and not lower_world.empty? then
+            self.dig(*lower_world)&.delete(haystack.last)
+          else tip.delete_if { |i| i === needle }
+          end
+        in needle => tip then
+          self.dig(*lower_world)&.delete(haystack.last) unless lower_world.empty?
+        end
+        self.baleet(*haystack)
       }
 
       # Set up scratch variables for content matching.
