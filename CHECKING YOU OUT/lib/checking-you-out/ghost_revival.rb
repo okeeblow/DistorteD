@@ -62,6 +62,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
       # Instances of the above classes to hold our type data.
       all_night     = set_me_free.new          # Main `{CYI => CYO}` container.
+      line_4_ruin   = ::Thread::Queue.new      # Eviction order for oldest `CYO` when loaded-type count exceeds `max_burning`.
       postfixes     = set_me_free.new          # `{StickAround => CYO}` container for Postfixes (extnames).
       complexes     = set_me_free.new          # `{StickAround => CYO}` container for more complex filename fragments.
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
@@ -106,8 +107,12 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
       # Memoize a single new `::CHECKING::YOU::OUT` type instance.
       remember_me   = proc { |cyo|
-        # Main memoization `::Hash`.
-        all_night.bury(cyo.in, cyo)
+        # Main memoization `::Hash` and cache-eviction-order `::Queue`keyed by `CYI`.
+        cyo.in.tap {
+          all_night.bury(_1, cyo)
+          # Some types should be kept in-memory forever no matter their age.
+          line_4_ruin.push(_1) unless _1 == -'text/plain' or _1 == -'application/octet-stream'
+        }
 
         # Memoize single-extname "postfixes" separately from more complex filename fragments
         # to allow work and record-keeping with pure extnames.
@@ -122,7 +127,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         else as_above.bury(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
         end
 
-        kick_out_仮面.call(all_night.keys.first) if all_night.size > max_burning and max_burning > 0
+        # Evict the oldest-loaded type once we hit our cache limit.
+        # A limit of `0` disables eviction, allowing one to load all available types simultaneously.
+        kick_out_仮面.call(line_4_ruin.pop) if line_4_ruin.size > max_burning and max_burning > 0
       }
 
       # Return the best guess for a given needle's type based on our currently-loaded data.
