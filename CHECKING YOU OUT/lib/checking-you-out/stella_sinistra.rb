@@ -125,6 +125,7 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
           _1.insert(0, -?.) unless _1.start_with?(-?.)
           _1.insert(0, -?*) unless _1.start_with?(-?*)
         }.-@
+        when otra.include?(-?*) then -otra  # e.g. `"SConscript.*"`
         else ::File::extname(otra).insert(0, -?*).-@
         end
       else -otra.to_s
