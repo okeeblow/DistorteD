@@ -1,0 +1,56 @@
+require(-'set') unless defined?(::Set)
+
+# Components to handle relationships between CYO types, including:
+# - Parent types.
+# - Child types.
+# - Aliases for the same type.
+module ::CHECKING::YOU::OUT::MOON_CHILD
+
+  # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
+  def aka
+    return case @aka
+      when nil then ::Set[self.in]
+      when self.class, self.class.superclass then ::Set[self.in, @aka]
+      when ::Set then ::Set[self.in, *@aka]
+    end
+  end
+
+  # Take an additional CYI as an alias for this CYO.
+  def add_aka(taxa); self.awen(:@aka, taxa); end
+
+
+  # CYO-to-CYI relationship mappings.
+  attr_reader(:parents, :children)
+
+  # Take an additional CYI as our parent, e.g. `application/xml` for an XML-based type.
+  def add_parent(parent_cyi)
+    self.awen(:@parents, parent_cyi)
+  end
+
+  # Take an additional CYI as our child type.
+  def add_child(child_cyi)
+    self.awen(:@children, child_cyi)
+  end
+
+  # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
+  def adults_table
+    return case @parents
+      when nil then ::Set[self]
+      when self.class, self.class.superclass then ::Set[self, @parents]
+      when ::Set then ::Set[self, *@parents]
+    end
+  end
+
+  # Get a `Set` of this CYO and all of its child CYOs, at minimum just `Set[self]`.
+  def kids_table
+    return case @children
+      when nil then ::Set[self]
+      when self.class, self.class.superclass then ::Set[self, @children]
+      when ::Set then ::Set[self, *@children]
+    end
+  end
+
+  # Get a `Set` of this CYO and all parents and children, at minimum just `Set[self]`.
+  def family_tree; self.kids_table | self.adults_table; end
+
+end

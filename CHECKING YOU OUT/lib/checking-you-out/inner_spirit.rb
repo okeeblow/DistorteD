@@ -105,8 +105,8 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
   # Add a new filename-match to a specific type.
   def add_pathname_fragment(fragment)
-    # Store single-extname "postfix" matches separately from more complex matches
-    # so we can list out file extensions easily.
+    # Store single-extname "postfix" matches separately from more complex (possibly regexp-like) matches.
+    # A "postfix" will be like `"*.jpg"` — representing only a single extname with leading wildcard.
     self.awen(fragment.postfix? ? :@postfixes : :@complexes, fragment)
   end
   attr_reader(:postfixes, :complexes)
@@ -128,68 +128,6 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     self.remove_instance_variable(:@postfixes)
     self.remove_instance_variable(:@complexes)
   end
-
-
-  # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
-  def aka
-    return case @aka
-      when nil then ::Set[self.in]
-      when self.class, self.class.superclass then ::Set[self.in, @aka]
-      when ::Set then ::Set[self.in, *@aka]
-    end
-  end
-
-  # Take an additional CYI as an alias for this CYO.
-  def add_aka(taxa); self.awen(:@aka, taxa); end
-
-
-  # CYO-to-CYI relationship mappings.
-  attr_reader(:parents, :children)
-
-  # Take an additional CYI as our parent, e.g. `application/xml` for an XML-based type.
-  def add_parent(parent_cyi)
-    self.awen(:@parents, parent_cyi)
-  end
-
-  # Take an additional CYI as our child type.
-  def add_child(child_cyi)
-    self.awen(:@children, child_cyi)
-  end
-
-  # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
-  def adults_table
-    return case @parents
-      when nil then ::Set[self]
-      when self.class, self.class.superclass then ::Set[self, @parents]
-      when ::Set then ::Set[self, *@parents]
-    end
-  end
-
-  # Get a `Set` of this CYO and all of its child CYOs, at minimum just `Set[self]`.
-  def kids_table
-    return case @children
-      when nil then ::Set[self]
-      when self.class, self.class.superclass then ::Set[self, @children]
-      when ::Set then ::Set[self, *@children]
-    end
-  end
-
-  # Get a `Set` of this CYO and all parents and children, at minimum just `Set[self]`.
-  def family_tree; self.kids_table | self.adults_table; end
-
-  # Storage for freeform type descriptions (`<comment>` elements), type acrnyms,
-  # suitable iconography, and other boring metadata, e.g.:
-  #
-  #   <mime-type type="application/vnd.oasis.opendocument.text">
-  #     <comment>ODT document</comment>
-  #     <acronym>ODT</acronym>
-  #     <expanded-acronym>OpenDocument Text</expanded-acronym>
-  #     <generic-icon name="x-office-document"/>
-  #     […]
-  #   </mini-type>
-  attr_accessor(:description)
-
-
   # Avoid allocating spurious containers for keys that will only contain one value.
   # Given a key-name and a value, set the value for the key iff unset, otherwise promote the key
   # to a `Set` containing the previous plus the new values.
@@ -212,12 +150,24 @@ require_relative(-'auslandsgesprach') unless defined?(::CHECKING::YOU::IN::AUSLA
 ::CHECKING::YOU::IN.extend(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::INLANDGESPRÄCH)
 
+# File-extension handling and filename matching for basic (e.g. `"*.jpg"`) and complex globs.
+require_relative(-'stella_sinistra') unless defined?(::CHECKING::YOU::OUT::STELLA_SINISTRA)
+::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::STELLA_SINISTRA)
+
+# CYO-to-CYO relationship management.
+require_relative(-'moon_child') unless defined?(::CHECKING::YOU::OUT::MOON_CHILD)
+::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::MOON_CHILD)
+
+# Static type information like plain-text descriptions and graphical icons.
+require_relative(-'texture') unless defined?(::CHECKING::YOU::OUT::TEXTURE)
+::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::TEXTURE)
+
 # Content matching à la `libmagic`/`file`.
 require_relative(-'sweet_sweet_love_magic') unless defined?(::CHECKING::YOU::OUT::SweetSweet♥Magic)
 ::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::SweetSweet♡Magic)
-::CHECKING::YOU::OUT.prepend(::CHECKING::YOU::OUT::SweetSweet♥Magic)
+::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::SweetSweet♥Magic)
 
 # Methods for loading type data from `shared-mime-info` package XML files.
+require_relative(-'steel_needle') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::STEEL_NEEDLE)
 require_relative(-'ghost_revival') unless defined?(::CHECKING::YOU::GHOST_REVIVAL)
 ::CHECKING::YOU::OUT.singleton_class.prepend(::CHECKING::YOU::OUT::GHOST_REVIVAL)
-require_relative(-'steel_needle') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::STEEL_NEEDLE)
