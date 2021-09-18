@@ -86,8 +86,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     when :magic then
       # To avoid an extra allocation, re-use a previous `@speedy_cat` if it is left emptied.
       @speedy_cat = ::CHECKING::YOU::OUT::SpeedyCat.new if @speedy_cat.nil?
-    when :"magic-deleteall" then
-      # TODO
+    when :"magic-deleteall" then self.cyo.clear_content_fragments
     when :glob then
       @stick_around = ::CHECKING::YOU::OUT::StickAround.new
     when :"glob-deleteall" then self.cyo.clear_pathname_fragments
@@ -165,7 +164,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       # which we can know because every `<match>` stack push sets `@i_can_haz_magic = true`.
       # If there is only a single sub-sequence we can just add that instead of the container.
       if @i_can_haz_magic then
-        self.cyo.add_content_match(
+        self.cyo.add_content_fragment(
           # Add single-sequences directly instead of adding their container.
           @speedy_cat.one? ?
             # Transfer any non-default `weight` from the container to that single-sequence.

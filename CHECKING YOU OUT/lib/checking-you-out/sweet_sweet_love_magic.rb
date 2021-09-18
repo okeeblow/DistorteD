@@ -13,11 +13,13 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
 
   # Take a weighted `CatSequence`, store it locally as a possible match for this CYO,
   # and memoize in classwide storage it for batch sequence matching.
-  def add_content_match(action)
-    #p "CAT SEQUENCE #{action.class}: #{action}"
-    #::CHECKING::YOU::INSTANCE_NEEDLEMAKER.call(:@cat_sequence, action, self)
-    #self.class.magic_without_tears.bury(action.min, action.max, action, self)
+  def add_content_fragment(action)
     self.awen(:@cat_sequence, action)
+  end
+
+  # Remove all content match data from a CYO.
+  def clear_content_fragments
+    self.remove_instance_variable(:@cat_sequence)
   end
 
   # Represent a container for multiple matching byte sequences along with a priority value
