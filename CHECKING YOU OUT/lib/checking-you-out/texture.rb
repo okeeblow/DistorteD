@@ -15,6 +15,20 @@ module ::CHECKING::YOU::OUT::TEXTURE
   #     <generic-icon name="x-office-document"/>
   #     […]
   #   </mini-type>
+
+  # For `<comment/>`.
   attr_accessor(:description)
+
+  # Container for short and expanded acronym.
+  ACRNYM = ::Struct.new(:acronym, :description) do
+    # e.g. `"PDF (Portable Document Format)"`
+    def to_s; "#{self[:acronym]} (#{self[:description]})".-@; end
+  end
+
+  # For `<acronym/>` and `<expanded-acronym/>`.
+  def acronym; @acrnym ||= ACRNYM.new; end
+  def acronym=(otra)
+    self.acronym.send(otra.include?(-' ') ? :description= : :acronym=, otra)
+  end
 
 end

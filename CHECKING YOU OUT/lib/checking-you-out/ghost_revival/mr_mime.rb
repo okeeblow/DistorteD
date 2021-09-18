@@ -92,10 +92,6 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     when :"glob-deleteall" then self.cyo.clear_pathname_fragments
     when :treemagic then
       # TODO
-    when :acronym then
-      # TODO
-    when :"expanded-acronym" then
-      # TODO
     end
   end
 
@@ -145,8 +141,9 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     return if self.element_skips.include?(@parse_stack.last)
     return unless @cyi
     case @parse_stack.last
-    when :comment then
-      self.cyo.description = element_text
+    when :comment            then self.cyo.description = element_text
+    when :acronym            then self.cyo.acronym = element_text
+    when :"expanded-acronym" then self.cyo.acronym = element_text
     end
   end
 
