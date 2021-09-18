@@ -47,6 +47,7 @@ class ::CHECKING::YOU; end
 
   # Symbolize our `::Struct` values if they're given separately (not as a CYI/CYO).
   def initialize(*taxa)
+    return if taxa.nil? or taxa&.compact.empty?
     super(*(taxa.first.is_a?(::CHECKING::YOU::IN) ? taxa.first : taxa.map!(&:to_sym)))
   end
 
