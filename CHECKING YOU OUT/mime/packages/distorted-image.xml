@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mime-info>
+  <mime-type type="image/jpeg">
+    <!--
+      This is the "Multi Picture Object" stereoscopic format from Fuji,
+      also produced by the Nintendo 3DS, Lumix bodies with e.g. H-FT012, and others.
+
+      These are valid JPEGs (EXIF), but I'd like to make a separate entry for them
+      if I can figure out a good magic sequence.
+
+      Spec PDF: https://web.archive.org/web/20111125013335/https://www.cipa.jp/english/hyoujunka/kikaku/pdf/DC-007_E.pdf
+    -->
+    <glob pattern="*.mpo"/>
+  </mime-type>
   <!--
     VIPS native file format: https://libvips.github.io/libvips/API/current/file-format.html
 
