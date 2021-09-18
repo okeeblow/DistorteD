@@ -442,7 +442,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   def do_the_thing(the_trigger_of_innocence)
     # Check for filesystem extended attributes in `::Pathname` needles representing extant files.
     @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:pathname).keep_if(&:exist?).flat_map {
-      ::CHECKING::YOU::OUT::GHOST_REVIVAL::STEEL_NEEDLE.call(_1, receiver: @receiver_ractor)
+      ::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE.call(_1, receiver: @receiver_ractor)
     }
 
     # Parse our enabled `shared-mime-info` packages for filename glob matches and content (magic) matches.

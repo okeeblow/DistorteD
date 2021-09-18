@@ -103,31 +103,6 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   def out; self; end
   def in; self.class.superclass.new(*self.values); end
 
-  # Add a new filename-match to a specific type.
-  def add_pathname_fragment(fragment)
-    # Store single-extname "postfix" matches separately from more complex (possibly regexp-like) matches.
-    # A "postfix" will be like `"*.jpg"` — representing only a single extname with leading wildcard.
-    self.awen(fragment.postfix? ? :@postfixes : :@complexes, fragment)
-  end
-  attr_reader(:postfixes, :complexes)
-
-  # Returns the "primary" file extension for this type.
-  # For now we'll assume the `#first` extname is the primary.
-  def extname
-    case @postfixes
-    when ::NilClass then nil
-    when ::Symbol then @postfixes.to_s
-    when ::String then @postfixes
-    when ::Set then @postfixes.first
-    else nil
-    end&.delete_prefix(-?*)
-  end
-
-  # Unset the IVars for Postfixes and Complexes.
-  def clear_pathname_fragments
-    self.remove_instance_variable(:@postfixes)
-    self.remove_instance_variable(:@complexes)
-  end
   # Avoid allocating spurious containers for keys that will only contain one value.
   # Given a key-name and a value, set the value for the key iff unset, otherwise promote the key
   # to a `Set` containing the previous plus the new values.
@@ -151,8 +126,8 @@ require_relative(-'auslandsgesprach') unless defined?(::CHECKING::YOU::IN::AUSLA
 ::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::INLANDGESPRÄCH)
 
 # File-extension handling and filename matching for basic (e.g. `"*.jpg"`) and complex globs.
-require_relative(-'stella_sinistra') unless defined?(::CHECKING::YOU::OUT::STELLA_SINISTRA)
-::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::STELLA_SINISTRA)
+require_relative(-'stella_sinistra') unless defined?(::CHECKING::YOU::OUT::StellaSinistra)
+::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::StellaSinistra)
 
 # CYO-to-CYO relationship management.
 require_relative(-'moon_child') unless defined?(::CHECKING::YOU::OUT::MOON_CHILD)
@@ -168,6 +143,5 @@ require_relative(-'sweet_sweet_love_magic') unless defined?(::CHECKING::YOU::OUT
 ::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::SweetSweet♥Magic)
 
 # Methods for loading type data from `shared-mime-info` package XML files.
-require_relative(-'steel_needle') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::STEEL_NEEDLE)
 require_relative(-'ghost_revival') unless defined?(::CHECKING::YOU::GHOST_REVIVAL)
 ::CHECKING::YOU::OUT.singleton_class.prepend(::CHECKING::YOU::OUT::GHOST_REVIVAL)
