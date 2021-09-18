@@ -160,7 +160,7 @@ class ::CHECKING::YOU::OUT::XROSS_INFECTION
     def self.DATA
       # The base directory defined by `$XDG_DATA_HOME` is considered more important
       # than any of the base directories defined by `$XDG_DATA_DIRS`.
-      self.DATA_HOME + self.DATA_DIRS
+      self.DATA_DIRS + self.DATA_HOME
     end
 
     # Hide the `Pathname`-making helper method.
