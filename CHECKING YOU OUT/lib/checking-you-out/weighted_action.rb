@@ -19,6 +19,6 @@ module ::CHECKING::YOU::OUT::WeightedAction
   # It seems like we have to actually implement :<=> for `Comparable`; at least I couldn't get it working
   # with `Forwardable`'s `def_instance_delegator(:weight, :<=>)`.            v(._. )v
   include(::Comparable)
-  def <=>(otra); self.weight <=> otra.weight; end
+  def <=>(otra); self.weight <=> otra.respond_to?(:weight) ? otra.weight : otra; end
 
 end  # module WeightedAction
