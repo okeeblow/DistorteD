@@ -90,8 +90,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       # TODO
     when :glob then
       @stick_around = ::CHECKING::YOU::OUT::StickAround.new
-    when :"glob-deleteall" then
-      # TODO
+    when :"glob-deleteall" then self.cyo.clear_pathname_fragments
     when :treemagic then
       # TODO
     when :acronym then
