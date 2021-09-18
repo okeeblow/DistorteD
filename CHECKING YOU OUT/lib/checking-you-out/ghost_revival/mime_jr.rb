@@ -187,8 +187,15 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   }.freeze
 
   # You shouldn't abuse the power of the Solid.
-  def skips
-    @skips ||= self.class::DEFAULT_LOADS.keep_if { |k,v| v == false }.keys.to_set
+  def category_skips
+    @category_skips ||= self.class::DEFAULT_LOADS.merge(@category_toggles || ::Hash::new).keep_if { |_category, enable|
+      enable == false
+    }.keys.to_set
+  end
+  def element_skips
+    @skips ||= self.class::FDO_ELEMENT_CATEGORY.select { |_element, category|
+      self.category_skips.include?(category)
+    }.keys.to_set
   end
 
   # Override the normal instantiation of our handler to wrap it in a `::Ractor`.
@@ -275,9 +282,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     @i_can_haz_magic = true
 
     # Allow the user to control the conditions on which we ignore Elements from the source XML.
-    @skips = self.class::DEFAULT_LOADS.merge(handler_kwargs.slice(*self.class::DEFAULT_LOADS.keys)).keep_if { |k,v|
-      v == false
-    }.keys.to_set
+    @category_toggles = handler_kwargs.slice(*self.class::DEFAULT_LOADS.keys)
 
     # Here's where I would put a call to `super()` a.k.a `Ox::Sax#initialize` — IF IT HAD ONE
   end
@@ -350,7 +355,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   def start_element(name)
     # Record the current state of the parser Element stack regardless of our decision to skip its contents.
     @parse_stack.push(name)
-    return if self.skips.include?(name)
+    return if self.element_skips.include?(name)
 
     # Skip this Element iff we have no relevant needles,
     # e.g. skip `<magic>`/`<match>` elements if we have no `IO`-like content-match needles,
@@ -375,7 +380,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   def attr_value(attr_name, value)
     # NOTE: `parse_stack` can be empty here in which case its `#last` will be `nil`.
     # This happens e.g. for the two attributes of the XML declaration '<?xml version="1.0" encoding="UTF-8"?>'.
-    return if self.skips.include?(@parse_stack.last)
+    return if self.element_skips.include?(@parse_stack.last)
     return if (@parse_stack.last == :magic or @parse_stack.last == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     return if @parse_stack.last == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?
 
@@ -408,7 +413,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   # Used to clean up scratch variables or save a successful match.
   def end_element(name)
     # The element won't be in the `parse_stack` if we skipped it in `start_element` too.
-    return if self.skips.include?(@parse_stack.last)
+    return if self.element_skips.include?(@parse_stack.last)
     raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
     return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     return if name == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?

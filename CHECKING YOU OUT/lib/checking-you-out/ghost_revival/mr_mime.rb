@@ -35,7 +35,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
   # `MrMIME::new` will take any of these keys as keyword arguments
   # whose value will override the default defined in this Hash.
   DEFAULT_LOADS = {
-    :textual_metadata => false,
+    :textual_metadata => true,
     :host_metadata => false,
     :pathname_match => true,
     :content_match => true,
@@ -68,7 +68,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
   # Callback for the start of any XML Element.
   def start_element(name)
     @parse_stack.push(name)
-    return if self.skips.include?(name)
+    return if self.element_skips.include?(name)
 
     # Since we no longer explicitly load all `<mime-type>`s we can avoid a lot of `ObjectSpace` churn
     # by skipping this Element iff no match was made, i.e. iff `@cyi` is `nil`.
@@ -103,7 +103,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
   def attr_value(attr_name, value)
     # `parse_stack` can be empty here in which case its `#last` will be `nil`.
     # This happens e.g. for the two attributes of the XML declaration '<?xml version="1.0" encoding="UTF-8"?>'.
-    return if self.skips.include?(@parse_stack.last)
+    return if self.element_skips.include?(@parse_stack.last)
 
     # If `@cyi == nil` then we haven't matched the currently-parsing MIME type to one of our search needles.
     # We should allow `<mime-type>` parsing through regardless, because `<mime-type type="what/ever">`
@@ -142,7 +142,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
   # Callback method for textual element contents, e.g. <hey>sup</hey>
   #                                          This part ------^
   def text(element_text)
-    return if self.skips.include?(@parse_stack.last)
+    return if self.element_skips.include?(@parse_stack.last)
     return unless @cyi
     case @parse_stack.last
     when :comment then
@@ -153,7 +153,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
   # Callback for end-of-element events, i.e. the opposite of `start_element`.
   # Used to clean up scratch variables or save a successful match.
   def end_element(name)
-    return if self.skips.include?(@parse_stack.last)
+    return if self.element_skips.include?(@parse_stack.last)
     raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
     return unless @cyi or name == :"mime-type"
     case name
