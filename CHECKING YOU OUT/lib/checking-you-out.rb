@@ -16,18 +16,18 @@ require_relative(-'checking-you-out/inner_spirit') unless defined?(::CHECKING::Y
 # In addition to the above, CYO() supports IETF-style Media Type strings like "application/xhtml+xml"
 # and supports `stat`-less testing of `.extname`-style Strings.
 class CHECKING::YOU
-  def self.OUT(unknown_identifier)
+  def self.OUT(unknown_identifier, area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE)
     case unknown_identifier
     when ::Pathname
-      ::CHECKING::YOU::OUT::from_pathname(unknown_identifier)
+      ::CHECKING::YOU::OUT::from_pathname(unknown_identifier, area_code: area_code)
     when ::String
       case
       when unknown_identifier.count(-?/) == 1 then  # TODO: Additional String validation here.
-        ::CHECKING::YOU::OUT::from_ietf_media_type(unknown_identifier)
+        ::CHECKING::YOU::OUT::from_ietf_media_type(unknown_identifier, area_code: area_code)
       when unknown_identifier.start_with?(-?.) && unknown_identifier.count(-?.) == 1 then
-        ::CHECKING::YOU::OUT::from_postfix(unknown_identifier)
+        ::CHECKING::YOU::OUT::from_postfix(unknown_identifier, area_code: area_code)
       else
-        ::CHECKING::YOU::OUT::from_pathname(unknown_identifier)
+        ::CHECKING::YOU::OUT::from_pathname(unknown_identifier, area_code: area_code)
       end
     when ::CHECKING::YOU::IN
       unknown_identifier.out
