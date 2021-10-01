@@ -20,7 +20,12 @@ module ::CHECKING::YOU::OUT::MOON_CHILD
 
 
   # CYO-to-CYI relationship mappings.
-  attr_reader(:parents, :children)
+  attr_reader(:b4u, :parents, :children)
+
+  # Take an additional CYI as a composite parent, e.g. `application/xml` for `image/svg+xml`.
+  def add_b4u(parent_cyi)
+    self.awen(:@b4u, parent_cyi)
+  end
 
   # Take an additional CYI as our parent, e.g. `application/xml` for an XML-based type.
   def add_parent(parent_cyi)

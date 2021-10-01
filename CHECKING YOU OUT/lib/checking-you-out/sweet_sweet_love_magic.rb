@@ -252,7 +252,8 @@ module ::CHECKING::YOU::OUT::SweetSweet♡Magic
           while rolling_stop = self.instance_variable_get(:@rolling_stop).pop do
 
             # { SweetSweet♥Magic::SpeedyCat or SequenceCat => CHECKING::YOU::OUT }
-            self[rolling_start][rolling_stop].each_pair { |cat_sequence, cyo|
+            # Use the lonely operator since this could be `nil` if an older loaded type was purged.
+            self[rolling_start][rolling_stop]&.each_pair { |cat_sequence, cyo|
 
               # Each match possibility is composed of one or more sub-sequences, all of which must be matched.
               self.instance_variable_get(:@quick_master).replace(

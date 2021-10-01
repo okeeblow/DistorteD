@@ -58,7 +58,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           glob.keep_if { |_glob, cyo| magic_children.include?(cyo) }.push_up(:weight, :length)
         }
       in ::CHECKING::YOU::OUT, ::Hash               then
-        magic.values.flatten.map(&:family_tree).reduce(&:&)&.include?(glob) ? glob : magic.push_up
+        (magic.values.flatten.map(&:family_tree).reduce(&:&)&.map!(&:in)&.&(::Set[*glob.in]))&.empty? ? magic.push_up : glob
       in ::Hash,               ::CHECKING::YOU::OUT then glob.values.to_set & magic.kids_table
       in ::CHECKING::YOU::OUT, ::CHECKING::YOU::OUT then glob == magic ? glob : magic
       else ::CHECKING::YOU::OUT::from_ietf_media_type(-'application/octet-stream')

@@ -1,21 +1,63 @@
+require(-'set') unless defined?(::Set)
+
+require_relative(-'ghost_revival/filter_house') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::ONE_OR_EIGHT)
+
+
 # IETF Media-Type `String`-handling components.
 # CYI class-level components.
 module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
+  # Support compound suffixed type `::String`s à la RFC6839: https://datatracker.ietf.org/doc/html/rfc6839
+  #
+  # The commented-out items are not supported/needed for our use case,
+  # but they are listed here so I can feel confident I didn't forget anything in the RFCs.
+  SUFFIX_TYPES = {
+    # https://datatracker.ietf.org/doc/html/rfc6839#section-3.2
+    #-'ber' => Basic Encoding Rules à la ASN.1 https://datatracker.ietf.org/doc/html/rfc6839#ref-ITU.X690.2008,
+    # https://datatracker.ietf.org/doc/html/rfc6839#section-3.3
+    #-'der' => Distinguished Encoding Rules https://datatracker.ietf.org/doc/html/rfc6839#ref-ITU.X690.2008,
+
+    # https://datatracker.ietf.org/doc/html/rfc6839#section-3.1
+    -'json' => ::CHECKING::YOU::IN::new(:possum, :application, :json).freeze,
+
+    # https://datatracker.ietf.org/doc/html/rfc6839#section-3.4
+    -'fastinfoset' => ::CHECKING::YOU::IN::new(:possum, :application, :fastinfoset).freeze,
+
+    # https://datatracker.ietf.org/doc/html/rfc6839#section-3.5
+    -'wbxml' => ::CHECKING::YOU::IN::new(:vnd, :application, :"wap.wbxml").freeze,
+
+    # https://datatracker.ietf.org/doc/html/rfc6839#section-3.6
+    -'zip' => ::CHECKING::YOU::IN::new(:possum, :application, :zip).freeze,
+
+    # https://datatracker.ietf.org/doc/html/rfc6839#section-3.6
+    -'xml' => ::CHECKING::YOU::IN::new(:possum, :application, :xml).freeze,
+    -'xml-compressed' => ::Set[
+      # This doesn't seem to be a standardized thing, but it's in the fd.o database:
+      # https://github.com/w3c/svgwg/issues/701
+      ::CHECKING::YOU::IN::new(:possum, :application, :xml).freeze,
+      ::CHECKING::YOU::IN::new(:possum, :application, :gzip).freeze,
+    ].freeze,
+  }.freeze
+
+  TYPE_SUFFIXES = self::SUFFIX_TYPES.invert.freeze
+
+
   # Parse IETF Media-Type `::String` → `::CHECKING::YOU::IN`
-  GOLDEN_I = ::Ractor.make_shareable(proc {
+  GOLDEN_I = ::Ractor::make_shareable(proc {
     # Keep these allocated instead of fragmenting our heap, since this will be called very frequently.
-    scratch = ::Array.allocate
-    hold    = ::Array.allocate
-    my_base = ::CHECKING::YOU::IN::allocate
+    what_you_doing = ::Array::new
+    main_screen    = ::Array::new
+    my_base        = ::Array::new
+    great_justice  = ::CHECKING::YOU::IN::allocate
 
     # Clear out the contents of the above temporary vars,
     # called to ensure we never leak the contents of one parse into another.
     the_bomb = proc {
-      scratch.clear
-      hold.clear
-      my_base.members.each { |gentleman|
-        my_base[gentleman] = nil
+      what_you_doing.clear
+      main_screen.clear
+      my_base.clear
+      great_justice.members.each { |gentleman|
+        great_justice[gentleman] = nil
       }
     }
 
@@ -82,26 +124,36 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
     move_zig = proc { |zig|
       case zig
       when 0 then  # NULL
-        my_base[:phylum] = scratch.reverse!.pack(-'U*').to_sym
+        great_justice[:phylum] = what_you_doing.reverse!.pack(-'U*').to_sym
+        my_base.unshift(great_justice.dup)
       when 61 then  # =
         # TODO: Implement Fragment-based Type variations
-        hold.push(*scratch)
-        scratch.clear
+        main_screen.push(*what_you_doing)
+        what_you_doing.clear
       when 59 then  # ;
         # TODO: Implement Fragment-based Type variations
-        scratch.clear
-        hold.clear
+        what_you_doing.clear
+        main_screen.clear
       when 43 then  # +
-        #TODO: Implement tagged parent Types e.g. `+xml`
-        scratch.clear
+        SUFFIX_TYPES[what_you_doing.reverse!.pack(-'U*')].tap {
+          # We could just `my_base.push(*suffix_types)` but that will also decompose `CYIs`
+          # to their component `::Symbols` unless we override `CYI#to_a` to `nil`.
+          case _1
+          in ::Array             => suffix_types then my_base.push(*suffix_types)
+          in ::Set               => suffix_types then my_base.push(*suffix_types)
+          in ::CHECKING::YOU::IN => suffix_type  then my_base.push(suffix_type)
+          else next  # Do nothing.
+          end
+        }
+        what_you_doing.clear
       when 47 then  # /
-        # When this character is encountered in a reversed Type String, `scratch` will contain the facet
+        # When this character is encountered in a reversed Type String, `what_you_doing` will contain the facet
         # which lets us determine if this Type belongs to a vendor tree, to the e`x`perimental tree, etc.
-        my_base[:kingdom] = case
-        when scratch[-3..] == (-'dnv').codepoints then
-          scratch.pop(3);
+        great_justice[:kingdom] = case
+        when what_you_doing[-3..] == (-'dnv').codepoints then
+          what_you_doing.pop(3);
           # https://datatracker.ietf.org/doc/html/rfc6838#section-3.2
-          # We will be in a vendor tree, but let's additionally inspect `hold` to count its facets.
+          # We will be in a vendor tree, but let's additionally inspect `main_screen` to count its facets.
           # There will be only a single facet for vendor-tree types like `application/vnd.wordperfect`.
           # There will be multiple facets for vendor-tree types like `application/vnd.tcpdump.pcap`.
           #
@@ -109,50 +161,50 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
           # e.g. for `application/vnd/tcpdump.pcap` we will use `tcpdump` as the tree naame instead of `vnd`,
           # in fact not even storing the `vnd` at all.
           #
-          # This increases the likelihood of `hold`'s remainder fitting inside a single RValue,
+          # This increases the likelihood of `main_screen`'s remainder fitting inside a single RValue,
           # e.g. for yuge Types like `application/vnd.oasis.opendocument.graphics` we will store `oasis`
           # and `opendocument.graphics` (fits!) instead of `vnd` and `oasis.opendocument.graphics` (doesn't fit!).
           #
           # The dropped `vnd` will be reconstructed by `CYO#to_s` when it detects a non-standard tree name.
-          hold.rindex(46) ? hold.slice!(hold.rindex(46)..).reverse!.tap(&:pop).pack(-'U*').to_sym : :vnd
-        when scratch[-3..] == (-'srp').codepoints then
+          main_screen.rindex(46) ? main_screen.slice!(main_screen.rindex(46)..).reverse!.tap(&:pop).pack(-'U*').to_sym : :vnd
+        when what_you_doing[-3..] == (-'srp').codepoints then
           # https://datatracker.ietf.org/doc/html/rfc6838#section-3.3
           # "Media types created experimentally or as part of products that are not distributed commercially".
           # This is mostly an early-Internet legacy and there are only a few of these in `shared-mime-info`,
           # e.g. `audio/prs.sid` for the C=64 Sound Interface Device audio format,
           # but they can still be registered.
-          scratch.pop(3); :prs
-        when scratch[-5..] == (-'-sm-x').codepoints then
+          what_you_doing.pop(3); :prs
+        when what_you_doing[-5..] == (-'-sm-x').codepoints then
           # Microsoft formats like `text/x-ms-regedit`.
           # I'm treating this separately from the IETF `x-` tree just because there are so many of them,
           # and it's nice to keep Winders formats logically-grouped.
-          scratch.pop(5); :"x-ms"
-        when scratch[-2..] == (-'-x').codepoints then
+          what_you_doing.pop(5); :"x-ms"
+        when what_you_doing[-2..] == (-'-x').codepoints then
           # Deprecated experimental tree (`x-`): https://datatracker.ietf.org/doc/html/rfc6648
           # I'm giving this deprecated tree the canonical `x` tree in CYO because it has legacy dating back
           # to the mid '70s and has many many many more Types than post-2012 `x.` tree,
           # RE: https://datatracker.ietf.org/doc/html/rfc6648#appendix-A
-          scratch.pop(2); :x
-        when scratch.one? && scratch.last == 100 then  # x
+          what_you_doing.pop(2); :x
+        when what_you_doing.one? && what_you_doing.last == 100 then  # x
           # Faceted experimental tree (`x.`): https://datatracker.ietf.org/doc/html/rfc6838#section-3.4
           # There are only a few of these since "use of both `x-` and `x.` forms is discouraged",
           # e.g. `model/x.stl-binary`, and there aren't likely to be many more.
-          scratch.pop; :"kayo-dot"
+          what_you_doing.pop; :"kayo-dot"
         else
           # Otherwise we are in the "standards" tree: https://datatracker.ietf.org/doc/html/rfc6838#section-3.1
           :possum
         end
-        # Everything remaining in `hold` and `scratch` will comprise the most-specific Type component.
-        hold.push(*scratch)
-        my_base[:genus] = hold.reverse!.pack(-'U*').to_sym
-        scratch.clear
-        hold.clear
+        # Everything remaining in `main_screen` and `what_you_doing` will comprise the most-specific Type component.
+        main_screen.push(*what_you_doing)
+        great_justice[:genus] = main_screen.reverse!.pack(-'U*').to_sym
+        what_you_doing.clear
+        main_screen.clear
       when 46 then  # .
-        hold << 46 unless hold.empty?
-        hold.push(*scratch)
-        scratch.clear
+        main_screen << 46 unless main_screen.empty?
+        main_screen.push(*what_you_doing)
+        what_you_doing.clear
       else
-        scratch << zig
+        what_you_doing << zig
       end
     }
 
@@ -160,11 +212,28 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
     cats = ->(gentlemen) {
       gentlemen.encode!(::Encoding::UTF_8).each_codepoint.reverse_each(&move_zig)
       move_zig.call(0)
-      return my_base.dup.freeze.tap(&the_bomb)
+      return my_base.yield_self(
+        &::CHECKING::YOU::OUT::GHOST_REVIVAL::ONE_OR_EIGHT
+      ).dup.freeze.tap(&the_bomb)
     }
     while message = ::Ractor::receive
-      message.response = cats.call(message.request)
-      message.destination.send(message, move: true)
+      message.be_lovin = case message
+      when ::CHECKING::YOU::OUT::EverlastingMessage then case cats.call(message.be_lovin)
+        in ::CHECKING::YOU::IN => cyi  then ::Hash[cyi => ::CHECKING::YOU::OUT::new(*cyi.values)]
+        in ::Array             => cyis then
+          # Don't freeze.
+          ::Hash[
+            ::CHECKING::YOU::IN::B4U::new(cyis) => cyis[1...].each_with_object(
+              ::CHECKING::YOU::OUT::new(*cyis.first.values)
+            ) { _2.add_b4u(_1) }
+          ]
+        end
+      when ::CHECKING::YOU::IN::EverlastingMessage then case cats.call(message.be_lovin)
+        in ::CHECKING::YOU::IN => cyi  then cyi
+        in ::Array             => cyis then ::CHECKING::YOU::IN::B4U::new(cyis)
+        end
+      end
+      message.go_beyond!
     end
   })
 
@@ -190,13 +259,22 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
   # if the `:receiver` is a `::Ractor` other than the one calling the method.
   # This is kind of hacky but allows e.g. `MIMEjr` to not have to block waiting for our reply
   # only to forward that reply immediately to its real destination.
-  def from_ietf_media_type(ietf_string, receiver: ::Ractor::current)
+  def from_ietf_media_type(
+    ietf_string,
+    envelope: ::CHECKING::YOU::IN::EverlastingMessage,
+    receiver: ::Ractor::current
+  )
     return if ietf_string.nil? or ietf_string&.empty?
-    wanted = ietf_string.hash if receiver == ::Ractor.current
-    ULTRAVISITOR.send(::CHECKING::YOU::IN::EverlastingMessage::new(receiver, ietf_string.dup), move: true)
-    (receiver == ::Ractor.current) ? ::Ractor::receive_if {
-      _1.is_a?(::CHECKING::YOU::IN::EverlastingMessage) and _1.request.hash == wanted
-    }.response : nil
+    message = envelope.new(ietf_string.dup, receiver)
+    wanted = case receiver
+    when ::Array then receiver.first == ::Ractor::current
+    when ::Ractor::current then true
+    else false
+    end ? message.erosion_mark : nil
+    ULTRAVISITOR.send(message, move: true)
+    ::Ractor::receive_if {
+      _1.is_a?(::CHECKING::YOU::IN::EverlastingMessage) and _1.erosion_mark == wanted
+    }.be_lovin if wanted
   end
 end
 
@@ -223,7 +301,7 @@ module ::CHECKING::YOU::IN::INLANDGESPRÄCH
   # Reconstruct an IETF Media-Type String from a loaded CYI/CYO's `#members`
   def to_s
     # TODO: Fragments (e.g. `;what=ever`), and syntax identifiers (e.g. `+xml`)
-    -(::String.new(encoding: ::Encoding::UTF_8, capacity: 128) << self.phylum.to_s << -'/' << case
+    (::String.new(encoding: ::Encoding::UTF_8, capacity: 128) << self.phylum.to_s << -'/' << case
     when self.kingdom == :"kayo-dot" then -'x.'
     when self.kingdom == :x then -'x-'
     when self.kingdom == :"x-ms" then -'x-ms-'
@@ -237,4 +315,26 @@ module ::CHECKING::YOU::IN::INLANDGESPRÄCH
 
   # Pretty-print objects using our custom `#:to_s`
   def inspect; "#<#{self.class.to_s} #{self.to_s}>"; end
+end
+
+
+# Class-level method to fetch a CYO from a `::Ractor` area.
+module ::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
+  def from_ietf_media_type(ietf_string, area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE)
+    super(
+      ietf_string,
+      receiver: ::Array[::Ractor::current, self.areas[area_code]]
+    )
+  end
+end
+
+# Instance-level method to generate the full IETF Media-Type `::String` of composite types,
+# e.g. `"image/svg+xml"`.
+module ::CHECKING::YOU::OUT::INLANDGESPRÄCH
+  def to_s
+    super << case ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::TYPE_SUFFIXES[self.b4u]
+      in ::NilClass then nil.to_s
+      in ::String => suffix then ?+ << suffix
+    end.to_s
+  end
 end

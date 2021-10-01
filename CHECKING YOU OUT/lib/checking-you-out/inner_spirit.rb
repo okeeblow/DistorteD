@@ -1,5 +1,6 @@
 require(-'set') unless defined?(::Set)
 require(-'pathname') unless defined?(::Pathname)
+require(-'securerandom') unless defined?(::SecureRandom)
 
 
 # This base Struct will be used as the Hash key for its matching `OUT` subclass object,
@@ -29,6 +30,10 @@ class ::CHECKING::YOU; end
   :genus,
 ) do
 
+  # This `::Array` subclass will represent the sum of `CYI`s for a `CYO` whose IETF media-type `::String`
+  # uses a "suffix" designated by `+` or `;`, e.g. `image/svg+xml` will be `B4U[ CYI(svg), CYI(xml) ]`.
+  self::B4U = ::Class::new(::Set)
+
   # Default `::Ractor` CYO data area name.
   # This will be the area used for all synchronous method invocations that do not specify otherwise.
   self::DEFAULT_AREA_CODE = -'CHECKING YOU OUT'
@@ -38,16 +43,27 @@ class ::CHECKING::YOU; end
   # to contain the resulting `:response`, and send the mutated message to the `:destination`.
   #
   # TODO: Re-evaluate this in Ruby 3.1+ depending on the outcome of https://bugs.ruby-lang.org/issues/17298
-  self::EverlastingMessage = ::Struct.new(:destination, :request, :response) do
-    # Hash the entire message based on the `#hash` of its `:request` member.
-    # The resulting `::Integer` will be used in the cache `::Hash`/`::Set` because the message
-    # object itself will become a `::Ractor::MovedObject` after it's sent to `:destination`.
-    def hash; self[:request].hash; end
+  self::EverlastingMessage = ::Struct.new(:erosion_mark, :be_lovin, :chain_of_pain) do
+    def initialize(be_lovin, chain_of_pain = ::Ractor::current)
+      super(::SecureRandom::uuid.freeze, be_lovin, chain_of_pain)
+    end
+    def add_destination(otra)
+      case self[:chain_of_pain]
+      when ::Ractor then self[:chain_of_pain] = ::Array[self[:chain_of_pain], otra]
+      when ::Array then self[:chain_of_pain].push(otra)
+      end
+    end
+    def go_beyond!
+      case self[:chain_of_pain]
+      when ::Ractor then self[:chain_of_pain].send(self, move: true)
+      when ::Array then self[:chain_of_pain].pop.send(self, move: true)
+      end
+    end
   end
 
   # Symbolize our `::Struct` values if they're given separately (not as a CYI/CYO).
   def initialize(*taxa)
-    return if taxa.nil? or taxa&.compact.empty?
+    return if taxa.nil? or taxa.include?(nil)
     super(*(taxa.first.is_a?(::CHECKING::YOU::IN) ? taxa.first : taxa.map!(&:to_sym)))
   end
 
@@ -60,7 +76,7 @@ class ::CHECKING::YOU; end
   # e.g. irb> CYI::from_ietf_media_type('image/jpeg') == 'image/jpeg' => true
   def eql?(otra)
     case otra
-    when ::String then self.to_s.eql?(otra)
+    when ::String then self.to_s.eql?(otra.index(/[;+]/) ? otra.slice(...otra.index(/[;+]/)) : otra)
     when ::CHECKING::YOU::IN, ::CHECKING::YOU::OUT then self.values.eql?(otra.values)
     else super(otra)
     end
@@ -69,19 +85,12 @@ class ::CHECKING::YOU; end
 end
 
 # Main Struct subclass for in-memory type representation.
-# Instances of the base `CHECKING::YOU::IN` Struct will refer to only one of these,
-# and this matching object will contain all relevant data about the type,
-# such as file extension(s), `magic` bytes, and variations of a base type like all of:
-# - "application/vnd.wordperfect;"
-# - "application/vnd.wordperfect;version=4.2"
-# - "application/vnd.wordperfect;version=5.0"
-# - "application/vnd.wordperfect;version=5.1"
-# - "application/vnd.wordperfect;version=6.x"
-# …will be represented in a single `CHECKING::YOU::OUT` object.
 class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
+  self::EverlastingMessage = ::Class::new(self::superclass::EverlastingMessage)
+
   # Absolute path to the root of the Gem — the directory containing `bin`,`docs`,`lib`, etc.
-  GEM_ROOT = proc { ::Pathname.new(__dir__).join(*::Array.new(2, -'..')).expand_path.realpath }
+  self::GEM_ROOT = proc { ::Pathname.new(__dir__).join(*::Array.new(2, -'..')).expand_path.realpath }
 
   # Time object representing the day this running CYO Gem was packaged.
   #
@@ -96,25 +105,43 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # Rescue from `Gem::MissingSpecError`'s parent to support developing locally with just `require_relative` and no Bundler.
   #
   # [0]: unless you manage to `bundle exec` at exactly 00:00:00 UTC :)
-  GEM_PACKAGE_TIME = proc { begin; ::Gem::Specification::find_by_name(-'checking-you-out').date; rescue ::Gem::LoadError; ::Time.now; end }
+  self::GEM_PACKAGE_TIME = proc { begin; ::Gem::Specification::find_by_name(-'checking-you-out').date; rescue ::Gem::LoadError; ::Time.now; end }
 
 
   # Demote any CYO to a CYI that can be passed around in just 40 bytes.
   # CYI has the opposites of these methods.
   def out; self; end
-  def in; self.class.superclass.new(*self.values); end
+  def in
+    # In most cases we can return a single new CYI reusing the values from our own self,
+    # but certain child types and types-with-`Species` need a combination CYI.
+    # TODO: Species support.
+    case self.b4u
+    when ::CHECKING::YOU::IN then Set[self.class.superclass.new(*self.values), self.b4u]
+    when ::CHECKING::YOU::IN::B4U, ::Set then ::Set[self.class.superclass.new(*self.values)].merge(self.b4u)
+    else self.class.superclass.new(*self.values)
+    end
+  end
+
+  def eql?(otra)
+    case otra
+    when ::String             then self.to_s.eql?(otra)
+    when ::CHECKING::YOU::IN  then self.values.eql?(otra.values)
+    when ::CHECKING::YOU::OUT then
+      self.values.eql?(otra.values) and self.parents.eql?(otra.parents)  # TODO: and self.species.eql?(self.species)
+    else super(otra)
+    end
+  end
+  alias_method(:==, :eql?)
 
   # Avoid allocating spurious containers for keys that will only contain one value.
   # Given a key-name and a value, set the value for the key iff unset, otherwise promote the key
   # to a `Set` containing the previous plus the new values.
   def awen(haystack, needle)
     case self.instance_variable_get(haystack)
-    when ::NilClass then
-      self.instance_variable_set(haystack, needle)
-    when ::Set then
-      self.instance_variable_get(haystack).add(needle)
-    else
-      self.instance_variable_set(haystack, ::Set[self.instance_variable_get(haystack), needle])
+    when ::NilClass then self.instance_variable_set(haystack, needle)
+    when ::Set      then self.instance_variable_get(haystack).add(needle)
+    when needle     then # No-op.
+    else self.instance_variable_set(haystack, ::Set[self.instance_variable_get(haystack), needle])
     end
   end
   private(:awen)
@@ -125,6 +152,8 @@ end
 require_relative(-'auslandsgesprach') unless defined?(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.extend(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::INLANDGESPRÄCH)
+::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH)
+::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::INLANDGESPRÄCH)
 
 # File-extension handling and filename matching for basic (e.g. `"*.jpg"`) and complex globs.
 require_relative(-'stella_sinistra') unless defined?(::CHECKING::YOU::OUT::StellaSinistra)

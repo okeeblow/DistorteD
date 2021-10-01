@@ -109,8 +109,17 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     # Avoid the `Array` allocation necessary when using pattern matching `case` syntax.
     # I'd still like to refactor this to avoid the redundant `attr_name` `case`s.
     # Maybe a `Hash` of `proc`s?
+    # TODO: Support loading a type given an alias.
     case @parse_stack.last
-    when :"mime-type" then @cyi = ::CHECKING::YOU::IN::from_ietf_media_type(value.as_s) if attr_name == :type and self.awen?(value.as_s)
+    when :"mime-type" then
+      ::CHECKING::YOU::IN::from_ietf_media_type(
+        value.as_s,
+        envelope: ::CHECKING::YOU::OUT::EverlastingMessage
+      ).tap {
+        (@cyi, fresh_cyo) = _1.shift
+        # Don't replace/update types we've already partially loaded.
+        @out.store(@cyi, fresh_cyo) unless @out.include?(@cyi)
+      } if attr_name == :type and self.awen?(value.as_s)
     when :match then
       case attr_name
       when :type   then @speedy_cat.last.format = self.magic_eye[value.as_s]
@@ -197,7 +206,10 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     # over any number of our enabled `SharedMIMEinfo` XML package files.
     # The only way we can trust that we have it all is to wait and do them here all at once.
     @out.transform_values!(&Ractor.method(:make_shareable))
-    @out.each_value { @receiver_ractor.send(_1, move: true) }
+    while not @out.empty?
+      @receiver_ractor.send(@out.shift, move: true)
+    end
+    # `@out` should already be empty here from the `while #shift` loop, but `#clear` it anyway :)
     @out.clear
 
     # Forward a trigger message back to the main message-loop to signify the completion of our parsing.

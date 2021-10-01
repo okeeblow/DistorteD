@@ -13,7 +13,8 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       # Subsequent stores for the same key will result in a `::Set` containing all values.
       _1.define_method(:bury) { |haystack, needle|
         return if haystack.nil? or needle.nil?
-        if haystack.is_a?(::Set) then
+        if haystack.instance_of?(::Set) then
+          # Use `#instance_of?` instead of `#is_a?` to avoid unrolling a `B4U`.
           haystack.each { |straw| self.bury(straw, needle) }
         elsif self.has_key?(haystack) then
           if self[haystack].is_a?(::Set) then self[haystack].add(needle)

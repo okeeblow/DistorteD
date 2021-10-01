@@ -304,6 +304,18 @@
    This specification formalizes this practice and sets up a registry for structured type name suffixes.
 
 
+ - RFC 6839 — https://datatracker.ietf.org/doc/html/rfc6839
+
+   A content media type name sometimes includes partitioned meta-
+   information distinguished by a structured syntax to permit noting an
+   attribute of the media as a suffix to the name.  This document
+   defines several structured syntax suffixes for use with media type
+   registrations.  In particular, it defines and registers the "+json",
+   "+ber", "+der", "+fastinfoset", "+wbxml" and "+zip" structured syntax
+   suffixes, and provides a media type structured syntax suffix
+   registration form for the "+xml" structured syntax suffix.
+
+
  - RFC 7231 — https://datatracker.ietf.org/doc/html/rfc7231#section-3.1.1.1
 
    HTTP uses Internet media types [RFC2046] in the Content-Type

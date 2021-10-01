@@ -227,7 +227,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       while message = ::Ractor.receive
         case message
         when ::CHECKING::YOU::IN::EverlastingMessage then
-          (message.destination == self) ? handler.awen(message.response) : handler.do_the_thing(message)
+          (message.chain_of_pain == self) ? handler.awen(message.be_lovin) : handler.do_the_thing(message)
         when ::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo then handler.toggle_package(message)
         else handler.awen(message)
         end
@@ -291,6 +291,11 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   # Support single needle messages and messages containing an `Enumerable` of needles.
   def awen(needle)
     case needle
+    when ::CHECKING::YOU::IN::B4U then
+      # This `::Set` subclass describes composite types like `image/svg+xml` as a group of CYIs.
+      # The structure itself should be used as a key, but its inividual members should be used too.
+      needle.each { @needles[_1.class].add(_1) }
+      @needles[needle.class].add(needle)
     when ::Array, ::Set then needle.each { @needles[_1.class].add(_1) }
     else @needles[needle.class].add(needle)
     end
@@ -362,7 +367,10 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     #      and skip `<glob>` elements if we have no `::Pathname`-like filename-match needles.
     # This SHOULD be exactly repeated in `attr_value` and `end_element` for full benefits.
     return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
-    return if name == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?
+    return if name == :glob and (
+      @needles[::CHECKING::YOU::OUT::StickAround].empty? and
+      @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
+    )
 
     # Otherwise set up needed container objects.
     case name
@@ -382,7 +390,10 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # This happens e.g. for the two attributes of the XML declaration '<?xml version="1.0" encoding="UTF-8"?>'.
     return if self.element_skips.include?(@parse_stack.last)
     return if (@parse_stack.last == :magic or @parse_stack.last == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
-    return if @parse_stack.last == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?
+    return if (@parse_stack.last == :glob) and (
+      @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
+      @needles[::CHECKING::YOU::OUT::StickAround].empty?
+    )
 
     case @parse_stack.last
     when :"mime-type" then @media_type.replace(value.as_s) if attr_name == :type
@@ -416,7 +427,10 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     return if self.element_skips.include?(@parse_stack.last)
     raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
     return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
-    return if name == :glob and @needles[::CHECKING::YOU::OUT::StickAround].empty?
+    return if name == :glob and (
+      @needles[::CHECKING::YOU::OUT::StickAround].empty? and
+      @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
+    )
 
     case name
     when :match then

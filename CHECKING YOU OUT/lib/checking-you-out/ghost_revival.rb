@@ -106,13 +106,11 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       }
 
       # Memoize a single new `::CHECKING::YOU::OUT` type instance.
-      remember_me   = proc { |cyo|
+      remember_me   = proc { |cyi, cyo|
         # Main memoization `::Hash` and cache-eviction-order `::Queue`keyed by `CYI`.
-        cyo.in.tap {
-          all_night.bury(_1, cyo)
-          # Some types should be kept in-memory forever no matter their age.
-          line_4_ruin.push(_1) unless _1 == -'text/plain' or _1 == -'application/octet-stream'
-        }
+        all_night.bury(cyi, cyo)
+        # Some types should be kept in-memory forever no matter their age.
+        line_4_ruin.push(cyi) unless cyi == -'text/plain' or cyi == -'application/octet-stream'
 
         # Memoize single-extname "postfixes" separately from more complex filename fragments
         # to allow work and record-keeping with pure extnames.
@@ -137,7 +135,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       # the first time that needle is seen (or if it has been purged from our cache).
       remember_you  = proc { |needle|
         case needle
-        when ::CHECKING::YOU::IN then all_night[needle]
+        when ::CHECKING::YOU::IN, ::CHECKING::YOU::IN::B4U then all_night[needle]
         when ::CHECKING::YOU::OUT::StickAround then complexes[needle] || postfixes[needle]
         when ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O then
           # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
@@ -151,20 +149,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
               as_above.so_below(needle.stream),
             )
           end
-        when ::String then
-          # This kinda sucks because it will allocate increasingly more `::String`s as we load type data.
-          all_night.values.lazy.select { ::File.fnmatch?(needle, _1.to_s) }.to_set.yield_self(
-            # If the needle `::String` contains a wildcard (`*` character) we must return `nil`
-            # unless we match two or more types.
-            # This is the simplest defense against returning poor results for wildcard queries
-            # when we have already loaded some matching types,
-            # e.g. if we load just `"image/jpeg"` but then try to match `"image/*"`.
-            #
-            # T0DO: The possibility of an incomplete match still exists here!
-            #       All it would take it pre-loading more than one matching type.
-            #       It might be better to explicitly XML-parse when we get wildcard needles.
-            &(needle.include?(-?*) ? XANADU_OF_TWO : ONE_OR_EIGHT)
-          )
+        when ::String then all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)]
         end  # case needle
       }
 
@@ -179,33 +164,35 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
       # Main message loop to process incoming `::Ractor` message queue for instructions.
       # This will block when the queue empties.
-      while message = ::Ractor.receive
-
-        case message
-        when ::CHECKING::YOU::OUT then remember_me.call(message)          # Memoize a new fully-loaded CYO.
-        when ::CHECKING::YOU::IN  then mr_mime.send(message, move: true)  # Spool a type to load on the next XML parse.
-        when ::Integer            then max_burning = message              # Control CYO cache length (for loaded types).
-        when SharedMIMEinfo then
+      # NOTE: `while case ::Ractor::receive` is syntactically valid, but it seems to stop executing
+      #       part way through the `case` statement unless I assign it to a variable first and `case` that.
+      while _message = ::Ractor::receive
+        case _message
+        in ::CHECKING::YOU::OUT     => cyo then remember_me.call(cyo.in, cyo)  # Memoize a new fully-loaded CYO.
+        in ::CHECKING::YOU::IN      => cyi then mr_mime.send(cyi, move: true)  # Spool a type to load on the next XML parse.
+        in ::Fixnum                 => max then max_burning = max              # Control CYO cache length (for loaded types).
+        in ::CHECKING::YOU::IN      => cyi, ::CHECKING::YOU::OUT => cyo then remember_me.call(cyi, cyo)
+        in ::CHECKING::YOU::IN::B4U => cyi, ::CHECKING::YOU::OUT => cyo then remember_me.call(cyi, cyo)
+        in SharedMIMEinfo           => mime_package
           # `::Pathname` subclass representing a `shared-mime-info`-format XML package. Toggle them in both parsers.
-          mime_jr.send(message)
-          mr_mime.send(message)
-        when ::TrueClass, ::FalseClass, ::NilClass then next
-        when ::CHECKING::YOU::IN::EverlastingMessage then
+          mime_jr.send(mime_package)
+          mr_mime.send(mime_package)
+        in ::CHECKING::YOU::IN::EverlastingMessage => message then
           # An `EverlastingMessage` is a `::Struct` message we MUST respond to, either with a CYO, a `::Set` of CYOs, or `nil`.
           # We will fill in its `#response` member with the result of running its `#request` through our type-matching logic,
           # then send the mutated message to the `::Ractor` specified in its `#destination` member.
-          i_member = last_message[message.hash] || remember_you.call(message.request)
-          if nφ_crime.delete?(message.hash) or not i_member.nil? then
-            unless last_message.has_key?(message.hash)
-              refrain.push(message.hash)
+          i_member = last_message[message.erosion_mark] || remember_you.call(message.be_lovin)
+          if nφ_crime.delete?(message.erosion_mark) or not i_member.nil? then
+            unless last_message.has_key?(message.erosion_mark)
+              refrain.push(message.erosion_mark)
               # Ensure shareability of our response value or we will hit a `::Ractor::MovedObject`
               # the second (cached) time we try to return it since we would have assigned it
               # by reference to the first message which was returned with `move: true`.
-              last_message.store(message.hash, ::Ractor.make_shareable(i_member))
+              last_message.store(message.erosion_mark, ::Ractor.make_shareable(i_member))
               last_message.delete(refrain.pop) if refrain.size > how_long
             end
-            message.response = i_member
-            message.destination.send(message, move: true)
+            message.be_lovin = i_member
+            message.go_beyond!
           else
             # NOTE: This relies on an implementation detail of MRI where `::Set`s maintain insertion order:
             # irb> lol = Set[:a, :b, :c] => #<Set: {:a, :b, :c}>
@@ -213,76 +200,35 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             # irb> lol.delete(lol.first) => #<Set: {:c}>
             # irb> lol.delete(lol.first) => #<Set: {}>
             nφ_crime.delete(nφ_crime.first) if nφ_crime.size > how_long
-            nφ_crime.add(message.hash)
+            nφ_crime.add(message.erosion_mark)
 
-            case message.request
+            case message.be_lovin
             when ::CHECKING::YOU::OUT::StickAround, Wild_I∕O then
-              mime_jr.send(message.request, move: false)
+              mime_jr.send(message.be_lovin, move: false)
               mime_jr.send(message, move: true)
-            when ::String, ::Regexp, ::CHECKING::YOU::IN then
-              mr_mime.send(message.request, move: false)
+            when ::String then
+              cyi = ::CHECKING::YOU::IN::from_ietf_media_type(message.be_lovin)
+              case cyi
+              when ::CHECKING::YOU::IN then mr_mime.send(cyi, move: true)
+              when ::CHECKING::YOU::IN::B4U then
+                cyi.each { mr_mime.send(_1, move: false) }
+                mr_mime.send(cyi, move: true)
+              end
               mr_mime.send(message, move: true)
-            else p "Unhandled `#{message.request.class}` EverlastingMessage request: #{message}"
+            when ::Regexp, ::CHECKING::YOU::IN, ::CHECKING::YOU::IN::B4U then
+              mr_mime.send(message.be_lovin, move: false)
+              mr_mime.send(message, move: true)
+            else p "Unhandled `#{message.be_lovin.class}` EverlastingMessage request: #{message}"
             end  # case message.request
-          end  # if i_member
+            next
+          end  # if nφ_crime.delete?(message.erosion_mark) or not i_member.nil?
 
         else p "Unhandled `#{message.class}` message: #{message}"; next
-        end  # case message
-      end  # while message = ::Ractor.receive
+        end  # case ::Ractor::receive
+      end  # while
     }  # ::Ractor.new
   end  # def new_area
 
-
-  # Generic non-blocking `:send` method for arbitrary messages to an area `::Ractor`.
-  def send(message, area_code: self::DEFAULT_AREA_CODE)
-    self.areas[area_code].send(message)
-  end
-
-  # Generic blocking `:send` method for arbitrary message round-trip to and from an area `::Ractor`.
-  def [](only_one_arg, area_code: self.superclass::DEFAULT_AREA_CODE)
-    wanted = only_one_arg.hash
-    self.areas[area_code].send(::CHECKING::YOU::IN::EverlastingMessage.new(::Ractor.current, only_one_arg), move: true)
-    ::Ractor.receive_if {
-      |msg| msg.is_a?(::CHECKING::YOU::IN::EverlastingMessage) and msg.request.hash == wanted
-    }.response
-  end
-
-  # Generate blocking, `::Class`-instance, round-trip `::Ractor`-messaging methods to
-  # load CYO type definitions from our source data…
-  #
-  # …based on a file name:
-  # - Single-extname `Postfix` fragments, e.g. `*.jpg`.
-  # - More `Complex` fragments representing:
-  #   - Multiple paired extnames (e.g. `*.tar.gz`).
-  #   - Mid-filename or `Regexp`-like wildcards (e.g. `[Mm]akefile*`)
-  #   - TODO: `<treemagic>`
-  define_method(
-    :from_postfix,
-    ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND.call(
-      :@postfix_key,
-      ::CHECKING::YOU::OUT::StickAround,
-      request_eql_method: :end_with?,
-    )
-  )
-  # …based on a full file path:
-  # - Filename match like the above.
-  # - File content match à la `libmagic`.
-  # - Extended filesystem attributes.
-  define_method(
-    :from_pathname,
-    ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND.call(
-      :@pathname_key,
-      ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O,
-    )
-  )
-  # …or based on an IETF-style "Media-Type"/"Content-Type" `::String`,
-  # e.g. `"image/jpeg"`, `"application/vnd.ms-word"`, `"application/vnd.comicbook+zip"`.
-  define_method(
-    :from_ietf_media_type,
-    ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND.call(
-      :@ietf_string_key,
-      ::String,
-    )
-  )
+  include(::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND)
 
 end  # module CHECKING::YOU::OUT::GHOST_REVIVAL
