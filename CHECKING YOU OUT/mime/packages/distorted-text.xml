@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mime-info>
+  <mime-type type="text/plain">
+    <!--
+      e.g. `nginx.conf` or anything that ships with FreeBSD.
+    -->
+    <glob pattern="*.conf"/>
+  </mime-type>
+</mime-info>
