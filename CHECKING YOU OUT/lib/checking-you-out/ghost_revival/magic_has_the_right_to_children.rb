@@ -49,7 +49,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       in ::Hash,               ::NilClass,          then glob.push_up(:weight, :length)
       in ::Set,                ::NilClass,          then glob.push_up(:weight)
       in ::Set,                ::Hash               then
-        (glob & magic.values.flatten.to_set.map(&:family_tree).reduce(&:&)).yield_self { |magic_children|
+        (glob & (magic.values.flatten.to_set.map(&:family_tree).reduce(&:&) || ::Set::new)).yield_self { |magic_children|
           magic.keep_if { |_magic, cyo| magic_children.include?(cyo) }.push_up
         }
       in ::Set,                ::CHECKING::YOU::OUT then glob & magic.kids_table
