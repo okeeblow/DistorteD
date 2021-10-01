@@ -35,7 +35,10 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
     end
 
     extend(::Forwardable)
-    def_instance_delegators(:pathname, *::Pathname::instance_methods(false))
+    def_instance_delegators(
+      :pathname,
+      *::Pathname::instance_methods(false).difference(self.instance_methods(false))
+    )
 
     # The `::Pathname` is the only one assumed to be set at all times, so `#hash` based on that.
     def hash; self[:pathname].hash; end
