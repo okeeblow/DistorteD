@@ -73,6 +73,17 @@ class ::CHECKING::YOU; end
   end
   def in; self; end
 
+  # *Disable* decomposition of a CYI/CYO into its component values.
+  # It can still be done by decomposing `#values`, but this will allow us to "splat"
+  # without worrying if we are splatting a single CYI/CYO or a `::Set` of them.
+  #
+  # Before: `irb> [*(CYI::from_ietf_media_type('image/jpeg'))] => [:possum, :image, :jpeg]`
+  #
+  # After, with `#to_a = nil`:
+  # `irb> [*(CYI::from_ietf_media_type('image/jpeg'))]
+  #   => [#<struct CHECKING::YOU::IN kingdom=:possum, phylum=:image, genus=:jpeg>]`
+  def to_a; nil; end
+
   # e.g. irb> CYI::from_ietf_media_type('image/jpeg') == 'image/jpeg' => true
   def eql?(otra)
     case otra
