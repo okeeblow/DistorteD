@@ -13,4 +13,8 @@
     <glob pattern="*.mat"/>
   </mime-type>
 
+  <mime-type type="application/vnd.corel-draw">
+    <glob pattern="*.cdt"/>  <!-- CorelDRAW Template -->
+  </mime-type>
+
 </mime-info>
