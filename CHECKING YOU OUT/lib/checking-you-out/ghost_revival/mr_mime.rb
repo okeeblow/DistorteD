@@ -32,6 +32,13 @@ require_relative(-'mime_jr') unless defined?(::CHECKING::YOU::OUT::MIMEjr)
 # "Full" in this case means composed of all related data spread across all enabled XML packages.
 class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
 
+  # Our parser will raise this custom `Exception` subclass when one of the loaded types necessitates
+  # a re-parsing of the enabled package files. This can occur when:
+  # - We are loading a type by an aliased name. After matching an `<alias>` tag we must start over
+  #   to load any data defined under the canonical / non-aliased type that we missed on the first pass.
+  # - We are loading a sub-type and need to go back for its parent(s) after matching a `<sub-class-of>`.
+  OneMoreLovely = ::Class::new(::RuntimeError)
+
   # `MrMIME::new` will take any of these keys as keyword arguments
   # whose value will override the default defined in this Hash.
   DEFAULT_LOADS = {
@@ -198,23 +205,42 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
   # Trigger a search for all needles received by our `::Ractor` since the last `#search`.
   # See the overridden `self.new` for more details of our `::Ractor`'s message-handling loop.
   def do_the_thing(the_trigger_of_innocence)
-    # Don't bother parsing anything if there's nothing for us to match.
-    # `MIMEjr` will trigger us even if it didn't send us any needles first.
-    self.parse_mime_packages unless @needles.values.map(&:nil?).all?
+    begin
+      # Don't bother parsing anything if there's nothing for us to match.
+      # `MIMEjr` will trigger us even if it didn't send us any needles first.
+      self.parse_mime_packages unless @needles.values.map(&:nil?).all?
 
-    # We can't send our built CYOs in on-the-fly because a single type's data can be spread out
-    # over any number of our enabled `SharedMIMEinfo` XML package files.
-    # The only way we can trust that we have it all is to wait and do them here all at once.
-    @out.transform_values!(&Ractor.method(:make_shareable))
-    while not @out.empty?
-      @receiver_ractor.send(@out.shift, move: true)
-    end
-    # `@out` should already be empty here from the `while #shift` loop, but `#clear` it anyway :)
-    @out.clear
+      # Collect any parent types which must also be loaded, minus those in the "always-active" set.
+      one_more_lovely = @out.values.map(&:parents).each_with_object(::Array::new) { |rents, oml|
+        oml.push(*rents)
+      }.compact.difference(
+        ::CHECKING::YOU::OUT::GHOST_REVIVAL::STILL_IN_MY_HEART
+      ).difference(@out.keys)
+
+      # We can't send our built CYOs in on-the-fly because a single type's data can be spread out
+      # over any number of our enabled `SharedMIMEinfo` XML package files.
+      # The only way we can trust that we have it all is to wait and do them here all at once.
+      @out.transform_values!(&Ractor.method(:make_shareable))
+      while not @out.empty?
+        @receiver_ractor.send(@out.shift, move: true)
+      end
+
+      # `@out` should already be empty here from the `while #shift` loop, but `#clear` it anyway :)
+      @out.clear
+      @needles.clear
+
+      # Re-run the parser iff there are more types we must load.
+      raise(OneMoreLovely) unless one_more_lovely.empty?
+    rescue OneMoreLovely
+      # Convert OMLs to regular needles.
+      while not one_more_lovely.empty?
+        self.awen(one_more_lovely.pop)
+      end
+      retry  # Re-parse with the new needles.
+    end  # begin
 
     # Forward a trigger message back to the main message-loop to signify the completion of our parsing.
     @receiver_ractor.send(the_trigger_of_innocence, move: true)
-    @needles.clear
   end
 end
 
