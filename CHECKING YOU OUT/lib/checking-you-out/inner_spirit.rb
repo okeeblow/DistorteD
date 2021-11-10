@@ -166,7 +166,31 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
     else self.instance_variable_set(haystack, ::Set[self.instance_variable_get(haystack), needle])
     end
   end
-  private(:awen)
+
+  # Stitch a hierarchy of `#awen`-generated members back into a single container.
+  # This method not meant to be used directly but should be called with a `Symbol` instance-variable name
+  # and a `Symbol` method name matching the method to call on all parent types.
+  def thridneedle(needle, thread)
+    ours = self.instance_variable_get(needle)
+    theirs = case self.parents
+      when ::CHECKING::YOU::OUT then self.parents.send(thread)
+      when ::Set then self.parents.select(&::CHECKING::YOU::OUT::method(:===)).flat_map(&thread).compact.to_set
+      when ::NilClass then nil
+      else nil
+    end
+    case [ours, theirs]
+      in ::NilClass, ::NilClass           then nil
+      in ::NilClass, *                    then theirs
+      in *,          ::NilClass           then ours
+      in ::Set,      ::Enumerable         then ours.|(theirs)
+      in ::Set,      *                    then ours.dup.add(theirs)
+      in *,          ::Set                then ::Set[*ours].|(theirs)
+      in *,          ::CHECKING::YOU::OUT then ::Array[ours, theirs, theirs.send(thread)].flatten.compact.to_set
+      else                                     ::Set[ours, theirs]
+    end
+  end
+
+  private(:awen, :thridneedle)
 
 end
 

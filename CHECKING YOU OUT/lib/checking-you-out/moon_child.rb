@@ -19,13 +19,23 @@ module ::CHECKING::YOU::OUT::MOON_CHILD
   def add_aka(taxa); self.awen(:@aka, taxa); end
 
 
-  # CYO-to-CYI relationship mappings.
-  attr_reader(:b4u, :parents, :children)
+  # Per https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#subclassing
+  #   "Some subclass rules are implicit:
+  #    - All text/* types are subclasses of text/plain.
+  #    - All streamable types (ie, everything except the inode/* types) are subclasses of application/octet-stream."
+  def parents
+    @parents || case
+      when (self.phylum == :text and not self.genus == :plain) then ::CHECKING::YOU::OUT::GHOST_REVIVAL::TEXT_PLAIN
+      when (not self.genus == :"octet-stream" and not self.phylum == :inode) then ::CHECKING::YOU::OUT::GHOST_REVIVAL::APPLICATION_OCTET_STREAM
+      else nil
+    end
+  end
 
   # Take an additional CYI as a composite parent, e.g. `application/xml` for `image/svg+xml`.
   def add_b4u(parent_cyi)
     self.awen(:@b4u, parent_cyi)
   end
+  attr_reader(:b4u)
 
   # Take an additional CYI as our parent, e.g. `application/xml` for an XML-based type.
   def add_parent(parent_cyi)
@@ -36,22 +46,25 @@ module ::CHECKING::YOU::OUT::MOON_CHILD
   def add_child(child_cyi)
     self.awen(:@children, child_cyi)
   end
+  attr_reader(:children)
 
   # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
   def adults_table
-    return case @parents
-      when nil then ::Set[self]
-      when self.class, self.class.superclass then ::Set[self, @parents]
-      when ::Set then ::Set[self, *@parents]
+    case self.thridneedle(:@parents, :parents)
+      in ::NilClass then ::Set[self]
+      in ::CHECKING::YOU::OUT => one then ::Set[self, one]
+      in ::Set => many then many.add(self)
+    else nil
     end
   end
 
   # Get a `Set` of this CYO and all of its child CYOs, at minimum just `Set[self]`.
   def kids_table
-    return case @children
-      when nil then ::Set[self]
-      when self.class, self.class.superclass then ::Set[self, @children]
-      when ::Set then ::Set[self, *@children]
+    case self.thridneedle(:@children, :children)
+      in ::NilClass then ::Set[self]
+      in ::CHECKING::YOU::OUT => one then ::Set[self, one]
+      in ::Set => many then many.add(self)
+    else nil
     end
   end
 
