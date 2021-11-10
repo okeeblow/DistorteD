@@ -172,6 +172,7 @@ require_relative(-'stella_sinistra') unless defined?(::CHECKING::YOU::OUT::Stell
 
 # CYO-to-CYO relationship management.
 require_relative(-'moon_child') unless defined?(::CHECKING::YOU::OUT::MOON_CHILD)
+::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::MOON_CHILD)
 ::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::MOON_CHILD)
 
 # Static type information like plain-text descriptions and graphical icons.

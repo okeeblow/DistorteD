@@ -58,4 +58,32 @@ module ::CHECKING::YOU::OUT::MOON_CHILD
   # Get a `Set` of this CYO and all parents and children, at minimum just `Set[self]`.
   def family_tree; self.kids_table | self.adults_table; end
 
+  # Compare CYOs based on family-tree membership.
+  # More-specific types will sort above types in their `parents` hierarchy.
+  def <=>(otra)
+    self.eql?(otra) ?
+      0 :
+      (self.adults_table&.include?(otra) ?
+        1 :
+        (otra.respond_to?(:adults_table) ?
+          (otra.adults_table&.include?(self) ?
+            -1 :
+            (::CHECKING::YOU::OUT::GHOST_REVIVAL::STILL_IN_MY_HEART.include?(otra) ?
+              1 :
+              0
+            )
+          ) :
+          0
+        )
+      )
+  end
+
+end
+
+
+module ::CHECKING::YOU::IN::MOON_CHILD
+  # Allow comparison of CYIs (which have no embedded family-tree information) with CYOs.
+  def <=>(otra)
+    self.eql?(otra) ? 0 : otra.<=>(self)
+  end
 end
