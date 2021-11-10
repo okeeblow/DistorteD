@@ -45,6 +45,10 @@
     <glob pattern="*.vxd"/>
   </mime-type>
 
+  <mime-type type="application/msword">
+    <glob pattern="*.mcw"/>  <!-- Microsoft Word for Macintosh document -->
+  </mime-type>
+
   <mime-type type="application/vnd.corel-draw">
     <glob pattern="*.cdt"/>  <!-- CorelDRAW Template -->
   </mime-type>
