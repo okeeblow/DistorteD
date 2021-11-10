@@ -100,16 +100,19 @@ class ::CHECKING::YOU::OUT::XROSS_INFECTION
   # However I'm not using it because CYO I want to do some nonstandard stuff ;)
   class XDG
 
+    # TODO: Eliminate this once `::ENV` is shareable on its own: https://bugs.ruby-lang.org/issues/17676
+    DD_ENV = ::Ractor::make_shareable(::Hash::new.merge(::ENV))
+
     # Generic method to return absolute `Pathname`s for the contents of a given environment variable.
     def self.ENVIRONMENTAL_PATHNAMES(variable)
       # Skip empty-`String` variables as well as missing variables.
-      if ENV.has_key?(variable) and not ENV[variable]&.empty?
+      if DD_ENV.has_key?(variable) and not DD_ENV[variable]&.empty?
         # `PATH_SEPARATE` will be a colon (:) on UNIX-like systems and semi-colon (;) on Windows.
         # Convert path variable contents to `Pathname`s with…
         # - :expand_path  —  Does shell expansion of path `String`s, e.g. `File.expand_path('~') == Dir::home`
         # - :directory?   —  Drop any expanded `Pathname`s that don't refer to extant directories.
         # - :realpath     —  Convert to absolute paths, e.g. following symbolic links.
-        ENV[variable]
+        DD_ENV[variable]
           .split(::File::PATH_SEPARATOR)
           .map(&::Pathname::method(:new))
           .map(&:expand_path)
