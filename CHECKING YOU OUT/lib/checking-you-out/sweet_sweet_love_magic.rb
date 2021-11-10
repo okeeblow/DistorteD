@@ -154,9 +154,9 @@ module ::CHECKING::YOU::OUT::SweetSweet♡Magic
           when 2 then
             if self.has_key?(args.first) then
               if self.fetch(args.first).is_a?(::Array) then
-                self.fetch(args.first).push(args.last)
+                self.fetch(args.first).push(args.last) unless self.fetch(args.first).include?(args.last)
               else
-                self.store(args.first, ::Array[self.fetch(args.first), args.last])
+                self.store(args.first, ::Array[self.fetch(args.first), args.last]) unless self.fetch(args.first).eql?(args.last)
               end
             else
               self.store(args.first, args.last)
@@ -192,13 +192,13 @@ module ::CHECKING::YOU::OUT::SweetSweet♡Magic
       _1.define_method(:initialize) {
         self.instance_variable_set(:@rolling_start, ::Array.new)
         self.instance_variable_set(:@rolling_stop,  ::Array.new)
-        self.instance_variable_set(:@hold_my_hand,  ::String.new(encoding: Encoding::ASCII_8BIT, capacity: 2048))
-        self.instance_variable_set(:@quick_master,  ::String.new(encoding: Encoding::ASCII_8BIT, capacity: 512))
+        self.instance_variable_set(:@hold_my_hand,  ::String.new(encoding: ::Encoding::ASCII_8BIT, capacity: 2048))
+        self.instance_variable_set(:@quick_master,  ::String.new(encoding: ::Encoding::ASCII_8BIT, capacity: 512))
         super()
       }
 
       # Define a `WeightedAction`-capable sub-sub-class of `::Hash` as our return container for search results.
-      _1.const_set(:COME_WITH_ME, Class.new(::Hash).tap { |cwm|
+      _1.const_set(:COME_WITH_ME, ::Class.new(::Hash).tap { |cwm|
         cwm.define_method(:push_up) {
           self.select { |(k,_v)|
             k.weight >= self.keys.max.weight
@@ -229,7 +229,7 @@ module ::CHECKING::YOU::OUT::SweetSweet♡Magic
         while rolling_start = self.instance_variable_get(:@rolling_start).pop
 
           # It's pretty likely that the end of one iteration will already read past the start of the next one.
-          wild_io.seek(rolling_start, whence=IO::SEEK_SET) if rolling_start > wild_io.pos
+          wild_io.seek(rolling_start, whence=::IO::SEEK_SET) if rolling_start > wild_io.pos
           # Drop unnecessary leading bytes from start points we've already iterated beyond.
           self.instance_variable_get(:@hold_my_hand).slice!(rolling_start - the_last_striker)
 
