@@ -1,0 +1,600 @@
+.WRI Write File Format
+
+This topic describes the binary file format used by Microsoft Write. A Write 
+binary file contains information about file content, text and pictures 
+(including object-linking-and-embedding, or OLE, objects), and formatting. 
+
+(Some stuff seems to be missing, so I've added it. Comments to
+sean@mess.org please.)
+
+Write-File Header
+
+The Write-file header describes the content of the file. It contains data, 
+pointers to subdivisions of the formatting section, and information about 
+the length of the file. The file header has the following form: 
+
+Word	Name		Description
+
+0	wIdent		Must be 0137061 octal (or 0137062 octal if the file 
+			contains OLE objects) 
+1	dty		Must be zero 
+2	wTool		Must be 0125400 octal 
+3			Reserved; must be zero 
+4			Reserved; must be zero 
+5			Reserved; must be zero 
+6			Reserved; must be zero 
+7-8	fcMac		Number of bytes of actual text plus 128, the bytes 
+			in one sector (low-order word first) 
+9	pnPara		Page number for start of paragraph information 
+10	pnFntb		Page number of footnote table (FNTB) or pnSep, if none 
+11	pnSep		Page number of section property (SEP) or pnSetb, 
+			if none 
+12	pnSetb		Page number of section table (SETB) or pnPgtb, if none 
+13	pnPgtb		Page number of page table (PGTB) or pnFfntb, if none 
+14	pnFfntb		Page number of font face-name table (FFNTB) or pnMac, 
+			if none 
+15-47	szSsht		Reserved for Microsoft Word compatibility 
+48	pnMac		Count of pages in whole file (last page number plus 1) 
+
+In the preceding list, a "page number" means an offset in 128-byte blocks 
+from the start of the file. For example, if pnPara equals 10, the paragraph 
+information is at offset 10*128 = 1280 in the file. 
+
+The starting page number of character information (pnChar) is not stored but 
+is computable, as follows: 
+
+	pnChar = (fcMac + 127) / 128 
+
+Examining the value of word 48 of the header is a good way to distinguish 
+Write files from Microsoft Word files. If pnMac equals zero, the file 
+originated in Word. Any other value identifies a Write file. 
+
+Text and Pictures
+
+After the header comes information about text and pictures. This information 
+constitutes a separate section of the file. 
+
+Text
+
+The text of the Write file starts at word 64 (page 1). Write uses the Windows 
+character set (except for the pictures in the file) as well as the following 
+special characters: 
+
+ o ASCII character codes 13, 10 (carriage return, linefeed) for paragraph 
+   ends. No other occurrences of these two characters are allowed. 
+
+ o ASCII character code 12 for explicit page breaks. 
+
+ o ASCII character code 9 (normal) for tab characters. 
+
+ o ASCII character code 31 for the soft hyphen.
+
+Other line-break or wordwrap information is not stored. 
+
+Pictures
+
+Pictures (including OLE objects) are stored as a sequence of bytes in the 
+text stream. These bytes can be identified as picture information by 
+examining their paragraph formatting. One picture is exactly one paragraph. 
+Paragraphs that are pictures have a special bit set in their paragraph 
+property (PAP) structure. For more information on the PAP structure, see 
+Section 8.3, "Formatting." 
+
+(note: Write that comes with Windows 3.0 uses the picture stuff below,
+and does not support OLE; Write that comes with Windows 3.1 always uses
+OLE, but can read the picture stuff below.
+
+Proof of this is that if you paste a picture into Write 3.1 (and thus it
+is OLE) you get an extra option in Save As; you get the possiblity to
+save it for Write 3.0. If you choose this it will say that all OLE objects
+will be removed in the file.
+
+Also I have been unable to paste pictures with colour into Write 3.0, it 
+always seems to convert it to monochrome; as a result of that, bmPlanes 
+and bmBitsPixel are always 1.)
+
+Each picture consists of a descriptive header followed by the data that makes 
+up the picture. The header for OLE objects is different from the one used 
+for pictures. The picture header has the following form: 
+
+Byte	Name		Description
+
+0-7	mfp		Windows METAFILEPICT structure (hMF member undefined) 
+8-9	dxaOffset	Offset of picture from left margin, in twips (1/1440 
+			inch) 
+10-11	dxaSize		Horizontal size, in twips 
+12-13	dyaSize		Vertical size, in twips 
+14-15	cbOldSize	Number of following bytes (actual metafile or bitmap 
+			bits); set to zero 
+16-29	bm		Additional information for bitmaps only 
+30-31	cbHeader	Number of bytes in this header 
+32-35	cbSize		Number of following bytes (actual metafile or bitmap 
+			bits), replacing cbOldSize for new files 
+36-37	mx		Scaling factor (x) 
+38-39	my		Scaling factor (y) 
+40-?	cbHeader	Picture contents, through cbHeader+cbSize-1 
+
+The mm member (bytes 0-1) of the METAFILEPICT structure specifies the mapping 
+mode used to draw the picture. The last set of bytes will be bitmap bits if 
+the value of the mm member is 0xE3. This is a special value used only in 
+Write. Otherwise, the bytes will be metafile contents. 
+
+If the picture has never been rescaled with the Size Picture command in Write, 
+the scaling factors in each direction will be 1000 (decimal). If the picture 
+has been resized, the scaling factor will be the percentage of the original 
+size that the picture is now, relative  to 1000 (100 per cent). 
+
+For information about the METAFILEPICT structure and bitmaps, see the 
+Microsoft Windows Guide to Programming and the Microsoft Windows Programmer's 
+Reference, Volumes 1 and 3. 
+
+(added note:)
+
+The METAFILEPICT structure looks like:
+
+Word	Name		Description
+
+0	mm		0xe3 for bitmap, metafile otherwise
+1	xExt		Horizontal size, Word uses this in stead of dxaSize
+2	yExt		Vertical size, Word uses this in stead of dyaSize
+3	hMF		Handle to metafile, not used in Write.
+
+If the contents is a bitmap, the bm member is a BITMAP structure, which looks 
+like:
+
+Byte	Name		Description
+
+0-1	bmType		"BM" for bitmaps, not used in Write
+2-3	bmWidth		Width in pixels
+4-5	bmHeight	Height in pixels
+6-7	bmWidthBytes	Width in bytes, rounded up on two-byte boundary
+8	bmPlanes	Number of bit planes
+9	bmBitsPixel	Number of bit per pixel
+10-13	bmBits		A void FAR* pointer to the data, not used in Write
+
+If the mm member has value 0x88, the file is a metafile (.wmf file). The
+bm member is empty, but the other members have values like normal. Colour
+wmf files exist.
+
+(end of added note)
+
+The descriptive header for OLE objects is similar to the one used for 
+pictures. The OLE object header has the following form: 
+
+Byte	Name		Description
+
+0-1	mm		Must be 0xE4 
+2-5			Not used 
+6-7	objectType	Type: 1=static, 2=embedded, 3=link 
+8-9	dxaOffset	Offset of picture from left margin, in twips (1/1440 
+			inch) 
+10-11	dxaSize		Horizontal size, in twips 
+12-13	dyaSize		Vertical size, in twips 
+14-15			Not used 
+16-19	dwDataSize	Number of bytes in the object data that follows the 
+			header 
+20-23			Not used 
+24-27	dwObjNum	Hexadecimal number that, when converted to an 8-digit 
+			string, represents the object's unique name 
+28-29			Not used 
+30-31	cbHeader	Number of bytes in this header 
+32-35			Not used 
+36-37	mx		Scaling factor (x) 
+38-39	my		Scaling factor (y) 
+40-?	cbHeader	Object contents, through cbHeader+dwDataSize-1 
+
+The scaling factors for OLE objects work the same way as they do with pictures. 
+
+(added note:)
+
+I couldn't find any information on the OLE objects. There is a libole2,
+which only works for OLE2 as far as I can see. OLE2 is an entire file-system,
+while OLE1 (as used here) is only one object.
+
+The following is entirely reverse-enigineered, and therefore might not be
+correct. 
+
+The OLE object always starts with a DWORD with value 0x501, followed by
+another DWORD is the objectType as above, only with reverse values:
+3 = static, 2 = embedded, 1 = link.
+
+Next comes a DWORD which gives the length of the typename, which is
+immediately followed by that typename. It is a zero-terminated ascii string,
+and the length includes the 0 at the end.
+
+Static OLE Object
+
+Note that a static OLE object isn't really an OLE object; it is simply
+a picture which is rendered by Write itself. See:
+
+http://support.microsoft.com/support/kb/articles/Q88/1/16.ASP
+
+If the objectType is static, the typename has one of the following values:
+
+	DIB
+	METAFILEPICT
+	BITMAP
+
+As usual, the data following that is not the stuff you would expect. The
+headers are garbled. 
+
+DIB 
+
+A dib (Device Independant Bitmap, a bmp file) usually has the following 
+structure:
+
+BITMAPFILEHEADER bmfh;
+BITMAPINFOHEADER bmih;
+RGBQUAD          aColors[];
+BYTE             aBitmapBits[];
+
+In the DIB which is stored in Write, the BITMAPFILEHEADER is missing. 
+
+After the string "DIB" (and the 0 terminator), comes the following bytes:
+0xb2 0x18 0x00 0x00 0x29 0xec 0xff 0xff, followed by a DWORD which is the
+size of the dib _without_ the BITMAPFILEHEADER. After that the 
+BITMAPINFOHEADER follows. You must fill the members of the BITMAPFILEHEADER
+yourself; you can use the ColorsUsed to calculate the OffsetBits member.
+
+(However, I have one instance of a Write file where this member is 0,
+although it is a 4 bit image. Maybe BitCount is a better member to use.)
+
+BITMAP
+
+This is the Device Dependant Bitmap (DDB), which is an insane format 
+IMHO as the palette information is not stored. If the image is monochrome,
+the colours are of course black and white; if it is 4-bits, use the
+Windows colours; if it is 8-bit, the first 8 and last 8 colours in the
+palette are Windows colours, but the other colours depend on what colour
+the palette has at that moment.
+
+The data is stored in the BITMAP structure just as above (for Write 3.0
+images). After the "BITMAP" string (with the 0 terminator) comes the
+following bytes:
+
+0xb4 0x18 0x00 0x00 0x28 0xec 0xff 0xff
+
+Followed by the size in in DWORD; next comes with BITMAP structure with
+the bmType and bmBits members undefined, followed by the uncompressed
+bits.
+
+METAFILEPICT
+
+This is a Windows metafile (wmf). For reasons unknown Write (or Windows?)
+converts some images to metafiles. I have no idea how this is stored.
+
+It seems to be followed by these bytes:
+
+0x4f 0x03 0x00 0x00 0xb1 0xfc 0xff 0xff 
+
+Then the size of the metafile in a DWORD; next comes the METAFILEPICT
+structure (defined above) again with hMF and mm members undefined. After
+that the metafile bits follow, but without a header.
+
+Embedded OLE Object
+
+The typename is the name of the executable, with the exe extension. For
+Paintbrush it is "Pbrush" for example.
+
+The typename is followed by the filename. First there is a DWORD with 
+the length (including the 0 at the end of the string), and the string 
+itself. If the length is 0, there is no string (so not even a 0 for an 
+empty string).
+
+After that comes a parameter, for example the size of a picture in a 
+string: "0 0 320 240". I don't know what use this has but it's there.
+Just like with the filename, first there is a DWORD with the length
+of the string, and then the string itself (if the length is non-zero).
+
+Last comes a DWORD with the offset to the next part of the OLE Object,
+followed by the data of the file itelf. That length is enough information
+on the length of the file, but it seems to be padded with crap; I have
+no idea how to acquire the length of the file without looking at the 
+file itself (note that this depends on the type of file).
+
+The data itself is really the file. For example for Paintbrush this would 
+simply be a .bmp file, so it would start with "BM". Also note that some
+files cannot be read; if you use Paint Shop Pro for embedded objects,
+the file cannot be read into Paint Shop Pro when you extract it manually 
+(so all of this is application specific).
+
+After the file (add the offset to the byte after the DWORD where the offset
+is stored) comes the next part. Again this works like the whole OLE
+stream all over again, but with a difference: if the objectType is 0,
+there is nothing any more. If it is 5, it probably means "alternative
+display," like the Sound Recorder icon if the file was a .wav file.
+
+Link OLE Object
+
+This type is supposed to the type where the actual data is somewhere else;
+the filename points to the data of the file. It works very much like the 
+embedded OLE Object type. 
+
+Suppose you have a Paintbrush OLE Object, type link. The filename is 
+"C:\WINDOWS\WINLOGO.BMP". The first part is stored as with embedded stuff,
+but after the parameter (which would be "0 0 320 240" in this case), there
+are 12 bytes padding and then the next OLE object. This could very well
+be the actual picture again as a embedded OLE object. However if a link
+is stored as a link OLE Object, the next OLE object will be the Sound
+Recorder icon.
+
+Formatting
+
+Write files contain both character and paragraph formatting information. There 
+can be no gaps in either; each must begin with the first text character (byte 
+128) and continue through the last. The format descriptors (FODs) for the 
+first and last paragraph must, therefore, have the value of fcLim equal to 
+the value of fcMac, as defined in the header section. 
+
+(note: Write 3.0 sometimes saves a fcLim > fcMac, you have to check for
+this!)
+
+There is a difference between paragraph and character FODs. A character FOD 
+may describe any number of consecutive characters with the same formatting. 
+However, there must be exactly one paragraph FOD for each text paragraph. In 
+either case, it is advisable to have multiple FODs point to the same 
+formatting properties (FPROPs) on a given page because it saves space in the 
+file. No FOD may point off its page. 
+
+Characters and Paragraphs
+
+Both the character and paragraph sections are structured as a set of pages. 
+Each page contains an array of FODs and a group of FPROPs, both of which are 
+described later in this section. Following is the format of a page: 
+
+Byte	Name		Description
+
+0-3	fcFirst		Byte number of first character covered by this page 
+			of formatting information; equals 128 for first 
+			character in the text (low-order byte first) 
+4-n	rgfod		Array of FODs 
+n+1-126	grpfprop	Group of FPROPs 
+127	cfod		Number of FODs on this page 
+
+An FOD is fixed in size. It contains the byte offset to the corresponding 
+FPROP. Following is the structure of an FOD: 
+
+Word	Name		Description
+
+0-1	fcLim		Byte number after last character covered by this FOD 
+2	bfprop		Byte offset from beginning of FOD array to 
+			corresponding FPROP for these characters or this 
+			paragraph 
+
+(note: sometimes bfprop is 0xffff; it seems that that means that the CHP or 
+PAP has the default values.)
+
+An FPROP is variable in size. It contains the prefix for a character 
+property (CHP) or paragraph property (PAP), both of which are described later 
+in this section. Following is the structure of an FPROP: 
+
+Byte	Name		Description
+
+0	cch		Number of bytes in this FPROP 
+1-n	rgchProp	Prefix for a CHP (for characters) or a PAP (for 
+			paragraphs) sufficient to include all bits that differ 
+			from the default CHP or PAP 
+
+Following is the format of a CHP: 
+
+Byte	Bit	Name		Description
+
+0				Reserved; ignored by Write 
+1	0	fBold		Bold characters 
+	1	fItalic		Italic characters 
+	2-7	ftc		Font code (low bits); index into the FFNTB 
+2		hps		Size of font, in half points (standard is 24) 
+3	0	fUline		Underlined characters 
+	1	fStrike		Reserved; ignored by Write 
+	2	fDline		Reserved; ignored by Write 
+	3	fOverset	Reserved; ignored by Write 
+	4-5	csm		Reserved; ignored by Write 
+	6	fSpecial	Set for "(page)" only 
+	7			Reserved; ignored by Write 
+4	0-2	ftcXtra		Font code (high-order bits, concatenated with 
+				ftc) 
+	3	fOutline	Reserved; ignored by Write 
+	4	fShadow		Reserved; ignored by Write 
+	5-7			Reserved; ignored by Write 
+5		hpsPos		Position: 0=normal, 1-127=superscript, 
+				128-255=subscript 
+
+If the user doesn't select any special character properties, the CHP is 
+filled with the following default values: 
+
+Byte	Value
+
+0	1 
+2	24
+3-5	0 
+
+Each character FPROP must, therefore, have a count of characters (cch) 
+greater than or equal to 1. 
+
+Each PAP can contain up to 14 tab descriptors (TBDs), which are described 
+later in this section. Following is the structure of a PAP: 
+
+Byte	Bit	Name		Description
+
+0				Reserved; must be zero 
+1	0-1	jc		Justification: 0=left, 1=center, 2=right, 
+				3=both 
+	2-7			Reserved; must be zero 
+2				Reserved; must be zero 
+3				Reserved; must be zero 
+4-5		dxaRight	Right indent, in 20ths of a point 
+6-7		dxaLeft		Left indent, in 20ths of a point 
+8-9		dxaLeft1	First-line left indent (relative to dxaLeft) 
+10-11		dyaLine		Interline spacing (standard is 240) 
+12-13		dyaBefore	Reserved; ignored by Write (standard is zero)
+14-15		dyaAfter	Reserved; ignored by Write (standard is zero)
+16	0	rhcPage		0=header, 1=footer 
+	1-2			Reserved; 0=normal paragraph, nonzero=header 
+				or footer paragraph 
+	3	rhcFirst	Start of printing: 1=print on first page, 
+				0=do not print on first page 
+	4	fGraphics	Paragraph type: 1=picture, 0=text 
+	5-7			Reserved; must be zero 
+17-21				Reserved; must be zero 
+22-78				Tab descriptors (up to 14) 
+
+Following is the format of a TBD: 
+
+Byte	Bit	Name		Description
+
+0-1		dxa		Indent from left margin of tab stop, in 
+				20ths of a point 
+2	0-2	jcTab		Tab type: 0=normal tabs, 3=decimal tabs 
+	3-5	tlc		Reserved; ignored by Write 
+	6-7			Reserved; must be zero 
+3		chAlign		Reserved; ignored by Write 
+
+If the user doesn't select any special paragraph properties, the PAP is filled 
+with the following default values: 
+
+Byte	Value
+
+0	61 
+2	30 
+10-11	240 (word) 
+12-78	0 
+
+Each paragraph FPROP must have a count of characters (cch) greater than or 
+equal to 1. 
+
+Footnotes
+
+Write documents do not have footnote tables (FNTBs), so pnFntb is always 
+equal to pnSep. In fact, all their header and footer paragraphs appear at the 
+beginning of the document before any normal paragraphs. When reading files 
+created by Word, Write recognizes only those headers and footers that appear 
+at the beginning of the document; it treats all others as normal text. 
+
+Sections
+
+A Write document has only one section. If the section properties of a Write 
+document differ from the defaults, the document contains a section property 
+(SEP) section and a section table (SETB) section. If not, then neither 
+section is present and pnSep and pnSetb are both equal to pnPgtb. 
+
+Following is the format of an SEP: 
+
+Byte	Name		Description
+
+0	cch		Count of bytes used, excluding this byte (all 
+			properties at byte positions greater than cch are 
+			set to their default values) 
+1-2			Reserved; must be zero 
+3-4	yaMac		Page length, in 20ths of a point (default is 
+			11*1440=15840) 
+5-6	xaMac		Page width, in 20ths of a point (default is 
+			8.5*1440=12240) 
+7-8			Reserved; must be 0xFFFF 
+9-10	yaTop		Top margin, in 20ths of a point (default is 1440) 
+11-12	dyaText		Height of text, in 20ths of a point (default is 
+			9*1440=12960) 
+13-14	xaLeft		Left margin, in 20ths of a point (default is 
+			1.25*1440=1800) 
+15-16	dxaText		Width of text area, in 20ths of a point (default is 
+			6*1440=8640) 
+
+(add note: this table is incomplete)
+
+Byte	Name		Description
+
+1-2			Start page numbers at # if not 0xFFFF
+19-20	yaHeader	Distance from top to header (default is 
+			0.75*1440=1080)
+21-22	yaFooter	Distance from top to footer (default is 
+			yaMac-0.75*1440=15760)
+
+(end of added note)
+
+The page length (yaMac) is equal to yaTop+dyaText. The page width (xaMac) is 
+equal to xaLeft+dxaText+(right margin, not stored). 
+
+If all the above properties are set to their defaults, no SEP or SETB is 
+needed. Otherwise, the count of characters (cch) is greater than or equal 
+to 1 and less than or equal to 16. 
+
+The SETB section contains an array of section descriptors (SEDs), described 
+later in this section. Following is the structure of an SETB: 
+
+Word	Name		Description
+
+0	csed		Number of sections (always 2 for Write documents) 
+1	csedMax		Undefined 
+2-n	rgsed		Array of SEDs plus zero-padding to fill the sector 
+
+Following is the structure of an SED: 
+
+Word	Name		Description
+
+0-1	cp		Byte address of first character following section 
+2	fn		Undefined 
+3-4	fcSep		Byte address of associated SEP 
+
+A Write document always has exactly two SED entries. The cp value of the 
+first entry indicates that it affects all the characters in the document. The 
+fcSep value of the first entry points to the one SEP in the file. The second 
+SED entry is a dummy with fcSep set to 0xFFFFFFFF. 
+
+The PGTB section (optional) is on the page immediately after the SEP section. 
+
+(added note: AFAICS these are not used in Write.)
+
+Note:	The term "page" used in the rest of this section refers to printed 
+	pages of a Write document, not 128-byte "pages" of a disk file. 
+
+The page table (PGTB) contains an array of page descriptors (PGDs), which 
+are described later in this section. Following is the structure of a PGTB: 
+
+Word	Name		Description
+
+0	cpgd		Number of PGDs (1 or more) 
+1	cpgdMac		Undefined 
+2-n	rgpgd		Array of PGDs plus zero padding to fill the sector 
+
+Following is the structure of a PGD: 
+
+Word	Name		Description
+
+0	pgn		Page number in printed Word documents 
+1-2	cpMin		Byte address of first character on printed page 
+
+Font Table
+
+The font face-name table (FFNTB) contains the number of font face names 
+(FFNs) and a list of FFNs. Following is the structure of an FFNTB: 
+
+Byte	Name		Description
+
+0-1	cffn		Number of FFNs 
+2-n	grpffn		List of FFNs 
+
+Following is the structure of an FFN: 
+
+Byte		Name	Description
+
+0-1		cbFfn	Number of bytes following in this FFN (not including 
+			these 2 bytes) 
+2		ffid	Font family identifier (see below) 
+3-(cbffn+2)	szFfn	Font name (variable length; null-terminated) 
+
+A cbFfn value of 0xFFFF means that the next FFN entry will be found at the 
+start of the next 128-byte page. A cbFfn value of zero means that there are 
+no more FFN entries in the table. 
+
+Possible values for ffid are FF_DONTCARE, FF_ROMAN, FF_SWISS, FF_MODERN, 
+FF_SCRIPT, and FF_DECORATIVE. These constants are defined in WINDOWS.H. 
+Additional values may be added to the list in future versions of Windows. 
+
+(added note) These are the definitions taken from WINDOWS.H:
+
+#define FF_DONTCARE	0x00  /* Don't care or don't know. */
+#define FF_ROMAN	0x10  /* Variable stroke width, serifed. */
+#define FF_SWISS	0x20  /* Variable stroke width, sans-serifed. */
+#define FF_MODERN	0x30  /* Constant stroke width, serifed or sans-serifed. */
+#define FF_SCRIPT	0x40  /* Cursive, etc. */
+#define FF_DECORATIVE	0x50  /* Old English, etc. */
+

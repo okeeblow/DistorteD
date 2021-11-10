@@ -49,6 +49,22 @@
     <glob pattern="*.mcw"/>  <!-- Microsoft Word for Macintosh document -->
   </mime-type>
 
+  <!-- See `write.txt` in the relevant documentation directory -->
+  <mime-type type="application/x-mswrite">
+    <magic priority="33">
+      <match type="little16" value="0xbe31">  <!-- non-OLE -->
+        <match type="little16" value="0x0000" offset="2">
+          <match type="little16" value="0xab00" offset="4"/>
+        </match>
+      </match>
+      <match type="little16" value="0xbe32">  <!-- OLE -->
+        <match type="little16" value="0x0000" offset="2">
+          <match type="little16" value="0xab00" offset="4"/>
+        </match>
+      </match>
+    </magic>
+  </mime-type>
+
   <mime-type type="application/vnd.corel-draw">
     <glob pattern="*.cdt"/>  <!-- CorelDRAW Template -->
   </mime-type>
