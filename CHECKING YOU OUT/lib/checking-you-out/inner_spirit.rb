@@ -36,16 +36,16 @@ class ::CHECKING::YOU; end
 
   # Default `::Ractor` CYO data area name.
   # This will be the area used for all synchronous method invocations that do not specify otherwise.
-  self::DEFAULT_AREA_CODE = -'CHECKING YOU OUT'
+  self::DEFAULT_AREA_CODE = :CYO
 
   # Message `::Struct` for inter-`::Ractor` communication. These will be sent with `move: true`
   # and will be mutable. The receiver `::Ractor` will take the `:request`, mutate the message
   # to contain the resulting `:response`, and send the mutated message to the `:destination`.
   #
   # TODO: Re-evaluate this in Ruby 3.1+ depending on the outcome of https://bugs.ruby-lang.org/issues/17298
-  self::EverlastingMessage = ::Struct.new(:erosion_mark, :be_lovin, :chain_of_pain) do
-    def initialize(be_lovin, chain_of_pain = ::Ractor::current)
-      super(::SecureRandom::uuid.freeze, be_lovin, chain_of_pain)
+  self::EverlastingMessage = ::Struct.new(:erosion_mark, :in_motion, :chain_of_pain) do
+    def initialize(in_motion, chain_of_pain = ::Ractor::current)
+      super(::SecureRandom::uuid.freeze, in_motion, chain_of_pain)
     end
     def add_destination(otra)
       case self[:chain_of_pain]
@@ -56,7 +56,10 @@ class ::CHECKING::YOU; end
     def go_beyond!
       case self[:chain_of_pain]
       when ::Ractor then self[:chain_of_pain].send(self, move: true)
-      when ::Array then self[:chain_of_pain].pop.send(self, move: true)
+      when ::Array then
+        dest = self[:chain_of_pain].last
+        self[:chain_of_pain] = ::Ractor::make_shareable((self[:chain_of_pain])[...-1])
+        dest.send(self, move: true)
       end
     end
   end
@@ -98,10 +101,14 @@ end
 # Main Struct subclass for in-memory type representation.
 class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
+  # HACK: Sending a `CYO::EM` to the IETF Media Type parser will cause it to instantiate
+  #       a `{CYI => CYO}` reply instead of a plain `CYI`.
   self::EverlastingMessage = ::Class::new(self::superclass::EverlastingMessage)
 
   # Absolute path to the root of the Gem — the directory containing `bin`,`docs`,`lib`, etc.
-  self::GEM_ROOT = proc { ::Pathname.new(__dir__).join(*::Array.new(2, -'..')).expand_path.realpath }
+  self::GEM_ROOT = ::Ractor::make_shareable(
+    proc { ::Pathname.new(__dir__).join(*::Array.new(2, -'..')).expand_path.realpath }
+  )
 
   # Time object representing the day this running CYO Gem was packaged.
   #
@@ -116,7 +123,11 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # Rescue from `Gem::MissingSpecError`'s parent to support developing locally with just `require_relative` and no Bundler.
   #
   # [0]: unless you manage to `bundle exec` at exactly 00:00:00 UTC :)
-  self::GEM_PACKAGE_TIME = proc { begin; ::Gem::Specification::find_by_name(-'checking-you-out').date; rescue ::Gem::LoadError; ::Time.now; end }
+  #
+  # NOTE: For now this has to be computed on the main `::Ractor` since `::Gem::Requirement::DefaultRequirement` is not shareable.
+  self::GEM_PACKAGE_TIME = ::Ractor::make_shareable(
+    begin; ::Gem::Specification::find_by_name(-'checking-you-out').date.to_i; rescue ::Gem::LoadError; ::Time.now.to_i; end
+  )
 
 
   # Demote any CYO to a CYI that can be passed around in just 40 bytes.

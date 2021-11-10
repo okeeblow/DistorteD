@@ -8,8 +8,7 @@ class TestInnerSpirit < Test::Unit::TestCase
   def test_metadata_generators
     assert_kind_of(::Proc, ::CHECKING::YOU::OUT::GEM_ROOT)
     assert_kind_of(::Pathname, ::CHECKING::YOU::OUT::GEM_ROOT.call)
-    assert_kind_of(::Proc, ::CHECKING::YOU::OUT::GEM_PACKAGE_TIME)
-    assert_kind_of(::Time, ::CHECKING::YOU::OUT::GEM_PACKAGE_TIME.call)
+    assert_kind_of(::Integer, ::CHECKING::YOU::OUT::GEM_PACKAGE_TIME)
   end
 
   def test_cyi_cyo_relationships

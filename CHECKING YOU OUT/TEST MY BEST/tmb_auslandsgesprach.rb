@@ -68,11 +68,11 @@ end
 
 # Separate this test from the normal CYO area to ensure data quality
 # with the single-MIME-package refinement.
-area_code = 'TEST MY BEST'
+area_code = :TMB
 
 # Pre-load all available types
 ::CHECKING::YOU::OUT.send(0, area_code: area_code)
-::CHECKING::YOU::OUT[/.*/, area_code: area_code]
+#::CHECKING::YOU::OUT[/.*/, area_code: area_code]  # TODO: Fix generic CYO::[]
 
 # Load all `<mime-type>` IETF Media-Type `String`s from the same test package.
 handler = IETFTypeChecker.new

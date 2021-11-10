@@ -5,6 +5,7 @@ require(-'set') unless defined?(::Set)
 # Assorted specialty data structure classes / modules for storing loaded type data in-memory in a usable way.
 require_relative(-'ghost_revival/set_me_free') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::SET_ME_FREE)
 require_relative(-'ghost_revival/stick_around') unless defined?(::CHECKING::YOU::OUT::StickAround)
+require_relative(-'ghost_revival/ultravisitor') unless defined?(::CHECKING::YOU::OUT::ULTRAVISITOR)
 require_relative(-'ghost_revival/weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
 require_relative(-'ghost_revival/wild_io') unless defined?(::CHECKING::YOU::OUT::Wild_I∕O)
 
@@ -30,28 +31,54 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   # (e.g. `::Pathname`s or `:IO` streams) for performance, especially with unmatchable needles.
   DEFAULT_CACHE_SIZE = 111.freeze
 
-  # Memoization `::Hash` for all running CYO `::Ractor`s!
-  # Keyed on the area name, usually the value in `DEFAULT_AREA_CODE`.
-  def areas
-    @areas ||= ::Hash.new { |areas, area_code|
+  APPLICATION_OCTET_STREAM = ::CHECKING::YOU::IN::new(:possum, :application, :"octet-stream").freeze
+  APPLICATION_XML = ::CHECKING::YOU::IN::new(:possum, :application, :xml).freeze
+  TEXT_PLAIN = ::CHECKING::YOU::IN::new(:possum, :text, :plain).freeze
+  STILL_IN_MY_HEART = ::Array[
+    APPLICATION_OCTET_STREAM,
+    APPLICATION_XML,
+    TEXT_PLAIN,
+  ].freeze
+
+
+  # Find a running CYO `::Ractor`, creating it if necessary.
+  # Keyed on the area name `::Symbol`, usually the value in `DEFAULT_AREA_CODE`.
+  AREAS = ::Ractor::make_shareable(proc { |area_code|
+    # Disabling the `inherit` argument to all const methods so we can't accidentally
+    # wander up the namespace out of `GHOST_REVIVAL`.
+    if(self.const_defined?(area_code.to_sym, inherit=false)) then
+      self.const_get(area_code.to_sym, inherit=false)
+    else
       # Create a new `::Ractor` CYO container and `#send` it every available MIME-info XML package.
-      areas[area_code] =
-        discover_fdo_xml
-          .each_with_object(self.new_area(area_code: area_code)) { |xml_path, area|
-            area.send(xml_path)
-          }
-    }
-  end
+      self.const_set(
+        area_code.to_sym,
+
+        ::Ractor::new(
+          ::Ractor::make_shareable(proc {
+            DISCOVER_FDO_XML.call
+              .each_with_object(NEW_AREA.call(area_code: area_code)) { |xml_path, area|
+                area.send(xml_path)
+              }
+          }),
+          area_code,
+          name: -"ULTRAVISITOR::#{area_code.to_s}",
+          &::CHECKING::YOU::OUT::ULTRAVISITOR
+        )
+
+      )  # const_set
+    end
+  })
+
 
   # Construct a `Ractor` container for a single area of type data, chosen by the `area_code` parameter.
   # This allows separate areas for separate services/workflows running within the same Ruby interpreter.
-  def new_area(
+  NEW_AREA = ::Ractor::make_shareable(->(
     area_code:   DEFAULT_AREA_CODE,   # Unique name for each separate a pool of CYO types.
     max_burning: DEFAULT_CACHE_SIZE,  # Number of type definitions to keep in memory. No limit iff `0`.
     how_long:    DEFAULT_CACHE_SIZE   # Number of queries and their type-match-responses to keep in memory.
-  )
+  ) {
     # `::Ractor.new` won't take arbitrary named arguments, just positional.
-    ::Ractor.new(max_burning, how_long, name: area_code) { |max_burning, how_long|
+    ::Ractor.new(area_code, max_burning, how_long, name: area_code.to_s) { |area_code, max_burning, how_long|
 
       # These `::Hash` sub-classes needs to be defined in the `::Ractor` scope because the block argument to `:define_method`
       # is un-shareable, otherwise trying to `:merge` or `:bury` results in a `defined in a different Ractor (RuntimeError)`:
@@ -89,6 +116,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       #
       # This is faster than the traditional load of all available types despite doing two parse passes of all XML packages,
       # because both parsers intentionally throw away as much data as possible and incur vastly fewer allocations!
+      #
+      # These two parsers and our memoization collections are our equivalent of the reference implementation's `update-mime-database`:
+      # https://cgit.freedesktop.org/xdg/shared-mime-info/tree/src/update-mime-database.c
       mr_mime       = ::CHECKING::YOU::OUT::MrMIME::new                     # `CYI`/`String`/`Regexp` => `CYO`.
       mime_jr       = ::CHECKING::YOU::OUT::MIMEjr::new(receiver: mr_mime)  # `Pathname`/`IO`         => `CYI`.
 
@@ -110,7 +140,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         # Main memoization `::Hash` and cache-eviction-order `::Queue`keyed by `CYI`.
         all_night.bury(cyi, cyo)
         # Some types should be kept in-memory forever no matter their age.
-        line_4_ruin.push(cyi) unless cyi == -'text/plain' or cyi == -'application/octet-stream'
+        line_4_ruin.push(cyi) unless STILL_IN_MY_HEART.include?(cyi)
 
         # Memoize single-extname "postfixes" separately from more complex filename fragments
         # to allow work and record-keeping with pure extnames.
@@ -181,17 +211,18 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           # An `EverlastingMessage` is a `::Struct` message we MUST respond to, either with a CYO, a `::Set` of CYOs, or `nil`.
           # We will fill in its `#response` member with the result of running its `#request` through our type-matching logic,
           # then send the mutated message to the `::Ractor` specified in its `#destination` member.
-          i_member = last_message[message.erosion_mark] || remember_you.call(message.be_lovin)
-          if nφ_crime.delete?(message.erosion_mark) or not i_member.nil? then
-            unless last_message.has_key?(message.erosion_mark)
-              refrain.push(message.erosion_mark)
+          i_member = last_message[message.in_motion.hash] || remember_you.call(message.in_motion)
+          if nφ_crime.delete?(message.in_motion.hash) or not i_member.nil? then
+            unless last_message.has_key?(message.in_motion.hash)
+              refrain.push(message.in_motion.hash)
               # Ensure shareability of our response value or we will hit a `::Ractor::MovedObject`
               # the second (cached) time we try to return it since we would have assigned it
               # by reference to the first message which was returned with `move: true`.
-              last_message.store(message.erosion_mark, ::Ractor.make_shareable(i_member))
+              last_message.store(message.in_motion.hash, ::Ractor.make_shareable(i_member))
               last_message.delete(refrain.pop) if refrain.size > how_long
             end
-            message.be_lovin = i_member
+            # Mutate the envelope and `::Ractor#send` it on to its embedded destination.
+            message.in_motion = i_member
             message.go_beyond!
           else
             # NOTE: This relies on an implementation detail of MRI where `::Set`s maintain insertion order:
@@ -200,14 +231,14 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             # irb> lol.delete(lol.first) => #<Set: {:c}>
             # irb> lol.delete(lol.first) => #<Set: {}>
             nφ_crime.delete(nφ_crime.first) if nφ_crime.size > how_long
-            nφ_crime.add(message.erosion_mark)
+            nφ_crime.add(message.in_motion.hash)
 
-            case message.be_lovin
+            case message.in_motion
             when ::CHECKING::YOU::OUT::StickAround, Wild_I∕O then
-              mime_jr.send(message.be_lovin, move: false)
+              mime_jr.send(message.in_motion, move: false)
               mime_jr.send(message, move: true)
             when ::String then
-              cyi = ::CHECKING::YOU::IN::from_ietf_media_type(message.be_lovin)
+              cyi = ::CHECKING::YOU::IN::from_ietf_media_type(message.in_motion)
               case cyi
               when ::CHECKING::YOU::IN then mr_mime.send(cyi, move: true)
               when ::CHECKING::YOU::IN::B4U then
@@ -216,18 +247,18 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
               end
               mr_mime.send(message, move: true)
             when ::Regexp, ::CHECKING::YOU::IN, ::CHECKING::YOU::IN::B4U then
-              mr_mime.send(message.be_lovin, move: false)
+              mr_mime.send(message.in_motion, move: false)
               mr_mime.send(message, move: true)
-            else p "Unhandled `#{message.be_lovin.class}` EverlastingMessage request: #{message}"
+            else p "Unhandled `#{message.in_motion.class}` EverlastingMessage request: #{message}"
             end  # case message.request
             next
-          end  # if nφ_crime.delete?(message.erosion_mark) or not i_member.nil?
+          end  # if nφ_crime.delete?(message.in_motion.hash) or not i_member.nil?
 
         else p "Unhandled `#{message.class}` message: #{message}"; next
         end  # case ::Ractor::receive
       end  # while
     }  # ::Ractor.new
-  end  # def new_area
+  })  # NEW_AREA
 
   include(::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND)
 

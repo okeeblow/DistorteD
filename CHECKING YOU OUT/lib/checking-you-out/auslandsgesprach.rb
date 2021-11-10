@@ -1,6 +1,7 @@
 require(-'set') unless defined?(::Set)
 
 require_relative(-'ghost_revival/filter_house') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::ONE_OR_EIGHT)
+require_relative(-'ghost_revival/ultravisitor') unless defined?(::CHECKING::YOU::OUT::ULTRAVISITOR)
 
 
 # IETF Media-Type `String`-handling components.
@@ -43,7 +44,8 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
 
   # Parse IETF Media-Type `::String` → `::CHECKING::YOU::IN`
-  GOLDEN_I = ::Ractor::make_shareable(proc {
+  GOLDEN_I = ::Ractor::new(
+    ::Ractor::make_shareable(proc {
     # Keep these allocated instead of fragmenting our heap, since this will be called very frequently.
     what_you_doing = ::Array::new
     main_screen    = ::Array::new
@@ -217,8 +219,8 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
       ).dup.freeze.tap(&the_bomb)
     }
     while message = ::Ractor::receive
-      message.be_lovin = case message
-      when ::CHECKING::YOU::OUT::EverlastingMessage then case cats.call(message.be_lovin)
+      message.in_motion = case message
+      when ::CHECKING::YOU::OUT::EverlastingMessage then case cats.call(message.in_motion)
         in ::CHECKING::YOU::IN => cyi  then ::Hash[cyi => ::CHECKING::YOU::OUT::new(*cyi.values)]
         in ::Array             => cyis then
           # Don't freeze.
@@ -228,30 +230,19 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
             ) { _2.add_b4u(_1) }
           ]
         end
-      when ::CHECKING::YOU::IN::EverlastingMessage then case cats.call(message.be_lovin)
+      when ::CHECKING::YOU::IN::EverlastingMessage then case cats.call(message.in_motion)
         in ::CHECKING::YOU::IN => cyi  then cyi
         in ::Array             => cyis then ::CHECKING::YOU::IN::B4U::new(cyis)
         end
       end
       message.go_beyond!
     end
-  })
+  }),
+  -'GOLDEN_I',
+  name: -'ULTRAVISITOR::GOLDEN_I',
+  &::CHECKING::YOU::OUT::ULTRAVISITOR
+  )  # GOLDEN_I
 
-  # Supervise the IETF-parser `::Ractor` and restart it if it stops receiving our messages.
-  ULTRAVISITOR = ::Ractor.new(name: -'CYI::ULTRAVISITOR') {
-    golden_i = ::Ractor::new(name: -'CYI::GOLDEN_I', &::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::GOLDEN_I)
-    while message = ::Ractor::receive
-      # Forward all messages to the real parser, and restart+retry on failure.
-      begin
-        golden_i.send(message, move: true)
-      rescue ::Ractor::ClosedError
-        # TOD0: Handle multiple recurring failures here since if a particular `::String`
-        #       makes our parser raise an error then sending it again probably won't help.
-        golden_i = ::Ractor::new(name: -'CYI::GOLDEN_I', &::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::GOLDEN_I)
-        retry
-      end
-    end
-  }
 
   # Calling-`::Ractor`-agnostic `::String`-to-`CYI` method.
   #
@@ -271,10 +262,10 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
     when ::Ractor::current then true
     else false
     end ? message.erosion_mark : nil
-    ULTRAVISITOR.send(message, move: true)
+    GOLDEN_I.send(message, move: true)
     ::Ractor::receive_if {
       _1.is_a?(::CHECKING::YOU::IN::EverlastingMessage) and _1.erosion_mark == wanted
-    }.be_lovin if wanted
+    }.in_motion if wanted
   end
 end
 
@@ -323,7 +314,9 @@ module ::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
   def from_ietf_media_type(ietf_string, area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE)
     super(
       ietf_string,
-      receiver: ::Array[::Ractor::current, self.areas[area_code]]
+      receiver: ::Ractor::make_shareable(
+        ::Array[::Ractor::current, ::CHECKING::YOU::OUT::GHOST_REVIVAL::AREAS.call(area_code)]
+      )
     )
   end
 end

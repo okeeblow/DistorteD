@@ -20,7 +20,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   #   This is the recommended way to discover `shared-mime-info` packages per the manual:
   #   https://specifications.freedesktop.org/shared-mime-info-spec/latest/ar01s02.html#s2_layout
   # - Includes the path to `CHECKING::YOU::OUT`'s bundled `shared-mime-info` iff it is newer than an installed copy.
-  def discover_fdo_xml
+  DISCOVER_FDO_XML = ::Ractor::make_shareable(proc {
     # CYO bundles a copy of `freedesktop.org.xml` from `shared-mime-info` but will prefer a system-level copy
     # if one is available and not out of date. This flag will be disabled if we find a suitable copy,
     # otherwise our bundled copy will be loaded after we finish scanning the PATHs givin in our environment.
@@ -68,7 +68,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         else
           # Found system-level copy.
           # Use this if it's newer than our Gem, and set a flag to prevent loading the bundled copy if so.
-          next if ::CHECKING::YOU::OUT::GEM_PACKAGE_TIME.call > xml_path.mtime
+          next if ::CHECKING::YOU::OUT::GEM_PACKAGE_TIME > xml_path.mtime.to_i
           load_bundled_fdo_xml = false
         end
       end
@@ -77,6 +77,6 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
     }.map!(&SharedMIMEinfo::method(:new))  # Wrap everything into our custom `Pathname` subclass for easy identification.
 
-  end  # def discover_fdo_xml
+  })  # DISCOVER_FDO_XML
 
 end

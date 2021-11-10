@@ -9,7 +9,7 @@ extant_types = ARGV[0].nil? ? ::Dir.glob(
 
 # Separate this test from the normal CYO area to ensure data quality
 # with the single-MIME-package refinement.
-area_code = 'TEST MY BEST'
+area_code = :TMB
 
 # Pre-load all available types
 ::CHECKING::YOU::OUT.send(0, area_code: area_code)
@@ -29,16 +29,16 @@ TestTry2LuvU = extant_types.each_with_object(::Class.new(::Test::Unit::TestCase)
       assert_true(
         ::Set[*cyo.postfixes, *cyo.complexes].delete_if(
           &::NilClass::method(:===)
-        ).map { |stick_around|
-          stick_around == artifact.to_s
-        }.any?
+        ).yield_self { |fragments|
+          fragments.empty? ? true : fragments.map { |stick_around| stick_around == artifact.to_s }.any?
+        }
       )
 
       # This type or one of its parent types should have at least one content match.
       artifact.open do |stream|
-        cyo.adults_table.map(&:out).map(&:cat_sequence).delete_if(
+        cyo.adults_table&.map(&:out)&.map(&:cat_sequence)&.delete_if(
           &::NilClass::method(:===)
-        ).map { |cat_sequence|
+        )&.map { |cat_sequence|
           cyo.cat_sequence =~ stream
         }
       end
