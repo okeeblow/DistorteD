@@ -39,7 +39,7 @@ module ::CHECKING::YOU::OUT::MOON_CHILD
 
   # Take an additional CYI as our parent, e.g. `application/xml` for an XML-based type.
   def add_parent(parent_cyi)
-    self.awen(:@parents, parent_cyi)
+    self.awen(:@parents, parent_cyi) unless self.eql?(parent_cyi)
   end
 
   # Take an additional CYI as our child type.
