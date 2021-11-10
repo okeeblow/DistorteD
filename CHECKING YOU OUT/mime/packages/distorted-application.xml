@@ -13,6 +13,38 @@
     <glob pattern="*.mat"/>
   </mime-type>
 
+  <!--
+    http://fileformats.archiveteam.org/wiki/Linear_Executable
+    http://www.textfiles.com/programming/FORMATS/lxexe.txt
+    https://open-watcom.github.io/open-watcom-v2-wikidocs/lguide.html#OSD2__The_OSD2_Executable_and_DLL_File_Formats
+    https://moddingwiki.shikadi.net/wiki/Linear_Executable_(LX/LE)_Format
+    http://www.edm2.com/index.php/LX_-_Linear_eXecutable_Module_Format_Description
+    https://github.com/uxmal/reko/blob/master/src/ImageLoaders/MzExe/ExeImageLoader.cs
+    https://faydoc.tripod.com/formats/exe-LE.htm
+  -->
+  <mime-type type="application/x-linear-executable">
+    <sub-class-of type="application/x-ms-dos-executable"/>
+    <comment>OS∕2 executable, DOS extender, or Windows VxD</comment>
+    <magic priority="55">
+      <match type="string" value="MZ" offset="0">
+        <!--
+          These definitions are incomplete because the LE header is at an offset given *in* a known offset.
+          For now I will just assume it's at 0x80 since I don't think s-m-i supports offset offsets:
+
+          ```[okeeblow@emi#x-linear-executable] xxd -s 0x80 CYO-VAB1.EXE| head -n 1
+          00000080: 4c58 0000 0000 0000 0200 0100 0000 0200  LX..............```
+        -->
+        <match type="string" value="LX" offset="128"/>  <!-- 32-bit -->
+        <match type="string" value="LE" offset="128"/>  <!-- mixed 16/32-bit -->
+      </match>
+    </magic>
+    <glob pattern="*.exe"/>
+    <glob pattern="*.386"/>
+    <glob pattern="*.dll"/>
+    <glob pattern="*.sys"/>
+    <glob pattern="*.vxd"/>
+  </mime-type>
+
   <mime-type type="application/vnd.corel-draw">
     <glob pattern="*.cdt"/>  <!-- CorelDRAW Template -->
   </mime-type>
