@@ -65,6 +65,10 @@
     </magic>
   </mime-type>
 
+  <mime-type type="application/dca-rft">
+    <glob pattern="*.rft"/>
+  </mime-type>
+
   <mime-type type="application/vnd.corel-draw">
     <glob pattern="*.cdt"/>  <!-- CorelDRAW Template -->
   </mime-type>
