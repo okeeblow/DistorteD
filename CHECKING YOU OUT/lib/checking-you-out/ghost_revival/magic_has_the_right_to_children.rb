@@ -47,21 +47,24 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       in ::NilClass,           ::Hash               then magic.push_up
       in ::CHECKING::YOU::OUT, ::NilClass,          then glob
       in ::Hash,               ::NilClass,          then glob.push_up(:weight, :length)
-      in ::Set,                ::NilClass,          then glob.push_up(:weight)
+      in ::Set,                ::NilClass,          then glob.max
       in ::Set,                ::Hash               then
-        (glob & (magic.values.flatten.to_set.map(&:family_tree).reduce(&:&) || ::Set::new)).yield_self { |magic_children|
-          magic.keep_if { |_magic, cyo| magic_children.include?(cyo) }.push_up
-        }
+        case
+        when glob.empty? then magic.push_up
+        when magic.empty? then glob.max
+        else
+          glob.flat_map(&:adults_table).compact.reduce(&:|)&.|(magic.values).max
+        end
       in ::Set,                ::CHECKING::YOU::OUT then glob & magic.kids_table
       in ::Hash,               ::Hash               then
         (glob.values.to_set & magic.values.to_set.map(&:family_tree).reduce(&:&)).yield_self { |magic_children|
           glob.keep_if { |_glob, cyo| magic_children.include?(cyo) }.push_up(:weight, :length)
         }
       in ::CHECKING::YOU::OUT, ::Hash               then
-        (magic.values.flatten.map(&:family_tree).reduce(&:|)&.map!(&:in)&.&(::Set[*glob.in]))&.empty? ? magic.push_up : glob
-      in ::Hash,               ::CHECKING::YOU::OUT then glob.values.to_set & magic.kids_table
+        magic&.empty? ? glob : (glob.adults_table&.include?(magic.push_up) ? glob : magic.push_up)
+      in ::Hash,               ::CHECKING::YOU::OUT then glob.values.compact.map!(&:adults_table).to_set & magic.kids_table
       in ::CHECKING::YOU::OUT, ::CHECKING::YOU::OUT then glob == magic ? glob : magic
-      else ::CHECKING::YOU::OUT::from_ietf_media_type(-'application/octet-stream')
+      else ::CHECKING::YOU::OUT::GHOST_REVIVAL::APPLICATION_OCTET_STREAM
     end.yield_self(&POINT_ZERO)
   })
 

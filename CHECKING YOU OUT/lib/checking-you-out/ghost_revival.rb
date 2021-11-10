@@ -160,26 +160,54 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         kick_out_仮面.call(line_4_ruin.pop) if line_4_ruin.size > max_burning and max_burning > 0
       }
 
+      # Convert a CYO (or collection of CYOs) into new duplicate `Object`s having their `:parent` CYIs
+      # resolved to the matching CYO type from this same working set.
+      together_4ever = proc { |cyo, include_implicit=false|
+        case cyo
+        when ::CHECKING::YOU::OUT then
+          case cyo.parents
+          in ::NilClass then cyo
+          in ::CHECKING::YOU::OUT => parent then parent
+          in ::CHECKING::YOU::IN => parent then
+            ((parent == APPLICATION_OCTET_STREAM or parent == TEXT_PLAIN) and not include_implicit) ? cyo :
+              cyo.dup.tap {
+                _1.instance_variable_set(:@parents, together_4ever.call(all_night[parent]))
+              }
+          in ::CHECKING::YOU::IN::B4U => parent then cyo.dup.tap {
+            _1.instance_variable_set(:@parents, together_4ever.call(all_night[parent]))
+          }
+          in ::Set => parents then
+            cyo.dup.tap {
+              _1.instance_variable_set(:@parents, parents.map(&all_night.method(:[])).map!(&together_4ever).compact.to_set)
+            }
+          else cyo
+          end
+        when ::Set, ::Array then cyo.map!(&together_4ever)
+        when ::NilClass then nil
+        else nil
+        end
+      }
+
       # Return the best guess for a given needle's type based on our currently-loaded data.
       # A return value of `nil` here will trigger a `SharedMIMEinfo` XML package search
       # the first time that needle is seen (or if it has been purged from our cache).
       remember_you  = proc { |needle|
         case needle
-        when ::CHECKING::YOU::IN, ::CHECKING::YOU::IN::B4U then all_night[needle]
-        when ::CHECKING::YOU::OUT::StickAround then complexes[needle] || postfixes[needle]
+        when ::CHECKING::YOU::IN, ::CHECKING::YOU::IN::B4U then all_night[needle].yield_self(&together_4ever)
+        when ::CHECKING::YOU::OUT::StickAround then (complexes[needle] || postfixes[needle]).yield_self(&together_4ever)
         when ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O then
           # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
           #  an extended attribute or some other means) then that should be used instead of guessing."
           # This will probably always be an empty `::Array` since this is a niche feature, but we have to test it first.
           steel_needles = ::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE.call(needle).map!(&all_night::method(:[]))
-          unless steel_needles.nil? or steel_needles&.empty? then steel_needles.first
+          unless steel_needles.nil? or steel_needles&.empty? then steel_needles.first.yield_self(&together_4ever)
           else
             ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
-              (complexes[needle.stick_around] || postfixes[needle.stick_around]),
-              as_above.so_below(needle.stream),
+              (complexes[needle.stick_around] || postfixes[needle.stick_around]).yield_self(&together_4ever),
+              as_above.so_below(needle.stream).transform_values!(&together_4ever),
             )
           end
-        when ::String then all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)]
+        when ::String then all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)
         end  # case needle
       }
 
