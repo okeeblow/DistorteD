@@ -224,7 +224,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           else
             ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
               (complexes[needle.stick_around] || postfixes[needle.stick_around]).yield_self(&together_4ever),
-              as_above.so_below(needle.stream).transform_values!(&together_4ever),
+              as_above.so_below(needle.stream)&.transform_values!(&together_4ever),
             )
           end
         when ::String then all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)

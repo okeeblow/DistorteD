@@ -208,6 +208,7 @@ module ::CHECKING::YOU::OUT::SweetSweet♡Magic
 
       # Match a given `IO` stream against all of our loaded types.
       _1.define_method(:so_below) { |wild_io|
+        return if wild_io.nil?
 
         # Disable newline- and encoding-conversion. The stream will be `Encoding::ASCII_8BIT`.
         wild_io.binmode if wild_io.respond_to?(:binmode)

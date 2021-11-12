@@ -21,7 +21,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
     end
 
     def stream
-      if self[:pathname].exist? then
+      if self[:pathname].exist? and not self[:pathname].directory? then
         self[:stream] ||= self[:pathname].open(mode=::File::Constants::RDONLY|::File::Constants::BINARY).tap {
           # Tell the GC to close this stream when it goes out of scope.
           _1.autoclose = true
