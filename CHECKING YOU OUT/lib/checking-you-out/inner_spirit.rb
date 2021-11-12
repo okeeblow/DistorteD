@@ -62,6 +62,7 @@ class ::CHECKING::YOU; end
         dest.send(self, move: true)
       end
     end
+    def hash; self[:in_motion].hash; end
   end
 
   # Symbolize our `::Struct` values if they're given separately (not as a CYI/CYO).
