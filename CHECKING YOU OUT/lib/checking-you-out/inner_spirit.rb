@@ -168,23 +168,30 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   end
 
   # Stitch a hierarchy of `#awen`-generated members back into a single container.
-  # This method not meant to be used directly but should be called with a `Symbol` instance-variable name
+  # This method is not meant to be used directly but should be called with a `Symbol` instance-variable name
   # and a `Symbol` method name matching the method to call on all parent types.
   def thridneedle(needle, thread)
+    # Our value may be `nil`, an individual value, or a `Set` of values.
     ours = self.instance_variable_get(needle)
+
+    # Our parent-types can also be any of those three possibilities,
+    # and we should skip any CYI-type parents that won't know how to answer.
+    # Calling the given method on any CYO parents will *also* result in one of those same three possibilities.
     theirs = case self.parents
       when ::CHECKING::YOU::OUT then self.parents.send(thread)
       when ::Set then self.parents.select(&::CHECKING::YOU::OUT::method(:===)).flat_map(&thread).compact.to_set
       when ::NilClass then nil
       else nil
     end
+
+    # Combine our value and our parents' values into one structure, minimizing allocations where possible.
     case [ours, theirs]
       in ::NilClass, ::NilClass           then nil
       in ::NilClass, *                    then theirs
       in *,          ::NilClass           then ours
       in ::Set,      ::Enumerable         then ours.|(theirs)
-      in ::Set,      *                    then ours.dup.add(theirs)
-      in *,          ::Set                then ::Set[*ours].|(theirs)
+      in ::Set,      *                    then ::Set[*ours, *theirs]
+      in *,          ::Set                then ::Set[*ours, *theirs]
       in *,          ::CHECKING::YOU::OUT then ::Array[ours, theirs, theirs.send(thread)].flatten.compact.to_set
       else                                     ::Set[ours, theirs]
     end
