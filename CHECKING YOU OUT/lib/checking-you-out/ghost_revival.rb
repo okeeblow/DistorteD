@@ -31,12 +31,30 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   # (e.g. `::Pathname`s or `:IO` streams) for performance, especially with unmatchable needles.
   DEFAULT_CACHE_SIZE = 111.freeze
 
+  # These two types are the implicit parents for any streamable type and any text type, respectively.
+  # See https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#subclassing
   APPLICATION_OCTET_STREAM = ::CHECKING::YOU::IN::new(:possum, :application, :"octet-stream").freeze
-  APPLICATION_XML = ::CHECKING::YOU::IN::new(:possum, :application, :xml).freeze
   TEXT_PLAIN = ::CHECKING::YOU::IN::new(:possum, :text, :plain).freeze
+
+  # These types are just very common as parents for other types,
+  # so I'm always going to load them in the interest of minimizing XML parser restarts for their children.
+  #
+  # [okeeblow@emi#shared-mime-info] grep sub-class-of freedesktop.org.xml.in | sed 's/ //g' | sort | uniq -c | sort -nr | head -n 7
+  #     153 <sub-class-oftype="text/plain"/>
+  #      54 <sub-class-oftype="application/zip"/>
+  #      43 <sub-class-oftype="application/xml"/>
+  #      19 <sub-class-oftype="image/x-dcraw"/>
+  #      12 <sub-class-oftype="image/tiff"/>
+  #      11 <sub-class-oftype="text/x-csrc"/>
+  #       8 <sub-class-oftype="application/gzip"/>
+  APPLICATION_XML = ::CHECKING::YOU::IN::new(:possum, :application, :xml).freeze
+  APPLICATION_ZIP = ::CHECKING::YOU::IN::new(:possum, :application, :zip).freeze
+
+  # These types will be force-loaded in any CYO area and will never be purged when we overrun the cache limit.
   STILL_IN_MY_HEART = ::Array[
     APPLICATION_OCTET_STREAM,
     APPLICATION_XML,
+    APPLICATION_ZIP,
     TEXT_PLAIN,
   ].freeze
 
