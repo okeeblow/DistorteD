@@ -62,21 +62,23 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   # Find a running CYO `::Ractor`, creating it if necessary.
   # Keyed on the area name `::Symbol`, usually the value in `DEFAULT_AREA_CODE`.
   AREAS = ::Ractor::make_shareable(proc { |area_code|
-    # Disabling the `inherit` argument to all const methods so we can't accidentally
-    # wander up the namespace out of `GHOST_REVIVAL`.
+    # Disabling the `inherit` argument to all const methods so we can't accidentally wander up the namespace.
     if(self.const_defined?(area_code.to_sym, inherit=false)) then
       self.const_get(area_code.to_sym, inherit=false)
     else
-      # Create a new `::Ractor` CYO container and `#send` it every available MIME-info XML package.
+      # HACK: Only the main `Ractor` can access class-instance variables.
+      #       I memoize running CYO areas to constants instead to allow use by non-main `Ractor`s,
+      #       including the case where a running CYO area wants to access itself (e.g. `CYI#out`)!
       self.const_set(
         area_code.to_sym,
-
+        # Create a new `::Ractor` CYO container and `#send` it every available MIME-info XML package and permanent type.
         ::Ractor::new(
           ::Ractor::make_shareable(proc {
-            DISCOVER_FDO_XML.call
-              .each_with_object(NEW_AREA.call(area_code: area_code)) { |xml_path, area|
-                area.send(xml_path)
-              }
+            STILL_IN_MY_HEART.each_with_object(
+              DISCOVER_FDO_XML.call.each_with_object(
+                NEW_AREA.call(area_code: area_code)
+              ) { |xml_path, area| area.send(xml_path) }
+            ) { |permanent_type, area| area.send(permanent_type) }
           }),
           area_code,
           name: -"ULTRAVISITOR::#{area_code.to_s}",
