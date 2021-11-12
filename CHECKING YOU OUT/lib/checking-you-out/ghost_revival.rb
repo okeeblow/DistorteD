@@ -219,7 +219,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
           #  an extended attribute or some other means) then that should be used instead of guessing."
           # This will probably always be an empty `::Array` since this is a niche feature, but we have to test it first.
-          steel_needles = ::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE.call(needle).map!(&all_night::method(:[]))
+          steel_needles = ::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE.call(needle)&.map!(&all_night::method(:[]))
           unless steel_needles.nil? or steel_needles&.empty? then steel_needles.first.yield_self(&together_4ever)
           else
             ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(

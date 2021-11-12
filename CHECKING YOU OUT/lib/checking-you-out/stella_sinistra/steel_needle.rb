@@ -33,11 +33,16 @@ module ::CHECKING::YOU::OUT::StellaSinistra
   # TOD0: Support other OS stuff like `MDItemContentType` on macOS.
   STEEL_NEEDLE = ::Ractor.make_shareable(proc { |pathname, receiver: ::Ractor::current|
     return unless pathname.exist?
-    [::ExtAttr::USER, ::ExtAttr::SYSTEM].flat_map { |namespace|
-      ::ExtAttr.list(pathname.to_s, namespace).keep_if(&SUPPORTED_XATTR_NAMES.method(:include?)).map! { |attr_name|
-        ::ExtAttr::get(pathname.to_s, ::ExtAttr::USER, attr_name)
-      }
-    }.map! { ::CHECKING::YOU::IN::from_ietf_media_type(_1, receiver: receiver) }
+    begin
+      [::ExtAttr::USER, ::ExtAttr::SYSTEM].flat_map { |namespace|
+        ::ExtAttr.list(pathname.to_s, namespace).keep_if(&SUPPORTED_XATTR_NAMES.method(:include?)).map! { |attr_name|
+          ::ExtAttr::get(pathname.to_s, ::ExtAttr::USER, attr_name)
+        }
+      }.map! { ::CHECKING::YOU::IN::from_ietf_media_type(_1, receiver: receiver) }
+    rescue ::SystemCallError => sce
+      # e.g. `#<Errno::ENOTSUP: Operation not supported - listxattr call error>`
+      nil
+    end
   })
 
 end
