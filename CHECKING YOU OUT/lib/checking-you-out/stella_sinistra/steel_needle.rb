@@ -1,10 +1,4 @@
-begin
-  require(-'extattr') unless defined?(::ExtAttr)
-rescue ::LoadError
-  # TODO: Remove this load guard and convert gemspec from development dependency
-  #       once there is a `::Ractor`-safe version of `::ExtAttr` on rubygems-dot-org:
-  #       https://github.com/dearblue/ruby-extattr/pull/1
-end
+require(-'extattr') unless defined?(::ExtAttr)
 
 
 module ::CHECKING::YOU::OUT::StellaSinistra
@@ -44,9 +38,6 @@ module ::CHECKING::YOU::OUT::StellaSinistra
         ::ExtAttr::get(pathname.to_s, ::ExtAttr::USER, attr_name)
       }
     }.map! { ::CHECKING::YOU::IN::from_ietf_media_type(_1, receiver: receiver) }
-  }) if defined?(::ExtAttr)
-
-  # TODO: Remove this dummy proc along with the `require` guard at the top of this file.
-  STEEL_NEEDLE = ::Ractor.make_shareable(proc { Array::new }) unless defined?(::ExtAttr)
+  })
 
 end
