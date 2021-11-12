@@ -222,10 +222,17 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           steel_needles = ::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE.call(needle)&.map!(&all_night::method(:[]))
           unless steel_needles.nil? or steel_needles&.empty? then steel_needles.first.yield_self(&together_4ever)
           else
-            ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
+            # Get any non-regular (`inode`) type for a `Pathname`, and use it as a parent type for any regular match.
+            irregular_nation = ::CHECKING::YOU::OUT::GHOST_REVIVAL::IRREGULAR_NATION.call(needle.pathname)
+            regular_nation   = ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
               (complexes[needle.stick_around] || postfixes[needle.stick_around]).yield_self(&together_4ever),
               as_above.so_below(needle.stream)&.transform_values!(&together_4ever),
             )
+            irregular_nation.nil? ? regular_nation : case regular_nation
+              when ::NilClass then irregular_nation
+              when APPLICATION_OCTET_STREAM then irregular_nation
+              else (regular_nation.frozen? ? regular_nation.dup : regular_nation).add_parent(irregular_nation)
+            end
           end
         when ::String then all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)
         end  # case needle
