@@ -31,7 +31,7 @@ module ::CHECKING::YOU::OUT::StellaSinistra
   # appropriate capabilities for directories with the sticky bit set."
   #
   # TOD0: Support other OS stuff like `MDItemContentType` on macOS.
-  STEEL_NEEDLE = ::Ractor.make_shareable(proc { |pathname, receiver: ::Ractor::current|
+  STEEL_NEEDLE = ::Ractor.make_shareable(->(pathname, receiver: ::Ractor::current) {
     return unless pathname.exist?
     begin
       [::ExtAttr::USER, ::ExtAttr::SYSTEM].flat_map { |namespace|
