@@ -234,7 +234,10 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
               else (regular_nation.frozen? ? regular_nation.dup : regular_nation).add_parent(irregular_nation)
             end
           end
-        when ::String then all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)
+        when ::String then
+          # TODO: "URI scheme handlers" https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm45747528198592
+          # unless (needle =~ ::URI::regexp).nil?
+          all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)
         end  # case needle
       }
 
