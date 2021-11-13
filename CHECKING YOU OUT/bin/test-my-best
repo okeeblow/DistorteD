@@ -1,4 +1,4 @@
 #!/usr/bin/env ruby
 
 require_relative '../lib/checking-you-out'
-require_relative '../TEST-MY-BEST/test-my-best'
+require_relative '../TEST MY BEST/test-my-best'
