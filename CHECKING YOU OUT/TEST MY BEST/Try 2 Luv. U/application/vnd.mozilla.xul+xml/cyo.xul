@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<window id="cyo" title="CHECKING YOU OUT" width="333" height="333"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <caption label="COOLTRAINER.ORG"/>
+</window>
