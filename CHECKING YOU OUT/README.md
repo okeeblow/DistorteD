@@ -35,7 +35,10 @@
   [person](https://help.gnome.org/admin/system-admin-guide/stable/mime-types-custom.html.en)
   [confused](https://help.gnome.org/admin/system-admin-guide/stable/mime-types-custom-user.html.en)
   [by](https://blog.robertelder.org/custom-mime-type-ubuntu/)
-  the need to generate separate `glob2`/`magic`/etc files from the XML package files instead of using the packages directly.
+  [the](https://wiki.archlinux.org/title/XDG_MIME_Applications)
+  [need](https://forums.linuxmint.com/viewtopic.php?t=242513)
+  [to](http://wikka.puppylinux.com/HowToAddMIMEType)
+  generate separate `glob2`/`magic`/etc files from the XML package files instead of using the packages directly.
 
 
 ## Usage
@@ -90,7 +93,7 @@ Once retrieved, a `CYO` Type Object contains everything defined for that type ac
 
 ## Alternatives
 
-`CYO` aims to implement the whole `shared-mime-info` specification and be fast generally awesome,
+`CYO` aims to implement the whole `shared-mime-info` specification and be fast and generally awesome,
 but it is designed around my specific need for a "fast inner loop" of file/stream identification in DistorteD.
 Please consider if one of these other Ruby libraries meets your needs before choosing `CHECKING YOU OUT`:
 
