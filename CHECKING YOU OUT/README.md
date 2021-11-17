@@ -62,8 +62,15 @@
 
 `irb> CHECKING::YOU::OUT('/home/okeeblow/2019-04-30 22-40-05.flv') => #<CHECKING::YOU::OUT video/x-flv>`
 
-`[okeeblow@emi#CHECKING YOU OUT] ./bin/checking-you-out TEST\ MY\ BEST/Try\ 2\ Luv.\ U/audio/mpeg/invasion_of_the_gabber_rob.mp3 
-audio/mpeg`
+```
+[okeeblow@emi#CHECKING YOU OUT] ./bin/checking-you-out TEST\ MY\ BEST/Try\ 2\ Luv.\ U/audio/mpeg/invasion_of_the_gabber_rob.mp3
+audio/mpeg
+```
+
+```
+[okeeblow@emi#CHECKING YOU OUT] ./bin/checking-you-out /media/okeeblow/LUMIX
+x-content/image-dcf
+```
 
 
 ### Use a Type Object
