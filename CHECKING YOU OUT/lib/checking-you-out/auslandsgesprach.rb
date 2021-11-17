@@ -278,15 +278,18 @@ module ::CHECKING::YOU::IN::INLANDGESPRÄCH
     # Current top-level IANA registries are shown here: https://www.iana.org/assignments/media-types/media-types.xhtml
     :application,
     :audio,
-    :chemical,     # Non-IANA Chemical MIME project: https://www.ch.ic.ac.uk/chemime/
+    :chemical,            # Non-IANA Chemical MIME project: https://www.ch.ic.ac.uk/chemime/
     :example,
-    :font,         # RFC 8081: https://datatracker.ietf.org/doc/html/rfc8081
+    :font,                # RFC 8081: https://datatracker.ietf.org/doc/html/rfc8081
     :image,
+    :inode,               # `shared-mime-info` irregular-file types.
     :message,
-    :model,        # RFC 2077: https://datatracker.ietf.org/doc/html/rfc2077
+    :model,               # RFC 2077: https://datatracker.ietf.org/doc/html/rfc2077
     :multipart,
     :text,
     :video,
+    :"x-scheme-handler",  # `shared-mime-info` URL-scheme types.
+    :"x-content",         # `shared-mime-info` directory/volume types.
   ].freeze
 
   # Reconstruct an IETF Media-Type String from a loaded CYI/CYO's `#members`
