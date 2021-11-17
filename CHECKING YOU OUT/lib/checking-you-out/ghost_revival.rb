@@ -170,7 +170,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         # Memoize content-match byte sequences in nested `Hash`es based on the starting and ending
         # byte offset where each byte sequence may be found in a hypothetical file/stream.
         case cyo.cat_sequence
-        when ::NilClass then next
+        when ::NilClass then nil  # No-op.
         when ::Set then cyo.cat_sequence&.each { |action| as_above.bury(action.min, action.max, action, cyo) }
         else as_above.bury(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
         end
