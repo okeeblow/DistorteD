@@ -1,14 +1,128 @@
-CHECKING::YOU::OUT is DistorteD's file-identification library, originally a
-`ruby-mime-types` wrapper/monkey-patch — now its own full implementation
-of a `shared-mime-info` parser and in-memory representation.
+# CHECKING YOU OUT
 
-Designed with speed and memory-efficiency in mind. See `bin/benchmark` for more.
+`CYO` is DistorteD's file-identification library.
 
-Prior Art:
-https://github.com/mime-types/ruby-mime-types
-https://github.com/hanklords/shared-mime-info
-https://github.com/mimemagicrb/mimemagic
-https://github.com/discourse/mini_mime
-https://github.com/rails/marcel/
-https://github.com/blackwinter/ruby-filemagic/
-https://github.com/glongman/ffiruby-filemagic/
+
+## Goals
+
+- Identify Media Types (MIME Types) for:
+  - Plain filenames, file extensions, and hypothetial `Pathname`s.
+  - Extended filesystem attributes for extant `Pathname`s.
+  - Contents of extant files and other `IO`-like streams.
+  - IETF-style Content-Type strings (e.g. 'image/jpeg') and other type identifiers like FourCCs.
+  - Directory trees, e.g. `x-content/image-dcf` for digital camera cards.
+
+- Identify files by simultaneously using as many of the above factors as possible for situations
+  where a filename-only match or content-only match would be ambiguous.
+
+- Implement the full [`shared-mime-info` specification](https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html),
+  the XDG/freedesktop-dot-org standard used on a vast majority of Linux/BSD systems.
+
+- Automatically identify and consume all [`shared-mime-info`-format](https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html)
+  XML packages installed in the standard `$XDG_DATA_DIRS` on Linux/BSD or in normal MacPorts/Homebrew prefixes on macOS.
+
+- Ship a built-in copy of the freedesktop-dot-org (GPLv2) and Apache Tika (MIT) package files for portability
+  to Windows and to systems which haven't installed `shared-mime-info` through their package manager.
+
+- Be as fast as possible, and [avoid as many allocations](https://www.schneems.com/2020/09/16/the-lifechanging-magic-of-tidying-ruby-object-allocations/)
+  as possible by loading only the minimum necessary data from the XML packages into memory.
+
+- Parse the `shared-mime-info` XML packages on the fly to avoid `xdg-utils`' `update-mime-database` step which I personally always found very confusing.
+  I know I'm
+  [not](https://help.ubuntu.com/community/AddingMimeTypes)
+  [the](https://unix.stackexchange.com/questions/564816/how-to-install-a-new-custom-mime-type-on-my-linux-system-using-cli-tools)
+  [only](https://help.gnome.org/admin//system-admin-guide/2.32/mimetypes-modifying.html.en)
+  [person](https://help.gnome.org/admin/system-admin-guide/stable/mime-types-custom.html.en)
+  [confused](https://help.gnome.org/admin/system-admin-guide/stable/mime-types-custom-user.html.en)
+  [by](https://blog.robertelder.org/custom-mime-type-ubuntu/)
+  the need to generate separate `glob2`/`magic`/etc files from the XML package files instead of using the packages directly.
+
+
+## Usage
+
+Get a `CYO` Type Object by file extension:
+
+`irb> CHECKING::YOU::OUT::from_postfix(:png) => #<CHECKING::YOU::OUT image/png>`
+
+`irb> CHECKING::YOU::OUT::from_postfix('.odf') => #<CHECKING::YOU::OUT application/vnd.oasis.opendocument.formula>`
+
+…by file path:
+
+`irb> CHECKING::YOU::OUT::from_pathname('/home/okeeblow/224031.jpg') => #<CHECKING::YOU::OUT image/jpeg>`
+
+…by type name:
+
+`irb> CHECKING::YOU::OUT::from_ietf_media_type('application/rss+xml') => #<CHECKING::YOU::OUT application/rss+xml>`
+
+…or via the generic interface used by `CYO`'s CLI:
+
+`irb> CHECKING::YOU::OUT('audio/ogg') => #<CHECKING::YOU::OUT audio/ogg>`
+
+`irb> CHECKING::YOU::OUT('/home/okeeblow/2019-04-30 22-40-05.flv') => #<CHECKING::YOU::OUT video/x-flv>`
+
+`[okeeblow@emi#CHECKING YOU OUT] ./bin/checking-you-out TEST\ MY\ BEST/Try\ 2\ Luv.\ U/audio/mpeg/invasion_of_the_gabber_rob.mp3 
+audio/mpeg`
+
+
+Once retrieved, a `CYO` Type Object contains everything defined for that type across all `shared-mime-info` XML packages:
+
+`irb> CHECKING::YOU::OUT('audio/mpeg').description => "MP3 audio"`
+
+`irb> CHECKING::YOU::OUT('audio/mpeg').parents => #<CHECKING::YOU::IN application/octet-stream>`
+
+`irb> CHECKING::YOU::OUT('audio/mpeg').postfixes => #<Set: {#<CHECKING::YOU::OUT::StickAround 50 *.mp3>, #<CHECKING::YOU::OUT::StickAround 50 *.mpga>}>`
+
+`irb> CHECKING::YOU::OUT('audio/mpeg').extname => ".mp3"`
+
+`irb> CHECKING::YOU::OUT('audio/mpeg').aka => #<Set: {#<CHECKING::YOU::IN audio/mpeg>, #<CHECKING::YOU::IN audio/x-mp3>, #<CHECKING::YOU::IN audio/x-mpg>, #<CHECKING::YOU::IN audio/x-mpeg>, #<CHECKING::YOU::IN audio/mp3>}>`
+
+
+## Alternatives
+
+`CYO` aims to implement the whole `shared-mime-info` specification and be fast generally awesome,
+but it is designed around my specific need for a "fast inner loop" of file/stream identification in DistorteD.
+Please consider if one of these other Ruby libraries meets your needs before choosing `CHECKING YOU OUT`:
+
+- [`ruby-mime-types`](https://github.com/mime-types/ruby-mime-types) and its associated [`mime-types-data`](https://github.com/mime-types/mime-types-data)
+were my original choice for DistorteD, and the first version of `CYO` wrapped this library to provide `DD`-specific methods and custom additional type data.
+This library determines type based on file extensions (e.g. `hello.jpg` ➔ `[#<MIME::Type: image/jpeg>]`) and does not provide "magic" file-content matching.
+Its API [descends from](https://github.com/mime-types/ruby-mime-types/blob/ca89015739efe42e12c279823190dba9bcaaf6b6/History.rdoc#label-1.003)
+Mark Overmeer's [`MIME-Types`](http://perl.overmeer.net/CPAN/#MIME-Types) Perl module.
+Its type data comes [from Apache HTTPd's Media Type list](https://github.com/mime-types/mime-types-data/blob/master/support/apache_mime_types.rb)
+and [from IANA's Media Type registry](https://github.com/mime-types/mime-types-data/blob/master/support/iana_registry.rb) and is usually updated [several times per year](https://github.com/mime-types/mime-types-data/tags).
+
+
+- [`mimemagicrb`](https://github.com/mimemagicrb/mimemagic) was popular in Rails circles via Rails' wrapper before that wrapper became standalone.
+Like `CYO`, `mimemagicrb` uses `freedesktop.org`'s `shared-mime-info`-format database as a data source.
+Unlike `CYO`, `mimemagicrb` does a one-time transformation of `shared-mime-info.xml` to load file extensions and content-matching sequences into memory
+then queries itself from there. That transformation used to happen once at Gem package time with the transformed data shipping as part of the Gem, but it [became a runtime transformation](https://github.com/mimemagicrb/mimemagic/commit/f95088a05bcf07fbad73c350db1e2b9fe4a0441e#diff-fc52eb3b499c02ca79f89e62ac2cc41c160f4759942a36730cb50e89908a5b03)
+following a [license-incompatibility issue](https://github.com/mimemagicrb/mimemagic/issues/97) between the database's GPLv2 and the library's MIT license.
+The library authors' attempts to clean up the older infringing Gem versions resulted in a
+[shameful](https://github.com/mimemagicrb/mimemagic/issues/98)
+[outpouring](https://old.reddit.com/r/ruby/comments/mc5bpe/mimemagic_versions_prior_to_036_have_been_yanked/)
+[of](https://old.reddit.com/r/ruby/comments/mdriyy/all_versions_of_mimemagic_on_rubygemsorg_are_now/)
+[hate](https://github.com/rails/rails/issues/41750) from underprepared members of the Rails "community" toward these *volunteers*
+in a fantastic display of the same attitudes that kept me away from Ruby entirely for over a decade.
+This library now requires a separate upfront installation of `shared-mime-info.xml` in a well-known filesystem location,
+usually accomplished via `Homebrew` or some other package manager.
+
+- [`mini_mime`](https://github.com/discourse/mini_mime) is an alternative representation of [`mime-types-data`](https://github.com/mime-types/mime-types-data) focused on performance above all else. It does not load `mime-types-data` at runtime, instead [processing it](https://github.com/discourse/mini_mime/blob/ecaaffd63fe5cc86cdc3cbef42cde0aa81e47832/Rakefile#L34) into flat text files which are then [locked and binary-searched](https://github.com/discourse/mini_mime/blob/63802d1e45cb2b831c34b5d68e364b5ea35c050a/lib/mini_mime.rb#L52-L75) during lookup.
+
+- [`marcel`](https://github.com/rails/marcel/) is Rails' file-typing library, originally a `mimemagicrb` wrapper which
+[became standalone](https://github.com/rails/marcel/commit/2e58d1986715420f0abbba060b6e158d6f4d3a05) at the time of the license drama.
+This library uses the `shared-mime-info` format but not the usual GPLv2 `freedesktop.org` database in that format.
+Apache's Tika project supplies an alternative MIT-licensed XML package file which Marcel
+[transforms to regular Ruby `Hash`es](https://github.com/rails/marcel/blob/main/script/generate_tables.rb)
+as part of [its release cycle](https://github.com/rails/marcel/blob/main/Rakefile).
+
+### Honorable mentions
+
+- [`shared-mime-info`](https://github.com/hanklords/shared-mime-info) is a Ruby Gem not to be confused with the [specification of the same name](). Unlike CYO, this library consumes the `glob`/`magic` files generated by the [`update-mime-database`](https://cgit.freedesktop.org/xdg/shared-mime-info/tree/src/update-mime-database.c) utility instead of consuming the source XML package files directly. This is the only other library I'm aware of (besides `CYO`) attempting to be a full implementation of the `shared-mime-info` spec.
+
+- [`ruby-filemagic`](https://github.com/blackwinter/ruby-filemagic/) and [`ffiruby-filemagic`](https://github.com/glongman/ffiruby-filemagic/) are bindings to [`libmagic`](http://www.darwinsys.com/file/). I used both of these (not simultaneously) in the past to supplement `ruby-mime-types` with file-content matching. These rely on the external `magic` library, usually installed through a system-level package manager [such as Homebrew](https://formulae.brew.sh/formula/libmagic). This dependency precludes Windows support.
+
+## GreeTz
+
+- @ohler55 for [`ox`](https://github.com/ohler55/ox), the only Ruby XML library I found that could parse `freedesktop.org.xml` faster than `ruby-mime-types` took to load.
+- @dearblue for [`ruby-extattr`](https://github.com/dearblue/ruby-extattr).
+- @minad — you did the right thing.
