@@ -6,7 +6,7 @@
 ## Goals
 
 - Identify Media Types (MIME Types) for:
-  - Plain filenames, file extensions, and hypothetial `Pathname`s.
+  - Plain filenames, file extensions, and hypothetical `Pathname`s.
   - Extended filesystem attributes for extant `Pathname`s.
   - Contents of extant files and other `IO`-like streams.
   - IETF-style Content-Type strings (e.g. 'image/jpeg') and other type identifiers like FourCCs.
@@ -40,7 +40,9 @@
 
 ## Usage
 
-Get a `CYO` Type Object by file extension:
+### Get a Type Object
+
+…by file extension:
 
 `irb> CHECKING::YOU::OUT::from_postfix(:png) => #<CHECKING::YOU::OUT image/png>`
 
@@ -63,6 +65,8 @@ Get a `CYO` Type Object by file extension:
 `[okeeblow@emi#CHECKING YOU OUT] ./bin/checking-you-out TEST\ MY\ BEST/Try\ 2\ Luv.\ U/audio/mpeg/invasion_of_the_gabber_rob.mp3 
 audio/mpeg`
 
+
+### Use a Type Object
 
 Once retrieved, a `CYO` Type Object contains everything defined for that type across all `shared-mime-info` XML packages:
 
