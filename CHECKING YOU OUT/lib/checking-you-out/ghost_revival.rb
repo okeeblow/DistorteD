@@ -113,6 +113,15 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       postfixes     = set_me_free.new          # `{StickAround => CYO}` container for Postfixes (extnames).
       complexes     = set_me_free.new          # `{StickAround => CYO}` container for more complex filename fragments.
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
+      mother_tree  = set_me_free.new          # `<treemagic>` => CYO container.
+
+      # Cache recent results to avoid re-running matching logic.
+      # Use a `Hash` to store the last return value for a configurable number of previous query messages.
+      # Use `Thread::Queue` to handle cache eviction of oldest keys from the `Hash`.
+      last_message  = ::Hash.new
+      refrain       = ::Thread::Queue.new
+      # Cache unmatchable messages to minimize denial-of-service risk if we get sent an unmatchable message in a loop.
+      nφ_crime      = ::Set.new
 
       # Two-step `shared-mime-info` XML parsers.
       # `Ractor`-ized CYO supports partial loading of type data à la `mini_mime` to conserve memory and minimize allocations
@@ -152,6 +161,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           when ::Set then cyo.cat_sequence&.each { |action| as_above.baleet(action.min, action.max, action, cyo) }
           else as_above.baleet(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
           end
+          mother_tree.baleet(cyo.mother_tree, cyo)
         }
       }
 
@@ -174,6 +184,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         when ::Set then cyo.cat_sequence&.each { |action| as_above.bury(action.min, action.max, action, cyo) }
         else as_above.bury(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
         end
+        mother_tree.bury(cyo.mother_tree, cyo)
 
         # Evict the oldest-loaded type once we hit our cache limit.
         # A limit of `0` disables eviction, allowing one to load all available types simultaneously.
@@ -220,19 +231,23 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           #  an extended attribute or some other means) then that should be used instead of guessing."
           # This will probably always be an empty `::Array` since this is a niche feature, but we have to test it first.
           steel_needles = ::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE.call(needle)&.map!(&all_night::method(:[]))
-          unless steel_needles.nil? or steel_needles&.empty? then steel_needles.first.yield_self(&together_4ever)
-          else
-            # Get any non-regular (`inode`) type for a `Pathname`, and use it as a parent type for any regular match.
-            irregular_nation = ::CHECKING::YOU::OUT::GHOST_REVIVAL::IRREGULAR_NATION.call(needle.pathname)
-            regular_nation   = ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
+          if not (steel_needles.nil? or steel_needles&.empty?) then steel_needles.first.yield_self(&together_4ever)
+          elsif needle.pathname.exist? and nφ_crime.include?(needle.hash) then
+            # `nφ_crime` key is added the first time our loop gets a `nil` from this `Proc`.
+            # Get any non-regular (`inode`) or directory (`x-content`) type for a `Pathname`,
+            # and if one exists, use it as a parent type for any regular match.
+            irregular_nation = needle.directory? ? mother_tree.=~(needle.pathname).yield_self(&ONE_OR_EIGHT) :
+              ::CHECKING::YOU::OUT::GHOST_REVIVAL::IRREGULAR_NATION.call(needle.pathname)
+            casiotone_nation = ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
               (complexes[needle.stick_around] || postfixes[needle.stick_around]).yield_self(&together_4ever),
               as_above.so_below(needle.stream)&.transform_values!(&together_4ever),
             )
-            irregular_nation.nil? ? regular_nation : case regular_nation
+            irregular_nation.nil? ? casiotone_nation : case casiotone_nation
               when ::NilClass then irregular_nation
               when APPLICATION_OCTET_STREAM then irregular_nation
-              else (regular_nation.frozen? ? regular_nation.dup : regular_nation).add_parent(irregular_nation)
+              else (casiotone_nation.frozen? ? casiotone_nation.dup : casiotone_nation).add_parent(irregular_nation)
             end
+          else nil  # We haven't tested this needle before, so we should return `nil` to trigger `MIMEjr`.
           end
         when ::String then
           # TODO: "URI scheme handlers" https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm45747528198592
@@ -240,14 +255,6 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)
         end  # case needle
       }
-
-      # Cache recent results to avoid re-running matching logic.
-      # Use a `Hash` to store the last return value for a configurable number of previous query messages.
-      # Use `Thread::Queue` to handle cache eviction of oldest keys from the `Hash`.
-      last_message  = ::Hash.new
-      refrain       = ::Thread::Queue.new
-      # Cache unmatchable messages to minimize denial-of-service risk if we get sent an unmatchable message in a loop.
-      nφ_crime      = ::Set.new
 
 
       # Main message loop to process incoming `::Ractor` message queue for instructions.

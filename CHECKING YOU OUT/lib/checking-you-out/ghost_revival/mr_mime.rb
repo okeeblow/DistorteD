@@ -86,19 +86,24 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     when :"mime-type" then
       # Nullify any previous `<mime-type>`'s match when entering a new type Element.
       @cyi = nil
-    when :match then
-      # Mark any newly-added Sequence as eligible for a full match candidate.
-      @i_can_haz_magic = true
-      @speedy_cat.append(::CHECKING::YOU::OUT::SequenceCat.new)
     when :magic then
-      # To avoid an extra allocation, re-use a previous `@speedy_cat` if it is left emptied.
-      @speedy_cat = ::CHECKING::YOU::OUT::SpeedyCat.new if @speedy_cat.nil?
+      # To avoid an extra allocation, re-use a previous `@cat_sequence` if it is left emptied.
+      @cat_sequence = ::CHECKING::YOU::OUT::SpeedyCat.new if @cat_sequence.nil?
+    when :match then
+      # Any time we add a new level of `<match>` to the `<magic>` stack,
+      # the next `end_element(match)` will check the entire stack against our `@needles`.
+      @i_can_haz_filemagic = true
+      @cat_sequence.append(::CHECKING::YOU::OUT::SequenceCat.new)
     when :"magic-deleteall" then self.cyo.clear_content_fragments
     when :glob then
       @stick_around = ::CHECKING::YOU::OUT::StickAround.new
     when :"glob-deleteall" then self.cyo.clear_pathname_fragments
-    when :treemagic then
-      # TODO
+    when :treemagic then @mother_tree = ::CHECKING::YOU::OUT::SpeedyCat.new if @mother_tree.nil?
+    when :treematch then
+      # Any time we add a new level of `<treematch>` to the `<treemagic>` stack,
+      # the next `end_element(treematch)` will check the entire stack against our `@needles`.
+      @i_can_haz_treemagic = true
+      @mother_tree.append(::CHECKING::YOU::OUT::CosmicCat.new)
     end
   end
 
@@ -114,11 +119,9 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     return unless @cyi or @parse_stack.last == :"mime-type"
 
     # Avoid the `Array` allocation necessary when using pattern matching `case` syntax.
-    # I'd still like to refactor this to avoid the redundant `attr_name` `case`s.
-    # Maybe a `Hash` of `proc`s?
     # TODO: Support loading a type given an alias.
     case @parse_stack.last
-    when :"mime-type" then
+    when :"mime-type"    then
       ::CHECKING::YOU::IN::from_ietf_media_type(
         value.as_s,
         envelope: ::CHECKING::YOU::OUT::EverlastingMessage
@@ -127,17 +130,30 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
         # Don't replace/update types we've already partially loaded.
         @out.store(@cyi, fresh_cyo) unless @out.include?(@cyi)
       } if attr_name == :type and self.awen?(value.as_s)
-    when :match then
+    when :magic          then @cat_sequence&.weight = value.as_i if attr_name == :priority
+    when :match          then
       case attr_name
-      when :type   then @speedy_cat.last.format = self.magic_eye[value.as_s]
-      when :value  then @speedy_cat.last.cat = value.as_s
-      when :offset then @speedy_cat.last.boundary = value.as_s
-      when :mask   then @speedy_cat.last.mask = BASED_STRING.call(value.as_s)
+      when :type         then @cat_sequence.last.format = self.magic_eye[value.as_s]
+      when :value        then @cat_sequence.last.cat = value.as_s
+      when :offset       then @cat_sequence.last.boundary = value.as_s
+      when :mask         then @cat_sequence.last.mask = BASED_STRING.call(value.as_s)
       end
-    when :magic          then @speedy_cat&.weight = value.as_i if attr_name == :priority
+    when :treemagic      then
+      # Content-match byte-sequence container Element can specify a weight 0–100.
+      @mother_tree&.weight = value.as_i if attr_name == :priority
+    when :treematch      then
+      # Rename the most common keys to avoid confusion with other 'type's and 'path's in CYO-land.
+      case attr_name
+      when :path         then @mother_tree.last.here_we_are    = ::Pathname::new(value.as_s)
+      when :type         then @mother_tree.last.your_body      = value.as_s
+      when :"match-case" then @mother_tree.last.case_sensitive = value.as_bool
+      when :executable   then @mother_tree.last.executable     = value.as_bool
+      when :"non-empty"  then @mother_tree.last.non_empty      = value.as_bool
+      when :mimetype     then @mother_tree.last.inner_spirit   = value.as_s
+      end
     when :alias          then self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s)) if attr_name == :type
     when :"sub-class-of" then self.cyo.add_parent(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s)) if attr_name == :type
-    when :glob then
+    when :glob           then
       case attr_name
       when :weight           then @stick_around.weight = value.as_i
       when :pattern          then @stick_around.replace(value.as_s)
@@ -170,33 +186,47 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
     return unless @cyi or name == :"mime-type"
     case name
-    when :"mime-type" then
-      @cyi = nil
+    when :"mime-type" then @cyi = nil
+    when :magic then
+      # `SpeedyCat#clear` will unset any non-default `weight` so we can re-use it cleanly.
+      @cat_sequence.clear
     when :match then
-      # The Sequence stack represents a complete match once we start popping Sequences from it,
-      # which we can know because every `<match>` stack push sets `@i_can_haz_magic = true`.
+      # The `<magic>` stack represents a complete match only the first time we encounter end_element(match)
+      # after pushing a `<match>` to the `<magic>` stack and setting `@i_can_haz_filemagic = true`.
       # If there is only a single sub-sequence we can just add that instead of the container.
-      if @i_can_haz_magic then
+      if @i_can_haz_filemagic then
         self.cyo.add_content_fragment(
           # Add single-sequences directly instead of adding their container.
-          @speedy_cat.one? ?
+          @cat_sequence.one? ?
             # Transfer any non-default `weight` from the container to that single-sequence.
-            @speedy_cat.pop.tap { _1.weight = @speedy_cat.weight } :
+            @cat_sequence.pop.tap { _1.weight = @cat_sequence.weight } :
             # Otherwise go ahead and add a copy of the container while also preparing the
             # local container for a possible next-branch to the `<magic>` tree.
-            @speedy_cat.dup.tap { @speedy_cat.pop }
+            @cat_sequence.dup.tap { @cat_sequence.pop }
         )
       else
         # We should still get rid of the last content-match structure here even if we didn't save it.
-        @speedy_cat.pop
+        @cat_sequence.pop
       end
       # Mark any remaining partial Sequences as ineligible to be a full match candidate,
       # e.g. if we had a stack of [<match1/><match2/><match3/>] we would want to add a
       # candidate [m1, m2, m3] but not the partials [m1, m2] or [m1] as we clear out the stack.
-      @i_can_haz_magic = false
-    when :magic then
-      # `SpeedyCat#clear` will unset any non-default `weight` so we can re-use it cleanly.
-      @speedy_cat.clear
+      @i_can_haz_filemagic = false
+    when :treemagic then @mother_tree.clear
+    when :treematch then
+      # The `<treemagic>` stack represents a complete match only the first time we encounter end_element(treematch)
+      # after pushing a `<treematch>` to the `<treemagic>` stack and setting `@i_can_haz_treemagic = true`.
+      if @i_can_haz_treemagic then
+        self.cyo.add_tree_branch(
+          @mother_tree.one? ?
+            @mother_tree.pop.tap { _1.weight = @mother_tree.weight } :
+            @mother_tree.dup.tap { @mother_tree.pop }
+        )
+      else
+        # We should still get rid of the last tree-match structure here even if we didn't save it.
+        @mother_tree.pop
+      end
+      @i_can_haz_treemagic = false
     when :glob then
       self.cyo.add_pathname_fragment(@stick_around) unless @stick_around.nil?
     end

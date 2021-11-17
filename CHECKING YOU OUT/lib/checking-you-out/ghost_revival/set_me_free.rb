@@ -28,6 +28,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       # This should also be used for `my_hash[some_key] = some_value`.
       _1.alias_method(:[]=, :bury)
 
+      # Return all values matching a query `Object`.
+      _1.define_method(:=~) { |otra| self.select { |k, v| k=~(otra) }.values }
+
       # Merge another `::Hash`'s contents with `::Set` upgrading.
       _1.define_method(:merge) { |otra|
         otra.each_pair { |haystack, needle|

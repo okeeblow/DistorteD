@@ -162,17 +162,17 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
 
   # Map of `shared-mime-info` XML Element names to our generic category names.
   FDO_ELEMENT_CATEGORY = {
-    :magic => :content_match,
-    :treemagic => :content_match,
-    :"root-XML" => :content_match,
-    :match => :content_match,
-    :glob => :pathname_match,
-    :alias => :family_tree,
-    :"sub-child-of" => :family_tree,
-    :"generic-icon" => :host_metadata,
-    :icon => :host_metadata,
-    :comment => :textual_metadata,
-    :acronym => :textual_metadata,
+    :magic              => :content_match,
+    :treemagic          => :content_match,
+    :"root-XML"         => :content_match,
+    :match              => :content_match,
+    :glob               => :pathname_match,
+    :alias              => :family_tree,
+    :"sub-child-of"     => :family_tree,
+    :"generic-icon"     => :host_metadata,
+    :icon               => :host_metadata,
+    :comment            => :textual_metadata,
+    :acronym            => :textual_metadata,
     :"expanded-acronym" => :textual_metadata,
   }.freeze
 
@@ -274,12 +274,15 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # `<mime-type>`, `<alias>`, `<match>`, and `<sub-class-of>`.
     @parse_stack = ::Array.new
 
-    # We need a separate stack (`@speedy_cat`) and a flag boolean for building content-match structures since
+    # We need a separate stack (`@cat_sequence`) and a flag boolean for building content-match structures since
     # the source XML represents OR and AND byte-sequence relationships as sibling and child Elements respectively,
     # e.g. `<magic><match1><match2/><match3/></match1><match4/></magic>` => `[m1 AND m2]` OR `[m1 AND m3]`, OR `[m4]`.
-    # When the flag is set, any call to `#pop` from the `@speedy_cat` stack (in our `end_element` method)
+    # When the flag is set, any call to `#pop` from the `@cat_sequence` stack (in our `end_element` method)
     # should first save the complete stack as a content-match candidate. If the flag is not set, just `#pop` but then stop.
-    @i_can_haz_magic = true
+    #
+    # `<treemagic><treematch/></treemagic>` work the same way.
+    @i_can_haz_filemagic = true
+    @i_can_haz_treemagic = true
 
     # Allow the user to control the conditions on which we ignore Elements from the source XML.
     @category_toggles = handler_kwargs.slice(*self.class::DEFAULT_LOADS.keys)
@@ -367,6 +370,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     #      and skip `<glob>` elements if we have no `::Pathname`-like filename-match needles.
     # This SHOULD be exactly repeated in `attr_value` and `end_element` for full benefits.
     return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
+    return if (name == :treemagic or name == :treematch) and @needles[::Dir].empty?
     return if name == :glob and (
       @needles[::CHECKING::YOU::OUT::StickAround].empty? and
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
@@ -375,10 +379,17 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # Otherwise set up needed container objects.
     case name
     when :match then
-      # Mark any newly-added Sequence as eligible for a full match candidate.
-      @i_can_haz_magic = true
-      @speedy_cat.append(::CHECKING::YOU::OUT::SequenceCat.new)
-    when :magic then @speedy_cat = ::CHECKING::YOU::OUT::SpeedyCat.new if @speedy_cat.nil?
+      # Any time we add a new level of `<match>` to the `<magic>` stack,
+      # the next `end_element(match)` will check the entire stack against our `@needles`.
+      @i_can_haz_filemagic = true
+      @cat_sequence.append(::CHECKING::YOU::OUT::SequenceCat.new)
+    when :magic then @cat_sequence = ::CHECKING::YOU::OUT::SpeedyCat.new if @cat_sequence.nil?
+    when :treemagic then @mother_tree = ::CHECKING::YOU::OUT::SpeedyCat.new if @mother_tree.nil?
+    when :treematch then
+      # Any time we add a new level of `<treematch>` to the `<treemagic>` stack,
+      # the next `end_element(treematch)` will check the entire stack against our `@needles`.
+      @i_can_haz_treemagic = true
+      @mother_tree.append(::CHECKING::YOU::OUT::CosmicCat.new)
     when :glob  then @stick_around = ::CHECKING::YOU::OUT::StickAround.new
     end
   end
@@ -390,6 +401,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # This happens e.g. for the two attributes of the XML declaration '<?xml version="1.0" encoding="UTF-8"?>'.
     return if self.element_skips.include?(@parse_stack.last)
     return if (@parse_stack.last == :magic or @parse_stack.last == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
+    return if (@parse_stack.last == :treemagic or @parse_stack.last == :treematch) and @needles[::Dir].empty?
     return if (@parse_stack.last == :glob) and (
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
       @needles[::CHECKING::YOU::OUT::StickAround].empty?
@@ -397,19 +409,32 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
 
     case @parse_stack.last
     when :"mime-type" then @media_type.replace(value.as_s) if attr_name == :type
+    when :magic then
+      # Content-match byte-sequence container Element can specify a weight 0–100.
+      @cat_sequence&.weight = value.as_i if attr_name == :priority
     when :match then
       # Parse the actual matching byte sequences.
       # Our `SpeedyCat`/`SequenceCat` `::Struct`s are written to handle these in any order,
       # which is why `#format` passes in a `proc` to be used if the order is `format` and then `value` :)
       case attr_name
-      when :type   then @speedy_cat.last.format = self.magic_eye[value.as_s]
-      when :value  then @speedy_cat.last.cat = value.as_s
-      when :offset then @speedy_cat.last.boundary = value.as_s
-      when :mask   then @speedy_cat.last.mask = BASED_STRING.call(value.as_s)
+      when :type   then @cat_sequence.last.format   = self.magic_eye[value.as_s]
+      when :value  then @cat_sequence.last.cat      = value.as_s
+      when :offset then @cat_sequence.last.boundary = value.as_s
+      when :mask   then @cat_sequence.last.mask     = BASED_STRING.call(value.as_s)
       end
-    when :magic then
-      # Content-match byte-sequence container Element can specufy a weight 0–100.
-      @speedy_cat&.weight = value.as_i if attr_name == :priority
+    when :treemagic then
+      # Content-match byte-sequence container Element can specify a weight 0–100.
+      @mother_tree&.weight = value.as_i if attr_name == :priority
+    when :treematch then
+      # Rename the most common keys to avoid confusion with other 'type's and 'path's in CYO-land.
+      case attr_name
+      when :path         then @mother_tree.last.here_we_are    = ::Pathname::new(value.as_s)
+      when :type         then @mother_tree.last.your_body      = value.as_s
+      when :"match-case" then @mother_tree.last.case_sensitive = value.as_bool
+      when :executable   then @mother_tree.last.executable     = value.as_bool
+      when :"non-empty"  then @mother_tree.last.non_empty      = value.as_bool
+      when :mimetype     then @mother_tree.last.inner_spirit   = value.as_s
+      end
     when :glob then
       # Parse filename matches.
       case attr_name
@@ -427,27 +452,40 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     return if self.element_skips.include?(@parse_stack.last)
     raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
     return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
+    return if (name == :treemagic or name == :treematch) and @needles[::Dir].empty?
     return if name == :glob and (
       @needles[::CHECKING::YOU::OUT::StickAround].empty? and
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     )
 
     case name
+    when :magic then @cat_sequence.clear
     when :match then
-      # The Sequence stack represents a complete match once we start popping Sequences from it,
-      # which we can know because every `<match>` stack push sets `@i_can_haz_magic = true`.
-      if @i_can_haz_magic
+      # The `<magic>` stack represents a complete match only the first time we encounter end_element(match)
+      # after pushing a `<match>` to the `<magic>` stack and setting `@i_can_haz_filemagic = true`.
+      if @i_can_haz_filemagic
         ::CHECKING::YOU::IN::from_ietf_media_type(
           @media_type.dup,
           receiver: @receiver_ractor,
         ) if @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:stream).map! {
-          @speedy_cat.=~(_1, offset: @speedy_cat.min)
+          @cat_sequence.=~(_1, offset: @cat_sequence.min)
         }.any?
       end
-      @speedy_cat.pop
-      @i_can_haz_magic = false
-    when :magic then
-      @speedy_cat.clear
+      @cat_sequence.pop
+      @i_can_haz_filemagic = false
+    when :treemagic then @mother_tree.clear
+    when :treematch then
+      # The `<treemagic>` stack represents a complete match only the first time we encounter end_element(treematch)
+      # after pushing a `<treematch>` to the `<treemagic>` stack and setting `@i_can_haz_treemagic = true`.
+      if @i_can_haz_treemagic
+        ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
+          @needles[::Dir].map { @mother_tree.=~(_1) }.any?
+        )
+        # Send any `mimetype` CYIs to `MrMIME` for `<treematch>` elements which want a certain inner file type.
+        @mother_tree.map(&:inner_spirit)&.compact&.each(&@receiver_ractor.method(:send))
+      end
+      @mother_tree.pop
+      @i_can_haz_treemagic = false
     when :glob then
       ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:stick_around).map!(&@stick_around.method(:eql?)).any? or
@@ -460,9 +498,18 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   # See the overridden `self.new` for more details of our `::Ractor`'s message-handling loop.
   def do_the_thing(the_trigger_of_innocence)
     # Check for filesystem extended attributes in `::Pathname` needles representing extant files.
+    # Send their `CYI`s directly to `MrMIME` (`@receiver_ractor`) if found.
     @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:pathname).keep_if(&:exist?).flat_map {
       ::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE.call(_1, receiver: @receiver_ractor)
     }
+
+    # HACK: Use `Dir` as a needle key to represent the `Set` of `Pathname` needles representing extant directories.
+    #       If there are none, we will skip `<treemagic>`/`<treematch>` elements for speed.
+    #       Do it once here before parsing to avoid hitting the filesystem every time we encounter those elements.
+    #       We don't use `Dir` needles for anything, so this behavior won't conflict.
+    @needles[::Dir].merge(
+      @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:pathname).keep_if(&:directory?)
+    )
 
     # Parse our enabled `shared-mime-info` packages for filename glob matches and content (magic) matches.
     self.parse_mime_packages
