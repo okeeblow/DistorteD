@@ -192,13 +192,19 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
     #
     # However when I was developing `<treemagic>` support I couldn't get the `FNM_CASEFOLD` flag to work
     # and realized the documentation might be correct after all:
-    #
-    # irb> lumix = Pathname::new('/home/okeeblow/Works/DistorteD/CHECKING YOU OUT/TEST MY BEST/Try 2 Luv. U/x-content/image-dcf/LUMIX')
-    # irb> Dir::glob(Pathname::new('dcim'), File::FNM_CASEFOLD, base: lumix) => []
-    # irb> Dir::glob(Pathname::new('DCIM'), File::FNM_CASEFOLD, base: lumix) => ["DCIM"]
-    # irb> Dir::glob(Pathname::new('dcim*'), File::FNM_CASEFOLD, base: lumix) => ["DCIM"]
+    #   irb> lumix = Pathname::new('/home/okeeblow/Works/DistorteD/CHECKING YOU OUT/TEST MY BEST/Try 2 Luv. U/x-content/image-dcf/LUMIX')
+    #   irb> Dir::glob(Pathname::new('dcim'), File::FNM_CASEFOLD, base: lumix) => []
+    #   irb> Dir::glob(Pathname::new('DCIM'), File::FNM_CASEFOLD, base: lumix) => ["DCIM"]
+    #   irb> Dir::glob(Pathname::new('dcim*'), File::FNM_CASEFOLD, base: lumix) => ["DCIM"]
     #
     # Notice how it *does* work with the addition of the trailing asterisk to the pattern!
+    # It works for multi-level patterns as well, but only if *every level* is given an asterisk:
+    #   irb> svcd = Pathname::new('/home/okeeblow/Works/DistorteD/CHECKING YOU OUT/TEST MY BEST/Try 2 Luv. U/x-content/video-svcd/CYO-SVCD')
+    #   irb> Dir::glob(Pathname::new('MPEG2/AVSEQ01.MPG'), File::FNM_CASEFOLD, base: svcd) => []
+    #   irb> Dir::glob(Pathname::new('MPEG2/AVSEQ01.MPG*'), File::FNM_CASEFOLD, base: svcd) => []
+    #   irb> Dir::glob(Pathname::new('MPEG2*/AVSEQ01.MPG*'), File::FNM_CASEFOLD, base: svcd) => ["mpeg2/avseq01.mpg"]
+    #
+    #
     # What gives? Time to delve into MRI source to find out:
     # - https://github.com/ruby/ruby/blob/master/dir.rb
     # - https://github.com/ruby/ruby/blob/master/dir.c
@@ -237,7 +243,9 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
       case otra
       when ::Pathname then
         ::Dir::glob(
-          self.case_sensitive? ? self[:here_we_are] : "#{self[:here_we_are]}*" ,
+          self.case_sensitive? ?
+            self[:here_we_are] :
+            self[:here_we_are].to_s.split(::File::SEPARATOR).map!{ _1 << -?* }.join(::File::SEPARATOR),
           ::File::FNM_DOTMATCH | ::File::FNM_EXTGLOB | (self.case_sensitive? ? 0 : ::File::FNM_CASEFOLD),
           base: otra,
         ).pop&.yield_self(&otra.method(:join))&.yield_self { |globbed|
