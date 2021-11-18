@@ -249,6 +249,11 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             end
           else nil  # We haven't tested this needle before, so we should return `nil` to trigger `MIMEjr`.
           end
+        when ::Regexp then
+          # Return `nil` the first time we query a `Regexp`, ensuring it will run through `MrMIME` and load all matches.
+          # This is to avoid inconsistent results in situations where we have already loaded some types which would match the `Regexp`,
+          # e.g. if we have loaded `image/jpeg` and get a `Regexp` needle `/image/` we must still load all other `image/*` types.
+          all_night.values.select! { needle === _1.to_s } if nφ_crime.include?(needle.hash)
         when ::String then
           # TODO: "URI scheme handlers" https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm45747528198592
           # unless (needle =~ ::URI::regexp).nil?
