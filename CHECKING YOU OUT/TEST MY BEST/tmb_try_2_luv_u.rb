@@ -1,7 +1,7 @@
 require('test/unit') unless defined?(::Test::Unit)
 require_relative('../lib/checking-you-out') unless defined?(::CHECKING::YOU::OUT)
 
-artifact_root = ::CHECKING::YOU::OUT::GEM_ROOT.call.join("TEST-MY-BEST", "Try 2 Luv. U")
+artifact_root = ::CHECKING::YOU::OUT::GEM_ROOT.call.join("TEST MY BEST", "Try 2 Luv. U")
 extant_types = ARGV[0].nil? ? ::Dir.glob(
   ::File.join("*", "*"),
   base: artifact_root
