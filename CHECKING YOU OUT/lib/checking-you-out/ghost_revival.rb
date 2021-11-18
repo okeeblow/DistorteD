@@ -153,7 +153,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
       # Evict a single `::CHECKING::YOU::IN`'s related data from all memoization structures.
       kick_out_仮面 = proc { |cyi|
-        all_night.delete(cyi).tap { |cyo|
+        all_night.delete(cyi)&.tap { |cyo|
           postfixes.baleet(cyo.postfixes, cyo)
           complexes.baleet(cyo.complexes, cyo)
           case cyo.cat_sequence
