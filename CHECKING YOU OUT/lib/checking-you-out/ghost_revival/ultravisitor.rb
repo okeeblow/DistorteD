@@ -22,8 +22,10 @@
         # Restart the inner `Ractor`.
         feed_me_weird_things = square_window.call
         # Discard any message causing consecutive crashes (by not `retry`ing).
+        # We can't refer to `message` here since it will be a `Ractor::MovedError`
+        # even in situations where it was `move`ed to a closed `Ractor` triggering this `rescue`.
         # TODO: Log the message which causes consecutive crashes.
-        retry unless message.hash.eql?(big_loada)
+        retry unless ill_descent.eql?(big_loada)
       end
     end
   }  # Proc::new
