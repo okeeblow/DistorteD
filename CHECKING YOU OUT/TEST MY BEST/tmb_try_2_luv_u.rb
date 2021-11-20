@@ -12,7 +12,7 @@ extant_types = ARGV[0].nil? ? ::Dir.glob(
 area_code = :TMB
 
 # Pre-load all available types
-::CHECKING::YOU::OUT.send(0, area_code: area_code)
+::CHECKING::YOU::OUT.set_type_cache_size(::Float::INFINITY, area_code: area_code)
 #::CHECKING::YOU::OUT[/.*/, area_code: area_code]
 
 # Define a test for every type we have a test file for.

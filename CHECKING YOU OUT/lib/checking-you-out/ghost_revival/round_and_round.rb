@@ -3,6 +3,30 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND
     ::CHECKING::YOU::OUT::GHOST_REVIVAL::AREAS[area_code].send(query)
   end
 
+  # We differentiate the `::Fixnum` limits for the two queues based on sign.
+  # Positive values apply to an area's loaded-types cache,
+  # and negative values apply to an area's query-response cache.
+  # The area `Ractor`'s message-handling loop will undo the sign flip for the negatives.
+  #
+  # I ended up doing it this way since I couldn't subclass `Fixnum` due to the interpreter
+  # treating them as immediates, but we can get away with this due to having only two queues.
+  def set_type_cache_size(limit, area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE)
+    # The query cache is *effectively* limited in size because there will only ever be so many
+    # type definitions in our available `shared-mime-info` XML packages.
+    return ::CHECKING::YOU::OUT::GHOST_REVIVAL::AREAS[area_code] unless limit.eql?(::Float::INFINITY) or limit.is_a?(::Fixnum)
+    ::CHECKING::YOU::OUT::GHOST_REVIVAL::AREAS[area_code].send(
+      case limit
+      when ::Fixnum then limit.positive? ? limit : -limit
+      else limit
+      end
+    )
+  end
+  def set_query_cache_size(limit, area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE)
+    # Query cache size will be reset to `DEFAULT_QUERY_CACHE_SIZE` if given `0`.
+    return ::CHECKING::YOU::OUT::GHOST_REVIVAL::AREAS[area_code] unless limit.is_a?(::Fixnum)
+    ::CHECKING::YOU::OUT::GHOST_REVIVAL::AREAS[area_code].send(limit.negative? ? limit : -limit)
+  end
+
   # Control `Ractor#send(move: true/false)` based on whether or not we are coercing the given input to a new `Class`.
   # This is to work around the inability for `Ractor::make_shareable` to `#freeze` the `IO` stream in a `Wild_I/O`,
   # avoiding a `Ractor::MovedError` if we tried to use the same query `Object` twice in a row.

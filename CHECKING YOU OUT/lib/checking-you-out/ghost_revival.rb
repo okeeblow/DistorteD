@@ -27,9 +27,16 @@ require_relative(-'ghost_revival/round_and_round') unless defined?(::CHECKING::Y
 # TL;DR: Anything having to do with CYO `::Ractor` communication goes in here.
 module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
-  # We will remember our computed answer to a configurable number of recently-seen needles
-  # (e.g. `::Pathname`s or `:IO` streams) for performance, especially with unmatchable needles.
-  DEFAULT_CACHE_SIZE = 111.freeze
+  # We will memoize a configurable number of CYO type objects. When we reach that limit, the oldest type will be purged.
+  # The default cache size used to be `111`, but I bumped it up because it was easy to load more types
+  # than that at once with popular categories like images, e.g. `irb> CYO[/image/].size => 122`.
+  DEFAULT_TYPE_CACHE_SIZE = 333.freeze
+
+  # We will memoize our computed answer (even if it's `nil`) to a configurable number of recently-seen needles,
+  # letting us skip the entire matching sequence, skip the allocation hit from `CYI` to `CYO` enrichment (`together_4ever`),
+  # and lets us avoid `MrMIME` round-trips from needles which explicitly always trigger that parser (i.e. `Regexp`)
+  # and from invalid needles which eventually produce two `nil` responses in a row.
+  DEFAULT_QUERY_CACHE_SIZE = 111.freeze
 
   # These two types are the implicit parents for any streamable type and any text type, respectively.
   # See https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#subclassing
@@ -93,9 +100,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   # Construct a `Ractor` container for a single area of type data, chosen by the `area_code` parameter.
   # This allows separate areas for separate services/workflows running within the same Ruby interpreter.
   NEW_AREA = ::Ractor::make_shareable(->(
-    area_code:   DEFAULT_AREA_CODE,   # Unique name for each separate a pool of CYO types.
-    max_burning: DEFAULT_CACHE_SIZE,  # Number of type definitions to keep in memory. No limit iff `0`.
-    how_long:    DEFAULT_CACHE_SIZE   # Number of queries and their type-match-responses to keep in memory.
+    area_code:   DEFAULT_AREA_CODE,         # Unique name for each separate a pool of CYO types.
+    max_burning: DEFAULT_TYPE_CACHE_SIZE,   # Number of type definitions to keep in memory. No limit iff `0`.
+    how_long:    DEFAULT_QUERY_CACHE_SIZE  # Number of queries and their type-match-responses to keep in memory.
   ) {
     # `::Ractor.new` won't take arbitrary named arguments, just positional.
     ::Ractor.new(area_code, max_burning, how_long, name: area_code.to_s) { |area_code, max_burning, how_long|
@@ -286,10 +293,20 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         case _message
         in ::CHECKING::YOU::OUT     => cyo then remember_me.call(cyo.in, cyo)  # Memoize a new fully-loaded CYO.
         in ::CHECKING::YOU::IN      => cyi then mr_mime.send(cyi, move: true)  # Spool a type to load on the next XML parse.
-        in ::Fixnum                 => max then max_burning = max              # Control CYO cache length (for loaded types).
         in ::CHECKING::YOU::IN      => cyi, ::CHECKING::YOU::OUT => cyo then remember_me.call(cyi, cyo)
         in ::CHECKING::YOU::IN::B4U => cyi, ::CHECKING::YOU::OUT => cyo then remember_me.call(cyi, cyo)
-        in SharedMIMEinfo           => mime_package
+        in ::Float::INFINITY               then max_burning = 0  # No CYOs will be purged when loading more types.
+        in ::Fixnum                 => max then
+          # We can't subclass `Fixnum`, because Ruby treats them as immediates instead of heap objects,
+          # so our outer methods use negative `Fixnum` affect the second of our two queues.
+          case
+          when max.positive? then max_burning =  max
+          when max.negative? then how_long    = -max
+          when max.zero?     then
+            max_burning = 0
+            how_long    = DEFAULT_QUERY_CACHE_SIZE
+          end
+        in SharedMIMEinfo => mime_package
           # `::Pathname` subclass representing a `shared-mime-info`-format XML package. Toggle them in both parsers.
           mime_jr.send(mime_package)
           mr_mime.send(mime_package)

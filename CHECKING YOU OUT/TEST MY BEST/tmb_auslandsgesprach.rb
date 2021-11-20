@@ -71,7 +71,7 @@ end
 area_code = :TMB
 
 # Pre-load all available types
-::CHECKING::YOU::OUT.send(0, area_code: area_code)
+::CHECKING::YOU::OUT.set_type_cache_size(::Float::INFINITY, area_code: area_code)
 #::CHECKING::YOU::OUT[/.*/, area_code: area_code]  # TODO: Fix generic CYO::[]
 
 # Load all `<mime-type>` IETF Media-Type `String`s from the same test package.
