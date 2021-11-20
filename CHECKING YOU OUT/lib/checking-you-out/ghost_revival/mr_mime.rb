@@ -104,6 +104,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       # the next `end_element(treematch)` will check the entire stack against our `@needles`.
       @i_can_haz_treemagic = true
       @mother_tree.append(::CHECKING::YOU::OUT::CosmicCat.new)
+    when :"root-XML" then @re_roots = ::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots::new if @re_roots.nil?
     end
   end
 
@@ -160,10 +161,10 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       when :"case-sensitive" then @stick_around.case_sensitive = value.as_bool
       end
     when :"root-XML" then
-      #case attr_name
-      #when :namespaceURI then  # TODO
-      #when :localName then  # TODO
-      #end
+      case attr_name
+      when :namespaceURI then @re_roots.namespace = value.as_s
+      when :localName    then @re_roots.localname = value.as_s
+      end
     end
   end
 
@@ -229,6 +230,9 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       @i_can_haz_treemagic = false
     when :glob then
       self.cyo.add_pathname_fragment(@stick_around) unless @stick_around.nil?
+    when :"root-XML" then
+      self.cyo.add_xml_root(@re_roots.dup) unless @re_roots.nil? or @re_roots&.empty?
+      @re_roots.clear unless @re_roots.nil? or @re_roots&.empty?
     end
   end
 

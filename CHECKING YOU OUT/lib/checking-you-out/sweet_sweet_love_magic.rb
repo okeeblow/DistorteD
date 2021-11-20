@@ -8,6 +8,9 @@ require_relative(-'sweet_sweet_love_magic/sequence_cat') unless defined?(::CHECK
 # Find-by-directory-tree matching.
 require_relative(-'sweet_sweet_love_magic/cosmic_cat') unless defined?(::CHECKING::YOU::OUT::SweetSweet♥Magic::CosmicCat)
 
+# Find-by-XML-namespace matching.
+require_relative(-'sweet_sweet_love_magic/re_roots') unless defined?(::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots)
+
 
 # Find-by-content CYO instance-level components.
 module ::CHECKING::YOU::OUT::SweetSweet♥Magic
@@ -22,6 +25,9 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
   def add_tree_branch(branch); self.awen(:@mother_tree, branch); end
   def clear_tree_branches; self.remove_instance_variable(:@mother_tree); end
 
+  attr_reader(:re_roots)
+  def add_xml_root(root); self.awen(:@re_roots, root); end
+  def clear_xml_roots; self.remove_instance_variable(:@re_roots); end
 
 end  # module CHECKING::YOU::SweetSweet♥Magic
 

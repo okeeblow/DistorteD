@@ -114,6 +114,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       complexes     = set_me_free.new          # `{StickAround => CYO}` container for more complex filename fragments.
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
       mother_tree   = set_me_free.new          # `<treemagic>` => CYO container.
+      re_roots      = set_me_free.new          # `<root-XML>` => CYO container.
 
       # Cache recent results to avoid re-running matching logic.
       # Use a `Hash` to store the last return value for a configurable number of previous query messages.
@@ -162,6 +163,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           else as_above.baleet(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
           end
           mother_tree.baleet(cyo.mother_tree, cyo)
+          re_roots.baleet(cyo.re_roots, cyo)
         }
       }
 
@@ -185,6 +187,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         else as_above.bury(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
         end
         mother_tree.bury(cyo.mother_tree, cyo)
+        re_roots.bury(cyo.re_roots, cyo) unless cyo.eql?(APPLICATION_XML)
 
         # Evict the oldest-loaded type once we hit our cache limit.
         # A limit of `0` disables eviction, allowing one to load all available types simultaneously.
@@ -231,23 +234,36 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           #  an extended attribute or some other means) then that should be used instead of guessing."
           # This will probably always be an empty `::Array` since this is a niche feature, but we have to test it first.
           steel_needles = ::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE.call(needle)&.map!(&all_night::method(:[]))
-          if not (steel_needles.nil? or steel_needles&.empty?) then steel_needles.first.yield_self(&together_4ever)
-          elsif needle.pathname.exist? and nφ_crime.include?(needle.hash) then
-            # `nφ_crime` key is added the first time our loop gets a `nil` from this `Proc`.
+          unless (steel_needles.nil? or steel_needles&.empty?) then steel_needles.first.yield_self(&together_4ever)
+          else
             # Get any non-regular (`inode`) or directory (`x-content`) type for a `Pathname`,
             # and if one exists, use it as a parent type for any regular match.
-            irregular_nation = needle.directory? ? mother_tree.=~(needle.pathname).yield_self(&ONE_OR_EIGHT) :
-              ::CHECKING::YOU::OUT::GHOST_REVIVAL::IRREGULAR_NATION.call(needle.pathname)
-            casiotone_nation = ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
-              (complexes[needle.stick_around] || postfixes[needle.stick_around]).yield_self(&together_4ever),
-              as_above.so_below(needle.stream)&.transform_values!(&together_4ever),
-            )
+            irregular_nation = ::CHECKING::YOU::OUT::GHOST_REVIVAL::IRREGULAR_NATION.call(needle.pathname)
+            casiotone_nation = case
+            when needle.directory? then mother_tree.=~(needle.pathname).yield_self(&ONE_OR_EIGHT)
+            when (needle.file? and needle.extname.eql?(-'.xml')) then
+              # Any XML file with a non-`.xml` file extension is likely to be matchable via its own unique extension,
+              # but for `.xml` files we should run our mini-parser to extract the namespace and root-Element name and match that.
+              xml_root = ::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots::from_pathname(needle.pathname)
+              # `nφ_crime` key is added the first time our loop gets a `nil` from this `Proc`,
+              # so return that `nil` here iff we failed to match our `.xml` file's namespace and root Element name.
+              # This avoids returning a plain `APPLICATION_XML` match when there is more specific type data not yet loaded.
+              nφ_crime.include?(needle.hash) ? re_roots[xml_root] : nil.tap { mime_jr.send(xml_root, move: true) }  
+            else
+              ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
+                (complexes[needle.stick_around] || postfixes[needle.stick_around]).yield_self(&together_4ever),
+                as_above.so_below(needle.stream)&.transform_values!(&together_4ever),
+              )
+            end  # casiotone_nation = case
+            # If we made an irregular match, add it as a parent type to a regular match (if there was one).
+            # If there was an irregular match but no regular match and this is our first time testing this needle,
+            # return `nil` to run it through our XML parsers in search of a more-specific type not yet loaded.
+            # This avoids partial and inconsistent matches for e.g. removable media having a `<treemagic>` match when mounted,
+            # like a camera SD card whose irregular match will be `inode/mountpoint` but whose regular match would be `x-content/image-dcf`.
             irregular_nation.nil? ? casiotone_nation : case casiotone_nation
-              when ::NilClass then irregular_nation
-              when APPLICATION_OCTET_STREAM then irregular_nation
+              when ::NilClass, APPLICATION_OCTET_STREAM then nφ_crime.include?(needle.hash) ? irregular_nation : nil
               else (casiotone_nation.frozen? ? casiotone_nation.dup : casiotone_nation).add_parent(irregular_nation)
-            end
-          else nil  # We haven't tested this needle before, so we should return `nil` to trigger `MIMEjr`.
+            end  # case casiotone_nation
           end
         when ::Regexp then
           # Return `nil` the first time we query a `Regexp`, ensuring it will run through `MrMIME` and load all matches.

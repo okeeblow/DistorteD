@@ -375,22 +375,24 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @needles[::CHECKING::YOU::OUT::StickAround].empty? and
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     )
+    return if name == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
 
     # Otherwise set up needed container objects.
     case name
-    when :match then
+    when :match       then
       # Any time we add a new level of `<match>` to the `<magic>` stack,
       # the next `end_element(match)` will check the entire stack against our `@needles`.
       @i_can_haz_filemagic = true
-      @cat_sequence.append(::CHECKING::YOU::OUT::SequenceCat.new)
-    when :magic then @cat_sequence = ::CHECKING::YOU::OUT::SpeedyCat.new if @cat_sequence.nil?
-    when :treemagic then @mother_tree = ::CHECKING::YOU::OUT::SpeedyCat.new if @mother_tree.nil?
-    when :treematch then
+      @cat_sequence.append(::CHECKING::YOU::OUT::SequenceCat::new)
+    when :magic       then @cat_sequence = ::CHECKING::YOU::OUT::SpeedyCat::new if @cat_sequence.nil?
+    when :treemagic   then @mother_tree  = ::CHECKING::YOU::OUT::SpeedyCat::new if @mother_tree.nil?
+    when :treematch   then
       # Any time we add a new level of `<treematch>` to the `<treemagic>` stack,
       # the next `end_element(treematch)` will check the entire stack against our `@needles`.
       @i_can_haz_treemagic = true
-      @mother_tree.append(::CHECKING::YOU::OUT::CosmicCat.new)
-    when :glob  then @stick_around = ::CHECKING::YOU::OUT::StickAround.new
+      @mother_tree.append(::CHECKING::YOU::OUT::CosmicCat::new)
+    when :glob        then @stick_around = ::CHECKING::YOU::OUT::StickAround::new
+    when :"root-XML"  then @re_roots     = ::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots::new if @re_roots.nil?
     end
   end
 
@@ -406,6 +408,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
       @needles[::CHECKING::YOU::OUT::StickAround].empty?
     )
+    return if @parse_stack.last == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
 
     case @parse_stack.last
     when :"mime-type" then @media_type.replace(value.as_s) if attr_name == :type
@@ -442,6 +445,11 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       when :pattern          then @stick_around.replace(value.as_s)
       when :"case-sensitive" then @stick_around.case_sensitive = value.as_bool
       end
+    when :"root-XML" then
+      case attr_name
+      when :namespaceURI then @re_roots.namespace = value.as_s
+      when :localName    then @re_roots.localname = value.as_s
+      end
     end
   end
 
@@ -457,6 +465,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @needles[::CHECKING::YOU::OUT::StickAround].empty? and
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     )
+    return if name == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
 
     case name
     when :magic then @cat_sequence.clear
@@ -491,6 +500,11 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:stick_around).map!(&@stick_around.method(:eql?)).any? or
         @needles[::CHECKING::YOU::OUT::StickAround].map(&@stick_around.method(:eql?)).any?
       )
+    when :"root-XML" then
+      ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
+        @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].map(&@re_roots.method(:eql?)).any?
+      ) unless @re_roots.nil? or @re_roots&.empty?
+      @re_roots.clear unless @re_roots.nil? or @re_roots&.empty?
     end
   end
 
