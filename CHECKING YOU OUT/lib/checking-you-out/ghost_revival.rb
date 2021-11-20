@@ -2,6 +2,9 @@ require(-'file') unless defined?(::File)
 require(-'pathname') unless defined?(::Pathname)
 require(-'set') unless defined?(::Set)
 
+# Used for URI-scheme parsing instead of the Ruby stdlib `URI` module.
+require(-'addressable') unless defined?(::Addressable)
+
 # Assorted specialty data structure classes / modules for storing loaded type data in-memory in a usable way.
 require_relative(-'ghost_revival/set_me_free') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::SET_ME_FREE)
 require_relative(-'ghost_revival/stick_around') unless defined?(::CHECKING::YOU::OUT::StickAround)
@@ -172,7 +175,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           mother_tree.baleet(cyo.mother_tree, cyo)
           re_roots.baleet(cyo.re_roots, cyo)
         }
-      }
+      }  # kick_out_仮面
 
       # Memoize a single new `::CHECKING::YOU::OUT` type instance.
       remember_me   = proc { |cyi, cyo|
@@ -199,7 +202,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         # Evict the oldest-loaded type once we hit our cache limit.
         # A limit of `0` disables eviction, allowing one to load all available types simultaneously.
         kick_out_仮面.call(line_4_ruin.pop) if line_4_ruin.size > max_burning and max_burning > 0
-      }
+      }  # remember_me
 
       # Convert a CYO (or collection of CYOs) into new duplicate `Object`s having their `:parent` CYIs
       # resolved to the matching CYO type from this same working set.
@@ -227,7 +230,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         when ::NilClass then nil
         else nil
         end
-      }
+      }  # together_4ever
 
       # Return the best guess for a given needle's type based on our currently-loaded data.
       # A return value of `nil` here will trigger a `SharedMIMEinfo` XML package search
@@ -272,17 +275,55 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
               else (casiotone_nation.frozen? ? casiotone_nation.dup : casiotone_nation).add_parent(irregular_nation)
             end  # case casiotone_nation
           end
+        when ::Addressable::URI then
+          # `#downcase` any matched URI scheme since `::Addressable::URI#scheme` won't,
+          # but `#scheme#downcase!` will mutate an unfrozen `::Addressable::URI` instance:
+          #   irb> (cool =::Addressable::URI::parse("HTTPS://WWW.COOLTRAINER.ORG").scheme => "HTTPS"
+          #   irb> cool.scheme.downcase! => "https"
+          #   irb> cool.scheme => "https"
+          #
+          # Per https://datatracker.ietf.org/doc/html/rfc3986#section-3.1  —
+          #   "Although schemes are case-insensitive, the canonical form is lowercase
+          #   and documents that specify schemes must do so with lowercase letters.
+          #   An implementation should accept uppercase letters as equivalent to lowercase
+          #   in scheme names (e.g., allow "HTTP" as well as "http") for the sake of robustness
+          #   but should only produce lowercase scheme names for consistency."
+          #
+          # T0D0: If I wanted to fetch and match remote files (I don't) here's where I would do it.
+          if needle.scheme.downcase.eql?(-'file') then
+            # For `file://` URI schemes, additionally get the type of the file at the URI's path,
+            # and append `x-scheme-handler/file` as the parent to any match:
+            #   irb> ::Addressable::URI::parse("file:///home/okeeblow/あああ.txt").path => "/home/okeeblow/あああ.txt"
+            #   irb> CYO::from_uri("file:///home/okeeblow/hello.jpg").to_s => "image/jpeg"
+            #   irb> CYO::from_uri("file:///home/okeeblow/hello.jpg").parents.to_s => "x-scheme-handler/file"
+            uri_path = ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O::new(needle.path)
+            remember_you.call(uri_path).yield_self {
+              _1.nil? ?
+              nil.tap {
+                mime_jr.send(uri_path, move: true) unless nφ_crime.include?(needle.hash)
+              } :
+                (_1.frozen? ? _1.dup : _1).add_parent(
+                  ::CHECKING::YOU::OUT::new(:possum, :"x-scheme-handler", needle.scheme.downcase.to_sym)
+                ) 
+            }
+          else ::CHECKING::YOU::OUT::new(:possum, :"x-scheme-handler", needle.scheme.downcase.to_sym)
+          end
         when ::Regexp then
           # Return `nil` the first time we query a `Regexp`, ensuring it will run through `MrMIME` and load all matches.
           # This is to avoid inconsistent results in situations where we have already loaded some types which would match the `Regexp`,
           # e.g. if we have loaded `image/jpeg` and get a `Regexp` needle `/image/` we must still load all other `image/*` types.
           all_night.values.select! { needle === _1.to_s } if nφ_crime.include?(needle.hash)
         when ::String then
-          # TODO: "URI scheme handlers" https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#idm45747528198592
-          # unless (needle =~ ::URI::regexp).nil?
-          all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)
+          # A `String` needle might represent a Media-Type name (e.g. `"image/jpeg"`), a `::Pathname`, or a `::URI`.
+          uri_match = ::Addressable::URI::parse(needle)
+          if uri_match.nil? then
+            # The `String` needle is not a URI.
+            all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)
+          else remember_you.call(uri_match)
+          end
+
         end  # case needle
-      }
+      }  # remember_you
 
 
       # Main message loop to process incoming `::Ractor` message queue for instructions.
@@ -340,6 +381,11 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             when ::CHECKING::YOU::OUT::StickAround, Wild_I∕O then
               mime_jr.send(message.in_motion, move: false)
               mime_jr.send(message, move: true)
+            when ::Addressable::URI then
+              # If we are here it means our `remember_you` `Proc` found a `file://` URI
+              # and tried and failed to match that URI `#path`'s filename or contents.
+              # It will have already sent the relevant `Wild_I∕O` needle to `MIMEjr`.
+              mime_jr.send(message, move:true)
             when ::String then
               cyi = ::CHECKING::YOU::IN::from_ietf_media_type(message.in_motion)
               case cyi

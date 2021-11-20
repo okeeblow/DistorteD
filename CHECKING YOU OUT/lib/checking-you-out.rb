@@ -1,5 +1,8 @@
 require(-'pathname') unless defined?(::Pathname)
 
+# Used for URI-scheme parsing instead of the Ruby stdlib `URI` module.
+require(-'addressable') unless defined?(::Addressable)
+
 # Silence warning for Ractor use in Ruby 3.0.
 # See https://ruby-doc.org/core/Warning.html#method-c-5B-5D for more.
 # TODO: Remove this when Ractors are "stable".
@@ -21,7 +24,14 @@ class CHECKING::YOU
     when ::Pathname
       ::CHECKING::YOU::OUT::from_pathname(unknown_identifier, area_code: area_code)
     when ::String
+      # Try parsing the given `String` as a `URI`, based on `::Addressable::URI::scheme`:
+      #   irb(main):029:0> ::Addressable::URI::parse("/home/okeeblow").scheme => nil
+      #   irb(main):030:0> ::Addressable::URI::parse("").scheme => nil
+      #   irb(main):031:0> ::Addressable::URI::parse("HTTPS://WWW.COOLTRAINER.ORG").scheme => "HTTPS"
+      uri_match = ::Addressable::URI::parse(unknown_identifier)
       case
+      when !uri_match.scheme.nil? then
+        ::CHECKING::YOU::OUT::from_uri(uri_match, area_code: area_code)
       when unknown_identifier.count(-?/) == 1 then  # TODO: Additional String validation here.
         ::CHECKING::YOU::OUT::from_ietf_media_type(unknown_identifier, area_code: area_code)
       when unknown_identifier.start_with?(-?.) && unknown_identifier.count(-?.) == 1 then

@@ -1,5 +1,13 @@
 module ::CHECKING::YOU::OUT::StellaSinistra
 
+  # Types which should not get an `APPLICATION_OCTET_STREAM` parent.
+  self::IRREGULAR_PHYLA = [
+    :example,
+    :inode,               # Things matched by `IRREGULAR_NATION`.
+    :"x-content",         # Directory trees.
+    :"x-scheme-handler",  # URI schemes.
+  ].map!(&:freeze).freeze
+
   # Support the implicit `inode/*` types, as detailed in the "Non-regular files" section of
   # https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
   #

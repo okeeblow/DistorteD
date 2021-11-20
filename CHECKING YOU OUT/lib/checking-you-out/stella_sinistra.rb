@@ -1,10 +1,13 @@
 require(-'set') unless defined?(::Set)
 
+# Used for URI-scheme parsing instead of the Ruby stdlib `URI` module.
+require(-'addressable') unless defined?(::Addressable)
+
 require_relative(-'stella_sinistra/irregular_nation') unless defined?(::CHECKING::YOU::OUT::StellaSinistra::IRREGULAR_NATION)
 require_relative(-'stella_sinistra/steel_needle') unless defined?(::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE)
 require_relative(-'stella_sinistra/stick_around') unless defined?(::CHECKING::YOU::OUT::StickAround)
 
-# Filename-matching components.
+# Instance-level filename-matching components, e.g. `*.jpg` => `#<CYO image/jpeg>`.
 module ::CHECKING::YOU::OUT::StellaSinistra
 
   # Add a new filename-match to a specific type.
@@ -51,6 +54,47 @@ module ::CHECKING::YOU::OUT::StellaSinistra
         }
       end
     end
+  end
+
+end
+
+
+# Class-level components.
+module ::CHECKING::YOU::OUT::DeusDextera
+
+  # For URIs we will match a `x-scheme-handler/#{scheme}` type.
+  #
+  # Ruby's stdlib `URI` module (at least as of MRI 3.0) supports RFC 2396 and RFC 3986
+  # but not RFC 3987 (IRIs) or RFC 6570 (URI Templates):
+  # - https://datatracker.ietf.org/doc/html/rfc2396
+  # - https://datatracker.ietf.org/doc/html/rfc3986
+  # - https://lists.w3.org/Archives/Public/w3c-dist-auth/2005OctDec/0494.html
+  # - https://datatracker.ietf.org/doc/html/rfc3987
+  # - https://datatracker.ietf.org/doc/html/rfc6570
+  # - https://github.com/sporkmonger/addressable
+  #
+  # Even though we usually only need the URI scheme, I'm going to pull in the `addressable` Gem
+  # because the `stdlib` `URI` module fails to match at all if there are non-ASCII characters in the given URI:
+  #   irb> "file:///home/okeeblow/あああ.txt".match(URI::RFC3986_Parser::RFC3986_URI) => nil
+  #   irb> ::Addressable::URI::parse("file:///home/okeeblow/あああ.txt").scheme => "file"
+  #
+  # Example: `irb> CYO::from_uri("HTTPS://WWW.COOLTRAINER.ORG").to_s => "x-scheme-handler/https"`
+  def from_uri(
+    otra,
+    area_code: ::CHECKING::YOU::OUT::DEFAULT_AREA_CODE,
+    receiver: ::Ractor::current
+  )
+    self.[](
+      case otra
+      when ::String then
+        uri_match = ::Addressable::URI::parse(otra)
+        uri_match.scheme.nil? ? otra : uri_match
+      when ::Addressable::URI then otra
+      else nil
+      end,
+      area_code: area_code,
+      receiver: receiver
+    )
   end
 
 end

@@ -220,6 +220,7 @@ require_relative(-'moon_child') unless defined?(::CHECKING::YOU::OUT::MOON_CHILD
 # File-extension handling and filename matching for basic (e.g. `"*.jpg"`) and complex globs.
 require_relative(-'stella_sinistra') unless defined?(::CHECKING::YOU::OUT::StellaSinistra)
 ::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::StellaSinistra)
+::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::DeusDextera)
 
 # Static type information like plain-text descriptions and graphical icons.
 require_relative(-'texture') unless defined?(::CHECKING::YOU::OUT::TEXTURE)

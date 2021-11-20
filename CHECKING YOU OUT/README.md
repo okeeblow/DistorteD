@@ -59,6 +59,12 @@
 
 `irb> CHECKING::YOU::OUT::from_ietf_media_type('application/rss+xml') => #<CHECKING::YOU::OUT application/rss+xml>`
 
+…by URI:
+
+`irb> CHECKING::YOU::OUT::from_uri("file:///home/okeeblow/hello.jpg").to_s => "image/jpeg"`
+
+`irb> CHECKING::YOU::OUT::from_uri("HTTPS://WWW.COOLTRAINER.ORG").to_s => "x-scheme-handler/https"`
+
 …or via the generic interface used by `CYO`'s CLI:
 
 `irb> CHECKING::YOU::OUT('audio/ogg') => #<CHECKING::YOU::OUT audio/ogg>`

@@ -38,6 +38,10 @@ Gem::Specification.new do |spec|
   # https://rubygems.org/gems/extattr
   spec.add_dependency 'extattr', '~> 0.4'
 
+  # Needed to parse URI `String`s into `x-scheme-handler/#{scheme}` CYOs because Ruby's stdlib `URI` module
+  # supports RFC 2396 and RFC 3986 but not RFC 3987 (IRIs) and RFC 6570 (URI Templates).
+  spec.add_dependency 'addressable'
+
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'minitest', '~> 5.0'

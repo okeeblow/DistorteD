@@ -26,7 +26,8 @@ module ::CHECKING::YOU::OUT::MOON_CHILD
   def parents
     @parents || case
       when (self.phylum == :text and not self.genus == :plain) then ::CHECKING::YOU::OUT::GHOST_REVIVAL::TEXT_PLAIN
-      when (not self.genus == :"octet-stream" and not self.phylum == :inode) then ::CHECKING::YOU::OUT::GHOST_REVIVAL::APPLICATION_OCTET_STREAM
+      when (not self.genus == :"octet-stream" and not ::CHECKING::YOU::OUT::StellaSinistra::IRREGULAR_PHYLA.include?self.phylum) then
+        ::CHECKING::YOU::OUT::GHOST_REVIVAL::APPLICATION_OCTET_STREAM
       else nil
     end
   end
