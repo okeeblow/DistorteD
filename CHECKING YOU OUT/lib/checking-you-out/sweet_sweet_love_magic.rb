@@ -25,6 +25,7 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
   def add_tree_branch(branch); self.awen(:@mother_tree, branch); end
   def clear_tree_branches; self.remove_instance_variable(:@mother_tree); end
 
+  # Read, write, and clear (respectively) a CYO's XML roots/namespaces.
   attr_reader(:re_roots)
   def add_xml_root(root); self.awen(:@re_roots, root); end
   def clear_xml_roots; self.remove_instance_variable(:@re_roots); end
