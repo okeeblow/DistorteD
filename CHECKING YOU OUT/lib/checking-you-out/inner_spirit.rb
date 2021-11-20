@@ -160,12 +160,15 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
   # Given a key-name and a value, set the value for the key iff unset, otherwise promote the key
   # to a `Set` containing the previous plus the new values.
   def awen(haystack, needle)
-    case self.instance_variable_get(haystack)
-    when ::NilClass then self.instance_variable_set(haystack, needle)
-    when ::Set      then self.instance_variable_get(haystack).add(needle)
-    when needle     then # No-op.
-    else self.instance_variable_set(haystack, ::Set[self.instance_variable_get(haystack), needle])
-    end
+    # Make sure these methods always return the CYO itself.
+    self.tap {
+      case self.instance_variable_get(haystack)
+      when ::NilClass then self.instance_variable_set(haystack, needle)
+      when ::Set      then self.instance_variable_get(haystack).add(needle)
+      when needle     then # No-op.
+      else self.instance_variable_set(haystack, ::Set[self.instance_variable_get(haystack), needle])
+      end
+    }
   end
 
   # Stitch a hierarchy of `#awen`-generated members back into a single container.
