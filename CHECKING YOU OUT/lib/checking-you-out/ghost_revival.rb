@@ -238,7 +238,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           else
             # Get any non-regular (`inode`) or directory (`x-content`) type for a `Pathname`,
             # and if one exists, use it as a parent type for any regular match.
-            irregular_nation = ::CHECKING::YOU::OUT::GHOST_REVIVAL::IRREGULAR_NATION.call(needle.pathname)
+            irregular_nation = ::CHECKING::YOU::OUT::StellaSinistra::IRREGULAR_NATION.call(needle.pathname)
             casiotone_nation = case
             when needle.directory? then mother_tree.=~(needle.pathname).yield_self(&ONE_OR_EIGHT)
             when (needle.file? and needle.extname.eql?(-'.xml')) then

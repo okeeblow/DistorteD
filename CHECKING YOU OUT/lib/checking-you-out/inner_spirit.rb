@@ -212,14 +212,14 @@ require_relative(-'auslandsgesprach') unless defined?(::CHECKING::YOU::IN::AUSLA
 ::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::INLANDGESPRÄCH)
 
-# File-extension handling and filename matching for basic (e.g. `"*.jpg"`) and complex globs.
-require_relative(-'stella_sinistra') unless defined?(::CHECKING::YOU::OUT::StellaSinistra)
-::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::StellaSinistra)
-
 # CYO-to-CYO relationship management.
 require_relative(-'moon_child') unless defined?(::CHECKING::YOU::OUT::MOON_CHILD)
 ::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::MOON_CHILD)
 ::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::MOON_CHILD)
+
+# File-extension handling and filename matching for basic (e.g. `"*.jpg"`) and complex globs.
+require_relative(-'stella_sinistra') unless defined?(::CHECKING::YOU::OUT::StellaSinistra)
+::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::StellaSinistra)
 
 # Static type information like plain-text descriptions and graphical icons.
 require_relative(-'texture') unless defined?(::CHECKING::YOU::OUT::TEXTURE)

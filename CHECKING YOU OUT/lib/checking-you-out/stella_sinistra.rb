@@ -1,5 +1,6 @@
 require(-'set') unless defined?(::Set)
 
+require_relative(-'stella_sinistra/irregular_nation') unless defined?(::CHECKING::YOU::OUT::StellaSinistra::IRREGULAR_NATION)
 require_relative(-'stella_sinistra/steel_needle') unless defined?(::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE)
 require_relative(-'stella_sinistra/stick_around') unless defined?(::CHECKING::YOU::OUT::StickAround)
 
