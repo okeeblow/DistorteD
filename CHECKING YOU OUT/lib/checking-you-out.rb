@@ -30,7 +30,7 @@ class CHECKING::YOU
         ::CHECKING::YOU::OUT::from_pathname(unknown_identifier, area_code: area_code)
       end
     when ::CHECKING::YOU::IN
-      unknown_identifier.out
+      unknown_identifier.out(area_code: area_code)
     end
   end
 end
