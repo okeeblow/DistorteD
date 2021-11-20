@@ -113,7 +113,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       postfixes     = set_me_free.new          # `{StickAround => CYO}` container for Postfixes (extnames).
       complexes     = set_me_free.new          # `{StickAround => CYO}` container for more complex filename fragments.
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
-      mother_tree  = set_me_free.new          # `<treemagic>` => CYO container.
+      mother_tree   = set_me_free.new          # `<treemagic>` => CYO container.
 
       # Cache recent results to avoid re-running matching logic.
       # Use a `Hash` to store the last return value for a configurable number of previous query messages.
