@@ -21,8 +21,10 @@ require_relative(-'checking-you-out/inner_spirit') unless defined?(::CHECKING::Y
 class CHECKING::YOU
   def self.OUT(unknown_identifier, area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE)
     case unknown_identifier
-    when ::Pathname
+    when ::Pathname then
       ::CHECKING::YOU::OUT::from_pathname(unknown_identifier, area_code: area_code)
+    when ::Addressable::URI then
+      ::CHECKING::YOU::OUT::from_uri(unknown_identifier, area_code: area_code)
     when ::String
       # Try parsing the given `String` as a `URI`, based on `::Addressable::URI::scheme`:
       #   irb(main):029:0> ::Addressable::URI::parse("/home/okeeblow").scheme => nil
