@@ -118,7 +118,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       magic_without_tears = self.instance_eval(&::CHECKING::YOU::OUT::SweetSweet♡Magic::MAGIC_WITHOUT_TEARS)
 
       # Instances of the above classes to hold our type data.
-      all_night     = set_me_free.new          # Main `{CYI => CYO}` container.
+      all_night     = set_me_free.new          # Main `{CYI => CYO}` container for canonical CYI as well as aliases.
       line_4_ruin   = ::Thread::Queue.new      # Eviction order for oldest `CYO` when loaded-type count exceeds `max_burning`.
       postfixes     = set_me_free.new          # `{StickAround => CYO}` container for Postfixes (extnames).
       complexes     = set_me_free.new          # `{StickAround => CYO}` container for more complex filename fragments.
@@ -165,6 +165,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       # Evict a single `::CHECKING::YOU::IN`'s related data from all memoization structures.
       kick_out_仮面 = proc { |cyi|
         all_night.delete(cyi)&.tap { |cyo|
+          all_night.baleet(cyo.aka, cyo)
           postfixes.baleet(cyo.postfixes, cyo)
           complexes.baleet(cyo.complexes, cyo)
           case cyo.cat_sequence
@@ -183,6 +184,8 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         all_night.bury(cyi, cyo)
         # Some types should be kept in-memory forever no matter their age.
         line_4_ruin.push(cyi) unless STILL_IN_MY_HEART.include?(cyi)
+        # Some types may have multiple alias CYIs, like `audio/x-mp3` => `audio/mpeg`.
+        all_night.bury(cyo.aka, cyo)
 
         # Memoize single-extname "postfixes" separately from more complex filename fragments
         # to allow work and record-keeping with pure extnames.
@@ -312,7 +315,8 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           # Return `nil` the first time we query a `Regexp`, ensuring it will run through `MrMIME` and load all matches.
           # This is to avoid inconsistent results in situations where we have already loaded some types which would match the `Regexp`,
           # e.g. if we have loaded `image/jpeg` and get a `Regexp` needle `/image/` we must still load all other `image/*` types.
-          all_night.values.select! { needle === _1.to_s } if nφ_crime.include?(needle.hash)
+          # Return a `::Set` to make sure we de-duplicate aliased CYOs where multiple of its CYIs match.
+          all_night.values.select! { needle === _1.to_s }.to_set if nφ_crime.include?(needle.hash)
         when ::String then
           # A `String` needle might represent a Media-Type name (e.g. `"image/jpeg"`), a `::Pathname`, or a `::URI`.
           uri_match = ::Addressable::URI::parse(needle)
@@ -333,7 +337,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       while _message = ::Ractor::receive
         case _message
         in ::CHECKING::YOU::OUT     => cyo then remember_me.call(cyo.in, cyo)  # Memoize a new fully-loaded CYO.
-        in ::CHECKING::YOU::IN      => cyi then mr_mime.send(cyi, move: true)  # Spool a type to load on the next XML parse.
+        in ::CHECKING::YOU::IN      => cyi then mime_jr.send(cyi, move: true)  # Spool a type to load on the next XML parse.
         in ::CHECKING::YOU::IN      => cyi, ::CHECKING::YOU::OUT => cyo then remember_me.call(cyi, cyo)
         in ::CHECKING::YOU::IN::B4U => cyi, ::CHECKING::YOU::OUT => cyo then remember_me.call(cyi, cyo)
         in ::Float::INFINITY               then max_burning = 0  # No CYOs will be purged when loading more types.
@@ -389,15 +393,15 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             when ::String then
               cyi = ::CHECKING::YOU::IN::from_ietf_media_type(message.in_motion)
               case cyi
-              when ::CHECKING::YOU::IN then mr_mime.send(cyi, move: true)
+              when ::CHECKING::YOU::IN then mime_jr.send(cyi, move: true)
               when ::CHECKING::YOU::IN::B4U then
-                cyi.each { mr_mime.send(_1, move: false) }
-                mr_mime.send(cyi, move: true)
+                cyi.each { mime_jr.send(_1, move: false) }
+                mime_jr.send(cyi, move: true)
               end
-              mr_mime.send(message, move: true)
+              mime_jr.send(message, move: true)
             when ::Regexp, ::CHECKING::YOU::IN, ::CHECKING::YOU::IN::B4U then
-              mr_mime.send(message.in_motion, move: false)
-              mr_mime.send(message, move: true)
+              mime_jr.send(message.in_motion, move: false)
+              mime_jr.send(message, move: true)
             else p "Unhandled `#{message.in_motion.class}` EverlastingMessage request: #{message}"
             end  # case message.request
             next

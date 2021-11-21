@@ -376,6 +376,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     )
     return if name == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
+    return if name == :alias and @needles[::CHECKING::YOU::IN].empty?
 
     # Otherwise set up needed container objects.
     case name
@@ -409,9 +410,13 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @needles[::CHECKING::YOU::OUT::StickAround].empty?
     )
     return if @parse_stack.last == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
+    return if @parse_stack.last == :alias and @needles[::CHECKING::YOU::IN].empty?
 
     case @parse_stack.last
     when :"mime-type" then @media_type.replace(value.as_s) if attr_name == :type
+    when :alias then ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
+      @needles[::CHECKING::YOU::IN].map(&:to_s).map(&value.as_s.method(:eql?)).any?
+    ) if attr_name == :type
     when :magic then
       # Content-match byte-sequence container Element can specify a weight 0–100.
       @cat_sequence&.weight = value.as_i if attr_name == :priority
@@ -466,6 +471,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     )
     return if name == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
+    return if name == :alias and @needles[::CHECKING::YOU::IN].empty?
 
     case name
     when :magic then @cat_sequence.clear
