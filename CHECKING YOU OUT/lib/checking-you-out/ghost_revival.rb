@@ -293,23 +293,23 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           #   but should only produce lowercase scheme names for consistency."
           #
           # T0D0: If I wanted to fetch and match remote files (I don't) here's where I would do it.
+          uri_type = ::CHECKING::YOU::OUT::new(:possum, :"x-scheme-handler", needle.scheme.downcase.to_sym)
           if needle.scheme.downcase.eql?(-'file') then
             # For `file://` URI schemes, additionally get the type of the file at the URI's path,
             # and append `x-scheme-handler/file` as the parent to any match:
             #   irb> ::Addressable::URI::parse("file:///home/okeeblow/あああ.txt").path => "/home/okeeblow/あああ.txt"
             #   irb> CYO::from_uri("file:///home/okeeblow/hello.jpg").to_s => "image/jpeg"
             #   irb> CYO::from_uri("file:///home/okeeblow/hello.jpg").parents.to_s => "x-scheme-handler/file"
-            uri_path = ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O::new(needle.path)
-            remember_you.call(uri_path).yield_self {
-              _1.nil? ?
-              nil.tap {
-                mime_jr.send(uri_path, move: true) unless nφ_crime.include?(needle.hash)
-              } :
-                (_1.frozen? ? _1.dup : _1).add_parent(
-                  ::CHECKING::YOU::OUT::new(:possum, :"x-scheme-handler", needle.scheme.downcase.to_sym)
-                ) 
-            }
-          else ::CHECKING::YOU::OUT::new(:possum, :"x-scheme-handler", needle.scheme.downcase.to_sym)
+            uri_pathname = ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O::new(needle.path)
+            uri_pathname.exist? ?
+              remember_you.call(uri_pathname).yield_self {
+                # Did we match anything for the `::Pathname` represented by this URI?
+                # If not, try to identify the contents of this path. If yes, use it but also add a `file://` type parent.
+                _1.nil? ?
+                  nil.tap { mime_jr.send(uri_pathname, move: true) unless nφ_crime.include?(needle.hash) } :
+                  (_1.frozen? ? _1.dup : _1).add_parent(uri_type)
+              } : uri_type
+          else uri_type
           end
         when ::Regexp then
           # Return `nil` the first time we query a `Regexp`, ensuring it will run through `MrMIME` and load all matches.
