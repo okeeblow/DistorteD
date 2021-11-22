@@ -160,6 +160,13 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   }
   end
 
+  # These `Class`es can match the Media-Type `String` from `<mime-type>` and `<alias>`.
+  # If there's a match, the matching `CYI`/`B4U` will be removed from `@needles`.
+  IDENTITY_CLASSKEYS = [
+    ::CHECKING::YOU::IN,
+    ::CHECKING::YOU::IN::B4U
+  ].freeze
+
   # Map of `shared-mime-info` XML Element names to our generic category names.
   FDO_ELEMENT_CATEGORY = {
     :magic              => :content_match,
@@ -179,11 +186,11 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   # `MrMIME::new` will take any of these keys as keyword arguments
   # whose value will override the default defined in this Hash.
   DEFAULT_LOADS = {
-    :textual_metadata => false,
-    :host_metadata => false,
-    :pathname_match => true,
-    :content_match => true,
-    :family_tree => true,
+    :textual_metadata   => false,
+    :host_metadata      => false,
+    :pathname_match     => true,
+    :content_match      => true,
+    :family_tree        => true,
   }.freeze
 
   # You shouldn't abuse the power of the Solid.
@@ -376,7 +383,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     )
     return if name == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
-    return if name == :alias and @needles[::CHECKING::YOU::IN].empty?
+    return if name == :alias and (@needles[::CHECKING::YOU::IN].empty? or @needles[::CHECKING::YOU::IN::B4U].empty?)
 
     # Otherwise set up needed container objects.
     case name
@@ -410,13 +417,21 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @needles[::CHECKING::YOU::OUT::StickAround].empty?
     )
     return if @parse_stack.last == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
-    return if @parse_stack.last == :alias and @needles[::CHECKING::YOU::IN].empty?
+    return if @parse_stack.last == :alias and (@needles[::CHECKING::YOU::IN].empty? or @needles[::CHECKING::YOU::IN::B4U].empty?)
 
     case @parse_stack.last
     when :"mime-type" then @media_type.replace(value.as_s) if attr_name == :type
-    when :alias then ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
-      @needles[::CHECKING::YOU::IN].map(&:to_s).map(&value.as_s.method(:eql?)).any?
-    ) if attr_name == :type
+    when :alias then
+      return unless attr_name == :type
+      alias_media_type = value.as_s
+      IDENTITY_CLASSKEYS.each { |classkey_csupó|
+        @needles[classkey_csupó].each {
+          (
+            @needles[classkey_csupó].delete(_1) &&
+            ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor)
+          ) if _1.to_s.eql?(alias_media_type)
+        }
+      }
     when :magic then
       # Content-match byte-sequence container Element can specify a weight 0–100.
       @cat_sequence&.weight = value.as_i if attr_name == :priority
@@ -471,9 +486,15 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
     )
     return if name == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
-    return if name == :alias and @needles[::CHECKING::YOU::IN].empty?
+    return if name == :alias and (@needles[::CHECKING::YOU::IN].empty? or @needles[::CHECKING::YOU::IN::B4U].empty?)
 
     case name
+    when :"mime-type" then
+      IDENTITY_CLASSKEYS.each { |classkey_csupó|
+        @needles[classkey_csupó].each {
+          (@needles[classkey_csupó].delete(_1) && @receiver_ractor.send(_1, move: true)) if _1.to_s.eql?(@media_type)
+        }
+      }
     when :magic then @cat_sequence.clear
     when :match then
       # The `<magic>` stack represents a complete match only the first time we encounter end_element(match)
