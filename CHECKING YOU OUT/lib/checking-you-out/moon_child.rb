@@ -6,18 +6,9 @@ require(-'set') unless defined?(::Set)
 # - Aliases for the same type.
 module ::CHECKING::YOU::OUT::MOON_CHILD
 
-  # Get a `Set` of this CYO and all of its parent CYOs, at minimum just `Set[self]`.
-  def aka
-    return case @aka
-      when nil then ::Set[self.in]
-      when self.class, self.class.superclass then ::Set[self.in, @aka]
-      when ::Set then ::Set[self.in, *@aka]
-    end
-  end
-
   # Take an additional CYI as an alias for this CYO.
   def add_aka(taxa); self.awen(:@aka, taxa); end
-
+  attr_reader(:aka)
 
   # Per https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#subclassing
   #   "Some subclass rules are implicit:

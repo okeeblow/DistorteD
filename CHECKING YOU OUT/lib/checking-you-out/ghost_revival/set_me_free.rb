@@ -17,7 +17,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           # Use `#instance_of?` instead of `#is_a?` to avoid unrolling a `B4U`.
           haystack.each { |straw| self.bury(straw, needle) }
         elsif self.has_key?(haystack) then
-          if self[haystack].is_a?(::Set) then self[haystack].add(needle)
+          if self[haystack].instance_of?(::Set) then self[haystack].add(needle)
           elsif self[haystack] == needle then next
           else self.store(haystack, ::Set[self.fetch(haystack), needle])
           end
