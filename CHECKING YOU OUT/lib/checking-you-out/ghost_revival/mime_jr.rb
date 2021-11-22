@@ -430,10 +430,13 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     end
 
     case @parse_stack.last
-    when :"mime-type" then @media_type.replace(value.as_s) if attr_name == :type
+    when :"mime-type" then
+      @media_type.replace(value.as_s) if attr_name == :type
+      @receiver_ractor.send(@media_type.dup, move: true) if @needles[::String].include?(@media_type) if attr_name == :type
     when :alias then
       return unless attr_name == :type
       alias_media_type = value.as_s
+      return unless @needles[::String].include?(alias_media_type)
       IDENTITY_CLASSKEYS.each { |classkey_csupó|
         @needles[classkey_csupó].each {
           (
@@ -504,12 +507,6 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     end
 
     case name
-    when :"mime-type" then
-      IDENTITY_CLASSKEYS.each { |classkey_csupó|
-        @needles[classkey_csupó].each {
-          (@needles[classkey_csupó].delete(_1) && @receiver_ractor.send(_1, move: true)) if _1.to_s.eql?(@media_type)
-        }
-      }
     when :magic then @cat_sequence.clear
     when :match then
       # The `<magic>` stack represents a complete match only the first time we encounter end_element(match)
@@ -565,6 +562,14 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     #       We don't use `Dir` needles for anything, so this behavior won't conflict.
     @needles[::Dir].merge(
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:pathname).keep_if(&:directory?)
+    )
+
+    # HACK: Do a one-time `String`-ification of CYI-like keys since we need to do a lot of comparisons of them
+    #       and don't want to be allocating them over and over.
+    @needles[::String].merge(
+      @needles[::CHECKING::YOU::IN].map(&:to_s)
+    ).merge(
+      @needles[::CHECKING::YOU::IN::B4U].map(&:to_s)
     )
 
     # Parse our enabled `shared-mime-info` packages for filename glob matches and content (magic) matches.
