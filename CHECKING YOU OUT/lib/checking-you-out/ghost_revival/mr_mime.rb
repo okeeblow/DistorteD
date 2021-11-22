@@ -120,7 +120,6 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     return unless @cyi or @parse_stack.last == :"mime-type"
 
     # Avoid the `Array` allocation necessary when using pattern matching `case` syntax.
-    # TODO: Support loading a type given an alias.
     case @parse_stack.last
     when :"mime-type"    then
       ::CHECKING::YOU::IN::from_ietf_media_type(
