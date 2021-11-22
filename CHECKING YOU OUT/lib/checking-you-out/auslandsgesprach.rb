@@ -292,8 +292,9 @@ module ::CHECKING::YOU::IN::INLANDGESPRÄCH
     :"x-content",         # `shared-mime-info` directory/volume types.
   ].freeze
 
-  # Reconstruct an IETF Media-Type String from a loaded CYI/CYO's `#members`
-  def to_s
+  # Reconstruct an IETF Media-Type `String` from a loaded CYI/CYO's `#members`
+  # This method should return an unfrozen `String` because `CYO#to_s` may add a suffix to it.
+  def say_yeeeahh
     # TODO: Fragments (e.g. `;what=ever`), and syntax identifiers (e.g. `+xml`)
     (::String.new(encoding: ::Encoding::UTF_8, capacity: 128) << self.phylum.to_s << -'/' << case
     when self.kingdom == :"kayo-dot" then -'x.'
@@ -306,6 +307,9 @@ module ::CHECKING::YOU::IN::INLANDGESPRÄCH
     else self.kingdom.to_s << -'.'
     end << self.genus.to_s)
   end
+
+  # Since there are no CYI suffixes we can just return the frozen `String`.
+  def to_s; -say_yeeeahh; end
 
   # Pretty-print objects using our custom `#:to_s`
   def inspect; "#<#{self.class.to_s} #{self.to_s}>"; end
@@ -328,9 +332,22 @@ end
 # e.g. `"image/svg+xml"`.
 module ::CHECKING::YOU::OUT::INLANDGESPRÄCH
   def to_s
-    super << case ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::TYPE_SUFFIXES[self.b4u]
+    self.say_yeeeahh << case ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::TYPE_SUFFIXES[self.b4u]
       in ::NilClass then nil.to_s
       in ::String => suffix then ?+ << suffix
-    end.to_s
+    end.to_s.-@
   end
+end
+
+# Instance-level components to pretty-print our multi-CYI `Set` subclass.
+module ::CHECKING::YOU::IN::B4U::INLANDGESPRÄCH
+  def to_s
+    self.first.say_yeeeahh << case ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH::TYPE_SUFFIXES[
+      self.to_a[1...].to_set.yield_self(&::CHECKING::YOU::OUT::GHOST_REVIVAL::ONE_OR_EIGHT)
+    ]
+      in ::NilClass then nil.to_s
+      in ::String => suffix then ?+ << suffix
+    end.to_s.-@
+  end
+  def inspect; "#<#{self.class.to_s} #{self.to_s}>"; end
 end

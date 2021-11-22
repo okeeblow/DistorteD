@@ -30,7 +30,7 @@ class ::CHECKING::YOU; end
   :genus,
 ) do
 
-  # This `::Array` subclass will represent the sum of `CYI`s for a `CYO` whose IETF media-type `::String`
+  # This `::Set` subclass will represent the sum of `CYI`s for a `CYO` whose IETF media-type `::String`
   # uses a "suffix" designated by `+` or `;`, e.g. `image/svg+xml` will be `B4U[ CYI(svg), CYI(xml) ]`.
   self::B4U = ::Class::new(::Set)
 
@@ -211,6 +211,7 @@ require_relative(-'auslandsgesprach') unless defined?(::CHECKING::YOU::IN::AUSLA
 ::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::INLANDGESPRÄCH)
 ::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::INLANDGESPRÄCH)
+::CHECKING::YOU::IN::B4U.include(::CHECKING::YOU::IN::B4U::INLANDGESPRÄCH)
 
 # CYO-to-CYO relationship management.
 require_relative(-'moon_child') unless defined?(::CHECKING::YOU::OUT::MOON_CHILD)
