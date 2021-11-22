@@ -380,30 +380,8 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             # irb> lol.delete(lol.first) => #<Set: {}>
             nφ_crime.delete(nφ_crime.first) if nφ_crime.size > how_long
             nφ_crime.add(message.in_motion.hash)
-
-            case message.in_motion
-            when ::CHECKING::YOU::OUT::StickAround, Wild_I∕O then
-              mime_jr.send(message.in_motion, move: false)
-              mime_jr.send(message, move: true)
-            when ::Addressable::URI then
-              # If we are here it means our `remember_you` `Proc` found a `file://` URI
-              # and tried and failed to match that URI `#path`'s filename or contents.
-              # It will have already sent the relevant `Wild_I∕O` needle to `MIMEjr`.
-              mime_jr.send(message, move:true)
-            when ::String then
-              cyi = ::CHECKING::YOU::IN::from_ietf_media_type(message.in_motion)
-              case cyi
-              when ::CHECKING::YOU::IN then mime_jr.send(cyi, move: true)
-              when ::CHECKING::YOU::IN::B4U then
-                cyi.each { mime_jr.send(_1, move: false) }
-                mime_jr.send(cyi, move: true)
-              end
-              mime_jr.send(message, move: true)
-            when ::Regexp, ::CHECKING::YOU::IN, ::CHECKING::YOU::IN::B4U then
-              mime_jr.send(message.in_motion, move: false)
-              mime_jr.send(message, move: true)
-            else p "Unhandled `#{message.in_motion.class}` EverlastingMessage request: #{message}"
-            end  # case message.request
+            mime_jr.send(message.in_motion, move: false)
+            mime_jr.send(message, move: true)
             next
           end  # if nφ_crime.delete?(message.in_motion.hash) or not i_member.nil?
 
