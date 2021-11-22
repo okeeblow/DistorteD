@@ -376,14 +376,19 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # e.g. skip `<magic>`/`<match>` elements if we have no `IO`-like content-match needles,
     #      and skip `<glob>` elements if we have no `::Pathname`-like filename-match needles.
     # This SHOULD be exactly repeated in `attr_value` and `end_element` for full benefits.
-    return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
-    return if (name == :treemagic or name == :treematch) and @needles[::Dir].empty?
-    return if name == :glob and (
-      @needles[::CHECKING::YOU::OUT::StickAround].empty? and
-      @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
-    )
-    return if name == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
-    return if name == :alias and (@needles[::CHECKING::YOU::IN].empty? or @needles[::CHECKING::YOU::IN::B4U].empty?)
+    return if case name
+      when :magic,     :match     then @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
+      when :treemagic, :treematch then @needles[::Dir].empty?
+      when :glob                  then (
+        @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
+        @needles[::CHECKING::YOU::OUT::StickAround].empty?
+      )
+      when :"root-XML"            then @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
+      when :alias                 then (
+        @needles[::CHECKING::YOU::IN].empty? and
+        @needles[::CHECKING::YOU::IN::B4U].empty?
+      )
+    end
 
     # Otherwise set up needed container objects.
     case name
@@ -410,14 +415,19 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # NOTE: `parse_stack` can be empty here in which case its `#last` will be `nil`.
     # This happens e.g. for the two attributes of the XML declaration '<?xml version="1.0" encoding="UTF-8"?>'.
     return if self.element_skips.include?(@parse_stack.last)
-    return if (@parse_stack.last == :magic or @parse_stack.last == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
-    return if (@parse_stack.last == :treemagic or @parse_stack.last == :treematch) and @needles[::Dir].empty?
-    return if (@parse_stack.last == :glob) and (
-      @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
-      @needles[::CHECKING::YOU::OUT::StickAround].empty?
-    )
-    return if @parse_stack.last == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
-    return if @parse_stack.last == :alias and (@needles[::CHECKING::YOU::IN].empty? or @needles[::CHECKING::YOU::IN::B4U].empty?)
+    return if case @parse_stack.last
+      when :magic,     :match     then @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
+      when :treemagic, :treematch then @needles[::Dir].empty?
+      when :glob                  then (
+        @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
+        @needles[::CHECKING::YOU::OUT::StickAround].empty?
+      )
+      when :"root-XML"            then @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
+      when :alias                 then (
+        @needles[::CHECKING::YOU::IN].empty? and
+        @needles[::CHECKING::YOU::IN::B4U].empty?
+      )
+    end
 
     case @parse_stack.last
     when :"mime-type" then @media_type.replace(value.as_s) if attr_name == :type
@@ -478,15 +488,20 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   def end_element(name)
     # The element won't be in the `parse_stack` if we skipped it in `start_element` too.
     return if self.element_skips.include?(@parse_stack.last)
-    raise Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
-    return if (name == :magic or name == :match) and @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
-    return if (name == :treemagic or name == :treematch) and @needles[::Dir].empty?
-    return if name == :glob and (
-      @needles[::CHECKING::YOU::OUT::StickAround].empty? and
-      @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
-    )
-    return if name == :"root-XML" and @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
-    return if name == :alias and (@needles[::CHECKING::YOU::IN].empty? or @needles[::CHECKING::YOU::IN::B4U].empty?)
+    raise ::Exception.new('Parse stack element mismatch') unless @parse_stack.pop == name
+    return if case name
+      when :magic, :match         then @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty?
+      when :treemagic, :treematch then @needles[::Dir].empty?
+      when :glob                  then (
+        @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
+        @needles[::CHECKING::YOU::OUT::StickAround].empty?
+      )
+      when :"root-XML"            then @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
+      when :alias                 then (
+        @needles[::CHECKING::YOU::IN].empty? and
+        @needles[::CHECKING::YOU::IN::B4U].empty?
+      )
+    end
 
     case name
     when :"mime-type" then
