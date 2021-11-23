@@ -385,7 +385,6 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             # irb> lol.delete(lol.first) => #<Set: {}>
             nφ_crime.delete(nφ_crime.first) if nφ_crime.size > how_long
             nφ_crime.add(message.in_motion.hash)
-            mime_jr.send(message.in_motion, move: false)
             mime_jr.send(message, move: true)
             next
           end  # if nφ_crime.delete?(message.in_motion.hash) or not i_member.nil?

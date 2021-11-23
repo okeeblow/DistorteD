@@ -238,6 +238,8 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
   # Trigger a search for all needles received by our `::Ractor` since the last `#search`.
   # See the overridden `self.new` for more details of our `::Ractor`'s message-handling loop.
   def do_the_thing(the_trigger_of_innocence)
+    # Use the value of our `EverlastingMessage` as a needle.
+    self.awen(the_trigger_of_innocence.in_motion)
     begin
       # Don't bother parsing anything if there's nothing for us to match.
       # `MIMEjr` will trigger us even if it didn't send us any needles first.

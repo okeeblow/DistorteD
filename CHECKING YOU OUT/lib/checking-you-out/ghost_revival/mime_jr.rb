@@ -550,6 +550,9 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   # Trigger a search for all needles received by our `::Ractor` since the last `#search`.
   # See the overridden `self.new` for more details of our `::Ractor`'s message-handling loop.
   def do_the_thing(the_trigger_of_innocence)
+    # Use the value of our `EverlastingMessage` as a needle.
+    self.awen(the_trigger_of_innocence.in_motion)
+
     # Check for filesystem extended attributes in `::Pathname` needles representing extant files.
     # Send their `CYI`s directly to `MrMIME` (`@receiver_ractor`) if found.
     @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:pathname).keep_if(&:exist?).flat_map {
