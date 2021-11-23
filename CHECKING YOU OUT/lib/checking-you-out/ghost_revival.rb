@@ -165,7 +165,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       # Evict a single `::CHECKING::YOU::IN`'s related data from all memoization structures.
       kick_out_仮面 = proc { |cyi|
         all_night.delete(cyi)&.tap { |cyo|
-          all_night.baleet(cyo.aka, cyo)
+          all_night.baleet(cyo.aka, cyo) unless all_night.include?(cyo.aka)  # TODO: Handle conflicting aliasing.
           postfixes.baleet(cyo.postfixes, cyo)
           complexes.baleet(cyo.complexes, cyo)
           case cyo.cat_sequence
@@ -181,11 +181,16 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       # Memoize a single new `::CHECKING::YOU::OUT` type instance.
       remember_me   = proc { |cyi, cyo|
         # Main memoization `::Hash` and cache-eviction-order `::Queue`keyed by `CYI`.
-        all_night.bury(cyi, cyo)
+        all_night.store(cyi, cyo)
         # Some types should be kept in-memory forever no matter their age.
         line_4_ruin.push(cyi) unless STILL_IN_MY_HEART.include?(cyi)
         # Some types may have multiple alias CYIs, like `audio/x-mp3` => `audio/mpeg`.
-        all_night.bury(cyo.aka, cyo)
+        all_night.bury(cyo.aka, cyo) unless all_night.include?(cyo.aka)
+        # TODO: Handle conflicting aliasing like how freedesktop-dot-org XML has `<mime-type type="application/x-kword">`
+        #       but tika-mimetypes has `<mime-type type="application/vnd.kde.kword"><alias type="application/x-kword"/>`.
+        #       Right now these get loaded as two separate types:
+        #         irb> CHECKING::YOU::OUT::from_ietf_media_type("application/x-kword").map(&:to_s)
+        #              => ["application/x-kword", "application/vnd.kde.kword"]
 
         # Memoize single-extname "postfixes" separately from more complex filename fragments
         # to allow work and record-keeping with pure extnames.
@@ -316,7 +321,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           # This is to avoid inconsistent results in situations where we have already loaded some types which would match the `Regexp`,
           # e.g. if we have loaded `image/jpeg` and get a `Regexp` needle `/image/` we must still load all other `image/*` types.
           # Return a `::Set` to make sure we de-duplicate aliased CYOs where multiple of its CYIs match.
-          all_night.values.select! { needle === _1.to_s }.to_set if nφ_crime.include?(needle.hash)
+          all_night.values.keep_if { needle === _1.to_s }&.to_set if nφ_crime.include?(needle.hash)
         when ::String then
           # A `String` needle might represent a Media-Type name (e.g. `"image/jpeg"`), a `::Pathname`, or a `::URI`.
           uri_match = ::Addressable::URI::parse(needle)
