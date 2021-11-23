@@ -68,6 +68,14 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
     TEXT_PLAIN,
   ].freeze
 
+  # These needles represent ways a user might load all types at once.
+  # If that happens, trust that they know what they want and disable the type cache limit,
+  # otherwise it's silly to load 1400+ types but then immediately throw away over a thousand of them.
+  INFINITE_PRAYER = ::Set[
+    /.*/,
+    -'*'
+  ].map!(&:freeze).freeze
+
 
   # Find a running CYO `::Ractor`, creating it if necessary.
   # Keyed on the area name `::Symbol`, usually the value in `DEFAULT_AREA_CODE`.
@@ -385,6 +393,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             # irb> lol.delete(lol.first) => #<Set: {}>
             nφ_crime.delete(nφ_crime.first) if nφ_crime.size > how_long
             nφ_crime.add(message.in_motion.hash)
+            max_burning = 0 if INFINITE_PRAYER.include?(message.in_motion)
             mime_jr.send(message, move: true)
             next
           end  # if nφ_crime.delete?(message.in_motion.hash) or not i_member.nil?
