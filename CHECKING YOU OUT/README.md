@@ -99,9 +99,10 @@ Once retrieved, a `CYO` Type Object contains everything defined for that type ac
 
 ## Alternatives
 
-`CYO` aims to implement the whole `shared-mime-info` specification and be fast and generally awesome,
+- `CYO` aims to implement the whole `shared-mime-info` specification and be fast and generally awesome,
 but it is designed around my specific need for a "fast inner loop" of file/stream identification in DistorteD.
 Please consider if one of these other Ruby libraries meets your needs before choosing `CHECKING YOU OUT`:
+
 
 - [`ruby-mime-types`](https://github.com/mime-types/ruby-mime-types) and its associated [`mime-types-data`](https://github.com/mime-types/mime-types-data)
 were my original choice for DistorteD, and the first version of `CYO` wrapped this library to provide `DD`-specific methods and custom additional type data.
@@ -135,9 +136,56 @@ Apache's Tika project supplies an alternative MIT-licensed XML package file whic
 [transforms to regular Ruby `Hash`es](https://github.com/rails/marcel/blob/main/script/generate_tables.rb)
 as part of [its release cycle](https://github.com/rails/marcel/blob/main/Rakefile).
 
+### Feature Matrix
+
+| | CHECKING YOU OUT | [`ruby-mime-types`](https://github.com/mime-types/ruby-mime-types) | [`mimemagicrb`](https://github.com/mimemagicrb/mimemagic) | [`mini_mime`](https://github.com/discourse/mini_mime) | [`marcel`](https://github.com/rails/marcel/) |
+|---|---|---|---|---|---|
+| *License*             | AGPLv3 for CYO; [GPLv2]()/[APLv2](https://www.gnu.org/licenses/license-list.en.html#apache2) for bundled data | [MIT](https://github.com/mime-types/ruby-mime-types/blob/main/Licence.md) | [MIT](https://github.com/mimemagicrb/mimemagic/blob/master/LICENSE) | [MIT](https://github.com/discourse/mini_mime/blob/master/LICENSE.txt) | [APLv2](https://github.com/rails/marcel/blob/main/APACHE-LICENSE)/[MIT](https://github.com/rails/marcel/blob/main/MIT-LICENSE) |
+| *Data Format*         | Any [`shared-mime-info`-format](https://specifications.freedesktop.org/shared-mime-info-spec/latest/) XML packages (simultaneously) | [IANA Media-Type registry and Apache `httpd`](https://github.com/mime-types/mime-types-data/blob/219ebc3045839daafab93227c69c14bb5afd7be1/Rakefile#L51-L63) | Any [one (1) `shared-mime-info` package](https://github.com/mimemagicrb/mimemagic/blob/b5ca5382125712a3f095fdb6c4f5b5ccd0dd318f/lib/mimemagic/tables.rb#L67-L75) | [`ruby-mime-types` data transformed at package time](https://github.com/discourse/mini_mime/blob/ecaaffd63fe5cc86cdc3cbef42cde0aa81e47832/Rakefile#L36) | Only the `shared-mime-info` packages [bundled with Marcel and transformed at package time](https://github.com/rails/marcel/blob/2e58d1986715420f0abbba060b6e158d6f4d3a05/Rakefile#L35-L39) |
+| *Bundled Data*        | [freedesktop-dot-org](https://gitlab.freedesktop.org/xdg/shared-mime-info/-/blob/master/data/freedesktop.org.xml.in), [Apache Tika](https://gitbox.apache.org/repos/asf?p=tika.git;a=blob;f=tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml;hb=HEAD), and CYO-specific `shared-mime-info` packages | Separate [`mime-types-data` Gem](https://github.com/mime-types/mime-types-data) | [No](https://github.com/mimemagicrb/mimemagic#dependencies) | [Yes](https://github.com/discourse/mini_mime/tree/master/lib/db) | [Apache Tika and Marcel-specific](https://github.com/rails/marcel/tree/main/data) `shared-mime-info` packages |
+| *External Data*       | [Any `shared-mime-info` package in `$XDG_DATA_DIRS` or `$XDG_DATA_HOME`](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) | Technically possible with a custom [`Loader`](https://github.com/mime-types/ruby-mime-types/blob/main/lib/mime/types/loader.rb)[^1] | Any [one(1)](https://github.com/mimemagicrb/mimemagic#dependencies) `shared-mime-info` package | Technically possible but [only by complete replacement](https://github.com/discourse/mini_mime/blob/63802d1e45cb2b831c34b5d68e364b5ea35c050a/lib/mini_mime.rb#L24-L25) | Technically possible by [monkey-patching the generated tables](https://github.com/rails/marcel/blob/main/lib/marcel/tables.rb) |
+
+
+[^1]: I used to do this for my custom additions when CYO was a `ruby-mime-types` wrapper.
+
+
+| | CHECKING YOU OUT | [`ruby-mime-types`](https://github.com/mime-types/ruby-mime-types) | [`mimemagicrb`](https://github.com/mimemagicrb/mimemagic) | [`mini_mime`](https://github.com/discourse/mini_mime) | [`marcel`](https://github.com/rails/marcel/) |
+|---|---|---|---|---|---|
+| *File extension matching*[^2]          | ☑ | ☑ | ☑ | ☑ | ☑ |
+| *Filename pattern matching*[^3]        | ☑ | ☐ | ☐ | ☐ | ☐ |
+| *File content matching*[^4]            | ☑ | ☐ | ☑ | ☐ | ☑ |
+| *Non-regular file matching*[^5]        | ☑ | ☐ | ☐ | ☐ | ☐ |
+| *Directory tree matching*[^6]          | ☑ | ☐ | ☐ | ☐ | ☐ |
+| *URI scheme matching*[^7]              | ☑ | ☐ | ☐ | ☐ | ☐ |
+| *XML root/namespace matching*[^8]      | ☑ | ☐ | ☐ | ☐ | ☐ |
+| *FourCC matching*[^9]                  | ☐ | ☐ | ☐ | ☐ | ☐ |
+| *GUID matching*[^10]                   | ☐ | ☐ | ☐ | ☐ | ☐ |
+| *UTI support*[^11]                     | ☐ | ☐ | ☐ | ☐ | ☐ |
+| *Multi-factor matching*[^12]           | ☑ | ☐ | ☐ | ☐ | ☑ |
+| *Partial data loading*[^13]            | ☑ | ☐ | ☐ | ☑ | ☐ |
+| *Extended filesystem attributes*[^14]  | ☑ | ☐ | ☐ | ☐ | ☐ |
+| *Parent/Child type relationships*[^15] | ☑ | ☐ | ☐ | ☐ | ☐ |
+
+[^2]: e.g. `.jpg` => `image/jpeg`.
+[^3]: e.g. `Makefile.<anything>` => `text/x-makefile`.
+[^4]: à la [`file`/`libmagic`](http://darwinsys.com/file/).
+[^5]: e.g. `inode/mount-point`, `inode/directory`, etc.
+[^6]: e.g. `DCIM/<pictures>` => `x-content/image-dcf`.
+[^7]: e.g. `https://cooltrainer.org` => `x-scheme-handler/https`.
+[^8]: e.g. a plain `*.xml`-named file with root-Element `<svg>` and XML namespace `http://www.w3.org/2000/svg` => `image/svg+xml`.
+[^9]: à la Classic Macintosh or [DirectShow](https://gix.github.io/media-types/), e.g. `MJPG` => `#<Type video/x-mjpeg>`.
+[^10]: à la [Media Foundation](https://gix.github.io/media-types/), e.g. `{47504A4D-0000-0010-8000-00AA00389B71}` => `#<Type video/x-mjpeg>`.
+[^11]: à la [macOS](https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/UTIRef/Articles/System-DeclaredUniformTypeIdentifiers.html#//apple_ref/doc/uid/TP40009259-SW1), e.g. `com.compuserve.gif` => `#<Type image/gif>`.
+[^12]: i.e. testing multiple of the above factors (extname, filename glob, byte sequences, XML namespace) simultaneously for a given `Pathname`.
+[^13]: i.e. optimizing startup time and minimizing memory usage by loading type data on-demand instead of loading all types in one shot.
+[^14]: e.g. `user.mime_type` containing IETF-style media/subtype strings.
+[^15]: e.g. a `#<Type image/svg+xml>` would know it has a parent `#<Type application/xml>`.
+
+Note: Reference links are to specific revisions so it's clear what I was writing about. I would feel bad if one of these other libraries added a new feature and I was here still saying otherwise :)
+
 ### Honorable mentions
 
-- [`shared-mime-info`](https://github.com/hanklords/shared-mime-info) is a Ruby Gem not to be confused with the [specification of the same name](). Unlike CYO, this library consumes the `glob`/`magic` files generated by the [`update-mime-database`](https://cgit.freedesktop.org/xdg/shared-mime-info/tree/src/update-mime-database.c) utility instead of consuming the source XML package files directly. This is the only other library I'm aware of (besides `CYO`) attempting to be a full implementation of the `shared-mime-info` spec.
+- [`shared-mime-info`](https://github.com/hanklords/shared-mime-info) is a Ruby Gem not to be confused with the [specification of the same name](). Unlike CYO, this library [consumes the `glob`/`magic` files](https://github.com/hanklords/shared-mime-info/blob/7b105f3ed7e8b34f0e14a9d573f4500d85679ca7/lib/shared-mime-info.rb#L300-L306) generated by the [`update-mime-database`](https://cgit.freedesktop.org/xdg/shared-mime-info/tree/src/update-mime-database.c) utility instead of consuming the source XML package files directly.
 
 - [`ruby-filemagic`](https://github.com/blackwinter/ruby-filemagic/) and [`ffiruby-filemagic`](https://github.com/glongman/ffiruby-filemagic/) are bindings to [`libmagic`](http://www.darwinsys.com/file/). I used both of these (not simultaneously) in the past to supplement `ruby-mime-types` with file-content matching. These rely on the external `magic` library, usually installed through a system-level package manager [such as Homebrew](https://formulae.brew.sh/formula/libmagic). This dependency precludes Windows support.
 
