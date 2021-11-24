@@ -72,7 +72,7 @@ area_code = :TMB
 
 # Pre-load all available types
 ::CHECKING::YOU::OUT.set_type_cache_size(::Float::INFINITY, area_code: area_code)
-#::CHECKING::YOU::OUT[/.*/, area_code: area_code]  # TODO: Fix generic CYO::[]
+::CHECKING::YOU::OUT[/.*/, area_code: area_code]
 
 # Load all `<mime-type>` IETF Media-Type `String`s from the same test package.
 handler = IETFTypeChecker.new
