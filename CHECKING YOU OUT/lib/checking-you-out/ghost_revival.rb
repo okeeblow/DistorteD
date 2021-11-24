@@ -329,7 +329,10 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           # This is to avoid inconsistent results in situations where we have already loaded some types which would match the `Regexp`,
           # e.g. if we have loaded `image/jpeg` and get a `Regexp` needle `/image/` we must still load all other `image/*` types.
           # Return a `::Set` to make sure we de-duplicate aliased CYOs where multiple of its CYIs match.
-          all_night.values.keep_if { needle === _1.to_s }&.to_set if nφ_crime.include?(needle.hash)
+          all_night.values.keep_if { needle === _1.to_s }&.to_set if (
+            nφ_crime.include?(needle.hash) or  # This needle has already been run through the dual XML parser loop.
+            max_burning.eql?(0) and all_night.size > DEFAULT_TYPE_CACHE_SIZE  # …or guess that we've already loaded all data.
+          )
         when ::String then
           # A `String` needle might represent a Media-Type name (e.g. `"image/jpeg"`), a `::Pathname`, or a `::URI`.
           uri_match = ::Addressable::URI::parse(needle)
