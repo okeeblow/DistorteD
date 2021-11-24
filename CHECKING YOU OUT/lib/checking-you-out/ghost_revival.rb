@@ -356,7 +356,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         in ::Float::INFINITY               then max_burning = 0  # No CYOs will be purged when loading more types.
         in ::Fixnum                 => max then
           # We can't subclass `Fixnum`, because Ruby treats them as immediates instead of heap objects,
-          # so our outer methods use negative `Fixnum` affect the second of our two queues.
+          # so our outer methods use negative `Fixnum` to affect the second of our two queues.
           case
           when max.positive? then max_burning =  max
           when max.negative? then how_long    = -max
