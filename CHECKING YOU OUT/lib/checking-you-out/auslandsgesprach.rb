@@ -38,6 +38,9 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
       ::CHECKING::YOU::IN::new(:possum, :application, :xml).freeze,
       ::CHECKING::YOU::IN::new(:possum, :application, :gzip).freeze,
     ].freeze,
+
+    # Others defined in `freedesktop.org.xml`:
+    -'ogg' => ::CHECKING::YOU::IN::new(:possum, :audio, :ogg).freeze,
   }.freeze
 
   TYPE_SUFFIXES = self::SUFFIX_TYPES.invert.freeze
