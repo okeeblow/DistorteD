@@ -121,12 +121,19 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
           otra.include?(::File::ALT_SEPARATOR.to_s.-@) and  # Explicit `#to_s` to handle `nil` `ALT_SEPARATOR` (non-Winders)
           not ::File::ALT_SEPARATOR.nil?
         ) then ::File::basename(otra).-@
-        when (::File::extname(otra).empty? and not otra.include?(-?*)) then otra.dup.tap {
+        when (
+          ::File::extname(otra) and (
+            otra.include?(::File::SEPARATOR) or (
+              ::File::ALT_SEPARATOR.nil? ? false : otra.include?(::File::ALT_SEPARATOR)
+            )
+          )
+        ) then ::File::extname(otra).tap {
           _1.insert(0, -?.) unless _1.start_with?(-?.)
           _1.insert(0, -?*) unless _1.start_with?(-?*)
         }.-@
         when otra.include?(-?*) then -otra  # e.g. `"SConscript.*"`
-        else ::File::extname(otra).insert(0, -?*).-@
+        when otra.start_with?(-?.) then ::File::extname(otra).insert(0, -?*).-@
+        else -otra
         end
       else -otra.to_s
     end
