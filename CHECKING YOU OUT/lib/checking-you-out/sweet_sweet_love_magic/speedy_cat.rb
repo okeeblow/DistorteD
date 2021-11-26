@@ -17,6 +17,7 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
     def max;     self.map(&:max).max; end
     def minmax; [self.min, self.max]; end
     def size;    self.max - self.min; end
+    def boundary;(self.min..self.max);end
 
     # Match all-or-none member Sequences against some given bytes.
     # The `offset` parameter allows senders to provide a smaller-than-whole slice of input
