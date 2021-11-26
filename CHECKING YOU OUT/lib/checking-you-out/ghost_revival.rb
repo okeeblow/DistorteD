@@ -245,7 +245,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             }
           else cyo
           end
-        when ::Set, ::Array then cyo.map!(&together_4ever)
+        when ::Set, ::Array then cyo.dup.map!(&together_4ever)
         when ::NilClass then nil
         else nil
         end
