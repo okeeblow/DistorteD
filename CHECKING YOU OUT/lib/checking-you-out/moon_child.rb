@@ -46,7 +46,7 @@ module ::CHECKING::YOU::OUT::MOON_CHILD
       in ::NilClass then ::Set[self]
       in ::CHECKING::YOU::OUT => one then ::Set[self, one]
       in ::Set => many then many.add(self)
-    else nil
+    else ::Set[self]
     end
   end
 
@@ -56,7 +56,7 @@ module ::CHECKING::YOU::OUT::MOON_CHILD
       in ::NilClass then ::Set[self]
       in ::CHECKING::YOU::OUT => one then ::Set[self, one]
       in ::Set => many then many.add(self)
-    else nil
+    else ::Set[self]
     end
   end
 
