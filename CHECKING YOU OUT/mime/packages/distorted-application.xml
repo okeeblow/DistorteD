@@ -69,6 +69,12 @@
     <glob pattern="*.rft"/>
   </mime-type>
 
+  <!--
+    http://fileformats.archiveteam.org/wiki/CorelDRAW
+    https://en.wikipedia.org/wiki/CorelDRAW#file_format
+    "From version X4 (14) on, the CDR file is a ZIP-compressed directory of several files",
+    which this definition currently does not cover.
+  -->
   <mime-type type="application/vnd.corel-draw">
     <glob pattern="*.cdt"/>  <!-- CorelDRAW Template -->
   </mime-type>
