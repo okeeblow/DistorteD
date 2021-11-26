@@ -139,7 +139,7 @@ module ::CHECKING::YOU::OUT::SweetSweet♡Magic
           # => [260, 264, 265, 268, 271]
           #
           # Again, they must be sorted to avoid insertion order.
-          self.instance_variable_get(:@rolling_stop).push(*self[rolling_start].keys.sort!)
+          self.instance_variable_get(:@rolling_stop).push(*self[rolling_start].keys).sort!
 
           # IO#read returns `nil` if we're at the end of the stream. Bail out if so.
           # Note that this is not just a guard statement and reads the stream into `:hold_my_hand` for use.
