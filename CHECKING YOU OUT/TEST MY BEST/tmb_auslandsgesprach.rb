@@ -59,7 +59,7 @@ area_code = :TMB
 
 # Load all `<mime-type>` IETF Media-Type `String`s from the same test package.
 handler = IETFTypeChecker.new
-fdo_types = handler.open(fdo_mime)
+fdo_types = handler.open(::CHECKING::YOU::OUT::OnlyOnePackage::FDO_MIME)
 
 # Define a test for every `<mime-type>` element in `shared-mime-info`'s XML
 # asserting that CYO's `#to_s` outputs an identical `String` for that type.
