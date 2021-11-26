@@ -66,7 +66,13 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
         if self[:mask].nil? then
           otra.include?(self[:sequence])
         else
-          (otra.to_i & self[:mask]).to_s(2).include?(self[:sequence])
+          # CorelDRAW! example, a RIFF format with "CDR<version-number>":
+          #   irb> "CDRXvrsn".each_char.reduce(0) { (_1 << 8) | _2.ord } & 0xffffff00ffffffff => 4847089260898186094
+          #   irb> "CDR5vrsn".each_char.reduce(0) { (_1 << 8) | _2.ord } & 0xffffff00ffffffff => 4847089260898186094
+          #   irb> "CDR3vrsn".each_char.reduce(0) { (_1 << 8) | _2.ord } & 0xffffff00ffffffff => 4847089260898186094
+          (otra.each_char.reduce(0) { (_1 << 8) | _2.ord } & self[:mask]).eql?(
+            (self[:sequence].each_char.reduce(0) { (_1 << 8) | _2.ord } & self[:mask])
+          )
         end
       when ::IO then
         otra.seek(self.min, whence=IO::SEEK_SET)
