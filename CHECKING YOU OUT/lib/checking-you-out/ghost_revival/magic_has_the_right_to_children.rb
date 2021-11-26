@@ -53,7 +53,13 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         when glob.empty? then magic.push_up
         when magic.empty? then glob.max
         else
-          glob.flat_map(&:adults_table).compact.reduce(&:|)&.|(magic.values).max
+          glob.select { not _1.adults_table.&(magic.values)&.empty? }&.yield_self { |magic_children|
+            # If there are no glob-children-of-magic-matches, try the other way around.
+            # This lets us match e.g. `application/x-mozilla-bookmarks` having a `text/html` glob match.
+            magic_children.empty? ? magic.values.select { not _1.adults_table.&(glob)&.empty? }&.yield_self { |glob_children|
+              glob_children.empty? ? glob.max : glob_children.max
+            } : magic_children.max
+          }
         end
       in ::Set,                ::CHECKING::YOU::OUT then glob & magic.kids_table
       in ::Hash,               ::Hash               then
@@ -61,7 +67,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           glob.keep_if { |_glob, cyo| magic_children.include?(cyo) }.push_up(:weight, :length)
         }
       in ::CHECKING::YOU::OUT, ::Hash               then
-        magic&.empty? ? glob : (glob.adults_table&.include?(magic.push_up) ? glob : magic.push_up)
+        magic&.empty? ? glob : glob.adults_table&.&(magic.values).yield_self {
+          _1.empty? ? magic.push_up : glob
+        }
       in ::Hash,               ::CHECKING::YOU::OUT then glob.values.compact.map!(&:adults_table).to_set & magic.kids_table
       in ::CHECKING::YOU::OUT, ::CHECKING::YOU::OUT then glob == magic ? glob : magic
       else ::CHECKING::YOU::OUT::GHOST_REVIVAL::APPLICATION_OCTET_STREAM
