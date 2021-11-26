@@ -2,7 +2,7 @@ require(-'pathname') unless defined?(::Pathname)
 
 
 # Methods for finding all appropriate source data files in the running environment.
-module ::CHECKING::YOU::OUT::GHOST_REVIVAL
+module ::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE
 
   # Filename for the main fdo `shared-mime-info` source XML.
   # We will look for this file in system `XDG_DATA_DIRS` and use our own bundled copy
@@ -20,7 +20,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   #   This is the recommended way to discover `shared-mime-info` packages per the manual:
   #   https://specifications.freedesktop.org/shared-mime-info-spec/latest/ar01s02.html#s2_layout
   # - Includes the path to `CHECKING::YOU::OUT`'s bundled `shared-mime-info` iff it is newer than an installed copy.
-  DISCOVER_FDO_XML = ::Ractor::make_shareable(proc {
+  def shared_mime_info_packages
     # CYO bundles a copy of `freedesktop.org.xml` from `shared-mime-info` but will prefer a system-level copy
     # if one is available and not out of date. This flag will be disabled if we find a suitable copy,
     # otherwise our bundled copy will be loaded after we finish scanning the PATHs givin in our environment.
@@ -77,6 +77,6 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
 
     }.map!(&SharedMIMEinfo::method(:new))  # Wrap everything into our custom `Pathname` subclass for easy identification.
 
-  })  # DISCOVER_FDO_XML
+  end  # discover_fdo_xml
 
 end

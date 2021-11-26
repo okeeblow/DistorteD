@@ -1,6 +1,9 @@
 require('test/unit') unless defined?(::Test::Unit)
 require_relative('../lib/checking-you-out') unless defined?(::CHECKING::YOU::OUT)
 
+require_relative('only_one_package') unless defined?(::CHECKING::YOU::OUT::OnlyOnePackage)
+#using(::CHECKING::YOU::OUT::OnlyOnePackage)
+
 artifact_root = ::CHECKING::YOU::OUT::GEM_ROOT.call.join("TEST MY BEST", "Try 2 Luv. U")
 extant_types = ARGV[0].nil? ? ::Dir.glob(
   ::File.join("*", "*"),

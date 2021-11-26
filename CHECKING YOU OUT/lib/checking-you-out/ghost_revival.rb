@@ -13,7 +13,7 @@ require_relative(-'ghost_revival/weighted_action') unless defined?(::CHECKING::Y
 require_relative(-'ghost_revival/wild_io') unless defined?(::CHECKING::YOU::OUT::Wild_I∕O)
 
 # Components for locating `shared-mime-info` XML packages system-wide and locally to CYO.
-require_relative(-'ghost_revival/discover_the_life') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo)
+require_relative(-'ghost_revival/discover_the_life') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE)
 require_relative(-'ghost_revival/xross_infection') unless defined?(::CHECKING::YOU::OUT::XROSS_INFECTION)
 
 # Actual `shared-mime-info` parsers.
@@ -29,6 +29,9 @@ require_relative(-'ghost_revival/round_and_round') unless defined?(::CHECKING::Y
 # This module contains the core data-loading components for turning source data into usable in-memory structures.
 # TL;DR: Anything having to do with CYO `::Ractor` communication goes in here.
 module ::CHECKING::YOU::OUT::GHOST_REVIVAL
+
+  # Class-methods for discovering and loading `SharedMIMEinfo` packages.
+  extend(::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE)
 
   # We will memoize a configurable number of CYO type objects. When we reach that limit, the oldest type will be purged.
   # The default cache size used to be `111`, but I bumped it up because it was easy to load more types
@@ -93,7 +96,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         ::Ractor::new(
           ::Ractor::make_shareable(proc {
             STILL_IN_MY_HEART.each_with_object(
-              DISCOVER_FDO_XML.call.each_with_object(
+              self.shared_mime_info_packages.each_with_object(
                 NEW_AREA.call(area_code: area_code)
               ) { |xml_path, area| area.send(xml_path) }
             ) { |permanent_type, area| area.send(permanent_type) }
@@ -367,7 +370,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             max_burning = 0
             how_long    = DEFAULT_QUERY_CACHE_SIZE
           end
-        in SharedMIMEinfo => mime_package
+        in DISCOVER_THE_LIFE::SharedMIMEinfo => mime_package
           # `::Pathname` subclass representing a `shared-mime-info`-format XML package. Toggle them in both parsers.
           mime_jr.send(mime_package)
           mr_mime.send(mime_package)
@@ -407,6 +410,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
     }  # ::Ractor.new
   })  # NEW_AREA
 
+  # `::Ractor` round-trip accessor methods for all Areas.
   include(::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND)
 
 end  # module CHECKING::YOU::OUT::GHOST_REVIVAL

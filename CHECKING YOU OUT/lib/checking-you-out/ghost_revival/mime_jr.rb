@@ -235,7 +235,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
         case message
         when ::CHECKING::YOU::IN::EverlastingMessage then
           (message.chain_of_pain == self) ? handler.awen(message.in_motion) : handler.do_the_thing(message)
-        when ::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo then handler.toggle_package(message)
+        when ::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE::SharedMIMEinfo then handler.toggle_package(message)
         else handler.awen(message)
         end
       end

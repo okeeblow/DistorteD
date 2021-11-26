@@ -6,25 +6,8 @@ require_relative('../lib/checking-you-out') unless defined?(::CHECKING::YOU::OUT
 # e.g. `"application/vnd.ms-word"`
 #        →  `#<struct CHECKING::YOU::OUT kingdom=:vnd, phylum=:application, genus=:"ms-word">`
 #          →  `"application/vnd.ms-word"`
-
-# Path to CYO's bundled `shared-mime-info` main-package.
-fdo_mime = ::CHECKING::YOU::OUT::GHOST_REVIVAL::SharedMIMEinfo.new(::File.join(
-  ::CHECKING::YOU::OUT::GEM_ROOT.call,
-  -'mime',
-  -'packages',
-  -'third-party',
-  -'shared-mime-info',
-  "#{::CHECKING::YOU::OUT::GHOST_REVIVAL::FDO_MIMETYPES_FILENAME}.in",
-))
-
-# Override discovery of systemwide and user-specific MIME packages
-# so we test only the single `fdo_mime` package.
-module OnlyOnePackage
-  refine ::CHECKING::YOU::OUT::GHOST_REVIVAL do
-    def discover_fdo_xml; ::Array.new.push(fdo_mime); end
-  end
-end
-using OnlyOnePackage
+require_relative('only_one_package') unless defined?(::CHECKING::YOU::OUT::OnlyOnePackage)
+#using(::CHECKING::YOU::OUT::OnlyOnePackage)
 
 # Quick-'n'-dirty barebones `MrMIME`-equivalent.
 # All this version does is list out all `String` sttribute values from `<mime-type attr="whatever"/>`,
