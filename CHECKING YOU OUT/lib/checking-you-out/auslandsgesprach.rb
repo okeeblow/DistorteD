@@ -190,7 +190,7 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
           # to the mid '70s and has many many many more Types than post-2012 `x.` tree,
           # RE: https://datatracker.ietf.org/doc/html/rfc6648#appendix-A
           what_you_doing.pop(2); :x
-        when what_you_doing.one? && what_you_doing.last == 100 then  # x
+        when what_you_doing.one? && what_you_doing.last == 120 then  # x
           # Faceted experimental tree (`x.`): https://datatracker.ietf.org/doc/html/rfc6838#section-3.4
           # There are only a few of these since "use of both `x-` and `x.` forms is discouraged",
           # e.g. `model/x.stl-binary`, and there aren't likely to be many more.
