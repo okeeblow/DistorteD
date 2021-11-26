@@ -130,7 +130,7 @@ module ::CHECKING::YOU::OUT::SweetSweet♡Magic
         while rolling_start = self.instance_variable_get(:@rolling_start).pop
 
           # It's pretty likely that the end of one iteration will already read past the start of the next one.
-          wild_io.seek(rolling_start, whence=::IO::SEEK_SET) if rolling_start > wild_io.pos
+          wild_io.seek(rolling_start, whence=::IO::SEEK_SET)
           # Drop unnecessary leading bytes from start points we've already iterated beyond.
           self.instance_variable_get(:@hold_my_hand).slice!(rolling_start - the_last_striker)
 
