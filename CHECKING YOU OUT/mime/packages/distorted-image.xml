@@ -88,4 +88,35 @@
     <!--<glob pattern="*.xml"/>--> <!-- Need more info / `root-XML` before enabling -->
   </mime-type>
 
+  <!--
+    http://fileformats.archiveteam.org/wiki/FreeHand
+  -->
+  <mime-type type="image/x-freehand">
+    <!--
+      "For FreeHand 7, 8, and 9, the first four bytes of the file will spell (in ASCII),
+       `AGD2`, `AGD3`, and `AGD4` respectively. In FreeHand 10, the text `FreeHand10` is within
+       the first 24 bytes. Some other versions possibly also have "FreeHand" followed by a version number
+       somewhere in the early part of the file. Also in early FreeHand formats LZW compression was used,
+       so some files may have `ALDUS LZW` for the first few bytes."
+    -->
+    <cyo:fourcc type="string" value="AGD1"/>
+    <magic priority="44">
+      <match type="string" value="AGD2" offset="0"/>
+      <match type="string" value="AGD3" offset="0"/>
+      <match type="string" value="AGD4" offset="0"/>
+      <match type="string" value="FreeHand10" offset="0:24"/>
+      <match type="string" value="ALDUS LZW" offset="0:24"/>
+    </magic>
+    <glob pattern="*.fh"/>
+    <glob pattern="*.fh3"/>
+    <glob pattern="*.fh4"/>
+    <glob pattern="*.fh5"/>
+    <glob pattern="*.fh6"/>
+    <glob pattern="*.fh7"/>
+    <glob pattern="*.fh8"/>
+    <glob pattern="*.fh9"/>
+    <glob pattern="*.fh10"/>
+    <glob pattern="*.fh11"/>
+  </mime-type>
+
 </mime-info>
