@@ -98,4 +98,19 @@
     <!--<cyo:fourcc type="string" pattern="BOBO" offset="4"/>  Creator code -->
   </mime-type>
 
+  <!--
+    http://fileformats.archiveteam.org/wiki/Compact_Pro
+    http://www.cyclos.com/compactpro.htm
+  -->
+  <mime-type type="application/mac-compactpro">
+    <!--
+      "The only magic number in a Compact Pro file header is the first byte 01.
+       The rest is offsets for the file directory and data, along with CRC-32 values."
+      "The type code is PACT, and the creator code is CPCT which sometimes can be found
+       in the file if the file has been encoded as a MacBinary file."
+    -->
+    <glob pattern="*.sea"/>
+    <cyo:fourcc type="string" pattern="PACT"/>
+  </mime-type>
+
 </mime-info>
