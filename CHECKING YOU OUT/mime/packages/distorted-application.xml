@@ -113,4 +113,36 @@
     <cyo:fourcc type="string" pattern="PACT"/>
   </mime-type>
 
+  <!--
+    http://fileformats.archiveteam.org/wiki/Adobe_Illustrator_Artwork
+    https://www.fileformat.info/format/ai/egff.htm
+  -->
+  <mime-type type="application/illustrator">
+    <sub-class-of type="application/postscript"/>
+  </mime-type>
+
+  <!--
+    https://web.archive.org/web/20060412163212/https://partners.adobe.com/public/developer/en/illustrator/sdk/AI7FileFormat.pdf
+  -->
+  <mime-type type="application/postscript">
+    <magic priority="33">
+      <!--
+        Per `AI7FileFormat.pdf`, "The documents (files) created by Adobe Illustrator are PostScript language documents.",
+        and the `Prolog` BNF syntax tells us what to match:
+
+        "`%!PS-Adobe-*M* EPSF-*N*` (or `%!PS-Adobe-*M*`)  — The first line of the file is a unique comment that identifies
+         the version of the Document Structuring Conventions (DSC) to which the document conforms.
+         The first line may also specify that the file conforms to a version of the Encapsulated PostScript File format (EPSF).
+         Both numbers must correspond to the specific versions used in writing out the file. For example,
+         the comment `%!PS-Adobe-3.0 EPSF-3.0` indicates that the file conforms to DSC version 3.0 and EPSF version 3.0."
+
+          irb> "%!PS-Adobe-X.X".each_char.reduce(0) { (_1 << 8) | _2.ord } & 0xffffffffffffffffffffff00ff00
+          => 753088544053424031651592780393984
+          irb> "%!PS-Adobe-3.0".each_char.reduce(0) { (_1 << 8) | _2.ord } & 0xffffffffffffffffffffff00ff00
+          => 753088544053424031651592780393984
+      -->
+      <match type="string" offset="0" value="%!PS-Adobe-X.X" mask="0xffffffffffffffffffffff00ff00"/>
+    </magic>
+  </mime-type>
+
 </mime-info>
