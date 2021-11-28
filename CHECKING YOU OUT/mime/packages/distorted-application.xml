@@ -195,4 +195,11 @@
     <generic-icon name="font-x-generic"/>
   </mime-type>
 
+  <!--
+    http://fileformats.archiveteam.org/wiki/Adobe_Type_1
+  -->
+  <mime-type type="application/x-font-type1">
+    <glob pattern="*.pfm"/>  <!-- Printer Font Metrics -->
+  </mime-type>
+
 </mime-info>
