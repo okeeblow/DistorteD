@@ -184,4 +184,15 @@
     <cyo:fourcc type="string" pattern="Hlmg"/>
   </mime-type>
 
+  <!--
+    http://fileformats.archiveteam.org/wiki/Fontographer
+  -->
+  <mime-type type="application/x-fontographer">
+    <glob pattern="*.fog"/>
+    <magic priority="44">
+      <match type="big32" offset="0" value="0x43666631"/>
+    </magic>
+    <generic-icon name="font-x-generic"/>
+  </mime-type>
+
 </mime-info>
