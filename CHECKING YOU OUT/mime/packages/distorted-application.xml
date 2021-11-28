@@ -79,4 +79,16 @@
     <glob pattern="*.cdt"/>  <!-- CorelDRAW Template -->
   </mime-type>
 
+  <!--
+    `application/x-stuffitx` also used by Apache httpd: https://bz.apache.org/bugzilla/show_bug.cgi?id=38009
+  -->
+  <mime-type type="application/x-stuffitx">
+    <comment>StuffIt X archive</comment>
+    <generic-icon name="package-x-generic"/>
+    <magic priority="60">
+      <match type="string" value="StuffIt!" offset="0"/>
+    </magic>
+    <glob pattern="*.sitx"/>
+  </mime-type>
+
 </mime-info>
