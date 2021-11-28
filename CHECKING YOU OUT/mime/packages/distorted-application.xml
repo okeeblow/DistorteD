@@ -91,4 +91,11 @@
     <glob pattern="*.sitx"/>
   </mime-type>
 
+  <!--
+    http://fileformats.archiveteam.org/wiki/AppleWorks
+  -->
+  <mime-type type="application/x-appleworks-document">
+    <!--<cyo:fourcc type="string" pattern="BOBO" offset="4"/>  Creator code -->
+  </mime-type>
+
 </mime-info>
