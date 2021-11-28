@@ -256,7 +256,14 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       # the first time that needle is seen (or if it has been purged from our cache).
       remember_you  = proc { |needle|
         case needle
-        when ::CHECKING::YOU::IN, ::CHECKING::YOU::IN::B4U then all_night[needle].yield_self(&together_4ever)
+        when ::CHECKING::YOU::IN, ::CHECKING::YOU::IN::B4U then all_night[needle].yield_self(&together_4ever).yield_self {
+          # TODO: Remove this if I can detect and combine FDO and Tika aliases of the same types.
+          # Avoids errors from e.g.
+          #   tmb_auslandsgesprach.rb:70:in `block (2 levels) in <main>'
+          #   <"application/x-java"> expected but was
+          #   <"#<Set: {#<CHECKING::YOU::OUT application/x-java>, #<CHECKING::YOU::OUT application/java-vm>}>">
+          _1.is_a?(::Set) ? _1.first : _1
+        }
         when ::CHECKING::YOU::OUT::StickAround then (complexes[needle] || postfixes[needle]).yield_self(&together_4ever)
         when ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O then
           # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
