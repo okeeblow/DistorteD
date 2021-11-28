@@ -145,4 +145,43 @@
     </magic>
   </mime-type>
 
+  <!--
+    http://fileformats.archiveteam.org/wiki/TOAST
+  -->
+  <mime-type type="application/x-roxio-toast">
+    <sub-class-of type="application/x-cd-image"/>
+    <!--
+      "Early versions of Toast software would save a disc image with no extension,
+       as was common for Macintosh systems, but would add `•image` to the end.
+       Starting In Toast 5.1 (2002), the extension `.toast` was added,
+       probably to be compatible with Mac OS X."
+    -->
+    <glob pattern="*•image"/>
+    <glob pattern="*.toast"/>
+    <magic priority="22">
+      <!--
+        "Early •image & .toast files begin with the hex values `45 52 02 00`.
+         Later versions don't seem to have this header."
+        CYO's Toast 5.0.2 example image has this header.
+      -->
+      <match type="big32" offset="0" value="0x45520200"/>
+    </magic>
+    <magic priority="77">
+      <!--
+         Earlier versions tag "Miles Software" (Dr. Markus Fest's company), then the start-year resets
+         to 1997 when Adaptec bought Toast, and the end-year seems to increment along with each release:
+         `TOAST ISO 9660 BUILDER COPYRIGHT (C) 1993 MILES SOFTWARE ENGINEERING - HAVE A NICE DAY`
+         `TOAST ISO 9660 BUILDER COPYRIGHT (C) 1993-1995 MILES SOFTWARE ENGINEERING - HAVE A NICE DAY`
+         `TOAST ISO 9660 BUILDER COPYRIGHT (C) 1993-1996 MILES SOFTWARE GMBH - HAVE A NICE DAY`
+         `TOAST ISO 9660 BUILDER COPYRIGHT (C) 1997 ADAPTEC, INC. - HAVE A NICE DAY`
+         `TOAST ISO 9660 BUILDER COPYRIGHT (C) 1997-2002 ROXIO, INC. - HAVE A NICE DAY`
+         `TOAST ISO 9660 BUILDER COPYRIGHT (C) 1997-2003 ROXIO, INC. - HAVE A NICE DAY`
+         `TOAST ISO 9660 BUILDER COPYRIGHT (C) 1997-2005 SONIC SOLUTIONS, INC. - HAVE A NICE DAY`
+         `TOAST ISO 9660 BUILDER COPYRIGHT (C) 1997-2011 SONIC SOLUTIONS - HAVE A NICE DAY`
+      -->
+      <match type="string" offset="0" value="TOAST ISO 9660 BUILDER COPYRIGHT"/>
+    </magic>
+    <cyo:fourcc type="string" pattern="Hlmg"/>
+  </mime-type>
+
 </mime-info>
