@@ -14,7 +14,7 @@ if it's not implemented 𝅘𝅥𝅮
 
 ## CHECKING YOU OUT
 
-- "Chimera" file identification, e.g. manually-concatenated JFIF+ZIP files or EXE/DLL files constructed with [`RezWack`](https://www.unix.com/man-page/osx/1/RezWack/).
+- [Polyglot file](https://github.com/corkami/docs/blob/master/AbusingFileFormats/README.md) identification, e.g. manually-concatenated JFIF+ZIP files or EXE/DLL files constructed with [`RezWack`](https://www.unix.com/man-page/osx/1/RezWack/).
 - FourCC support:
   - Fill out FourCC type definitions in local XML packages.
   - No `String` representations — ensure FourCCs can contain `0x0` like the pre-QT5 MP3 type.
