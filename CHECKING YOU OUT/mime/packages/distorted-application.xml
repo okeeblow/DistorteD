@@ -202,4 +202,13 @@
     <glob pattern="*.pfm"/>  <!-- Printer Font Metrics -->
   </mime-type>
 
+  <!--
+    https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
+    http://fileformats.archiveteam.org/wiki/ZIP
+  -->
+  <mime-type type="application/zip">
+    <!-- Per `APPNOTE.TXT`: "Use of the extension `.ZIPX` is also recognized and MAY be used for ZIP files." -->
+    <glob pattern="*.zipx"/>
+  </mime-type>
+
 </mime-info>
