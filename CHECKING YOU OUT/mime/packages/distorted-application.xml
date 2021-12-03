@@ -211,4 +211,21 @@
     <glob pattern="*.zipx"/>
   </mime-type>
 
+  <!--
+    http://fileformats.archiveteam.org/wiki/SWF
+
+    NOTE: The Flash browser plugin apparently does not declare support for the `vnd.adobe.flash.movie` type,
+          only for the `futuresplash` and `x-shockwave-flash` aliases:
+          https://www.mail-archive.com/debian-bugs-dist@lists.debian.org/msg1797351.html
+  -->
+  <mime-type type="application/vnd.adobe.flash.movie">
+    <magic priority="50">
+      <!--
+        The fd.o package declares the uncompressed `FWS` and the `CWS` zlib-compressed sequence
+        but was missing the `ZWS` LZMA-compressed sequence: http://fileformats.archiveteam.org/wiki/SWF#Identification
+      -->
+      <match type="string" value="ZWS" offset="0"/>
+    </magic>
+  </mime-type>
+
 </mime-info>
