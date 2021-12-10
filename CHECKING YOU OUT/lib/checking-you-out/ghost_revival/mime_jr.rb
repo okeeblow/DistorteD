@@ -103,7 +103,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     \\(
       (x)([\dA-Fa-f]{1,2}) |
       (\d{1,3})            |
-      ([rnt])
+      ([rnt\\])
     )
   &xim
 
