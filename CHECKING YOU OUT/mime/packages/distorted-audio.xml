@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mime-info>
+  <!--
+    http://justsolve.archiveteam.org/wiki/WAV
+  -->
+  <mime-type type="audio/x-wav">
+    <!--
+      The freedesktop-dot-org package is missing this parent/child relationship:
+      https://docs.microsoft.com/en-us/windows/win32/xaudio2/resource-interchange-file-format--riff-
+    -->
+    <sub-class-of type="application/x-riff"/>
+  </mime-type>
+</mime-info>
