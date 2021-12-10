@@ -15,8 +15,8 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://cooltrainer.org'
   spec.license       = 'AGPL-3.0'
 
-  spec.files         = Dir.glob('{bin,lib,mime,third-party}/**/*').keep_if { |file| File.file?(file) } + %w(LICENSE README.md)
-  spec.test_files    = Dir['test/**/*']
+  spec.files         = Dir.glob('{bin,lib,mime}/**/*').keep_if { |file| File.file?(file) } + %w(LICENSE README.md)
+  spec.test_files    = Dir['TEST MY BEST/**/*']
   spec.require_paths = ['lib']
 
   spec.required_ruby_version = '>= 3.0.0'
