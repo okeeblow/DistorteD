@@ -23,6 +23,8 @@ Gem::Specification.new do |spec|
 
   spec.executables   = ['checking-you-out']
 
+  spec.add_dependency 'xross-the-xoul', "~> #{Cooltrainer::DistorteD::VERSION}"
+
   # Ox  —  fastest XML parser for loading `shared-mime-info` packages! https://github.com/ohler55/ox
   # See `docs/XML.md` for my comparisons.
   #

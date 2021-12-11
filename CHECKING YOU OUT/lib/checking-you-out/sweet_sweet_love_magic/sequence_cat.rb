@@ -17,8 +17,13 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
     # due to the way Ox works, and I can't assume deterministric callback order.
     # Use one attr_writer for the sequence, one for the format, and store the intermediate value
     # directly in `self[:sequence]` so we don't allocate outside an RValue with instance vars.
-    def cat=(cat);       self[:sequence] = self[:sequence].nil? ? cat    : -self[:sequence].call(cat);    end
-    def format=(format); self[:sequence] = self[:sequence].nil? ? format : -format.call(self[:sequence]); end
+    def sequence=(cat); self[:sequence] = self[:sequence].nil? ? cat : self[:sequence].call(cat); end
+    def mask=(cat);     self[:mask]     = self[:mask].nil?     ? cat : self[:mask].call(cat);     end
+    def mask;           self[:mask].is_a?(::Proc)              ? nil : self[:mask];               end
+    def format=(format)
+      self[:sequence] = self[:sequence].nil? ? format : format.call(self[:sequence])
+      self[:mask]     = self[:mask].nil?     ? format : format.call(self[:mask])
+    end
 
     # "The byte offset(s) in the file to check. This may be a single number or a range in the form `start:end',
     # indicating that all offsets in the range should be checked. The range is inclusive."

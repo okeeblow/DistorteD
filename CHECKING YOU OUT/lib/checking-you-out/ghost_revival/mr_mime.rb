@@ -133,10 +133,10 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     when :magic          then @cat_sequence&.weight = value.as_i if attr_name == :priority
     when :match          then
       case attr_name
-      when :type         then @cat_sequence.last.format = self.magic_eye[value.as_s]
-      when :value        then @cat_sequence.last.cat = value.as_s
+      when :type         then @cat_sequence.last.format   = MAGIC_EYE[value.as_sym]
+      when :value        then @cat_sequence.last.sequence = value.as_s
       when :offset       then @cat_sequence.last.boundary = value.as_s
-      when :mask         then @cat_sequence.last.mask = BASED_STRING.call(value.as_s)
+      when :mask         then @cat_sequence.last.mask     = value.as_s
       end
     when :treemagic      then
       # Content-match byte-sequence container Element can specify a weight 0–100.

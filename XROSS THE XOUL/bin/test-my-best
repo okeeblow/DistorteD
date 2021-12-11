@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+require_relative('../lib/xross-the-xoul')
+require_relative('../TEST MY BEST/test-my-best')

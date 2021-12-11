@@ -67,29 +67,6 @@ class ::CHECKING::YOU::OUT::XROSS_INFECTION
       (self::CHAIN =~ /linux/i) != nil
     end
 
-    def self.Symmetry
-      # Little-endian systems:
-      # - VAX
-      # - x86 / AMD64
-      # Big-endian systems:
-      # - Motorola 68k
-      # - Internet https://en.wikipedia.org/wiki/Endianness#Networking
-      # - IBM mainframes
-      # Bi-endian systems:
-      # - AArch64
-      # - PowerPC / POWER
-      # - MIPS
-      # - Alpha
-      # - PA-RISC
-      # - SuperH
-      # - Itanium
-      # - RISC-V
-      [1].yield_self { |bliss|
-        # Pack the test Integer as a native-endianness 'I'nt and a 'N'etwork-endianess (BE) Int and compare.
-        bliss.pack(-?I) == bliss.pack(-?N) ? :BE : :LE
-      }
-    end
-
   end  # SYSTEM
 
 

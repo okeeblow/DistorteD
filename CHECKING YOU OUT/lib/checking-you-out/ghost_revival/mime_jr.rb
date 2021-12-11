@@ -1,7 +1,8 @@
 require(-'ox') unless defined?(::Ox)
 require(-'set') unless defined?(::Set)
 
-require_relative(-'xross_infection') unless defined?(::CHECKING::YOU::OUT::XROSS_INFECTION)
+# Endian-swapping methods.
+require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 
 # Define a custom `Set` subclass to identify the return values from `MIMEjr` that should be passed to `MrMIME`.
 ::CHECKING::YOU::OUT::BatonPass = ::Class.new(::Set)
@@ -67,34 +68,6 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
   #   e.g. `attr_value()` > `attr()` iff `defined? attr_value()`.
 
 
-  # Turn an arbitrary String into the correctly-based Integer it represents.
-  # It would be nice if I could do this directly in `Ox::Sax::Value`.
-  # Base-16 `Integer` values can be written as literals in Ruby, e.g. `irb> 0xFF => 255`
-  # Base-8 bytes can be literal in `String`s too: `irb> "\377" => "\xFF"`.
-  BASED_STRING = ::Ractor.make_shareable(proc {
-    # Operate on codepoints to avoid `String` allocation from slicing, e.g. `_1[...1]`
-    # would allocate a new two-character `String` before we have chance to dedupe it.
-    # The `shared-mime-info` XML is explicitly only in UTF-8, so this is safe.
-    #
-    # The below is equivalent to:
-    # ```case
-    # when -s[0..1].downcase == -'0x' then s.to_i(16)
-    # when s.chr == -?0 then s.to_i(8)
-    # else s.to_i(10)
-    # end```
-    #
-    # …but rewritten to check for first-codepoint `'0'`, then second-codepoint `'x'/'X'`:
-    #   irb> ?0.ord => 48
-    #   irb> [?X.ord, ?x.ord] => [88, 120]
-    #
-    # Relies on the fact that `#ord` of a long `String` is the same as `#ord` of its first character:
-    #   irb> 'l'.ord => 108
-    #   irb> 'lmfao'.ord => 108
-    (_1.ord == 48) ?
-      ([88, 120].include?(_1.codepoints[1]) ? _1.to_i(16) : _1.to_i(8)) :
-      _1.to_i(10)
-  })
-
   # `::Regexp` to match partial C-style escapes in our value `::String`s.
   #
   # Per the `shared-mime-info` manual:
@@ -107,58 +80,80 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     )
   &xim
 
-  # `::Hash`` of converter methods for `shared-mime-info` content-match pattern formats.
-  def magic_eye
-   @magic_eye ||= {
-    -'string' => proc { |s|
-      # The XML is UTF-8, but we want a byte `::String` from it.
-      s.force_encoding(Encoding::ASCII_8BIT).gsub!(ESCAPE_FROM_NEW_STRING) {
+  # `::Regexp` to match valid base-prefixed Numeric literals.
+  #
+  # Per https://docs.ruby-lang.org/en/master/doc/syntax/literals_rdoc.html#label-Numbers —
+  # "You can use a special prefix to write numbers in decimal, hexadecimal, octal or binary formats.
+  #  For decimal numbers use a prefix of `0d`, for hexadecimal numbers use a prefix of `0x`,
+  #  for octal numbers use a prefix of `0` or `0o`, for binary numbers use a prefix of `0b`.
+  #  The alphabetic component of the number is not case-sensitive."
+  #
+  # Ruby supports underscores (`_`) in Numeric literals for readability, e.g.
+  #   `irb> 0x1337_BEEF == 0x1337BEEF => true`, so include those too!
+  LITERALLY_FIGURATIVE = /^0[dxob]?[_\h]+$/
+
+  # Turn an arbitrary String into its correctly-based Integer or into an unescaped String.
+  BASED_STRING = ::Ractor.make_shareable(proc {
+    # If the given `::String` matches for format of a `::Numeric` literal then
+    # this `::Proc` will return a `::Numeric`, otherwise it will return a `::String`.
+    # This is confusing/annoying but necessary to support masked sequence matches without the
+    # allocation overhead of going back and forth between `::String` and `::Integer` representations.
+    (LITERALLY_FIGURATIVE === _1) ?
+      # There will always be a leading `0` in any `::Numeric` literal no matter the base.
+      # Remove it so we can examine the next character for a base-decision.
+      case _1.delete_prefix!(-?0).ord
+        # The prefix is case-insensitive, so we can't just e.g. `#delete_prefix!(-?x)` here.
+        # Operating on codepoints allows us to avoid the allocation overhead of even a single-char like `?x`.
+        when 88, 120 then _1.slice!(1...).to_i(16)  # Hexadecimal: `[?X, ?x].map!(&:ord) => [88, 120]`
+        when 79, 111 then _1.slice!(1...).to_i(8)   #       Octal: `[?O, ?o].map!(&:ord) => [79, 111]`
+        when 68, 100 then _1.slice!(1...).to_i(10)  #     Decimal: `[?D, ?d].map!(&:ord) => [68, 100]`
+        when 66,  98 then _1.slice!(1...).to_i(2)   #      Binary: `[?B, ?b].map!(&:ord) => [66,  98]`
+        else              _1.to_i(8)  # Numbers with only a leading `0` and no `[DdOaBbXx]` are octal.
+      end :
+      _1.force_encoding(
+        # The source XML will always be in UTF-8, but we want a byte String.
+        Encoding::ASCII_8BIT
+      ).gsub(
+        # "The string type supports the C character escapes (\0, \t, \n, \r, \xAB for hex, \777 for octal)."
+        ESCAPE_FROM_NEW_STRING
+      ) {
         case $1
-        when "r" then 13.chr
-        when "n" then 10.chr
-        when "t" then 9.chr
+        when -?r  then 13.chr
+        when -?n  then 10.chr
+        when -?t  then  9.chr
+        when -?\\ then 92.chr  # e.g. `"{\\rtf"`
         else
-          if $2 == "x" then $3.to_i(16).chr
-          elsif $1.to_i == 0 then 0.chr
+          if $2.eql?(-?x) then $3.to_i(16).chr
+          elsif $1.to_i.zero? then 0.chr
           else $1.to_i(8).chr
           end
         end
-      }
-      s
-    },
-    -'byte' => proc { |s| BASED_STRING.call(s).chr },
-    -'little32' => proc { |s| BASED_STRING.call(s).yield_self { |value|
-      ((value & 0xFF).chr + ((value >> 8) & 0xFF).chr + ((value >> 16) & 0xFF).chr + ((value >> 24) & 0xFF).chr)
-    }},
-    -'big32' => proc { |s| BASED_STRING.call(s).yield_self { |value|
-      (((value >> 24) & 0xFF).chr + ((value >> 16) & 0xFF).chr + ((value >> 8) & 0xFF).chr + (value & 0xFF).chr)
-    }},
-    -'little16' => proc { |s| BASED_STRING.call(s).yield_self { |value|
-      ((value & 0xFF).chr + (value >> 8).chr)
-    }},
-    -'big16' => proc { |s| BASED_STRING.call(s).yield_self { |value|
-      ((value >> 8).chr + (value & 0xFF).chr)
-    }},
-  }.tap { |f|
+      }.-@  # Dedupe and freeze our `::String` output.
+  })
 
-      # TODO: Actually implement `stringignorecase`. This is a Tika thing not found in the fd.o XML.
-      f[-'stringignorecase'] = f[-'string']
+  # `::Hash`` of converter methods for `shared-mime-info` content-match pattern formats.
+  #
+  # Per the `shared-mime-info` spec:
+  # "All numbers are in network (big-endian) order. This is necessary because the data will be
+  # stored in arch-independent directories like `/usr/share/mime` or even in user's home directories."
+  MAGIC_EYE = ::Ractor::make_shareable({
+    :string   => BASED_STRING,
+    :byte     => BASED_STRING,
+    :big32    => BASED_STRING,
+    :little32 => BASED_STRING >> ::XROSS::THE::CPU::method(:swap32),
+    :host32   => BASED_STRING >> ::XROSS::THE::CPU::method(:swapBtoN),
+    :big16    => BASED_STRING,
+    :little16 => BASED_STRING >> ::XROSS::THE::CPU::method(:swap16),
+    :host16   => BASED_STRING >> ::XROSS::THE::CPU::method(:swapBtoN),
+  }.tap {
 
-      # Returning `string` as default will probably not result in a successful match
-      # but will avoid blowing up our entire program if we encounter an unhandled format.
-      f.default = f[-'string']
+    # TODO: Actually implement `stringignorecase`. This is a Tika thing not found in the fd.o XML.
+    _1[:stringignorecase] = _1[:string]
 
-    # Set `host` formats according to system endianness.
-    if ::CHECKING::YOU::OUT::XROSS_INFECTION::SYSTEM.Symmetry == :BE then
-      f[-'host16'] = f[-'big16']
-      f[-'host32'] = f[-'big32']
-    else
-      f[-'host16'] = f[-'little16']
-      f[-'host32'] = f[-'little32']
-    end
-
-  }
-  end
+    # Returning `string` as default will probably not result in a successful match
+    # but will avoid blowing up our entire program if we encounter an unhandled format.
+    _1.default = _1[:string]
+  })
 
   # These `Class`es can match the Media-Type `String` from `<mime-type>` and `<alias>`.
   # If there's a match, the matching `CYI`/`B4U` will be removed from `@needles`.
@@ -453,10 +448,10 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # Our `SpeedyCat`/`SequenceCat` `::Struct`s are written to handle these in any order,
       # which is why `#format` passes in a `proc` to be used if the order is `format` and then `value` :)
       case attr_name
-      when :type   then @cat_sequence.last.format   = self.magic_eye[value.as_s]
-      when :value  then @cat_sequence.last.cat      = value.as_s
+      when :type   then @cat_sequence.last.format   = MAGIC_EYE[value.as_sym]
+      when :value  then @cat_sequence.last.sequence = value.as_s
       when :offset then @cat_sequence.last.boundary = value.as_s
-      when :mask   then @cat_sequence.last.mask     = BASED_STRING.call(value.as_s)
+      when :mask   then @cat_sequence.last.mask     = value.as_s
       end
     when :treemagic then
       # Content-match byte-sequence container Element can specify a weight 0–100.

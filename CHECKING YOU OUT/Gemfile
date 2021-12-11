@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'xross-the-xoul', :path => File.join(File.dirname(__FILE__), '..', 'XROSS THE XOUL')
 
 # "Unlike :git, bundler does not compile C extensions for gems specified as paths."
 #
