@@ -42,11 +42,11 @@ class TestXrossCPU < ::Test::Unit::TestCase
           ::XROSS::THE::CPU::send(xross, ::XROSS::THE::CPU::send(xross, _1)),
         )
 
-        # The generic `::byteswap` method should detect and use the appropriate-length
+        # The generic `::swap` method should detect and use the appropriate-length
         # swap method based on the `#bit_length` of the test value.
         assert_equal(
           ::XROSS::THE::CPU::send(xross, _1),
-          ::XROSS::THE::CPU::byteswap(_1),
+          ::XROSS::THE::CPU::swap(_1),
         )
 
       }  # corpus.each
@@ -69,8 +69,8 @@ class TestXrossCPU < ::Test::Unit::TestCase
     assert_include([:>, :<], ::XROSS::THE::CPU::ORIGIN_OF_SYMMETRY)
   end
 
-  define_method(:test_byte_swap_16, SWAP_DOT_AVI.call(SIXTEEN_BIT_VALUES,    :byteswap16, [-?n, -?v]))
-  define_method(:test_byte_swap_32, SWAP_DOT_AVI.call(THIRTY_TWO_BIT_VALUES, :byteswap32, [-?N, -?V]))
-  define_method(:test_byte_swap_64, SWAP_DOT_AVI.call(SIXTY_FOUR_BIT_VALUES, :byteswap64, ['Q>', 'Q<'])) if PLATFORM_HAS_LONG_LONG
+  define_method(:test_byte_swap_16, SWAP_DOT_AVI.call(SIXTEEN_BIT_VALUES,    :swap16, [-?n, -?v]))
+  define_method(:test_byte_swap_32, SWAP_DOT_AVI.call(THIRTY_TWO_BIT_VALUES, :swap32, [-?N, -?V]))
+  define_method(:test_byte_swap_64, SWAP_DOT_AVI.call(SIXTY_FOUR_BIT_VALUES, :swap64, ['Q>', 'Q<'])) if PLATFORM_HAS_LONG_LONG
 
 end
