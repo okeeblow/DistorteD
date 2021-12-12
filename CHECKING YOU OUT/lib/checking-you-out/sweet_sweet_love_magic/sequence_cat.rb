@@ -25,6 +25,24 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
       self[:mask]     = self[:mask].nil?     ? format : format.call(self[:mask])
     end
 
+    # Represent our sequence as either a byte `::String` or as an `::Integer`.
+    #
+    # We'll need one or the other depending on if we have a mask or not, e.g.
+    #   irb> ::CHECKING::YOU::OUT::from_ietf_media_type('image/png').cat_sequence.sequence_s => "\x89PNG"
+    #   irb> ::CHECKING::YOU::OUT::from_ietf_media_type('image/png').cat_sequence.sequence_i => 2303741511
+    #
+    #   irb* ::XROSS::THE::CPU::swap(9894494448401390090).digits(0xFF.succ).each_with_object(::String::new) {
+    #   irb*   _2.insert(-1, _1.chr(::Encoding::ASCII_8BIT))
+    #   irb> } => "\x89PNG\r\n\x1A\n"
+    def sequence_s = self[:sequence].is_a?(::String)  ?
+      self[:sequence]                                 :
+      self[:sequence].digits(0xFF.succ).each_with_object(::String::new) {
+        _2.insert(-1, _1.chr(::Encoding::ASCII_8BIT))
+      }
+    def sequence_i = self[:sequence].is_a?(::Integer) ?
+      self[:sequence]                                 :
+      self[:sequence].each_char.reduce(0) { (_1 << 8) | _2.ord }
+
     # "The byte offset(s) in the file to check. This may be a single number or a range in the form `start:end',
     # indicating that all offsets in the range should be checked. The range is inclusive."
     def boundary=(range_string)
@@ -68,17 +86,23 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
       return case otra
       when ::NilClass then false
       when ::String then
-        if self[:mask].nil? then
-          otra.include?(self[:sequence])
+        if self.mask.nil? or self.mask.eql?(0) then
+          otra.include?(self.sequence_s)
         else
           # CorelDRAW! example, a RIFF format with "CDR<version-number>":
           #   irb> "CDRXvrsn".each_char.reduce(0) { (_1 << 8) | _2.ord } & 0xffffff00ffffffff => 4847089260898186094
           #   irb> "CDR5vrsn".each_char.reduce(0) { (_1 << 8) | _2.ord } & 0xffffff00ffffffff => 4847089260898186094
           #   irb> "CDR3vrsn".each_char.reduce(0) { (_1 << 8) | _2.ord } & 0xffffff00ffffffff => 4847089260898186094
-          (otra.each_char.reduce(0) { (_1 << 8) | _2.ord } & self[:mask]).eql?(
-            (self[:sequence].each_char.reduce(0) { (_1 << 8) | _2.ord } & self[:mask])
+          (otra[0...self[:sequence].size].each_char.reduce(0) { (_1 << 8) | _2.ord } & self.mask).eql?(
+            (self.sequence_i & self.mask)
           )
         end
+      when ::Integer then
+        otra.eql?(
+          (self.mask.nil? or self.mask.eql?(0)) ?
+            self.sequence_i                     :
+            (self.sequence_i & self.mask)
+        )
       when ::IO then
         otra.seek(self.min, whence=IO::SEEK_SET)
         self.=~(otra.read(self.size), offset: offset)
