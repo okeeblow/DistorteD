@@ -191,6 +191,8 @@ Note: Reference links are to specific revisions so it's clear what I was writing
 
 - [`ruby-filemagic`](https://github.com/blackwinter/ruby-filemagic/) and [`ffiruby-filemagic`](https://github.com/glongman/ffiruby-filemagic/) are bindings to [`libmagic`](http://www.darwinsys.com/file/). I used both of these (not simultaneously) in the past to supplement `ruby-mime-types` with file-content matching. These rely on the external `magic` library, usually installed through a system-level package manager [such as Homebrew](https://formulae.brew.sh/formula/libmagic). These preclude Windows support, and `ruby-filemagic` [is unmaintained](https://github.com/blackwinter/ruby-filemagic/commit/e1f2efd07da4130484f06f58fed016d9eddb4818).
 
+- [`sixarm_ruby_magic_number_type`](https://github.com/SixArm/sixarm_ruby_magic_number_type) is a lightweight content-matching library with [its own small type database](https://github.com/SixArm/sixarm_ruby_magic_number_type/blob/main/lib/sixarm_ruby_magic_number_type/string.rb#L28) which works by [monkey-patching Ruby's built-in `::File`, `::IO`, and `::String` classes](https://github.com/SixArm/sixarm_ruby_magic_number_type/tree/main/lib/sixarm_ruby_magic_number_type).
+
 ## GreeTz
 
 - @ohler55 for [`ox`](https://github.com/ohler55/ox), the only Ruby XML library I found that could parse `freedesktop.org.xml` faster than `ruby-mime-types` took to load.
