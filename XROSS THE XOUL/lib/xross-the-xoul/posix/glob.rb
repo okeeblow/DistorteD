@@ -1,0 +1,131 @@
+# Components for working with POSIX `::String` globs, usually used for matching filenames.
+#
+# Glob stands for "global" according to Dennis Ritchie's `glob(7)` manual page from first-edition Research Unix:
+# https://en.wikipedia.org/wiki/Research_Unix#Versions
+# https://web.archive.org/web/20000829224359/http://cm.bell-labs.com/cm/cs/who/dmr/man71.pdf#page=10
+#
+#
+# The modern standard is maintained as part of POSIX:
+# https://pubs.opengroup.org/onlinepubs/9699919799/functions/glob.html sez: "The glob() function is a
+#   pathname generator that shall implement the rules defined in XCU `Pattern Matching Notation`[0],
+#   with optional support for rule 3 in XCU `Patterns Used for Filename Expansion`[1]."
+#
+# [0]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_13
+# [1]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_13_03
+#
+# Per [0], "The pattern matching notation described in this section is used to specify patterns
+#   for matching strings in the shell. Historically, pattern matching notation is related to,
+#   but slightly different from, the regular expression notation described in XBD Regular Expressions.
+#   For this reason, the description of the rules for this pattern matching notation are based on
+#   the description of regular expression notation, modified to account for the differences."
+#
+#
+# The modern Lunix `glob(7)` manpage offers a generally-more-concise description of the rules
+# and is what will usually be quoted in my mid-code comments:
+# https://man7.org/linux/man-pages/man7/glob.7.html
+#
+#
+# Python has this in its standard library as `fnmatch.translate`:
+# https://docs.python.org/3/library/fnmatch.html#fnmatch.translate
+# https://github.com/python/cpython/blob/main/Lib/fnmatch.py
+# https://github.com/python/cpython/blob/main/Lib/test/test_fnmatch.py
+#
+#
+# TODO: A Refinement for `::String` for the implicit instance-level `to_regexp`:
+# https://ruby-doc.org/core/Regexp.html#method-c-try_convert
+class ::XROSS; end
+class ::XROSS::THE; end
+class ::XROSS::THE::POSIX; end
+class ::XROSS::THE::POSIX::Glob
+  def self.to_regexp(otra, flags = 0)
+    return unless otra.is_a?(::String)
+    return if otra.empty?
+
+    # We can't initialize a `::Regexp` and add to its pattern as we go,
+    # but we can construct a `::String` pattern that way and then feed it to `::Regexp::new`.
+    subpatterns = ::Array::new.push(::Array::new)
+
+    # Work with codepoints to avoid allocation of the single-character `::String`s in `#each_char`.
+    otra.each_codepoint.with_index { |codepoint, index|
+      case codepoint
+      when ?*.ord then
+        # "A '*' (not between brackets) matches any string, including the empty string."
+        # An asterisk must not be the first character of a `::Regexp` pattern
+        # or we will get a "target of repeat operator is not specified" `::SyntaxError`.
+        subpatterns.last.push(?..ord) unless subpatterns.last.last.eql?(?*.ord)
+        # Condense multiple-asterisk Globs into a single `.*`.
+        subpatterns.last.push(codepoint) unless subpatterns.last.last.eql?(?*.ord)
+      when ??.ord then
+        # "A '?' (not between brackets) matches any single character."
+        # A `::Regexp` pattern uses a single '.' as the equivalent,
+        # but we should match the explicit '?' if we're inside a bracket subpattern.
+        subpatterns.last.push(subpatterns.last.first.eql?(?[.ord) ? codepoint : ?..ord)
+      when ?..ord then
+        # A single '.' in a `::Regexp` pattern has the same meaning as the unbracketed single '?' glob,
+        # matching any single character, so a '.' Glob character must be escaped to be matched explicitly.
+        subpatterns.last.push(?\\.ord, codepoint)
+      when ?\\.ord then
+        subpatterns.last.push(codepoint)
+        # HACK: '\' is the escape character, so it must be escaped itself to be matched explicitly.
+        #       We want to do this inside brackets, but not if the opening bracket itself was escaped.
+        #       This was uncovered by the unit test for the issue originally brought up in this thread:
+        #       http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/22819
+        subpatterns.last.push(codepoint) if subpatterns.size > 1 and subpatterns.last.first.eql?(?[.ord) and not (
+          subpatterns[-2].last.eql?(codepoint)
+        )
+      when ?[.ord then
+        # "An expression '[...]' where the first character after the leading '[' is not an '!'
+        #  matches a single character, namely any of the characters enclosed by the brackets."
+        # We will start a new subpattern for this so we can easily find and escape it if unclosed.
+        subpatterns.push(::Array::new.push(codepoint))
+      when ?].ord then
+        if subpatterns.last.first.eql?(?[.ord) and subpatterns.last.size > 1 then
+          subpatterns.last.push(codepoint)
+          # If a closing-bracket balances our last subpattern, roll that subpattern into the subpattern before it.
+          subpatterns.pop.yield_self { subpatterns.last.push(*_1) } if subpatterns.last.first.eql?(?[.ord) and subpatterns.size > 1
+        else
+          # "The string enclosed by the brackets cannot be empty; therefore ']' can be allowed between the brackets,
+          #  provided that it is the first character.  (Thus, '[][!]' matches the three characters '[', ']', and '!'.)"
+          # This means we must escape any ']' character that is the second character of a bracket subpattern.
+          subpatterns.last.push(?\\.ord, codepoint)
+        end
+      when ?!.ord then
+        # "An expression '[!...]' matches a single character, namely any character that is not matched by
+        #  the expression obtained by removing the first '!' from it.
+        #  (Thus, '[!]a-]' matches any single character except ']', 'a', and '-'.)"
+        # A `::Regexp` pattern uses '[^...]' for bracket negation,
+        # so only add '!' explicitly if we are not in a bracket subpattern.
+        subpatterns.last.push(
+          (subpatterns.last.first.eql?(?[.ord) and subpatterns.last.size.eql?(1)) ? ?^.ord : codepoint
+        )
+      when ?^.ord then
+        # '^' is the beginning-of-line Anchor in a `::Regexp` pattern, so we must escape it to match it explicitly.
+        subpatterns.last.push(?\\.ord, codepoint)
+      # when (?{.ord and not (flags & ::File::FNM_EXTGLOB).zero?) then  TODO
+      else subpatterns.last.push(codepoint)
+      end
+    }
+
+    # Escape any unpaired brackets/braces in our subpatterns.
+    # Any opening bracket/brace character starts a new subpattern, and any matching
+    # closing bracket/brace collapses the `#last` subpattern into the one before it.
+    # This means any subpattern we see still beginning with a bracket/brace is unpaired.
+    subpatterns.each.with_index {
+      _1.unshift(?\\.ord) if _1.first.eql?(?[.ord) and not _2.eql?(0)
+      # TODO: Braces.
+    }
+
+    # Add an explicit beginning/end-of-`::String` Anchor to our pattern:
+    # https://ruby-doc.org/core/Regexp.html#class-Regexp-label-Anchors
+    subpatterns.last.push(?\\.ord).push(?Z.ord).tap {
+      _1.unshift(?A.ord)
+      _1.unshift(?\\.ord)
+    }
+
+    # TODO: Fix exponential denial-of-service vulnerability from patterns with repeating expansions,
+    # just like with Python's `fnmatch.translate`: https://bugs.python.org/issue40480
+    # TODO: Support the other Faith No More flags like `::File::FNM_PATHNAME`.
+
+    ::Regexp::new(subpatterns.flatten.pack('U*'))
+  end
+end
