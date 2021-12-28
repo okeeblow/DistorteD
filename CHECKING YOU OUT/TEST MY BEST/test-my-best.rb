@@ -1,4 +1,5 @@
 # This is how we're testing.
+require('bundler/setup')
 require('test/unit') unless defined?(::Test::Unit)
 
 # This is what we're testing.
