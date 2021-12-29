@@ -62,6 +62,19 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
   end
 
 
+  # "Character class" (as in square-bracket subpatterns) test cases from MRI Ruby `::File::fnmatch`:
+  # https://ruby-doc.org/core/Regexp.html#class-Regexp-label-Character+Classes
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L6-L12
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L55-L59
+  def test_glob_to_regexp_mri_fnmatch_char_class
+    0x21.upto(0x7E).with_object('bd-gikl-mosv-x').with_object('bdefgiklmosvwx') { |(i, s), t|
+      assert_equal(t.include?(i.chr), ::XROSS::THE::POSIX::Glob::to_regexp("[#{s}]", ::File::FNM_DOTMATCH).match?(i.chr))
+      assert_equal(t.include?(i.chr), !::XROSS::THE::POSIX::Glob::to_regexp("[^#{s}]", ::File::FNM_DOTMATCH).match?(i.chr))
+      assert_equal(t.include?(i.chr), !::XROSS::THE::POSIX::Glob::to_regexp("[!#{s}]", ::File::FNM_DOTMATCH).match?(i.chr))
+    }
+  end
+
+
   # "Escape" (as in '\') test cases from MRI Ruby `::File::fnmatch`:
   # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L61-L78
   def test_glob_to_regexp_mri_fnmatch_escape

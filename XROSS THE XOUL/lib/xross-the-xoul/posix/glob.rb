@@ -110,8 +110,21 @@ class ::XROSS::THE::POSIX::Glob
           (subpatterns.last.first.eql?(?[.ord) and subpatterns.last.size.eql?(1)) ? ?^.ord : codepoint
         )
       when ?^.ord then
-        # '^' is the beginning-of-line Anchor in a `::Regexp` pattern, so we must escape it to match it explicitly.
-        subpatterns.last.push(?\\.ord, codepoint)
+        # '^' is the beginning-of-line Anchor and the Character-class negation operator in a `::Regexp` pattern,
+        # so we must escape it to match it explicitly.
+        #
+        # NOTE: Even though it's nonstandard we should treat a '^' which begins a Glob pattern character class
+        #       as negation just like in a `::Regexp` pattern. Per Lunix's `glob(7)` manpage:
+        #
+        #       "Now that regular expressions have bracket expressions where the negation is indicated by a '^',
+        #        POSIX has declared the effect of a wildcard pattern '[^...]' to be undefined."
+        #
+        #       This is the same behavior as Ruby's `::File::fnmatch`:
+        #         irb> ::File::fnmatch("[a]", "a") => true
+        #         irb> ::File::fnmatch("[^a]", "a") => false
+        #         irb> ::File::fnmatch("[!a]", "a") => false
+        subpatterns.last.push(?\\.ord) unless subpatterns.last.first.eql?(?[.ord) and subpatterns.last.size.eql?(1)
+        subpatterns.last.push(codepoint)
       # when (?{.ord and not (flags & ::File::FNM_EXTGLOB).zero?) then  TODO
       when ?0.ord then
         # `glob(7)` patterns can't contain nulls, so we should emulate that behavior
