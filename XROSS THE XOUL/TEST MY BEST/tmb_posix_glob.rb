@@ -118,6 +118,19 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
   end
 
 
+  # `::File::FNM_CASEFOLD` test cases from MRI Ruby `::File::fnmatch`:
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L99-L107
+  def test_glob_to_regexp_mri_fnmatch_fnm_casefold
+    # Case is ignored if `FNM_CASEFOLD` is set.
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('cat'), 'CAT')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('cat', ::File::FNM_CASEFOLD), 'CAT')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('[a-z]'), 'D')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('[a-z]', ::File::FNM_CASEFOLD), 'D')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('[abc]'), 'B')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('[abc]', ::File::FNM_CASEFOLD), 'B')
+  end
+
+
   # "Null character" (as in '\0') test cases from MRI Ruby `::File::fnmatch`:
   # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L164-L168
   def test_glob_to_regexp_mri_fnmatch_nullchar

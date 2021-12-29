@@ -170,6 +170,9 @@ class ::XROSS::THE::POSIX::Glob
     # just like with Python's `fnmatch.translate`: https://bugs.python.org/issue40480
     # TODO: Support the other Faith No More flags like `::File::FNM_PATHNAME`.
 
-    ::Regexp::new(subpatterns.flatten.pack('U*'))
+    ::Regexp::new(
+      subpatterns.flatten.pack('U*'),
+      ((flags & ::File::FNM_CASEFOLD).zero? ? 0 : ::Regexp::IGNORECASE)
+    )
   end
 end
