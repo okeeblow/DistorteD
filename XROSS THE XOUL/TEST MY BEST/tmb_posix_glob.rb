@@ -136,7 +136,7 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
 
     assert_match(::XROSS::THE::POSIX::Glob::to_regexp('foo*'), 'foo\nbar')
     assert_match(::XROSS::THE::POSIX::Glob::to_regexp('foo*'), 'foo\nbar\n')
-    #assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('foo*'), '\nfoo')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('foo*'), '\nfoo')
     assert_match(::XROSS::THE::POSIX::Glob::to_regexp('*'), '\n')
   end
 
