@@ -113,6 +113,15 @@ class ::XROSS::THE::POSIX::Glob
         # '^' is the beginning-of-line Anchor in a `::Regexp` pattern, so we must escape it to match it explicitly.
         subpatterns.last.push(?\\.ord, codepoint)
       # when (?{.ord and not (flags & ::File::FNM_EXTGLOB).zero?) then  TODO
+      when ?0.ord then
+        # `glob(7)` patterns can't contain nulls, so we should emulate that behavior
+        # even though a `::Regexp` pattern supports it just fine:
+        #   irb> /lol\0rofl/ == 'hello.jpg' => false
+        #   irb> ::File::fnmatch("lol\0lmao", "hello.jpg")
+        #   (irb):in `fnmatch': string contains null byte (ArgumentError)
+        raise(::ArgumentError, 'string contains null byte') if (
+          subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last.first.eql?(?\\.ord)
+        )
       else
         # Remove spurious Glob-inherited escape sequences unless we're in a character class.
         subpatterns.last.pop if subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last.first.eql?(?[.ord)
