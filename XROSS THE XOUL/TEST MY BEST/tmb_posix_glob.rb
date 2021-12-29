@@ -62,6 +62,27 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
   end
 
 
+  # "Escape" (as in '\') test cases from MRI Ruby `::File::fnmatch`:
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L61-L78
+  def test_glob_to_regexp_mri_fnmatch_escape
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('\?'), '?')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\?'), '\?')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\?'), 'a')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\?'), '\a')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('\*'), '*')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\*'), '\*')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\*'), 'cats')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\*'), '\cats')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('\a'), 'a')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\a'), '\a')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('[a\-c]'), 'a')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('[a\-c]'), '-')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('[a\-c]'), 'c')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('[a\-c]'), 'b')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('[a\-c]'), '\\')
+  end
+
+
   # Tests from Python's equivalent Glob-to-Regexp feature, `fnmatch.translate`:
   # https://github.com/python/cpython/blob/b1b4c790e7d3b5f4244450aefe3d8f01710c13f7/Lib/test/test_fnmatch.py#L108-L145
   def test_glob_to_regexp_cpython_fnmatch_translate

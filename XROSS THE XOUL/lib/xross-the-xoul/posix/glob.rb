@@ -52,42 +52,53 @@ class ::XROSS::THE::POSIX::Glob
         # "A '*' (not between brackets) matches any string, including the empty string."
         # An asterisk must not be the first character of a `::Regexp` pattern
         # or we will get a "target of repeat operator is not specified" `::SyntaxError`.
-        subpatterns.last.push(?..ord) unless subpatterns.last.last.eql?(?*.ord)
+        subpatterns.last.push(?..ord) unless (
+          [?*.ord, ?+.ord].include?(subpatterns.last.last)
+        ) or (
+          subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2]&.eql?(?\\.ord)
+        )
         # Condense multiple-asterisk Globs into a single `.*`.
-        subpatterns.last.push(codepoint) unless subpatterns.last.last.eql?(?*.ord)
+        subpatterns.last.push(codepoint) unless [?*.ord, ?+.ord].include?(subpatterns.last.last)
       when ??.ord then
         # "A '?' (not between brackets) matches any single character."
         # A `::Regexp` pattern uses a single '.' as the equivalent,
-        # but we should match the explicit '?' if we're inside a bracket subpattern.
-        subpatterns.last.push(subpatterns.last.first.eql?(?[.ord) ? codepoint : ?..ord)
+        # but we should match the explicit '?' if we're inside a bracket subpattern or if it's escaped.
+        subpatterns.last.push(
+          (subpatterns.last.first.eql?(?[.ord) or subpatterns.last.last.eql?(?\\.ord)) ? codepoint : ?..ord
+        )
       when ?..ord then
         # A single '.' in a `::Regexp` pattern has the same meaning as the unbracketed single '?' glob,
         # matching any single character, so a '.' Glob character must be escaped to be matched explicitly.
         subpatterns.last.push(?\\.ord, codepoint)
       when ?\\.ord then
         subpatterns.last.push(codepoint)
-        # HACK: '\' is the escape character, so it must be escaped itself to be matched explicitly.
-        #       We want to do this inside brackets, but not if the opening bracket itself was escaped.
-        #       This was uncovered by the unit test for the issue originally brought up in this thread:
-        #       http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/22819
-        subpatterns.last.push(codepoint) if subpatterns.size > 1 and subpatterns.last.first.eql?(?[.ord) and not (
-          subpatterns[-2].last.eql?(codepoint)
-        )
       when ?[.ord then
         # "An expression '[...]' where the first character after the leading '[' is not an '!'
         #  matches a single character, namely any of the characters enclosed by the brackets."
         # We will start a new subpattern for this so we can easily find and escape it if unclosed.
-        subpatterns.push(::Array::new.push(codepoint))
+        if subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2]&.eql?(?\\.ord) then
+          subpatterns.last.push(codepoint)
+        else
+          subpatterns.push(::Array::new.push(codepoint))
+        end
       when ?].ord then
-        if subpatterns.last.first.eql?(?[.ord) and subpatterns.last.size > 1 then
+        if subpatterns.last.first.eql?(?[.ord) then
+          # "The string enclosed by the brackets cannot be empty; therefore ']' can be allowed between the brackets,
+          #  provided that it is the first character.  (Thus, '[][!]' matches the three characters '[', ']', and '!'.)"
+          # This means we must escape any ']' character that is the second character of a bracket subpattern.
+          subpatterns.last.push(?\\.ord) if subpatterns.last.size.eql?(1) or (
+            # If we are in a character class and the last character was the escape sequence,
+            # we must double-escape to match that sequence explicitly instead of letting it escape the close bracket.
+            subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2]&.eql?(?\\.ord)
+          )
           subpatterns.last.push(codepoint)
           # If a closing-bracket balances our last subpattern, roll that subpattern into the subpattern before it.
           subpatterns.pop.yield_self { subpatterns.last.push(*_1) } if subpatterns.last.first.eql?(?[.ord) and subpatterns.size > 1
         else
-          # "The string enclosed by the brackets cannot be empty; therefore ']' can be allowed between the brackets,
-          #  provided that it is the first character.  (Thus, '[][!]' matches the three characters '[', ']', and '!'.)"
-          # This means we must escape any ']' character that is the second character of a bracket subpattern.
-          subpatterns.last.push(?\\.ord, codepoint)
+          # If we're not in a character class, we must still check for an escape sequence to avoid
+          # `warning: regular expression has ']' without escape`.
+          subpatterns.last.push(?\\.ord) unless subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2]&.eql?(?\\.ord)
+          subpatterns.last.push(codepoint)
         end
       when ?!.ord then
         # "An expression '[!...]' matches a single character, namely any character that is not matched by
@@ -102,7 +113,10 @@ class ::XROSS::THE::POSIX::Glob
         # '^' is the beginning-of-line Anchor in a `::Regexp` pattern, so we must escape it to match it explicitly.
         subpatterns.last.push(?\\.ord, codepoint)
       # when (?{.ord and not (flags & ::File::FNM_EXTGLOB).zero?) then  TODO
-      else subpatterns.last.push(codepoint)
+      else
+        # Remove spurious Glob-inherited escape sequences unless we're in a character class.
+        subpatterns.last.pop if subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last.first.eql?(?[.ord)
+        subpatterns.last.push(codepoint)
       end
     }
 
