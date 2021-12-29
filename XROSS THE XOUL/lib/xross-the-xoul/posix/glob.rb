@@ -55,7 +55,7 @@ class ::XROSS::THE::POSIX::Glob
         subpatterns.last.push(?..ord) unless (
           [?*.ord, ?+.ord].include?(subpatterns.last.last)
         ) or (
-          subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2]&.eql?(?\\.ord)
+          subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2].eql?(?\\.ord)
         )
         # Condense multiple-asterisk Globs into a single `.*`.
         subpatterns.last.push(codepoint) unless [?*.ord, ?+.ord].include?(subpatterns.last.last)
@@ -64,19 +64,24 @@ class ::XROSS::THE::POSIX::Glob
         # A `::Regexp` pattern uses a single '.' as the equivalent,
         # but we should match the explicit '?' if we're inside a bracket subpattern or if it's escaped.
         subpatterns.last.push(
-          (subpatterns.last.first.eql?(?[.ord) or subpatterns.last.last.eql?(?\\.ord)) ? codepoint : ?..ord
+          (subpatterns.last.first.eql?(?[.ord) or (
+            subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2].eql?(?\\.ord)
+          )) ? codepoint : ?..ord
         )
       when ?..ord then
         # A single '.' in a `::Regexp` pattern has the same meaning as the unbracketed single '?' glob,
         # matching any single character, so a '.' Glob character must be escaped to be matched explicitly.
         subpatterns.last.push(?\\.ord, codepoint)
       when ?\\.ord then
+        # If the `::File::FNM_NOESCAPE` flag is set, treat the '/' character as something to
+        # explicitly match instead of treating it as an escape character.
+        subpatterns.last.push(codepoint) unless (flags & ::File::FNM_NOESCAPE).zero?
         subpatterns.last.push(codepoint)
       when ?[.ord then
         # "An expression '[...]' where the first character after the leading '[' is not an '!'
         #  matches a single character, namely any of the characters enclosed by the brackets."
         # We will start a new subpattern for this so we can easily find and escape it if unclosed.
-        if subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2]&.eql?(?\\.ord) then
+        if subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2].eql?(?\\.ord) then
           subpatterns.last.push(codepoint)
         else
           subpatterns.push(::Array::new.push(codepoint))
@@ -89,7 +94,7 @@ class ::XROSS::THE::POSIX::Glob
           subpatterns.last.push(?\\.ord) if subpatterns.last.size.eql?(1) or (
             # If we are in a character class and the last character was the escape sequence,
             # we must double-escape to match that sequence explicitly instead of letting it escape the close bracket.
-            subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2]&.eql?(?\\.ord)
+            subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2].eql?(?\\.ord)
           )
           subpatterns.last.push(codepoint)
           # If a closing-bracket balances our last subpattern, roll that subpattern into the subpattern before it.
@@ -97,7 +102,7 @@ class ::XROSS::THE::POSIX::Glob
         else
           # If we're not in a character class, we must still check for an escape sequence to avoid
           # `warning: regular expression has ']' without escape`.
-          subpatterns.last.push(?\\.ord) unless subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2]&.eql?(?\\.ord)
+          subpatterns.last.push(?\\.ord) unless subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2].eql?(?\\.ord)
           subpatterns.last.push(codepoint)
         end
       when ?!.ord then
@@ -136,8 +141,11 @@ class ::XROSS::THE::POSIX::Glob
           subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last.first.eql?(?\\.ord)
         )
       else
-        # Remove spurious Glob-inherited escape sequences unless we're in a character class.
-        subpatterns.last.pop if subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last.first.eql?(?[.ord)
+        # Remove spurious Glob-inherited escape sequences unless we're in a character class
+        # or have the `::File::FNM_NOESCAPE` flag set.
+        subpatterns.last.pop if (
+          subpatterns.last.last.eql?(?\\.ord) and (flags & ::File::FNM_NOESCAPE).zero?
+        ) and not subpatterns.last.first.eql?(?[.ord)
         subpatterns.last.push(codepoint)
       end
     }

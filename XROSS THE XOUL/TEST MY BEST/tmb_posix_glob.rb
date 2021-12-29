@@ -96,6 +96,28 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
   end
 
 
+  # `::File::FNM_NOESCAPE` test cases from MRI Ruby `::File::fnmatch`:
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L80-L97
+  def test_glob_to_regexp_mri_fnmatch_fnm_noescape
+    # Escaping character loses its meaning if `FNM_NOESCAPE` is set.
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\?',     ::File::FNM_NOESCAPE), '?')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('\?',     ::File::FNM_NOESCAPE), '\?')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\?',     ::File::FNM_NOESCAPE), 'a')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('\?',     ::File::FNM_NOESCAPE), '\a')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\*',     ::File::FNM_NOESCAPE), '*')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('\*',     ::File::FNM_NOESCAPE), '\*')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\*',     ::File::FNM_NOESCAPE), 'cats')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('\*',     ::File::FNM_NOESCAPE), '\cats')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('\a',     ::File::FNM_NOESCAPE), 'a')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('\a',     ::File::FNM_NOESCAPE), '\a')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('[a\-c]', ::File::FNM_NOESCAPE), 'a')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('[a\-c]', ::File::FNM_NOESCAPE), '-')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('[a\-c]', ::File::FNM_NOESCAPE), 'c')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('[a\-c]', ::File::FNM_NOESCAPE), 'b')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('[a\-c]', ::File::FNM_NOESCAPE), '\\')
+  end
+
+
   # "Null character" (as in '\0') test cases from MRI Ruby `::File::fnmatch`:
   # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L164-L168
   def test_glob_to_regexp_mri_fnmatch_nullchar
@@ -116,8 +138,20 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
     assert_equal(/\A[abc]\Z/,    ::XROSS::THE::POSIX::Glob::to_regexp('[abc]'))
     assert_equal(/\A[\]]\Z/,     ::XROSS::THE::POSIX::Glob::to_regexp('[]]'))
     assert_equal(/\A[^x]\Z/,     ::XROSS::THE::POSIX::Glob::to_regexp('[!x]'))
-    assert_equal(/\A[\^x]\Z/,    ::XROSS::THE::POSIX::Glob::to_regexp('[^x]'))
     assert_equal(/\A\[x\Z/,      ::XROSS::THE::POSIX::Glob::to_regexp('[x'))
+
+    # NOTE: This behavior is actually undefined in POSIX and seems to be a case
+    #       where Ruby's and Python's behaviors differ. Per Lunix's `glob(7)`:
+    #
+    #       "Now that regular expressions have bracket expressions where the negation is indicated by a '^',
+    #        POSIX has declared the effect of a wildcard pattern '[^...]' to be undefined."
+    #
+    #       Ruby's `::File::fnmatch` treats it the same as a Glob-style '!' negation,
+    #       so that's the behavior I'm going to emulate and the reason this test is disabled:
+    #         irb> ::File::fnmatch("[a]", "a") => true
+    #         irb> ::File::fnmatch("[^a]", "a") => false
+    #         irb> ::File::fnmatch("[!a]", "a") => false
+    #assert_equal(/\A[\^x]\Z/,    ::XROSS::THE::POSIX::Glob::to_regexp('[^x]'))
 
     assert_equal(/\A.*\.txt\Z/,  ::XROSS::THE::POSIX::Glob::to_regexp('*.txt'))
 
