@@ -14,10 +14,9 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
     assert_match(::XROSS::THE::POSIX::Glob::to_regexp('*?'), 'a')
 
     assert_match(::XROSS::THE::POSIX::Glob::to_regexp('*/'), 'a/')
-    # TODO: Do something with `FNM_PATHNAME`
-    #assert_match(::XROSS::THE::POSIX::Glob::to_regexp('\[1\]', ::File::FNM_PATHNAME), '[1]')
-    #assert_match(::XROSS::THE::POSIX::Glob::to_regexp('*?', ::File::FNM_PATHNAME), 'a')
-    #assert_match(::XROSS::THE::POSIX::Glob::to_regexp('*/', ::File::FNM_PATHNAME), 'a/')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('\[1\]', ::File::FNM_PATHNAME), '[1]')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('*?',    ::File::FNM_PATHNAME), 'a')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('*/',    ::File::FNM_PATHNAME), 'a/')
   end
 
 
@@ -131,6 +130,17 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
   end
 
 
+  # `::File::FNM_PATHNAME` test cases from MRI Ruby `::File::fnmatch`:
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L109-L115
+  def test_glob_to_regexp_mri_fnmatch_fnm_pathname
+    # Wildcard doesn't match '/' if `FNM_PATHNAME` is set.
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('foo?boo'), 'foo/boo')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('foo*'),    'foo/boo')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('foo?boo', ::File::FNM_PATHNAME), 'foo/boo')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('foo*',    ::File::FNM_PATHNAME), 'foo/boo')
+  end
+
+
   # "Null character" (as in '\0') test cases from MRI Ruby `::File::fnmatch`:
   # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L164-L168
   def test_glob_to_regexp_mri_fnmatch_nullchar
@@ -145,9 +155,11 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
   def test_glob_to_regexp_cpython_fnmatch_translate
     # NOTE: The target `::Regexp` patterns from the Python tests don't have the beginning-of-`::String` (`\A`) Anchor,
     #       but they do have the end-of-`::String` (`\Z`) Anchor. I've modified them here accordingly.
-    assert_equal(/\A.*\Z/,       ::XROSS::THE::POSIX::Glob::to_regexp('*'))
-    assert_equal(/\A.\Z/,        ::XROSS::THE::POSIX::Glob::to_regexp('?'))
-    assert_equal(/\Aa.b.*\Z/,    ::XROSS::THE::POSIX::Glob::to_regexp('a?b*'))
+    # NOTE: We enable the `::File::PATHNAME` flag when we want single- and multi-character wildcards
+    #       ('?' and '*' in the Glob pattern) to match "everything" (e.g. `/./` or `/.*/`).
+    assert_equal(/\A.*\Z/,       ::XROSS::THE::POSIX::Glob::to_regexp('*', ::File::FNM_PATHNAME))
+    assert_equal(/\A.\Z/,        ::XROSS::THE::POSIX::Glob::to_regexp('?', ::File::FNM_PATHNAME))
+    assert_equal(/\Aa.b.*\Z/,    ::XROSS::THE::POSIX::Glob::to_regexp('a?b*', ::File::FNM_PATHNAME))
     assert_equal(/\A[abc]\Z/,    ::XROSS::THE::POSIX::Glob::to_regexp('[abc]'))
     assert_equal(/\A[\]]\Z/,     ::XROSS::THE::POSIX::Glob::to_regexp('[]]'))
     assert_equal(/\A[^x]\Z/,     ::XROSS::THE::POSIX::Glob::to_regexp('[!x]'))
@@ -166,12 +178,12 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
     #         irb> ::File::fnmatch("[!a]", "a") => false
     #assert_equal(/\A[\^x]\Z/,    ::XROSS::THE::POSIX::Glob::to_regexp('[^x]'))
 
-    assert_equal(/\A.*\.txt\Z/,  ::XROSS::THE::POSIX::Glob::to_regexp('*.txt'))
+    assert_equal(/\A.*\.txt\Z/,  ::XROSS::THE::POSIX::Glob::to_regexp('*.txt', ::File::FNM_PATHNAME))
 
-    assert_equal(/\A.*\Z/,       ::XROSS::THE::POSIX::Glob::to_regexp('*********'))
-    assert_equal(/\AA.*\Z/,      ::XROSS::THE::POSIX::Glob::to_regexp('A*********'))
-    assert_equal(/\A.*A\Z/,      ::XROSS::THE::POSIX::Glob::to_regexp('*********A'))
-    assert_equal(/\AA.*.[?].\Z/, ::XROSS::THE::POSIX::Glob::to_regexp('A*********?[?]?'))
+    assert_equal(/\A.*\Z/,       ::XROSS::THE::POSIX::Glob::to_regexp('*********', ::File::FNM_PATHNAME))
+    assert_equal(/\AA.*\Z/,      ::XROSS::THE::POSIX::Glob::to_regexp('A*********', ::File::FNM_PATHNAME))
+    assert_equal(/\A.*A\Z/,      ::XROSS::THE::POSIX::Glob::to_regexp('*********A', ::File::FNM_PATHNAME))
+    assert_equal(/\AA.*.[?].\Z/, ::XROSS::THE::POSIX::Glob::to_regexp('A*********?[?]?', ::File::FNM_PATHNAME))
 
     fatre = ::Regexp::union(
       ::XROSS::THE::POSIX::Glob::to_regexp('**a**a**a*'),

@@ -45,6 +45,32 @@ class ::XROSS::THE::POSIX::Glob
     # but we can construct a `::String` pattern that way and then feed it to `::Regexp::new`.
     subpatterns = ::Array::new.push(::Array::new)
 
+    # "Wildcard" Glob pattern sequences (like the single-character '?' and multi-character '*')
+    # do not match path separators unless the `::File::FNM_PATHNAME` flag is enabled,
+    # i.e. they will respectively match `/[^\/]/` or `/[^\/]*/` assuming `::File::SEPARATOR` is `/`.
+    #
+    # We must also match any `::File::ALT_SEPARATOR` if one is enabled. This constant is usually just `nil`
+    # on Unix-like systems, but it will be the `\` (backslash) separator on Winders.
+    #
+    # I'm going to go ahead and define this once here since we are likely to need it multiple times,
+    # including checking if the `#last` subpattern is a wildcard, and it would be gross to define it
+    # multiple times inline.
+    negate_separator = [
+      ?[,
+      ?^,
+      # The regular `::File::SEPARATOR` will usually be a forward-slash which needs to be escaped in a `::Regexp,
+      # but passing the computed pattern `::String` to `::Regexp::new` will do the escaping for us.
+      # AFAIK there's no platform where `::File::SEPARATOR` will be `\`, but support escaping one anyway just in case.
+      (::File::SEPARATOR.eql?(?\\) ? ?\\ : nil),
+      ::File::SEPARATOR,
+      # `::File::ALT_SEPARATOR` will almost certainly be either `nil` or `\`, and if it is `\` it needs
+      # to be escaped with another backslash, but don't just assume a non-`nil` `ALT_SEPARATOR` is `\`
+      # since other platforms have different standards, e.g. Classic Macintoshes with the `:` separator.
+      (::File::ALT_SEPARATOR.eql?(?\\) ? ?\\ : nil),
+      ::File::ALT_SEPARATOR,
+      ?],
+    ].compact.map!(&:ord)  # Remove the likely `nil`s from disabled `ALT_SEPARATOR`.
+
     # Work with codepoints to avoid allocation of the single-character `::String`s in `#each_char`.
     otra.each_codepoint.with_index { |codepoint, index|
       case codepoint
@@ -52,22 +78,45 @@ class ::XROSS::THE::POSIX::Glob
         # "A '*' (not between brackets) matches any string, including the empty string."
         # An asterisk must not be the first character of a `::Regexp` pattern
         # or we will get a "target of repeat operator is not specified" `::SyntaxError`.
-        subpatterns.last.push(?..ord) unless (
-          [?*.ord, ?+.ord].include?(subpatterns.last.last)
-        ) or (
+        if (subpatterns.last.first.eql?(?[.ord) or (
           subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2].eql?(?\\.ord)
-        )
-        # Condense multiple-asterisk Globs into a single `.*`.
-        subpatterns.last.push(codepoint) unless [?*.ord, ?+.ord].include?(subpatterns.last.last)
+        )) then
+          subpatterns.last.push(?\\.ord) unless subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2].eql?(?\\.ord)
+          # Condense multiple-asterisk Globs into a single `.*`.
+          subpatterns.last.push(codepoint) unless [?*.ord, ?+.ord].include?(subpatterns.last.last)
+        else
+          if (flags & ::File::FNM_PATHNAME).zero? then
+            subpatterns.push(negate_separator).push([?*.ord]).push(::Array::new) unless (
+              # This is kinda hacky, but it's important to collapse multiple sequential asterisks in the Glob pattern
+              # even without `FNM_PATHNAME` to avoid avoid creating gross exponential `::Regexp` patterns like:
+              #   irb> ::XROSS::THE::POSIX::Glob::to_regexp('********')
+              #        => /\A[^\/]*[^\/]*[^\/]*[^\/]*[^\/]*[^\/]*[^\/]*[^\/]*\Z/
+              subpatterns.last.empty? and subpatterns[-2].eql?([?*.ord]) and subpatterns[-3].eql?(negate_separator)
+            )
+          else
+            subpatterns.last.push(?..ord) unless [?*.ord, ?+.ord].include?(subpatterns.last.last)
+            # Condense multiple-asterisk Globs into a single `.*`.
+            subpatterns.last.push(codepoint) unless [?*.ord, ?+.ord].include?(subpatterns.last.last)
+          end
+        end
       when ??.ord then
         # "A '?' (not between brackets) matches any single character."
         # A `::Regexp` pattern uses a single '.' as the equivalent,
         # but we should match the explicit '?' if we're inside a bracket subpattern or if it's escaped.
-        subpatterns.last.push(
-          (subpatterns.last.first.eql?(?[.ord) or (
-            subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2].eql?(?\\.ord)
-          )) ? codepoint : ?..ord
-        )
+        if (subpatterns.last.first.eql?(?[.ord) or (
+          subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2].eql?(?\\.ord)
+        )) then
+          # Explicitly match a single `?` character since we are escaped.
+          subpatterns.last.push(codepoint)
+        else
+          if (flags & ::File::FNM_PATHNAME).zero? then
+            # Begin a new empty subpattern after appending the precomputed non-separator-matching wildcard.
+            subpatterns.push(negate_separator).push(::Array::new)
+          else
+            # Match any single character *including* `::File::SEPARATOR`.
+            subpatterns.last.push(?..ord)
+          end
+        end
       when ?..ord then
         # A single '.' in a `::Regexp` pattern has the same meaning as the unbracketed single '?' glob,
         # matching any single character, so a '.' Glob character must be escaped to be matched explicitly.
@@ -155,20 +204,19 @@ class ::XROSS::THE::POSIX::Glob
     # closing bracket/brace collapses the `#last` subpattern into the one before it.
     # This means any subpattern we see still beginning with a bracket/brace is unpaired.
     subpatterns.each.with_index {
-      _1.unshift(?\\.ord) if _1.first.eql?(?[.ord) and not _2.eql?(0)
+      _1.unshift(?\\.ord) if _1.first.eql?(?[.ord) and not (_1.last.eql?(?].ord) or _2.eql?(0))
       # TODO: Braces.
     }
 
     # Add an explicit beginning/end-of-`::String` Anchor to our pattern:
     # https://ruby-doc.org/core/Regexp.html#class-Regexp-label-Anchors
-    subpatterns.last.push(?\\.ord).push(?Z.ord).tap {
+    subpatterns.push(?\\.ord).push(?Z.ord).tap {
       _1.unshift(?A.ord)
       _1.unshift(?\\.ord)
     }
 
     # TODO: Fix exponential denial-of-service vulnerability from patterns with repeating expansions,
     # just like with Python's `fnmatch.translate`: https://bugs.python.org/issue40480
-    # TODO: Support the other Faith No More flags like `::File::FNM_PATHNAME`.
 
     ::Regexp::new(
       subpatterns.flatten.pack('U*'),
