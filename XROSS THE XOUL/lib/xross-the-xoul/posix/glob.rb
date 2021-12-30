@@ -186,6 +186,7 @@ class ::XROSS::THE::POSIX::Glob
         #   irb> /lol\0rofl/ == 'hello.jpg' => false
         #   irb> ::File::fnmatch("lol\0lmao", "hello.jpg")
         #   (irb):in `fnmatch': string contains null byte (ArgumentError)
+        # https://www.ruby-lang.org/en/news/2019/10/01/nul-injection-file-fnmatch-cve-2019-15845/
         raise(::ArgumentError, 'string contains null byte') if (
           subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last.first.eql?(?\\.ord)
         )
