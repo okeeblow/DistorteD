@@ -226,6 +226,21 @@ class ::XROSS::THE::POSIX::Glob
       )
     )
 
+    # Exclude the CWD path ('.') and the parent ('..') path when `::File::FNM_GLOB_SKIPDOT` is flagged.
+    # We can have both lookaheads with no conflict, e.g.:
+    #   irb> /\A(?![\.])(?![\.]{1,2}\Z).*\Z/ === 'profile'  => true
+    #   irb> /\A(?![\.])(?![\.]{1,2}\Z).*\Z/ === '.profile' => false
+    #   irb> /\A(?![\.])(?![\.]{1,2}\Z).*\Z/ === '.'        => false
+    #   irb> /\A(?![\.])(?![\.]{1,2}\Z).*\Z/ === '..'       => false
+    #   irb> /\A(?![\.]{1,2}\Z).*\Z/         === '..'       => false
+    #   irb> /\A(?![\.]{1,2}\Z).*\Z/         === '.'        => false
+    #
+    # This matches MRI's `::Dir::glob` behavior as of Ruby 3.1: https://bugs.ruby-lang.org/issues/17280
+    subpatterns.unshift(*[?(, ??, ?!, ?[, ?\\, ?., ?], ?{, ?1, ?,, ?2, ?}, ?\\, ?Z, ?)].map!(&:ord)) unless (
+      (flags & ::File::FNM_SKIP_DOT).zero?
+    ) if defined?(::File::FNM_SKIP_DOT)
+    # TODO: Require Ruby 3.1
+
     # Add an explicit beginning/end-of-`::String` Anchor to our pattern:
     # https://ruby-doc.org/core/Regexp.html#class-Regexp-label-Anchors
     #
