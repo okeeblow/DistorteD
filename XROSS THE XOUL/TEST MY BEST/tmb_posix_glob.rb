@@ -141,6 +141,67 @@ class TestXrossPOSIXglob < ::Test::Unit::TestCase
   end
 
 
+  # `::File::FNM_DOTMATCH` test cases from MRI Ruby `::File::fnmatch`:
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L117-L126
+  def test_glob_to_regexp_mri_fnmatch_fnm_dotmatch
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('*'), '.profile')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('*', ::File::FNM_DOTMATCH), '.profile')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('.*'), '.profile')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('*'), 'okeeblow/.profile')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('*/*'), 'okeeblow/.profile')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('*/*', ::File::FNM_DOTMATCH), 'okeeblow/.profile')
+    assert_match(    ::XROSS::THE::POSIX::Glob::to_regexp('*/*', ::File::FNM_DOTMATCH), 'okeeblow/.profile')
+  end
+
+
+  # `::File::FNM_EXTGLOB` test cases from MRI Ruby `::File::fnmatch`:
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L138-L142
+  # RE: http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/40037
+  def test_glob_to_regexp_mri_fnmatch_fnm_extglob
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('{.g,t}'), '.gem')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('{.g,t}', ::File::FNM_EXTGLOB), '.gem')
+  end
+
+
+  # "Recursive" (as in '**') test cases from MRI Ruby `::File::fnmatch`:
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L128-L136
+  def test_glob_to_regexp_mri_fnmatch_recursive
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('**/foo', ::File::FNM_PATHNAME), 'a/b/c/foo')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('**/foo', ::File::FNM_PATHNAME), '/foo')
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp('**/foo', ::File::FNM_PATHNAME), 'a/.b/c/foo')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('**/foo', ::File::FNM_PATHNAME | ::File::FNM_DOTMATCH), 'a/.b/c/foo')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('**/foo', ::File::FNM_PATHNAME), '/root/foo')
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp('**/foo', ::File::FNM_PATHNAME), 'c:/root/foo')
+  end
+
+
+  # "unmatched `::Encoding`" test cases from MRI Ruby `::File::fnmatch`:
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L144-L157
+  # RE: http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/47069
+  #     https://bugs.ruby-lang.org/issues/7911
+  def test_glob_to_regexp_mri_fnmatch_unmatched_encoding
+    path = "\u{3042}"
+    pattern_ascii = 'a'.encode(::Encoding::US_ASCII)
+    pattern_eucjp = path.encode(::Encoding::EUC_JP)
+    assert_nothing_raised(::ArgumentError) {
+      assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp(pattern_ascii), path)
+      assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp(pattern_eucjp), path)
+      assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp(pattern_ascii), path)
+      assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp(pattern_eucjp), path)
+      assert_match(::XROSS::THE::POSIX::Glob::to_regexp(pattern_ascii), path)
+      assert_match(::XROSS::THE::POSIX::Glob::to_regexp(pattern_eucjp), path)
+    }
+  end
+
+
+  # Unicode® (as in https://www.unicode.org/policies/logo_policy.html) test cases from MRI Ruby `::File::fnmatch`:
+  # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L159-L162
+  def test_glob_to_regexp_mri_fnmatch_unicode®
+    assert_match(::XROSS::THE::POSIX::Glob::to_regexp("[a-\u3042]"), "\u3042")
+    assert_not_match(::XROSS::THE::POSIX::Glob::to_regexp("[a-\u3042]"), "\u3043")
+  end
+
+
   # "Null character" (as in '\0') test cases from MRI Ruby `::File::fnmatch`:
   # https://github.com/ruby/ruby/blob/d92f09a5eea009fa28cd046e9d0eb698e3d94c5c/test/ruby/test_fnmatch.rb#L164-L168
   # https://www.ruby-lang.org/en/news/2019/10/01/nul-injection-file-fnmatch-cve-2019-15845/
