@@ -78,6 +78,9 @@ class ::XROSS::THE::POSIX::Glob
         # "A '*' (not between brackets) matches any string, including the empty string."
         # An asterisk must not be the first character of a `::Regexp` pattern
         # or we will get a "target of repeat operator is not specified" `::SyntaxError`.
+        #
+        # TODO: Fix exponential denial-of-service vulnerability from patterns with repeating fixed expansions,
+        #       just like with Python's `fnmatch.translate`: https://bugs.python.org/issue40480
         if (subpatterns.last.first.eql?(?[.ord) or (
           subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last[-2].eql?(?\\.ord)
         )) then
@@ -209,16 +212,29 @@ class ::XROSS::THE::POSIX::Glob
       # TODO: Braces.
     }
 
+    # Exclude dotfiles by default unless the `::File::FNM_DOTMATCH` flag is set.
+    # https://en.wikipedia.org/wiki/Hidden_file_and_hidden_directory#Unix_and_Unix-like_environments
+    #
+    # Use a lookahead for this so it doesn't affect the actual computed pattern, e.g.:
+    #   irb> /\A.*\Z/         === '.profile' => true
+    #   irb> /\A(?![\.]).*\Z/ === '.profile' => false
+    #   irb> /\A(?![\.]).*\Z/ === 'profile'  => true
+    subpatterns.unshift(*[?(, ??, ?!, ?[, ?\\, ?., ?], ?)].map!(&:ord)) if (
+      (flags & ::File::FNM_DOTMATCH).zero? and not (
+        # Don't add the negative lookahead if we have a pattern matching an explicit '\.' (escaped).
+        subpatterns.first.first.eql?(?\\.ord) and not subpatterns.first[2].eql?(?..ord)
+      )
+    )
+
     # Add an explicit beginning/end-of-`::String` Anchor to our pattern:
     # https://ruby-doc.org/core/Regexp.html#class-Regexp-label-Anchors
-    subpatterns.push(?\\.ord).push(?Z.ord).tap {
-      _1.unshift(?A.ord)
-      _1.unshift(?\\.ord)
-    }
+    #
+    # NOTE: Ensure this is the last modification made to the subpatterns before `#pack`ing,
+    #       because these Anchors *must* be the first and last parts (respectively) of the packed `::String`.
+    subpatterns.push(?\\.ord, ?Z.ord).unshift(?\\.ord, ?A.ord)
 
-    # TODO: Fix exponential denial-of-service vulnerability from patterns with repeating expansions,
-    # just like with Python's `fnmatch.translate`: https://bugs.python.org/issue40480
-
+    # Enable `::Regexp` Option flags with a bitwise `OR` in `::Regexp::new`'s second argument:
+    # https://ruby-doc.org/core/Regexp.html#class-Regexp-label-Options
     ::Regexp::new(
       subpatterns.flatten.pack('U*'),
       ((flags & ::File::FNM_CASEFOLD).zero? ? 0 : ::Regexp::IGNORECASE)
