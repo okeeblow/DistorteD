@@ -207,6 +207,19 @@
     http://fileformats.archiveteam.org/wiki/ZIP
   -->
   <mime-type type="application/zip">
+    <magic priority="60">
+      <!--
+        The fd.o package defines a match for the common "PK\003\004" start-sequence,
+        but not for the mandatory "end of central directory" signature.
+
+        Per `APPNOTE.TXT`:
+          "A ZIP file MUST contain an 'end of central directory record'.
+           A ZIP file containing only an 'end of central directory record' is considered an empty ZIP file.
+           A ZIP file MUST have only one 'end of central directory record'."
+      -->
+      <!-- TODO: Support this. -->
+      <!--<match type="string" value="PK\005\006" offset="-0"/>-->
+    </magic>
     <!-- Per `APPNOTE.TXT`: "Use of the extension `.ZIPX` is also recognized and MAY be used for ZIP files." -->
     <glob pattern="*.zipx"/>
   </mime-type>
