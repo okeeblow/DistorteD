@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mime-info>
+
   <mime-type type="image/jpeg">
     <!--
       This is the "Multi Picture Object" stereoscopic format from Fuji,
@@ -11,8 +12,15 @@
 
       Spec PDF: https://web.archive.org/web/20111125013335/https://www.cipa.jp/english/hyoujunka/kikaku/pdf/DC-007_E.pdf
     -->
+    <!--
+      HACK: Specify a `*.jpg` glob first so `*.mpo` won't be `image/jpeg's` `#extname`
+            if this package gets loaded before `shared-mime-info`.
+      TODO: Remove this once I give MPO its own type (after I figure out how to read them in stereo).
+    -->
+    <glob pattern="*.jpg"/>
     <glob pattern="*.mpo"/>
   </mime-type>
+
   <!--
     VIPS native file format: https://libvips.github.io/libvips/API/current/file-format.html
 
