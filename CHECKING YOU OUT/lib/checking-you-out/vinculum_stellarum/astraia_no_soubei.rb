@@ -1,46 +1,9 @@
-require(-'pathname') unless defined?(::Pathname)
+require('xross-the-xoul/posix/glob') unless defined?(::XROSS::THE::POSIX::Glob)
 
 require_relative(-'../weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
 
 
-# Provide case-optional `::String`-like keys for Postfix and Complex filename fragments.
-#
-# From Ruby's `::Hash` docs: "Two objects refer to the same hash key when their hash value is identical
-# and the two objects are eql? to each other"
-# I tried to subclass String and just override `:eql?` and `:hash` for case-insensitive lookups,
-# but it turns out not be that easy due to MRI's C comparison functions for String, Symbol, etc.
-#
-# It was super-confusing because I could call e.g. `'DOC'.eql? 'doc'` manually and get `true`,
-# but it would always fail to work when used as a `Hash` key, when calling `uniq`, or in a `Set`:
-#
-# irb(main):049:1* Lol = Class.new(String).tap {
-# irb(main):050:1*   _1.define_method(:hash) do; self[0..5].downcase!.hash; end;
-# irb(main):051:1*   _1.define_method(:eql?) do |lol|; self[0..5].casecmp?(lol[0..5]); end;
-# irb(main):052:1*   _1.alias_method(:==, :eql?)
-# irb(main):053:0> }
-# irb(main):054:0> fart = Lol.new("abcdefg")
-# irb(main):055:0> butt = Lol.new("abcdefgh")
-# irb(main):056:0> fart == butt
-# => true
-# irb(main):057:0> fart.eql? butt
-# => true
-# irb(main):058:0> fart.hash
-# => 1243221847611081438
-# irb(main):059:0> butt.hash
-# => 1243221847611081438
-# irb(main):060:0> {fart => "smella"}[butt]
-# => nil
-# irb(main):061:0> {fart => "smella"}[fart]
-# => "smella"
-#
-# I'm not the first to run into this, as I found when searching for `"rb_str_hash_cmp"`:
-# https://kate.io/blog/strange-hash-instances-in-ruby/
-#
-# To work around this I will explicitly `downcase` the actual String subclass' value
-# and just let the hashes collide for differently-cased values, then `eql?` will decide.
-# This is still slower than the all-C String code but is the fastest method I've found
-# to achieve this without doubling my Object allocations by wrapping each String in a Struct.
-class ::CHECKING::YOU::OUT::StickAround < ::String
+::CHECKING::YOU::OUT::ASTRAIAの双皿 = ::Class::new(::String) do
 
   # Be case-insensitive by default so we can match any filename.
   DEFAULT_SENSITIVITY = false
@@ -60,6 +23,15 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
     self.replace(str) unless str.empty?
   end
 
+  # Globs are similar to but not directly comparable with `::Regexp`,
+  # but we have a support library that handles the conversion.
+  #
+  # `#to_regexp` is the method which will be used by `::Regexp::try_convert`.
+  def to_regexp(flags = 0) = ::XROSS::THE::POSIX::Glob::to_regexp(self, flags)
+
+  # We're already a Glob.
+  def to_glob = self.to_s
+
   # Mark intent to be case-sensitive. Our source data's `<glob>` Attributes are parsed one at a time,
   # so we won't know at the time of instantiation if we want to be case sensitive.
   def case_sensitive=(sensitivity)
@@ -70,16 +42,6 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
       instance_variable_set(:@case_sensitive, sensitivity)
     end
   end
-
-  # Return our case-sensitive `String` variation iff we are marked case-sensitive *and* have a `String` value,
-  # otherwise just return our frozen deduplicated `self` value.
-  def itself
-    instance_variable_get(:@case_sensitive)&.is_a?(::String) ? instance_variable_get(:@case_sensitive) : self
-  end
-
-  # Handle `String` coercion via `self.itself` when case-sensitive.
-  def to_s; instance_variable_get(:@case_sensitive)&.is_a?(::String) ? self.itself.to_s : super; end
-  alias_method(:to_str, :to_s)
 
   # Return our case-sensitive `String` variation iff one exists, otherwise `nil`.
   def case_sensitive
@@ -97,70 +59,12 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
     end
   end
 
-  # Set an appropriate value for ourselves given a variety of input.
-  # Even though this is called `#replace` here and in `String`, this method will often be used
-  # to set initial instance values due to nondeterministic attribute order while parsing our XML data.
-  def replace(otra, case_sensitive: DEFAULT_SENSITIVITY)
-    # Extract a usable value from different input types/formats.
-    #
-    # `File::extname` will return the last dotted component of a String, prepended with the leading dot,
-    #  e.g. `File::extname("hello.jpg")` => `".jpg"`. We will prepend an asterisk to these to make a glob pattern.
-    #
-    # `File::extname` will be an empty String for input Strings which contain no dotted components
-    #  or only have a leading dot, e.g. `File::extname(".bash_profile") => `""`.
-    newbuild = case otra
-      when self.class then -otra.to_s
-      when ::Symbol   then otra.name.dup.insert(0, -?.).insert(0, -?*)  # Assume `::Symbol` is an extname.
-      when ::Pathname then otra.extname.empty? ? otra.basename.to_s.-@ : otra.extname.insert(0, -?*).-@
-      when ::String   then
-        case
-        when (::File::extname(otra).empty? and otra.include?(-?*)) then -otra
-        when (::File::extname(otra).empty? and otra.include?(::File::SEPARATOR.-@)) then ::File::basename(otra).-@
-        when (
-          ::File::extname(otra).empty? and
-          otra.include?(::File::ALT_SEPARATOR.to_s.-@) and  # Explicit `#to_s` to handle `nil` `ALT_SEPARATOR` (non-Winders)
-          not ::File::ALT_SEPARATOR.nil?
-        ) then ::File::basename(otra).-@
-        when (
-          ::File::extname(otra) and (
-            otra.include?(::File::SEPARATOR) or (
-              ::File::ALT_SEPARATOR.nil? ? false : otra.include?(::File::ALT_SEPARATOR)
-            )
-          )
-        ) then ::File::extname(otra).tap {
-          _1.insert(0, -?.) unless _1.start_with?(-?.)
-          _1.insert(0, -?*) unless _1.start_with?(-?*)
-        }.-@
-        when otra.include?(-?*) then -otra  # e.g. `"SConscript.*"`
-        when otra.start_with?(-?.) then ::File::extname(otra).insert(0, -?*).-@
-        else -otra
-        end
-      else -otra.to_s
-    end
+  def clear
+    remove_instance_variable(:@case_sensitive) if instance_variable_defined?(:@case_sensitive)
+    super  # Calls `WeightedAction#clear` and any others in the ancestor chain.
+  end
 
-    # The `super` call in this condition statement will explicitly set the `self` value to the downcased version of our key,
-    # but we will then compare `super`'s return value to its input to decide if we should store a case-sensitive value too.
-    #
-    # If the computed key is already downcase we could still be case-sensitive if we were boolean-marked as such,
-    # otherwise we have no need for the IVar and can remove it if one is set.
-    #
-    # Explicitly check if the IVar == `true`, not just truthiness, because it may also be a `String`
-    # if we are `#replace`ing a previous case-sensitive value.
-    #
-    # NOTE: There is a hole in the logic here where any non-downcased input will cause case-sensitivity,
-    # but this is necessary since our XML parsing might give us a `pattern` attribute callback
-    # before we'd had a chance to set a `case-insensitive` mark.
-    # All of the `case-sensitive="true"` `<glob>`s in current fd.o XML have an upper-case component,
-    # so this hack will make sure we don't discard the proper-cased `String` if we see that callback before the mark.
-    if (super(-newbuild.downcase(:fold)) != newbuild) or case_sensitive or (instance_variable_get(:@case_sensitive) == true) then
-      instance_variable_set(:@case_sensitive, newbuild)
-    else
-      remove_instance_variable(:@case_sensitive) if instance_variable_defined?(:@case_sensitive)
-    end
-    self  # return the new downcased value we just set when we called `super`
-  end  # replace
-
-  # Returns case-optional boolean equality between this `StickAround` and a given object `StickAround` or `String`.
+  # Returns case-optional boolean equality between this `StellaSinistra` and a given object `StellaSinistra` or `String`.
   # This is one of two methods necessary for matching Hash keys, but this method will be called only if `self#hash`
   # and `otra#hash` return the same Integer value, complicated by the fact that MRI's C implementation of `rb_str_hash_cmp`
   # won't use our overriden version of `#hash`.
@@ -245,12 +149,12 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
     #   irb> File.fnmatch?('*.jp{e,}g', '/root/.HeLlO.jPEg', File::FNM_EXTGLOB | File::FNM_CASEFOLD | File::FNM_DOTMATCH | File::FNM_PATHNAME)
     #   => false
     ::File.fnmatch?(
-      self.itself,           # Haystack
-      otra.itself,           # Needle
+      self.to_s,              # Haystack
+      otra.to_s,              # Needle
       ::File::FNM_DOTMATCH  |
         ::File::FNM_EXTGLOB |
         (
-          # Support testing `otra` as either another `StickAround` or as a plain `String`,
+          # Support testing `otra` as either another `StellaSinistra` or as a plain `String`,
           # in which case it will not have a method `#case_sensitive?`.
           # Use our own case-sensitivity setting when comparing against plain `Strings`.
           (self.case_sensitive? or (otra.respond_to?(:case_sensitive?) ? otra.case_sensitive? : self.case_sensitive?)) ?
@@ -263,6 +167,24 @@ class ::CHECKING::YOU::OUT::StickAround < ::String
   alias_method(:==, :eql?)
 
   # Return a boolean describing if we are a single-extname only vs. if we are a more complex glob.
-  def postfix?; self.start_with?(-'*.') and self.count(-?.) == 1 and self.count(-?*) == 1; end
+  def sinistar? = (self.start_with?(-'*.') and self.count(-?*).eql?(1))
 
-end  # StickAround
+  # Convert this generic Glob-`::String` instance into a new more-appropriate `::Object`.
+  def sinistar
+    if self.start_with?(-'*.') and self.count(?*).eql?(1) and self.count(?.).eql?(1) then
+      # Single `extname`s (e.g. `*.jpg`) can be a single `::String` subclass instance.
+      ::CHECKING::YOU::OUT::DeusDextera::new(self.delete_prefix(-'*.').-@)
+    elsif self.start_with?(-'*.') then
+      # Multi-`extname`s (e.g. `*.tar.bz2`) will be an `::Array` subclass instance
+      # of `::String` subclasses instances.
+      ::CHECKING::YOU::OUT::StellaSinistra[
+        *self.delete_prefix(-'*.').split(?.).reverse!.map!(&:-@)
+      ].map!(&::CHECKING::YOU::OUT::DeusDextera::method(:new))
+    else
+      # And anything else (freeform globs) will be a new instance of us.
+      self.class.new(self)
+    end
+  end
+
+
+end

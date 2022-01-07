@@ -14,7 +14,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   #       so `SequenceCat#=~` doesn't have to allocate and `#read` a throwaway byte `::String`
   #       for every matching attempt.
   #       https://blog.appsignal.com/2018/07/10/ruby-magic-slurping-and-streaming-files.html
-  Wild_I∕O = ::Struct.new(:pathname, :stream, :stick_around) do
+  Wild_I∕O = ::Struct.new(:pathname, :stream, :astraia) do
 
     def initialize(pathname)
       super(pathname.is_a?(::Pathname) ? pathname : ::Pathname.new(pathname), nil, nil)
@@ -30,9 +30,10 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       end
     end
 
-    def stick_around
-      self[:stick_around] ||= ::CHECKING::YOU::OUT::StickAround.new(self[:pathname].to_s)
+    def astraia
+      self[:astraia] ||= ::CHECKING::YOU::OUT::ASTRAIAの双皿.new(self[:pathname].to_s)
     end
+    def sinistar = ::CHECKING::YOU::OUT::DeusDextera::new(self[:pathname].to_s)
 
     extend(::Forwardable)
     def_instance_delegators(

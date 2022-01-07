@@ -69,7 +69,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND
     area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE,
     receiver: ::Ractor::current
   )
-    self.[](query, area_code: area_code, receiver: receiver, coerce: ::CHECKING::YOU::OUT::StickAround)
+    self.[](query, area_code: area_code, receiver: receiver, coerce: ::CHECKING::YOU::OUT::StellaSinistra)
   end
 
   def from_pathname(

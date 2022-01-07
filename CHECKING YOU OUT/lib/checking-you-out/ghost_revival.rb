@@ -7,7 +7,7 @@ require(-'addressable') unless defined?(::Addressable)
 
 # Assorted specialty data structure classes / modules for storing loaded type data in-memory in a usable way.
 require_relative(-'ghost_revival/set_me_free') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::SET_ME_FREE)
-require_relative(-'ghost_revival/stick_around') unless defined?(::CHECKING::YOU::OUT::StickAround)
+require_relative(-'ghost_revival/astraia') unless defined?(::CHECKING::YOU::OUT::StellaSinistra)
 require_relative(-'ghost_revival/ultravisitor') unless defined?(::CHECKING::YOU::OUT::ULTRAVISITOR)
 require_relative(-'ghost_revival/weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
 require_relative(-'ghost_revival/wild_io') unless defined?(::CHECKING::YOU::OUT::Wild_I∕O)
@@ -131,8 +131,8 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       # Instances of the above classes to hold our type data.
       all_night     = set_me_free.new          # Main `{CYI => CYO}` container for canonical CYI as well as aliases.
       line_4_ruin   = ::Thread::Queue.new      # Eviction order for oldest `CYO` when loaded-type count exceeds `max_burning`.
-      postfixes     = set_me_free.new          # `{StickAround => CYO}` container for Postfixes (extnames).
-      complexes     = set_me_free.new          # `{StickAround => CYO}` container for more complex filename fragments.
+      sinistar      = set_me_free.new          # `{StellaSinistra/DeusDextera => CYO}` container for Postfixes (extnames).
+      astraia       = set_me_free.new          # `{ASTRAIAの双皿 => CYO}` container for more complex filename fragments.
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
       mother_tree   = set_me_free.new          # `<treemagic>` => CYO container.
       re_roots      = set_me_free.new          # `<root-XML>` => CYO container.
@@ -177,8 +177,8 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       kick_out_仮面 = proc { |cyi|
         all_night.delete(cyi)&.tap { |cyo|
           all_night.baleet(cyo.aka, cyo) unless all_night.include?(cyo.aka)  # TODO: Handle conflicting aliasing.
-          postfixes.baleet(cyo.postfixes, cyo)
-          complexes.baleet(cyo.complexes, cyo)
+          sinistar.baleet(cyo.sinistar, cyo)
+          astraia.baleet(cyo.astraia, cyo)
           case cyo.cat_sequence
           when ::NilClass then next
           when ::Set then cyo.cat_sequence&.each { |action| as_above.baleet(action.min, action.max, action, cyo) }
@@ -203,10 +203,10 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         #         irb> CHECKING::YOU::OUT::from_ietf_media_type("application/x-kword").map(&:to_s)
         #              => ["application/x-kword", "application/vnd.kde.kword"]
 
-        # Memoize single-extname "postfixes" separately from more complex filename fragments
+        # Memoize single-extnames separately from more complex filename fragments
         # to allow work and record-keeping with pure extnames.
-        postfixes.bury(cyo.postfixes, cyo)
-        complexes.bury(cyo.complexes, cyo)
+        sinistar.bury(cyo.sinistar, cyo)
+        astraia.bury(cyo.astraia, cyo)
 
         # Memoize content-match byte sequences in nested `Hash`es based on the starting and ending
         # byte offset where each byte sequence may be found in a hypothetical file/stream.
@@ -264,17 +264,17 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           #   <"#<Set: {#<CHECKING::YOU::OUT application/x-java>, #<CHECKING::YOU::OUT application/java-vm>}>">
           _1.is_a?(::Set) ? _1.first : _1
         }
-        when ::CHECKING::YOU::OUT::StickAround then (complexes[needle] || postfixes[needle]).yield_self(&together_4ever)
+        when ::CHECKING::YOU::OUT::StellaSinistra then (astraia[needle] || sinistar[needle]).yield_self(&together_4ever)
         when ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O then
           # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
           #  an extended attribute or some other means) then that should be used instead of guessing."
           # This will probably always be an empty `::Array` since this is a niche feature, but we have to test it first.
-          steel_needles = ::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE.call(needle)&.map!(&all_night::method(:[]))
+          steel_needles = ::CHECKING::YOU::OUT::VinculumStellarum::STEEL_NEEDLE.call(needle)&.map!(&all_night::method(:[]))
           unless (steel_needles.nil? or steel_needles&.empty?) then steel_needles.first.yield_self(&together_4ever)
           else
             # Get any non-regular (`inode`) or directory (`x-content`) type for a `Pathname`,
             # and if one exists, use it as a parent type for any regular match.
-            irregular_nation = ::CHECKING::YOU::OUT::StellaSinistra::IRREGULAR_NATION.call(needle.pathname)
+            irregular_nation = ::CHECKING::YOU::OUT::VinculumStellarum::IRREGULAR_NATION.call(needle.pathname)
             casiotone_nation = case
             when needle.directory? then mother_tree.=~(needle.pathname).yield_self(&ONE_OR_EIGHT)
             when (needle.file? and needle.extname.eql?(-'.xml')) then
@@ -287,7 +287,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
               nφ_crime.include?(needle.hash) ? re_roots[xml_root] : nil.tap { mime_jr.send(xml_root, move: true) }  
             else
               ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
-                (complexes[needle.stick_around] || postfixes[needle.stick_around]).yield_self(&together_4ever),
+                (astraia[needle.astraia] || sinistar[needle.sinistar]).yield_self(&together_4ever),
                 as_above.so_below(needle.stream)&.transform_values!(&together_4ever),
               )
             end  # casiotone_nation = case

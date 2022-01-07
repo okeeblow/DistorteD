@@ -1,3 +1,4 @@
+require('bundler/setup')
 require('test/unit') unless defined?(::Test::Unit)
 require('pathname') unless defined?(::Pathname)
 require('set') unless defined?(::Set)
@@ -46,48 +47,48 @@ class TestInnerSpirit < Test::Unit::TestCase
 
   def test_add_remove_filename_fragments
     # A CYO can take filename-match fragments which are treated slightly differently
-    # depending on whether they represent an extname-only "Postfix" or a more "Complex" match.
+    # depending on whether they represent an extname-only "Postfix" or a more astraia Glob match.
     cyo = ::CHECKING::YOU::OUT.new(:cooltrainer, :example, :type)
-    postfix1 = ::CHECKING::YOU::OUT::StickAround.new('*.fart')
-    postfix2 = ::CHECKING::YOU::OUT::StickAround.new('*.smella')
-    complex1 = ::CHECKING::YOU::OUT::StickAround.new('More*[Cc]omplex')
+    sinistar1 = ::CHECKING::YOU::OUT::DeusDextera.new('*.fart')
+    sinistar2 = ::CHECKING::YOU::OUT::DeusDextera.new('*.smella')
+    astraia1 = ::CHECKING::YOU::OUT::ASTRAIAの双皿.new('More*[Cc]omplex')
 
     # All filename-matching containers should be not just empty but `nil`
     # since they avoid allocating spurious `::Enumerable`s.
     #
     # `CYO#extname` is a not a container but a method which will return a `::String` object
     # representing the primary extname for that type, formatted identically to `File::extname`'s output.
-    assert_nil(cyo.postfixes)
-    assert_nil(cyo.complexes)
+    assert_nil(cyo.sinistar)
+    assert_nil(cyo.astraia)
     assert_nil(cyo.extname)
 
     # When we add the first Postfix fragment we will gain an `#extname` too.
-    cyo.add_pathname_fragment(postfix1)
-    assert_instance_of(postfix1.class, cyo.postfixes)
-    assert_equal(postfix1, cyo.postfixes)
-    assert_nil(cyo.complexes)
-    assert_equal(postfix1[1..], cyo.extname)
+    cyo.add_pathname_fragment(sinistar1)
+    assert_instance_of(sinistar1.class, cyo.sinistar)
+    assert_equal(sinistar1, cyo.sinistar)
+    assert_nil(cyo.astraia)
+    assert_equal(sinistar1, cyo.extname[1..])
 
-    # When we add a second Postfix the `#extname` will not change but the `:@postfixes` IVar
+    # When we add a second Postfix the `#extname` will not change but the `:@sinistar` IVar
     # will be UpgrayeDD to a `::Set` holding both given Poxtfixes.
-    cyo.add_pathname_fragment(postfix2)
-    assert_equal(cyo.postfixes.size, 2)
-    assert_not_equal(cyo.postfixes, postfix1)
-    assert_instance_of(::Set, cyo.postfixes)
-    assert_include(cyo.postfixes, postfix1)
-    assert_include(cyo.postfixes, postfix2)
-    assert_equal(postfix1[1..], cyo.extname)
+    cyo.add_pathname_fragment(sinistar2)
+    assert_equal(cyo.sinistar.size, 2)
+    assert_not_equal(cyo.sinistar, sinistar1)
+    assert_instance_of(::Set, cyo.sinistar)
+    assert_include(cyo.sinistar, sinistar1)
+    assert_include(cyo.sinistar, sinistar2)
+    assert_equal(sinistar1, cyo.extname[1..])
 
-    # When we add a Complex fragment it will not affect the `#extname` or `:@postfixes` at all.
-    cyo.add_pathname_fragment(complex1)
-    assert_equal(cyo.postfixes.size, 2)
-    assert_instance_of(complex1.class, cyo.complexes)
-    assert_equal(complex1, cyo.complexes)
+    # When we add a Glob fragment it will not affect the `#extname` or `:@sinistar` at all.
+    cyo.add_pathname_fragment(astraia1)
+    assert_equal(cyo.sinistar.size, 2)
+    assert_instance_of(astraia1.class, cyo.astraia)
+    assert_equal(astraia1, cyo.astraia)
 
     # When we clear our CYO's known fragments it should be in an identical state as when we started.
     cyo.clear_pathname_fragments
-    assert_nil(cyo.postfixes)
-    assert_nil(cyo.complexes)
+    assert_nil(cyo.sinistar)
+    assert_nil(cyo.astraia)
     assert_nil(cyo.extname)
   end
 

@@ -1,4 +1,4 @@
-module ::CHECKING::YOU::OUT::StellaSinistra
+module ::CHECKING::YOU::OUT::VinculumStellarum
 
   # Types which should not get an `APPLICATION_OCTET_STREAM` parent.
   self::IRREGULAR_PHYLA = [

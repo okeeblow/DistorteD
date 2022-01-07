@@ -4,6 +4,8 @@ require(-'set') unless defined?(::Set)
 # Endian-swapping methods.
 require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 
+require_relative(-'../vinculum_stellarum/astraia_no_soubei') unless defined?(::CHECKING::YOU::OUT::ASTRAIAの双皿)
+
 # Define a custom `Set` subclass to identify the return values from `MIMEjr` that should be passed to `MrMIME`.
 ::CHECKING::YOU::OUT::BatonPass = ::Class.new(::Set)
 
@@ -376,7 +378,9 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       when :treemagic, :treematch then @needles[::Dir].empty?
       when :glob                  then (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
-        @needles[::CHECKING::YOU::OUT::StickAround].empty?
+        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].empty?
+        @needles[::CHECKING::YOU::OUT::StellaSinistra].empty?
+        @needles[::CHECKING::YOU::OUT::DeusDextera].empty?
       )
       when :"root-XML"            then @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
       when :alias                 then (
@@ -399,7 +403,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # the next `end_element(treematch)` will check the entire stack against our `@needles`.
       @i_can_haz_treemagic = true
       @mother_tree.append(::CHECKING::YOU::OUT::CosmicCat::new)
-    when :glob        then @stick_around = ::CHECKING::YOU::OUT::StickAround::new
+    when :glob        then @astraia = ::CHECKING::YOU::OUT::ASTRAIAの双皿::new if @astraia.nil?
     when :"root-XML"  then @re_roots     = ::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots::new if @re_roots.nil?
     end
   end
@@ -415,7 +419,9 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       when :treemagic, :treematch then @needles[::Dir].empty?
       when :glob                  then (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
-        @needles[::CHECKING::YOU::OUT::StickAround].empty?
+        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].empty?
+        @needles[::CHECKING::YOU::OUT::StellaSinistra].empty?
+        @needles[::CHECKING::YOU::OUT::DeusDextera].empty?
       )
       when :"root-XML"            then @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
       when :alias                 then (
@@ -469,9 +475,9 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     when :glob then
       # Parse filename matches.
       case attr_name
-      when :weight           then @stick_around.weight = value.as_i
-      when :pattern          then @stick_around.replace(value.as_s)
-      when :"case-sensitive" then @stick_around.case_sensitive = value.as_bool
+      when :weight           then @astraia.weight = value.as_i
+      when :pattern          then @astraia.replace(value.as_s)
+      when :"case-sensitive" then @astraia.case_sensitive = value.as_bool
       end
     when :"root-XML" then
       case attr_name
@@ -492,7 +498,9 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       when :treemagic, :treematch then @needles[::Dir].empty?
       when :glob                  then (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
-        @needles[::CHECKING::YOU::OUT::StickAround].empty?
+        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].empty?
+        @needles[::CHECKING::YOU::OUT::StellaSinistra].empty?
+        @needles[::CHECKING::YOU::OUT::DeusDextera].empty?
       )
       when :"root-XML"            then @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
       when :alias                 then (
@@ -531,8 +539,10 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @i_can_haz_treemagic = false
     when :glob then
       ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
-        @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:stick_around).map!(&@stick_around.method(:eql?)).any? or
-        @needles[::CHECKING::YOU::OUT::StickAround].map(&@stick_around.method(:eql?)).any?
+        @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:astraia).map!(&@astraia.method(:eql?)).any? or
+        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].map(&@astraia.method(:eql?)).any?
+        @needles[::CHECKING::YOU::OUT::StellaSinistra].map(&@astraia.method(:eql?)).any?
+        @needles[::CHECKING::YOU::OUT::DeusDextera].map(&@astraia.method(:eql?)).any?
       )
     when :"root-XML" then
       ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
@@ -551,7 +561,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     # Check for filesystem extended attributes in `::Pathname` needles representing extant files.
     # Send their `CYI`s directly to `MrMIME` (`@receiver_ractor`) if found.
     @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:pathname).keep_if(&:exist?).flat_map {
-      ::CHECKING::YOU::OUT::StellaSinistra::STEEL_NEEDLE.call(_1, receiver: @receiver_ractor)
+      ::CHECKING::YOU::OUT::VinculumStellarum::STEEL_NEEDLE.call(_1, receiver: @receiver_ractor)
     }
 
     # HACK: Use `Dir` as a needle key to represent the `Set` of `Pathname` needles representing extant directories.
@@ -564,6 +574,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
 
     # HACK: Do a one-time `String`-ification of CYI-like keys since we need to do a lot of comparisons of them
     #       and don't want to be allocating them over and over.
+    # TODO: Do the same for Glob-like keys.
     @needles[::String].merge(
       @needles[::CHECKING::YOU::IN].map(&:to_s)
     ).merge(

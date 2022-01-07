@@ -96,7 +96,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       @cat_sequence.append(::CHECKING::YOU::OUT::SequenceCat.new)
     when :"magic-deleteall" then self.cyo.clear_content_fragments
     when :glob then
-      @stick_around = ::CHECKING::YOU::OUT::StickAround.new
+      @astraia = ::CHECKING::YOU::OUT::ASTRAIAの双皿.new if @astraia.nil?
     when :"glob-deleteall" then self.cyo.clear_pathname_fragments
     when :treemagic then @mother_tree = ::CHECKING::YOU::OUT::SpeedyCat.new if @mother_tree.nil?
     when :treematch then
@@ -155,9 +155,9 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     when :"sub-class-of" then self.cyo.add_parent(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s)) if attr_name == :type
     when :glob           then
       case attr_name
-      when :weight           then @stick_around.weight = value.as_i
-      when :pattern          then @stick_around.replace(value.as_s)
-      when :"case-sensitive" then @stick_around.case_sensitive = value.as_bool
+      when :weight           then @astraia.weight = value.as_i
+      when :pattern          then @astraia.replace(value.as_s)
+      when :"case-sensitive" then @astraia.case_sensitive = value.as_bool
       end
     when :"root-XML" then
       case attr_name
@@ -228,7 +228,8 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       end
       @i_can_haz_treemagic = false
     when :glob then
-      self.cyo.add_pathname_fragment(@stick_around) unless @stick_around.nil?
+      self.cyo.add_pathname_fragment(@astraia.sinistar) unless @astraia.nil?
+      @astraia.clear
     when :"root-XML" then
       self.cyo.add_xml_root(@re_roots.dup) unless @re_roots.nil? or @re_roots&.empty?
       @re_roots.clear unless @re_roots.nil? or @re_roots&.empty?

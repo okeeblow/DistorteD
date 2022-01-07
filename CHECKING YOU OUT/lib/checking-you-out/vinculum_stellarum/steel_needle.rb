@@ -1,7 +1,7 @@
 require(-'extattr') unless defined?(::ExtAttr)
 
 
-module ::CHECKING::YOU::OUT::StellaSinistra
+module ::CHECKING::YOU::OUT::VinculumStellarum
 
   # Check the filesystem extended attributes for manually-defined types.
   #

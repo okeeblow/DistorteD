@@ -1,3 +1,4 @@
+require('bundler/setup')
 require(-'ox') unless defined?(::Ox)
 require('test/unit') unless defined?(::Test::Unit)
 require_relative('../lib/checking-you-out') unless defined?(::CHECKING::YOU::OUT)
