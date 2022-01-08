@@ -31,7 +31,16 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE
 
     # Search `XDG_DATA_DIRS` for any additional `shared-mime-info`-format data files we can load,
     # hopefully including the all-important `freedesktop.org.xml`.
-    ::XROSS::THE::PATH.DATA_DIRS.push(
+    #
+    # NOTE: I'm `#reverse`ing the `ENV`-defined paths because POSIX treats leading entries with higher priority
+    #       and later entries with lower priority. Since we're going to `::Ractor#send` these package paths to CYO,
+    #       the higher-priority paths should come last. This lets `shared-mime-info`'s `deleteall` tags work properly.
+    #
+    #       Per https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html —
+    #       "The [`PATH`] list shall be searched from beginning to end, applying the filename to each prefix,
+    #        until an executable file with the specified name and appropriate execution permissions is found."
+    #       Our XML packages aren't executables, but you get the idea :)
+    ::XROSS::THE::PATH.DATA_DIRS.reverse!.push(
       # Sandwich the Gem-local path between the XDG system-wide and user-specific dirs,
       # so we can provide our own bundled `shared-mime-info` if one isn't installed system-wide,
       # while still allowing the user to override any of our types.
@@ -39,7 +48,8 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE
     ).concat(
       # Append user-specific `XDG_DATA_HOME` to the very end so the system-wide
       # and CYO-bundled items can be overriden with e.g. `<glob-deleteall>`.
-      ::XROSS::THE::PATH.DATA_HOME
+      # See the note above about why we're `#reverse`ing this.
+      ::XROSS::THE::PATH.DATA_HOME.reverse!
     ).map {
       # Add path fragments for finding `shared-mime-info` package files.
       # This same subdir path applies when searching *any* `PATH` for `shared-mime-info` XML,
