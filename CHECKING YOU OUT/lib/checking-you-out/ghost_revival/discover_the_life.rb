@@ -1,5 +1,8 @@
 require(-'pathname') unless defined?(::Pathname)
 
+# Components for data-directory discovery.
+require(-'xross-the-xoul/desktop') unless defined?(::XROSS::THE::DESKTOP.DATA_DIRS)
+
 
 # Methods for finding all appropriate source data files in the running environment.
 module ::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE
@@ -28,7 +31,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE
 
     # Search `XDG_DATA_DIRS` for any additional `shared-mime-info`-format data files we can load,
     # hopefully including the all-important `freedesktop.org.xml`.
-    ::CHECKING::YOU::OUT::XROSS_INFECTION::XDG.DATA_DIRS.push(
+    ::XROSS::THE::DESKTOP.DATA_DIRS.push(
       # Sandwich the Gem-local path between the XDG system-wide and user-specific dirs,
       # so we can provide our own bundled `shared-mime-info` if one isn't installed system-wide,
       # while still allowing the user to override any of our types.
@@ -36,7 +39,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE
     ).concat(
       # Append user-specific `XDG_DATA_HOME` to the very end so the system-wide
       # and CYO-bundled items can be overriden with e.g. `<glob-deleteall>`.
-      ::CHECKING::YOU::OUT::XROSS_INFECTION::XDG.DATA_HOME
+      ::XROSS::THE::DESKTOP.DATA_HOME
     ).map {
       # Add path fragments for finding `shared-mime-info` package files.
       # This same subdir path applies when searching *any* `PATH` for `shared-mime-info` XML,

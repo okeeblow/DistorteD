@@ -12,11 +12,8 @@ require_relative(-'ghost_revival/ultravisitor') unless defined?(::CHECKING::YOU:
 require_relative(-'ghost_revival/weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
 require_relative(-'ghost_revival/wild_io') unless defined?(::CHECKING::YOU::OUT::Wild_I∕O)
 
-# Components for locating `shared-mime-info` XML packages system-wide and locally to CYO.
+# Components for locating and parsing `shared-mime-info` XML packages.
 require_relative(-'ghost_revival/discover_the_life') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE)
-require_relative(-'ghost_revival/xross_infection') unless defined?(::CHECKING::YOU::OUT::XROSS_INFECTION)
-
-# Actual `shared-mime-info` parsers.
 require_relative(-'ghost_revival/mime_jr') unless defined?(::CHECKING::YOU::OUT::MIMEjr)
 require_relative(-'ghost_revival/mr_mime') unless defined?(::CHECKING::YOU::OUT::MrMIME)
 
