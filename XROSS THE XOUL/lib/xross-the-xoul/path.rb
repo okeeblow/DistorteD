@@ -18,7 +18,7 @@ require_relative(-'os') unless defined?(::XROSS::THE::OS)
 # and because I want to do some stuff beyond the standard such as paths for Windows/macOS.
 class XROSS; end
 class XROSS::THE; end
-class XROSS::THE::DESKTOP
+class XROSS::THE::PATH
 
   # TODO: Eliminate this once `::ENV` is shareable on its own: https://bugs.ruby-lang.org/issues/17676
   self::DD_ENV = ::Ractor::make_shareable(::Hash::new.merge(::ENV))
