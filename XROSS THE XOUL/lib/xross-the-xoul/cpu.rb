@@ -20,6 +20,10 @@
 # More reading:
 # - https://betterexplained.com/articles/understanding-big-and-little-endian-byte-order/
 # - http://fileformats.archiveteam.org/wiki/Endianness
+#
+# See Also:
+# - `CoreFoundation`'s Byte Order Utilities:
+#   https://developer.apple.com/documentation/corefoundation/byte-order_utilities
 class XROSS; end
 class XROSS::THE; end
 class XROSS::THE::CPU
