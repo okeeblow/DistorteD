@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = Dir['TEST MY BEST/**/*']
   spec.require_paths = ['lib']
 
-  spec.required_ruby_version = '>= 3.0.0'
+  spec.required_ruby_version = '>= 3.1.0'
 
   spec.executables   = ['checking-you-out']
 
