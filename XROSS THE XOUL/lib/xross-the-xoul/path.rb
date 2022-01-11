@@ -75,12 +75,16 @@ class XROSS::THE::PATH
     # a value equal to `/usr/local/share/:/usr/share/` should be used."
     self.ENVIRONMENTAL_PATHNAMES(-'XDG_DATA_DIRS') || ['/usr/local/share/', '/usr/share/'].tap {
       # Fixup platforms where we know to expect filez outside the fd.o defaults.
-      # Specific documentation references:
-      # - https://docs.brew.sh/Installation
       if ::XROSS::THE::OS::mac? then
+        # Specific documentation references:
+        # - https://www.finkproject.org/doc/install/install-first.php?phpLang=en#directory
+        # - https://www.finkproject.org/faq/general.php?phpLang=en#usr-local
+        # - https://guide.macports.org/#installing.macports
+        # - https://docs.brew.sh/Installation
         _1.append('/opt/homebrew/share/')  # Homebrew on ARM
         _1.append('/usr/local/share/')     # Homebrew on Intel / Tigerbrew on PPC
         _1.append('/opt/local/share/')     # MacPorts
+        _1.append('/sw/share')             # Fink
       end
     }.map(&::Pathname::method(:new)).keep_if(&:directory?).map(&:realpath)
   end  # DATA_DIRS
