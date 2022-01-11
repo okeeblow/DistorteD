@@ -106,6 +106,23 @@ class XROSS::THE::PATH
     ]
   end
 
+  # `$XDG_BIN_HOME` isn't in the `basedir` specification (version 0.8 at the time of this writing),
+  # but it is in semi-common use and has been a proposed patch for some years:
+  # - https://gitlab.freedesktop.org/xdg/xdg-specs/-/issues/14
+  # - https://gitlab.freedesktop.org/xdg/xdg-specs/-/issues/63
+  # - https://lists.freedesktop.org/archives/xdg/2017-August/013943.html
+  def self.BIN_HOME
+    self.ENVIRONMENTAL_PATHNAMES(-'XDG_BIN_HOME') || [
+      # The current specification *does* name the actual path, just not the `$XDG_BIN_HOME` variable for it:
+      # "User-specific executable files may be stored in `$HOME/.local/bin`.
+      #  Distributions should ensure this directory shows up in the UNIX `$PATH` environment variable,
+      #  at an appropriate place."
+      # "Since `$HOME` might be shared between systems of different achitectures, installing compiled binaries
+      #  to `$HOME/.local/bin` could cause problems when used on systems of differing architectures."
+      ::Pathname.new(::Dir::home).expand_path.realpath.join(-'.local', -'bin')
+    ]
+  end
+
   # Returns a combined `Array` of user-specific and system-wide XDG Data `Pathname`s.
   def self.DATA
     # The base directory defined by `$XDG_DATA_HOME` is considered more important
