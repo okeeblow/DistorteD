@@ -24,20 +24,54 @@ class XROSS::THE::PATH
   self::DD_ENV = ::Ractor::make_shareable(::Hash::new.merge(::ENV))
 
   # Generic method to return absolute `Pathname`s for the contents of a given environment variable.
-  def self.ENVIRONMENTAL_PATHNAMES(variable)
+  #
+  # Per https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html —
+  # "All paths set in these environment variables must be absolute. If an implementation encounters
+  #  a relative path in any of these variables it should consider the path invalid and ignore it."
+  # I don't really like this, but we should match the behavior of XDG by default anyway.
+  #
+  # I'm also going to `#expand_path` for the "_HOME" XDG variables (e.g. `$XDG_DATA_HOME`, `$XDG_BIN_HOME`, etc)
+  # since they're likely to be defined with a relative reference to the homedir path.
+  #
+  # Note the difference in behavior between "home" as a shell expansion (the tilde / `~`), vs as an exported
+  # variable (`$HOME`) interpreted by our shell, vs as a variable name passed in as a raw `::String`:
+  #
+  #   [okeeblow@emi#CHECKING YOU OUT] TESTVAR=$HOME/hello.jpg ruby -e "p ENV['TESTVAR']"
+  #   "/home/okeeblow/hello.jpg"
+  #   [okeeblow@emi#CHECKING YOU OUT] TESTVAR="$HOME/hello.jpg" ruby -e "p ENV['TESTVAR']"
+  #   "/home/okeeblow/hello.jpg"
+  #   [okeeblow@emi#CHECKING YOU OUT] TESTVAR='$HOME/hello.jpg' ruby -e "p ENV['TESTVAR']"
+  #   "$HOME/hello.jpg"
+  #   [okeeblow@emi#CHECKING YOU OUT] TESTVAR='$HOME/hello.jpg' ruby -r 'optionparser' -e "p OptionParser::new.environment('TESTVAR')"
+  #   ["$HOME/hello.jpg"]
+  #   [okeeblow@emi#CHECKING YOU OUT] TESTVAR='~/hello.jpg' ruby -e "p ENV['TESTVAR']"
+  #   "~/hello.jpg"
+  #   [okeeblow@emi#CHECKING YOU OUT] TESTVAR='~okeeblow/hello.jpg' ruby -e "p ENV['TESTVAR']"
+  #   "~okeeblow/hello.jpg"
+  #   [okeeblow@emi#CHECKING YOU OUT] TESTVAR='~/hello.jpg' ruby -r 'pathname' -e "p ::Pathname::new(ENV['TESTVAR']).expand_path"
+  #   #<Pathname:/home/okeeblow/hello.jpg>
+  #   [okeeblow@emi#CHECKING YOU OUT] TESTVAR='~okeeblow/hello.jpg' ruby -r 'pathname' -e "p ::Pathname::new(ENV['TESTVAR']).expand_path"
+  #   #<Pathname:/home/okeeblow/hello.jpg>
+  #   [okeeblow@emi#CHECKING YOU OUT] TESTVAR='$HOME/hello.jpg' ruby -r 'pathname' -e "p ::Pathname::new(ENV['TESTVAR']).expand_path"
+  #   #<Pathname:/home/okeeblow/Works/DistorteD/CHECKING YOU OUT/$HOME/hello.jpg>
+  #
+  # I'm not going to attempt to interpret raw variable-name `::String`s (like `'$HOME'`) for now.
+  def self.ENVIRONMENTAL_PATHNAMES(variable, allow_relative = false)
     # Skip empty-`String` variables as well as missing variables.
+    # Helper methods should provide appropriate defaults when we fail this condition and return `nil`.
     if self::DD_ENV.has_key?(variable) and not self::DD_ENV[variable]&.empty?
       # `PATH_SEPARATOR` will be a colon (:) on UNIX-like systems and semi-colon (;) on Windows.
       # Convert path variable contents to `Pathname`s with…
       # - :expand_path  —  Does shell expansion of path `String`s, e.g. `File.expand_path('~') == Dir::home`
       # - :directory?   —  Drop any expanded `Pathname`s that don't refer to extant directories.
-      # - :realpath     —  Convert to absolute paths, e.g. following symbolic links.
+      # - :realpath     —  Follow symbolic links and expand dots (`.` and `..`) if `#expand_path` didn't already.
+      #                    Raises `Errno::ENOENT` for nonexistent paths, so `#keep_if(&:directory)` must come first.
       self::DD_ENV[variable]
         .split(::File::PATH_SEPARATOR)
-        .map(&::Pathname::method(:new))
-        .map(&:expand_path)
+        .map!(&::Pathname::method(:new))
+        .send((allow_relative or variable.end_with?(-'_HOME') ? :map! : :itself), &:expand_path)
         .keep_if(&:directory?)
-        .map(&:realpath)
+        .map!(&:realpath)
     end
   end
 
