@@ -42,11 +42,6 @@ Gem::Specification.new do |spec|
   # Ours
   spec.add_dependency 'checking-you-out', "~> #{Cooltrainer::DistorteD::VERSION}"
 
-  # Common
-  spec.add_dependency 'mime-types', '~> 3.3'  # https://github.com/mime-types/ruby-mime-types
-  spec.add_dependency 'ruby-filemagic', '~> 0.7'  # http://blackwinter.github.io/ruby-filemagic/ https://github.com/blackwinter/ruby-filemagic
-  # FYI: Unmaintained!! https://github.com/blackwinter/ruby-filemagic/commit/e1f2efd07da4130484f06f58fed016d9eddb4818
-
   # Images
   spec.add_dependency 'ruby-vips', '~> 2.0'  # https://github.com/libvips/ruby-vips
   spec.add_dependency 'svg_optimizer', '~> 0.2.5'  # https://github.com/fnando/svg_optimizer
