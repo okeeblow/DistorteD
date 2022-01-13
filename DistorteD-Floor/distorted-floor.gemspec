@@ -28,7 +28,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'bundler', '~> 2.2'  # https://bundler.io/ — https://github.com/rubygems/rubygems/tree/master/bundler
   spec.add_development_dependency 'rake', '~> 13.0'  # https://ruby.github.io/rake/ — https://github.com/ruby/rake
-  spec.add_development_dependency 'minitest', '~> 5.14'  # http://docs.seattlerb.org/minitest/ — https://github.com/seattlerb/minitest
 
   # Kaital Struct seems like it might be a good fit for DistorteD,
   # but it's read-only in 1.x and I think it's generally kinda awkward
