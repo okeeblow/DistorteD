@@ -364,9 +364,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         in ::CHECKING::YOU::IN      => cyi, ::CHECKING::YOU::OUT => cyo then remember_me.call(cyi, cyo)
         in ::CHECKING::YOU::IN::B4U => cyi, ::CHECKING::YOU::OUT => cyo then remember_me.call(cyi, cyo)
         in ::Float::INFINITY               then max_burning = 0  # No CYOs will be purged when loading more types.
-        in ::Fixnum                 => max then
-          # We can't subclass `Fixnum`, because Ruby treats them as immediates instead of heap objects,
-          # so our outer methods use negative `Fixnum` to affect the second of our two queues.
+        in ::Integer                => max then
+          # We can't subclass `Integer`, because Ruby treats them as immediates instead of heap objects,
+          # so our outer methods use negative `Integer` to affect the second of our two queues.
           case
           when max.positive? then max_burning =  max
           when max.negative? then how_long    = -max
