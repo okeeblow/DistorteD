@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
 
   spec.executables = ['distorted']
 
-  spec.required_ruby_version = '>= 2.7.0'
+  spec.required_ruby_version = '>= 3.1.0'
 
   spec.add_development_dependency 'bundler', '~> 2.2'  # https://bundler.io/ — https://github.com/rubygems/rubygems/tree/master/bundler
   spec.add_development_dependency 'rake', '~> 13.0'  # https://ruby.github.io/rake/ — https://github.com/ruby/rake

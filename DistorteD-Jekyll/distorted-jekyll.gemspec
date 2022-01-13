@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rake', '~> 10.0'
 
-  spec.required_ruby_version = '>= 2.7.0'
+  spec.required_ruby_version = '>= 3.1.0'
 
   spec.add_dependency 'liquid', '~> 4.0'
   spec.add_dependency 'liquid-tag-parser', '~> 2.0'
