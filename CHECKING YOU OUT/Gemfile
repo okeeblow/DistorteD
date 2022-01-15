@@ -4,6 +4,9 @@ gemspec
 
 gem('xross-the-xoul', :path => File.join(File.dirname(__FILE__), '..', 'XROSS THE XOUL'))
 
+# Use a local `addressable` until https://github.com/sporkmonger/addressable/pull/449is closed/released.
+gem('addressable', :path => File.join(File.dirname(__FILE__), '..', '..', 'addressable'))
+
 # "Unlike :git, bundler does not compile C extensions for gems specified as paths."
 #
 # Using `:git` via `bundle config local.ox ~/Works/ox`
