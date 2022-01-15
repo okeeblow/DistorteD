@@ -9,7 +9,7 @@ module Jekyll::DistorteD; end
 module Jekyll::DistorteD::Molecule; end
 module Jekyll::DistorteD::Molecule::NeverLetYouDown
 
-  FALLBACK_TYPE = ::CHECKING::YOU::OUT::from_ietf_media_type('application/x.distorted.never-let-you-down')
+  FALLBACK_TYPE = ::CHECKING::YOU::IN::from_ietf_media_type('application/x.distorted.never-let-you-down')
   LOWER_WORLD = Hash[
     FALLBACK_TYPE => Hash[
       :alt => Cooltrainer::Compound.new(:alt, blurb: 'Alternate text to display when this element cannot be rendered.'),

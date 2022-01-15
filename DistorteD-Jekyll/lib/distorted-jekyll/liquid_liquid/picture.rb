@@ -17,7 +17,7 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
   # Browsers old enough to lack <picture> support almost certainly lack support
   # for newer Image Types like WebP/AVIF. Use a MetaType to trigger the selection
   # and rendering of one (1) fallback.
-  FALLBACK_IMAGE_TYPE = ::CHECKING::YOU::OUT::from_ietf_media_type('image/x.distorted.fallback')
+  FALLBACK_IMAGE_TYPE = ::CHECKING::YOU::IN::from_ietf_media_type('image/x.distorted.fallback')
   OUTER_LIMITS = Hash[FALLBACK_IMAGE_TYPE => nil]
 
   # Given an input Change, what `::CHECKING::YOU::OUT` should we use as the fallback?

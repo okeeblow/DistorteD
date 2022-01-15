@@ -6,7 +6,7 @@ module DistorteD::CHECKING; end
 module DistorteD::CHECKING::YOU; end
 module DistorteD::CHECKING::YOU::OUT
 
-  refine ::CHECKING::YOU::OUT::singleton_class do
+  refine ::CHECKING::YOU::IN::singleton_class do
 
     # NOTE: We can't define constants in refinements without getting a
     # "not defined at the refinement, but at the outer class/module" Warning.
@@ -33,7 +33,7 @@ module DistorteD::CHECKING::YOU::OUT
   end
 
 
-  refine ::CHECKING::YOU::OUT do
+  refine ::CHECKING::YOU::IN do
 
     # Returns a Symbol name of the method that should return a loaded imtermediate structure of some sort, e.g. a Vips::Image.
     def distorted_open_method; "#{self.class.distorted_method_prefixes[:open]}_#{distorted_method_suffix}".to_sym; end
