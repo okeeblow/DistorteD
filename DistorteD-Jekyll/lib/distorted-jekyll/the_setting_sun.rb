@@ -46,7 +46,7 @@ module Jekyll::DistorteD
 
   # Memoize the complete default-config to avoid touching the filesystem more than once.
   def self.distorted_default_settings
-    @@distorted_default_settings ||= YAML.load(File.read(DEFAULT_CONFIG_PATH))
+    @@distorted_default_settings ||= YAML.load(File.read(DEFAULT_CONFIG_PATH), aliases: true)
   end
 
   # Stores a given settings path/value to our memoization Hash
