@@ -22,9 +22,9 @@ class CHECKING::YOU
   def self.OUT(unknown_identifier, area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE)
     case unknown_identifier
     when ::Pathname then
-      ::CHECKING::YOU::OUT::from_pathname(unknown_identifier, area_code: area_code)
+      ::CHECKING::YOU::OUT::from_pathname(unknown_identifier, area_code:)
     when ::Addressable::URI then
-      ::CHECKING::YOU::OUT::from_uri(unknown_identifier, area_code: area_code)
+      ::CHECKING::YOU::OUT::from_uri(unknown_identifier, area_code:)
     when ::String
       # Try parsing the given `String` as a `URI`, based on `::Addressable::URI::scheme`:
       #   irb(main):029:0> ::Addressable::URI::parse("/home/okeeblow").scheme => nil
@@ -33,16 +33,16 @@ class CHECKING::YOU
       uri_match = ::Addressable::URI::parse(unknown_identifier)
       case
       when !uri_match.scheme.nil? then
-        ::CHECKING::YOU::OUT::from_uri(uri_match, area_code: area_code)
+        ::CHECKING::YOU::OUT::from_uri(uri_match, area_code:)
       when unknown_identifier.count(-?/) == 1 then  # TODO: Additional String validation here.
-        ::CHECKING::YOU::OUT::from_ietf_media_type(unknown_identifier, area_code: area_code)
+        ::CHECKING::YOU::OUT::from_ietf_media_type(unknown_identifier, area_code:)
       when unknown_identifier.start_with?(-?.) && unknown_identifier.count(-?.) == 1 then
-        ::CHECKING::YOU::OUT::from_postfix(unknown_identifier, area_code: area_code)
+        ::CHECKING::YOU::OUT::from_postfix(unknown_identifier, area_code:)
       else
-        ::CHECKING::YOU::OUT::from_pathname(unknown_identifier, area_code: area_code)
+        ::CHECKING::YOU::OUT::from_pathname(unknown_identifier, area_code:)
       end
     when ::CHECKING::YOU::IN
-      unknown_identifier.out(area_code: area_code)
+      unknown_identifier.out(area_code:)
     end
   end
 end

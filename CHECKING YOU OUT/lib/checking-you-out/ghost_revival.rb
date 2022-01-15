@@ -94,7 +94,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           ::Ractor::make_shareable(proc {
             STILL_IN_MY_HEART.each_with_object(
               self.shared_mime_info_packages.each_with_object(
-                NEW_AREA.call(area_code: area_code)
+                NEW_AREA.call(area_code:)
               ) { |xml_path, area| area.send(xml_path) }
             ) { |permanent_type, area| area.send(permanent_type) }
           }),

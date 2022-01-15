@@ -55,8 +55,8 @@ end
 area_code = :TMB
 
 # Pre-load all available types
-::CHECKING::YOU::OUT.set_type_cache_size(::Float::INFINITY, area_code: area_code)
-::CHECKING::YOU::OUT[/.*/, area_code: area_code]
+::CHECKING::YOU::OUT.set_type_cache_size(::Float::INFINITY, area_code:)
+::CHECKING::YOU::OUT[/.*/, area_code:]
 
 # Load all `<mime-type>` IETF Media-Type `String`s from the same test package.
 handler = IETFTypeChecker.new
@@ -68,7 +68,7 @@ TestAuslandsgesprach = fdo_types.each_with_object(::Class.new(::Test::Unit::Test
   classkey_csupó.define_method("test_#{type.downcase.gsub(/[\/\-_+\.=;]/, ?_)}_ietf_type_decomposition") {
     # TODO: Fix suffixed types (remove `unless` guard)
     assert_equal(type, ::CHECKING::YOU::IN::from_ietf_media_type(type).to_s) unless type.include?(?+)
-    assert_equal(type, ::CHECKING::YOU::OUT::from_ietf_media_type(type, area_code: area_code).to_s) unless type.include?(?+)
+    assert_equal(type, ::CHECKING::YOU::OUT::from_ietf_media_type(type, area_code:).to_s) unless type.include?(?+)
     #assert_include(::CHECKING::YOU::OUT::from_ietf_media_type(type).aka.map(&:to_s), type) unless type.include?(?+)
   }
 }

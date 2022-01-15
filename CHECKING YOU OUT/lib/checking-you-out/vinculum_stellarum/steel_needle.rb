@@ -38,7 +38,7 @@ module ::CHECKING::YOU::OUT::VinculumStellarum
         ::ExtAttr.list(pathname.to_s, namespace).keep_if(&SUPPORTED_XATTR_NAMES.method(:include?)).map! { |attr_name|
           ::ExtAttr::get(pathname.to_s, ::ExtAttr::USER, attr_name)
         }
-      }.map! { ::CHECKING::YOU::IN::from_ietf_media_type(_1, receiver: receiver) }
+      }.map! { ::CHECKING::YOU::IN::from_ietf_media_type(_1, receiver:) }
     rescue ::SystemCallError => sce
       # e.g. `#<Errno::ENOTSUP: Operation not supported - listxattr call error>`
       nil

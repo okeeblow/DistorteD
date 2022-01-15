@@ -73,7 +73,7 @@ class ::CHECKING::YOU; end
 
   # Promote any CYI to its CYO singleton. CYO has the opposites of these methods.
   def out(area_code: self.class::DEFAULT_AREA_CODE)
-    ::CHECKING::YOU::OUT[self, area_code: area_code]
+    ::CHECKING::YOU::OUT[self, area_code:]
   end
   def in; self; end
 

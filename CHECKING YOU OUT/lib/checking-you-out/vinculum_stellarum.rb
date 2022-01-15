@@ -42,8 +42,8 @@ module ::CHECKING::YOU::OUT::VinculumStellarum
       when ::Addressable::URI then otra
       else nil
       end,
-      area_code: area_code,
-      receiver: receiver
+      area_code:,
+      receiver:,
     )
   end
 

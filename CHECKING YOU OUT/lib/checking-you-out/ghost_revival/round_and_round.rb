@@ -69,7 +69,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND
     area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE,
     receiver: ::Ractor::current
   )
-    self.[](query, area_code: area_code, receiver: receiver, coerce: ::CHECKING::YOU::OUT::StellaSinistra)
+    self.[](query, area_code:, receiver:, coerce: ::CHECKING::YOU::OUT::DeusDextera)
   end
 
   def from_pathname(
@@ -77,6 +77,6 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND
     area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE,
     receiver: ::Ractor::current
   )
-    self.[](query, area_code: area_code, receiver: receiver, coerce: ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O)
+    self.[](query, area_code:, receiver:, coerce: ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O)
   end
 end  # ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND = ::Ractor.make_shareable(
