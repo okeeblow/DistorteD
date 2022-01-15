@@ -343,7 +343,12 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         when ::String then
           # A `String` needle might represent a Media-Type name (e.g. `"image/jpeg"`), a `::Pathname`, or a `::URI`.
           uri_match = ::Addressable::URI::parse(needle)
-          if uri_match.nil? then
+          # NOTE: Even a plain `::String` will successfully `::parse` as a `URI`, so we must check the `#scheme`. For example:
+          #       irb> ::Addressable::URI::parse('*.csv') => #<Addressable::URI:0x1a090 URI:*.csv>
+          #       irb> ::Addressable::URI::parse('.csv') => #<Addressable::URI:0x1b210 URI:.csv>
+          #       irb> ::Addressable::URI::parse('csv') => #<Addressable::URI:0x1c390 URI:csv>
+          # NOTE: Make sure this logic matches what's in the generic `CHECKING::YOU::OUT()` entry-point method!
+          if uri_match.nil? or uri_match.scheme.nil? then
             # The `String` needle is not a URI.
             all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)
           else remember_you.call(uri_match)
