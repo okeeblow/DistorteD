@@ -23,30 +23,30 @@ class TestDeusDextera < Test::Unit::TestCase
   # but takes several possible types of input via its `#initialize`/`#replace` methods.
   def test_input_handling
     # Plain-extname `::String` input (e.g. just 'jpg', not '.jpg')
-    assert_equal("jpg", self.make_insensitive('.jpg').to_s)
-    assert_equal("JPG", self.make_sensitive('.JPG').to_s)
+    assert_equal("*.jpg", self.make_insensitive('.jpg').to_s)
+    assert_equal("*.JPG", self.make_sensitive('.JPG').to_s)
 
     # Plain-extname `::Symbol` input.
-    assert_equal("jpg", self.make_insensitive(:jpg).to_s)
-    assert_equal("JPG", self.make_sensitive(:JPG).to_s)
+    assert_equal("*.jpg", self.make_insensitive(:jpg).to_s)
+    assert_equal("*.JPG", self.make_sensitive(:JPG).to_s)
 
     # Basename `::String` input.
-    assert_equal("jpg", self.make_insensitive(::File::extname('hello.jpg')).to_s)
-    assert_equal("JPG", self.make_sensitive(::File::extname('hello.JPG')).to_s)
+    assert_equal("*.jpg", self.make_insensitive(::File::extname('hello.jpg')).to_s)
+    assert_equal("*.JPG", self.make_sensitive(::File::extname('hello.JPG')).to_s)
 
     # Full-path `::String` input.
-    assert_equal("jpg", self.make_insensitive('/home/okeeblow/hello.jpg').to_s)
-    assert_equal("JPG", self.make_sensitive('/home/okeeblow/hello.JPG').to_s)
-    #assert_equal("jpg", self.make_insensitive('C:\Documents and Settings\Mark Ultra\MYDOCU~1\hello.jpg').to_s)
+    assert_equal("*.jpg", self.make_insensitive('/home/okeeblow/hello.jpg').to_s)
+    assert_equal("*.JPG", self.make_sensitive('/home/okeeblow/hello.JPG').to_s)
+    #assert_equal("*.jpg", self.make_insensitive('C:\Documents and Settings\Mark Ultra\MYDOCU~1\hello.jpg').to_s)
 
     # Full-`::Pathname` input.
-    assert_equal("jpg", self.make_insensitive(::Pathname.new('/home/okeeblow/hello.jpg')).to_s)
-    assert_equal("JPG", self.make_sensitive(::Pathname.new('/home/okeeblow/hello.JPG')).to_s)
-    assert_equal("jpg", self.make_insensitive(::Pathname.new('C:\Documents and Settings\Mark Ultra\MYDOCU~1\hello.JPG')))
+    assert_equal("*.jpg", self.make_insensitive(::Pathname.new('/home/okeeblow/hello.jpg')).to_s)
+    assert_equal("*.JPG", self.make_sensitive(::Pathname.new('/home/okeeblow/hello.JPG')).to_s)
+    assert_equal("*.jpg", self.make_insensitive(::Pathname.new('C:\Documents and Settings\Mark Ultra\MYDOCU~1\hello.JPG')))
 
     # `DeusDextera` ouroboros.
-    assert_equal("jpg", self.make_insensitive(self.make_insensitive('hello.jpg')).to_s)
-    assert_equal("JPG", self.make_sensitive(self.make_sensitive('hello.JPG')).to_s)
+    assert_equal("*.jpg", self.make_insensitive(self.make_insensitive('hello.jpg')).to_s)
+    assert_equal("*.JPG", self.make_sensitive(self.make_sensitive('hello.JPG')).to_s)
   end
 
   # `DeusDextera` vs. `DeusDextera`
@@ -59,13 +59,13 @@ class TestDeusDextera < Test::Unit::TestCase
 
   # `DeusDextera` vs. `String`
   def test_deus_dextera_string_equal
-    assert_equal(@deus_dextera_insensitive_down, 'doc')
-    assert_equal(@deus_dextera_insensitive_down, 'DOC')
-    assert_equal(@deus_dextera_sensitive_down, 'doc')
-    assert_not_equal(@deus_dextera_sensitive_down, 'DOC')
-    assert_not_equal(@deus_dextera_sensitive_up, 'doc')
-    assert_not_equal(@deus_dextera_sensitive_down, 'DoC')
-    assert_not_equal(@deus_dextera_sensitive_up, 'DoC')
+    assert_equal(@deus_dextera_insensitive_down, '*.doc')
+    assert_equal(@deus_dextera_insensitive_down, '*.DOC')
+    assert_equal(@deus_dextera_sensitive_down, '*.doc')
+    assert_not_equal(@deus_dextera_sensitive_down, '*.DOC')
+    assert_not_equal(@deus_dextera_sensitive_up, '*.doc')
+    assert_not_equal(@deus_dextera_sensitive_down, '*.DoC')
+    assert_not_equal(@deus_dextera_sensitive_up, '*.DoC')
   end
 
   # `DeusDextera` is a `String` subclass and so can't escape MRI's C implementation
@@ -84,7 +84,7 @@ class TestDeusDextera < Test::Unit::TestCase
     assert_not_equal(hash[@deus_dextera_sensitive_up], :hey)
 
     # `DeusDextera` vs `String`
-    assert_equal(hash['doc'], :hey)
+    assert_equal(hash['*.doc'], :hey)
 
     hash.clear
 
@@ -94,7 +94,7 @@ class TestDeusDextera < Test::Unit::TestCase
   end
 
   def test_from_string
-    assert_equal("zip", ::CHECKING::YOU::OUT::DeusDextera::from_string("*.zip"))
+    assert_equal("*.zip", ::CHECKING::YOU::OUT::DeusDextera::from_string("*.zip"))
     assert_raise(::ArgumentError) do
       ::CHECKING::YOU::OUT::DeusDextera::from_string("Not a valid glob lmao")
     end

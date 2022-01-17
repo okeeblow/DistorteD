@@ -30,7 +30,7 @@ require_relative(-'../weighted_action') unless defined?(::CHECKING::YOU::OUT::We
   def to_regexp(flags = 0) = ::XROSS::THE::POSIX::Glob::to_regexp(self, flags)
 
   # We're already a Glob.
-  def to_glob = self.to_s
+  alias_method(:to_glob, :to_s)
 
   # Mark intent to be case-sensitive. Our source data's `<glob>` Attributes are parsed one at a time,
   # so we won't know at the time of instantiation if we want to be case sensitive.

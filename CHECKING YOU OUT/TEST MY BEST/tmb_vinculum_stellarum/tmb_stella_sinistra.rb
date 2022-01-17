@@ -8,7 +8,9 @@ require_relative('../../lib/checking-you-out') unless defined?(::CHECKING::YOU::
 class TestStellaSinistra < Test::Unit::TestCase
 
   def setup
-    @seven_zed = ::CHECKING::YOU::OUT::StellaSinistra["001", "7z"]
+    # NOTE: Multi-extname Globs will be decomposed to Glob-style individual extnames
+    #       complete with '*.' prefix.
+    @seven_zed = ::CHECKING::YOU::OUT::StellaSinistra["*.001", "*.7z"]
   end
 
   def test_from_string

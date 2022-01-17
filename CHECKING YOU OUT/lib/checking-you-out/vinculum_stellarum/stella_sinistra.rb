@@ -28,8 +28,10 @@ require_relative(-'deus_dextera') unless defined?(::CHECKING::YOU::OUT::DeusDext
   # e.g. `StellaSinistra[bz2, tar]` => `*.tar.bz2`.
   def to_glob
     self.reverse_each.with_object(::String::new(?*)) {
-      _2.insert(-1, ?.)
-      _2.insert(-1, _1)
+      # NOTE: This expects all of our members to conform to a `*.extname` style
+      #       so `::File::extname` returns just the `.whatever`.
+      #       `DeusDextera::new` and `#replace` take care of this.
+      _2.insert(-1, ::File::extname(_1))
     }
   end
 

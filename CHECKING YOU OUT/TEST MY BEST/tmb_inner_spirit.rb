@@ -67,7 +67,7 @@ class TestInnerSpirit < Test::Unit::TestCase
     assert_instance_of(sinistar1.class, cyo.sinistar)
     assert_equal(sinistar1, cyo.sinistar)
     assert_nil(cyo.astraia)
-    assert_equal(sinistar1, cyo.extname[1..])
+    assert_equal(sinistar1[1..], cyo.extname)
 
     # When we add a second Postfix the `#extname` will not change but the `:@sinistar` IVar
     # will be UpgrayeDD to a `::Set` holding both given Poxtfixes.
@@ -77,7 +77,7 @@ class TestInnerSpirit < Test::Unit::TestCase
     assert_instance_of(::Set, cyo.sinistar)
     assert_include(cyo.sinistar, sinistar1)
     assert_include(cyo.sinistar, sinistar2)
-    assert_equal(sinistar1, cyo.extname[1..])
+    assert_equal(sinistar1[1..], cyo.extname)
 
     # When we add a Glob fragment it will not affect the `#extname` or `:@sinistar` at all.
     cyo.add_pathname_fragment(astraia1)

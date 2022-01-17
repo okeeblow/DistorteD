@@ -73,19 +73,24 @@ require_relative(-'astraia_no_soubei') unless defined?(::CHECKING::YOU::OUT::AST
     # `File::extname` will be an empty String for input Strings which contain no dotted components
     #  or only have a leading dot, e.g. `File::extname(".bash_profile") => `""`.
     newbuild = case otra
-      when self.class then -otra.to_s
-      when ::Symbol   then otra.name  # Assume `::Symbol` is an extname.
-      when ::Pathname then otra.extname.empty? ? otra.basename.to_s.-@ : otra.extname.delete_prefix!(-?.).-@
+      when self.class then otra.to_s
+      when ::Symbol   then otra.to_s  # Assume `::Symbol` is an extname. `::Symbol#name` is frozen — `#to_s` is not.
+      when ::Pathname then otra.extname.empty? ? otra.basename.to_s : otra.extname
       when ::String   then
         if ::File::extname(otra).empty? then
-          otra.start_with?(-?.) ? -otra.delete_prefix!(-?.).-@ : ::File::basename(otra).-@
+          otra.start_with?(-?.) ? otra : ::File::basename(otra)
         else
           # This will also catch Glob-style `::String`s like `*.zip` since the `*` counts as the `#basename`:
           #   irb> ::File::extname("*.zip") => ".zip"
-          ::File::extname(otra).delete_prefix!(-?.).-@
+          ::File::extname(otra)
         end
-      else -otra.to_s
-    end
+      else otra.to_s
+    end.yield_self {
+      # Make ourself into a Glob-style `::String` if we aren't already,
+      # for easy comparison later using `::File::fnmatch`.
+      _1.start_with?(-'*.') ? _1 :
+        _1.insert(0, (_1.ord.eql?(46) ? -?* : -'*.'))
+    }.-@
 
     # The `super` call in this condition statement will explicitly set the `self` value to the downcased version of our key,
     # but we will then compare `super`'s return value to its input to decide if we should store a case-sensitive value too.
@@ -115,9 +120,10 @@ require_relative(-'astraia_no_soubei') unless defined?(::CHECKING::YOU::OUT::AST
   # Always return a new instance so we don't get caught out with a `#clear` by reference.
   def sinistar  = self.dup
 
-  # Our instance value was derived from a Glob `::String` but needs to be prepended with a wildcard.
-  # The Docs say otherwise, but `::String#prepend` seems to modify `self` and won't work frozen.
-  def to_glob = ::String::new('*.').insert(-1, self.itself)
+  # Our instance value was derived from a Glob `::String`,
+  # and we should provide an alias to signal our support for the reverse.
+  # This overrides an inherited alias to `#to_s` to handle case-sensitive extnames.
+  alias_method(:to_glob, :itself)
 
   # Explicit…
   alias_method(:to_s, :itself)

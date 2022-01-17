@@ -28,7 +28,7 @@ class TestASTRAIAの双皿 < Test::Unit::TestCase
 
   def test_sinistar
     assert_equal(@glob1.sinistar.to_s, @glob1)
-    assert_equal(@glob2.sinistar.itself, "zip")
+    assert_equal(@glob2.sinistar.itself, "*.zip")
     assert_kind_of(::Array, @glob3.sinistar.itself)
   end
 
