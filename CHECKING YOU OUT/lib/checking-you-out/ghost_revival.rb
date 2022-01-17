@@ -261,7 +261,8 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           #   <"#<Set: {#<CHECKING::YOU::OUT application/x-java>, #<CHECKING::YOU::OUT application/java-vm>}>">
           _1.is_a?(::Set) ? _1.first : _1
         }
-        when ::CHECKING::YOU::OUT::StellaSinistra then (astraia[needle] || sinistar[needle]).yield_self(&together_4ever)
+        when ::CHECKING::YOU::OUT::StellaSinistra, ::CHECKING::YOU::OUT::ASTRAIAの双皿 then
+          (astraia[needle] || sinistar[needle]).yield_self(&together_4ever)
         when ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O then
           # "If a MIME type is provided explicitly (eg, by a ContentType HTTP header, a MIME email attachment,
           #  an extended attribute or some other means) then that should be used instead of guessing."
