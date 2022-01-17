@@ -44,7 +44,7 @@ module Cooltrainer::DistorteD::Invoker
   # Each of these Molecules will be plugged to the current instance.
   def type_mars
     # TODO: Get rid of the redundant `Set[…].flatten` here once I stabilize CYO API.
-    @type_mars ||= Set[::CHECKING::YOU::OUT(path, so_deep: true)].flatten & lower_world.keys.to_set
+    @type_mars ||= Set[::CHECKING::YOU::OUT(path)].flatten & lower_world.keys.to_set
     raise MediaTypeNotImplementedError.new(@name) if @type_mars.empty?
     @type_mars
   end

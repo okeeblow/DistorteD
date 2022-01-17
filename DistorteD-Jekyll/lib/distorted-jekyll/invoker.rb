@@ -82,7 +82,8 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
   # optionally falling through to a plain file copy.
   def type_mars
     # TODO: Get rid of the redundant `Set[…].flatten` here once I stabilize CYO API.
-    @type_mars ||= (Set[::CHECKING::YOU::OUT(path, so_deep: true)].flatten & lower_world.keys.to_set).tap { |gemini|
+    @type_mars ||= (Set[::CHECKING::YOU::OUT(path)].flatten & lower_world.keys.to_set).tap { |gemini|
+      raise ArgumentError(gemini)
       if gemini.empty? && the_setting_sun(:never_let_you_down)
         gemini << ::CHECKING::YOU::OUT::from_ietf_media_type('application/x.distorted.never-let-you-down')
       end
