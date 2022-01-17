@@ -540,8 +540,8 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     when :glob then
       ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:astraia).map!(&@astraia.method(:eql?)).any? or
-        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].map(&@astraia.method(:eql?)).any?
-        @needles[::CHECKING::YOU::OUT::StellaSinistra].map(&@astraia.method(:eql?)).any?
+        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].map(&@astraia.method(:eql?)).any? or
+        @needles[::CHECKING::YOU::OUT::StellaSinistra].map(&@astraia.method(:eql?)).any? or
         @needles[::CHECKING::YOU::OUT::DeusDextera].map(&@astraia.method(:eql?)).any?
       )
     when :"root-XML" then
