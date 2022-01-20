@@ -10,6 +10,14 @@ if it's not implemented 𝅘𝅥𝅮
   - There's no way I'll be able to `Ractor`-ize everything any time soon due to lack of support in both `Fiddle` and the more-popular `FFI` gem.
   - [`gobject-introspection`](https://github.com/ruby-gnome/ruby-gnome/commits/master/gobject-introspection) has had some `Ractor`-ization work but I don't think it's usable yet. I might end up writing my own minimal VIPS binding once it is.
 - Versioning scheme. I might end up switching to monotonic incrementing versions instead of trying to decide what warrants a new major/minor SemVer.
+- Better tracing.
+  - I'm currently using `profiler`/`memory_profiler`, but it's broken with `Ractor`.
+	- There are built-in [DTrace](https://docs.ruby-lang.org/en/master/doc/dtrace_probes_rdoc.html) probes for a lot of what I need.
+		- Example: [Using DTrace to measure mutex contention in Ruby](https://vaneyckt.io/posts/using_dtrace_to_measure_mutex_contention_in_ruby/).
+		- Requires building MRI with `--enable-dtrace`. I already use `rbenv` so this is fine.
+	- Also [TracePoint](https://docs.ruby-lang.org/en/master/TracePoint.html).
+    - Example: [Exploring TracePoint in Ruby](https://medium.com/@baweaver/exploring-tracepoint-in-ruby-part-one-example-code-2cf9b1a1b956).
+    - Lots of good info in [#16027](https://bugs.ruby-lang.org/issues/16027).
 
 
 ## CHECKING YOU OUT
