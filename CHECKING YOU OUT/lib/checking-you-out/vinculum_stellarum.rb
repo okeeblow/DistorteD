@@ -5,6 +5,7 @@ require(-'addressable') unless defined?(::Addressable)
 
 require_relative(-'vinculum_stellarum/irregular_nation') unless defined?(::CHECKING::YOU::OUT::VinculumStellarum::IRREGULAR_NATION)
 require_relative(-'vinculum_stellarum/steel_needle') unless defined?(::CHECKING::YOU::OUT::VinculumStellarum::STEEL_NEEDLE)
+require_relative(-'vinculum_stellarum/astraia_no_soubei') unless defined?(::CHECKING::YOU::OUT::ASTRAIAの双皿)
 require_relative(-'vinculum_stellarum/stella_sinistra') unless defined?(::CHECKING::YOU::OUT::StellaSinistra)
 require_relative(-'vinculum_stellarum/deus_dextera') unless defined?(::CHECKING::YOU::OUT::DeusDextera)
 

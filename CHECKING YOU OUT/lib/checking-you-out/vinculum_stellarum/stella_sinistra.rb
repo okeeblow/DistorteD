@@ -1,3 +1,5 @@
+require('xross-the-xoul/posix/glob') unless defined?(::XROSS::THE::POSIX::Glob)
+
 require_relative(-'deus_dextera') unless defined?(::CHECKING::YOU::OUT::DeusDextera)
 
 # Custom `::Array` subclass to represent multiple file extensions simultaneously,
@@ -39,6 +41,8 @@ require_relative(-'deus_dextera') unless defined?(::CHECKING::YOU::OUT::DeusDext
   alias_method(:to_s, :to_glob)
   # …and implicit `::String` conversion.
   alias_method(:to_str, :to_glob)
+
+  def to_regexp = ::XROSS::THE::POSIX::Glob::to_regexp(self.to_glob)
 
   # We represent a right-hand-side multi-`extname`.
   def sinistar? = true

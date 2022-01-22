@@ -133,6 +133,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
       mother_tree   = set_me_free.new          # `<treemagic>` => CYO container.
       re_roots      = set_me_free.new          # `<root-XML>` => CYO container.
+      regulus       = nil                      # `::Regexp::union` of `CYO#astraia`s — boolean gate for expensive glob comparison.
 
       # Cache recent results to avoid re-running matching logic.
       # Use a `Hash` to store the last return value for a configurable number of previous query messages.
@@ -176,13 +177,18 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           all_night.baleet(cyo.aka, cyo) unless all_night.include?(cyo.aka)  # TODO: Handle conflicting aliasing.
           sinistar.baleet(cyo.sinistar, cyo)
           astraia.baleet(cyo.astraia, cyo)
+          mother_tree.baleet(cyo.mother_tree, cyo)
+          re_roots.baleet(cyo.re_roots, cyo)
+
+          # There isn't a "subtraction" method like the opposite of `::Regexp::union`,
+          # so when we want to remove one we have to recompute the whole thing.
+          regulus = astraia.keys.empty? ? nil : ::Regexp::union(astraia.keys)
+
           case cyo.cat_sequence
           when ::NilClass then next
           when ::Set then cyo.cat_sequence&.each { |action| as_above.baleet(action.min, action.max, action, cyo) }
           else as_above.baleet(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
           end
-          mother_tree.baleet(cyo.mother_tree, cyo)
-          re_roots.baleet(cyo.re_roots, cyo)
         }
       }  # kick_out_仮面
 
@@ -204,6 +210,8 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         # to allow work and record-keeping with pure extnames.
         sinistar.bury(cyo.sinistar, cyo)
         astraia.bury(cyo.astraia, cyo)
+        # Use our Glob `#to_regexp` functionality to build a quick bypass of a possibly-expensive `#fnmatch` loop.
+        regulus = regulus.nil? ? ::Regexp::union(cyo.astraia) : ::Regexp::union(regulus, *(cyo.astraia)) unless cyo.astraia.nil?
 
         # Memoize content-match byte sequences in nested `Hash`es based on the starting and ending
         # byte offset where each byte sequence may be found in a hypothetical file/stream.
@@ -285,7 +293,12 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
               nφ_crime.include?(needle.hash) ? re_roots[xml_root] : nil.tap { mime_jr.send(xml_root, move: true) }  
             else
               ::CHECKING::YOU::OUT::GHOST_REVIVAL::MAGIC_CHILDREN.call(
-                (astraia[needle.astraia] || sinistar[needle.sinistar]).yield_self(&together_4ever),
+                (
+                  regulus&.match?(needle.pathname.to_s) ? needle.pathname.to_s.yield_self { |path|
+                    # Avoid allocating with `::Pathname#to_s` every loop.
+                    astraia.detect { |glob, cyo| glob.eql?(path) }[1]
+                  } : sinistar[needle.sinistar]
+                ).yield_self(&together_4ever),
                 as_above.so_below(needle.stream)&.transform_values!(&together_4ever),
               )
             end  # casiotone_nation = case
