@@ -108,13 +108,13 @@ module Cooltrainer::DistorteD::Technology::Vips::Load
     # TODO: Support loading image CSV
     # TODO: Make this more robust/automatic.
     Array[
-      type.phylum != -'application',  # e.g. application/pdf
-      type.phylum != -'text',  # e.g. text/csv
+      type.phylum != :application,  # e.g. application/pdf
+      type.phylum != :text,  # e.g. text/csv
     ].all? && Array[
-      type.genus.include?(-'zip'),
+      type.genus.to_s.include?(-'zip'),
       # Skip declaring SVG here since I want to handle it in a Vector-only Molecule
       # and will re-declare this there. Prolly need to think up a better way to do this.
-      type.genus.include?(-'svg'),
+      type.genus.to_s.include?(-'svg'),
     ].none?
   }.transform_values { |v| v.map(&:options).reduce(&:merge) }
 
