@@ -11,10 +11,12 @@ class TestStellaSinistra < Test::Unit::TestCase
     # NOTE: Multi-extname Globs will be decomposed to Glob-style individual extnames
     #       complete with '*.' prefix.
     @seven_zed = ::CHECKING::YOU::OUT::StellaSinistra["*.001", "*.7z"]
+    @gee_zed = ::CHECKING::YOU::OUT::StellaSinistra["*.gz", "*.tar"]
   end
 
   def test_from_string
     assert_equal(@seven_zed, ::CHECKING::YOU::OUT::StellaSinistra::from_string("*.7z.001"))
+    assert_equal(@gee_zed, ::CHECKING::YOU::OUT::StellaSinistra::from_string("*.tar.gz"))
     assert_raise(::ArgumentError) do
       ::CHECKING::YOU::OUT::StellaSinistra::from_string("Not a valid glob lmao")
     end
@@ -22,6 +24,12 @@ class TestStellaSinistra < Test::Unit::TestCase
 
   def test_to_glob
     assert_equal("*.7z.001", @seven_zed.to_glob)
+    assert_equal("*.tar.gz", @gee_zed.to_glob)
+  end
+
+  def test_to_regexp
+    assert_match(@seven_zed.to_regexp, "lol.7z.001")
+    assert_match(@gee_zed.to_regexp, "lol.tar.gz")
   end
 
   def test_sinistar

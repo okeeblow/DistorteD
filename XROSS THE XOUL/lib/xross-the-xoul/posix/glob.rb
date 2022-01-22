@@ -190,9 +190,14 @@ class ::XROSS::THE::POSIX::Glob
         #   irb> ::File::fnmatch("lol\0lmao", "hello.jpg")
         #   (irb):in `fnmatch': string contains null byte (ArgumentError)
         # https://www.ruby-lang.org/en/news/2019/10/01/nul-injection-file-fnmatch-cve-2019-15845/
-        raise(::ArgumentError, 'string contains null byte') if (
-          subpatterns.last.last.eql?(?\\.ord) and not subpatterns.last.first.eql?(?\\.ord)
-        )
+        #
+        # NOTE: Null (0) != ("0".ord == 48), but we're decomposing a `::String` here so this is expected.
+        #       An actual actionable null will have been escaped first.
+        if subpatterns.last.last.eql?(?\\.ord) then
+          raise(::ArgumentError, 'string contains null byte')
+        else
+          subpatterns.last.push(codepoint)
+        end
       else
         # Remove spurious Glob-inherited escape sequences unless we're in a character class
         # or have the `::File::FNM_NOESCAPE` flag set.
