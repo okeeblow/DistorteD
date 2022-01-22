@@ -5,3 +5,4 @@ git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 gemspec
 
 gem 'checking-you-out', :path => File.join(__dir__, '..', 'CHECKING YOU OUT')
+gem 'xross-the-xoul', :path => File.join(__dir__, '..', 'XROSS THE XOUL')

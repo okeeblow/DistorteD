@@ -1,29 +1,31 @@
-# Tie this Gem's version number directly to that of the core Gem
-# since they share this repository.
-require_relative '../DistorteD-Floor/lib/distorted/version'
+require_relative('../i_was_the_one')
 
 
 # Do the thing.
-Gem::Specification.new do |spec|
+::Gem::Specification.new do |spec|
+  # Shared default version/author/contact/minimum_ver/etc values.
+  ::COOLTRAINER::DistorteD::I_WAS_THE_ONE.each_pair {
+    spec.send(_1, _2)
+  }
+
   spec.name          = 'checking-you-out'
-  spec.version       = Cooltrainer::DistorteD::VERSION
-  spec.authors       = ['okeeblow']
-  spec.email         = ['root@cooltrainer.org']
 
   spec.summary       = 'DistorteD file/stream/media identification toolz.'
   spec.description   = 'File type identification library.'
-  spec.homepage      = 'https://cooltrainer.org'
-  spec.license       = 'AGPL-3.0'
 
-  spec.files         = Dir.glob('{bin,lib,mime}/**/*').keep_if { |file| File.file?(file) } + %w(LICENSE README.md)
-  spec.test_files    = Dir['TEST MY BEST/**/*']
+  spec.files         = ::Dir.glob('{bin,lib,mime}/**/*').keep_if { |file| ::File.file?(file) } + %w(LICENSE README.md)
   spec.require_paths = ['lib']
 
-  spec.required_ruby_version = '>= 3.1.0'
+  # RubyGems seems to have deprecated this — hide it for now to avoid subjecting our actual
+  # test files (and fixtures) to the 100-character file name length limit in `gem build`.
+  # https://github.com/rubygems/rubygems/issues/735
+  # https://github.com/rubygems/rubygems/issues/730#issuecomment-30020000
+  # https://github.com/rubygems/rubygems/commit/429f883210f8b2b38ea310f7fc6636cd0e456d5c
+  #spec.test_files    = ::Dir['TEST MY BEST/**/*']
 
   spec.executables   = ['checking-you-out']
 
-  spec.add_dependency 'xross-the-xoul', "~> #{Cooltrainer::DistorteD::VERSION}"
+  spec.add_runtime_dependency('xross-the-xoul', "~> #{COOLTRAINER::DistorteD::VERSION}")
 
   # Ox  —  fastest XML parser for loading `shared-mime-info` packages! https://github.com/ohler55/ox
   # See `docs/XML.md` for my comparisons.
@@ -33,31 +35,29 @@ Gem::Specification.new do |spec|
   # - JRuby
   # - Rubinius (RBX)
   # - TruffleRuby as of November 2020: https://github.com/oracle/truffleruby/issues/1591#issuecomment-729663946
-  spec.add_dependency 'ox', '~> 2.0'
+  spec.add_runtime_dependency('ox', '~> 2.0')
 
   # Needed to interact with filesystem extended attributes like `user.mime_type` since the stdlib lacks that capability.
   # https://github.com/dearblue/ruby-extattr
   # https://rubygems.org/gems/extattr
-  spec.add_dependency 'extattr', '~> 0.4'
+  spec.add_runtime_dependency('extattr', '~> 0.4')
 
   # Needed to parse URI `String`s into `x-scheme-handler/#{scheme}` CYOs because Ruby's stdlib `URI` module
   # supports RFC 2396 and RFC 3986 but not RFC 3987 (IRIs) and RFC 6570 (URI Templates).
-  spec.add_dependency 'addressable'
+  spec.add_runtime_dependency('addressable', '~> 2.8')
 
-  spec.add_development_dependency 'bundler', '~> 2.0'
-  spec.add_development_dependency 'rake', '~> 10.0'
-  spec.add_development_dependency 'minitest', '~> 5.0'
-  spec.add_development_dependency 'test-unit'
+  # Test runner.
+  spec.add_development_dependency('test-unit', '~> 3.5')
 
   # Sibling libraries to benchmark against :)
-  spec.add_development_dependency 'mime-types', '~> 3.3'  # https://github.com/mime-types/ruby-mime-types
-  spec.add_development_dependency 'mini_mime', '~> 1.1'  # https://github.com/discourse/mini_mime
+  spec.add_development_dependency('mime-types', '~> 3.3')  # https://github.com/mime-types/ruby-mime-types
+  spec.add_development_dependency('mini_mime', '~> 1.1')   # https://github.com/discourse/mini_mime
 
   # Profiling t00lz
-  spec.add_development_dependency 'fasterer', '~> 0.9'  # https://github.com/DamirSvrtan/fasterer
-  spec.add_development_dependency 'profile', '~> 0.4'  # https://github.com/ruby/profile
-  spec.add_development_dependency 'memory_profiler', '~> 1.0'  # https://github.com/SamSaffron/memory_profiler
-  spec.add_development_dependency 'benchmark-ips', '~> 2.0'  # https://github.com/evanphx/benchmark-ips
-  spec.add_development_dependency 'terminal-table', '~> 3.0'  # https://github.com/tj/terminal-table
+  spec.add_development_dependency('fasterer', '~> 0.9')  # https://github.com/DamirSvrtan/fasterer
+  spec.add_development_dependency('profile', '~> 0.4')  # https://github.com/ruby/profile
+  spec.add_development_dependency('memory_profiler', '~> 1.0')  # https://github.com/SamSaffron/memory_profiler
+  spec.add_development_dependency('benchmark-ips', '~> 2.0')  # https://github.com/evanphx/benchmark-ips
+  spec.add_development_dependency('terminal-table', '~> 3.0')  # https://github.com/tj/terminal-table
 
 end

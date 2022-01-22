@@ -1,13 +1,13 @@
 # Requiring libvips 8.8 for HEIC/HEIF (moo) support, `justify` support in the
 # Vips::Image text operator, animated WebP support, and more:
 # https://libvips.github.io/libvips/2019/04/22/What's-new-in-8.8.html
-require 'distorted/triple_counter'
-VIPS_MINIMUM_VER = TripleCounter.new(8, 8, 0)
+require('xross-the-xoul/version') unless defined?(::XROSS::THE::Version::TripleCounter)
+VIPS_MINIMUM_VER = ::XROSS::THE::Version::TripleCounter.new(8, 8, 0)
 
 # Tell the user to install the shared library if it's missing or too old.
 begin
   require 'vips'
-  VIPS_AVAILABLE_VER = TripleCounter.new(Vips::version(0), Vips::version(1), Vips::version(2))
+  VIPS_AVAILABLE_VER = ::XROSS::THE::Version::TripleCounter.new(Vips::version(0), Vips::version(1), Vips::version(2))
 
   unless VIPS_AVAILABLE_VER >= VIPS_MINIMUM_VER
     raise LoadError.new(

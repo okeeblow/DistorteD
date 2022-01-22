@@ -3,12 +3,12 @@ require 'set'
 require 'distorted/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
 
-require 'distorted/triple_counter'
-GST_MINIMUM_VER = TripleCounter.new(1, 18, 0)
+require('xross-the-xoul/version') unless defined?(::XROSS::THE::Version::TripleCounter)
+GST_MINIMUM_VER = ::XROSS::THE::Version::TripleCounter.new(1, 18, 0)
 
 begin
   require 'gst'
-  GST_AVAILABLE_VER = TripleCounter.new(*(Gst.version))
+  GST_AVAILABLE_VER = ::XROSS::THE::Version::TripleCounter.new(*(Gst.version))
   unless GST_AVAILABLE_VER >= GST_MINIMUM_VER
     raise LoadError.new(
       "DistorteD needs GStreamer #{GST_MINIMUM_VER}, but the available version is '#{Gst.version_string}'"
