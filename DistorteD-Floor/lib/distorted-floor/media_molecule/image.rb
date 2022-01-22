@@ -1,8 +1,8 @@
 
 require 'set'
 
-require 'distorted/checking_you_out'
-require 'distorted/modular_technology/vips'
+require 'distorted-floor/checking_you_out'
+require 'distorted-floor/modular_technology/vips'
 
 
 module Cooltrainer; end

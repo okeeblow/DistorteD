@@ -1,10 +1,10 @@
 require 'set'
-require 'distorted/monkey_business/set'
+require 'distorted-floor/monkey_business/set'
 
-require 'distorted/checking_you_out'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
 
-require 'distorted/modular_technology/gstreamer'
+require 'distorted-floor/modular_technology/gstreamer'
 
 
 module Cooltrainer; end

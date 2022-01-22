@@ -7,7 +7,7 @@
 Add this line to your site's Gemfile:
 
 ```ruby
-gem 'distorted'
+gem 'distorted-floor'
 ```
 
 And then execute:
@@ -16,7 +16,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install distorted
+    $ gem install distorted-floor
 
 
 ## Development

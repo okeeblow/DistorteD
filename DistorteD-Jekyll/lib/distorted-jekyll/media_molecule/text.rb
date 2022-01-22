@@ -1,8 +1,8 @@
 require 'set'
 
-require 'distorted/checking_you_out'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
-require 'distorted/media_molecule/text'
+require 'distorted-floor/media_molecule/text'
 require 'distorted-jekyll/liquid_liquid/picture'
 
 

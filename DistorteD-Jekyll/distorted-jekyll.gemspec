@@ -17,6 +17,6 @@ require_relative('../i_was_the_one')
 
   spec.add_runtime_dependency('liquid', '~> 4.0')
   spec.add_runtime_dependency('liquid-tag-parser', '~> 2.0')
-  spec.add_runtime_dependency('distorted', "~> #{::COOLTRAINER::DistorteD::VERSION}")
+  spec.add_runtime_dependency('distorted-floor', "~> #{::COOLTRAINER::DistorteD::VERSION}")
   spec.add_runtime_dependency('kramdown', '~> 2.0')
 end

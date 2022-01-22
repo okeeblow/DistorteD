@@ -1,14 +1,14 @@
 
 # Our custom Exceptions
-require 'distorted/error_code'
+require 'distorted-floor/error_code'
 
 # File Typer
-require 'distorted/checking_you_out'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
-require 'distorted/media_molecule'
+require 'distorted-floor/media_molecule'
 
 # Set.to_hash
-require 'distorted/monkey_business/set'
+require 'distorted-floor/monkey_business/set'
 require 'set'
 
 Cooltrainer::DistorteD::GEM_ROOT = File.expand_path(File.join(__dir__, '..'.freeze, '..'.freeze))

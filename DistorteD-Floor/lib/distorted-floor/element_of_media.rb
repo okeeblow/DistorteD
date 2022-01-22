@@ -1,2 +1,2 @@
-require 'distorted/element_of_media/change'
-require 'distorted/element_of_media/compound'
+require 'distorted-floor/element_of_media/change'
+require 'distorted-floor/element_of_media/compound'

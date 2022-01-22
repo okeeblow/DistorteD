@@ -2,13 +2,13 @@ require 'set'
 
 require 'ffi-icu'  # Text file charset detection
 
-require 'distorted/monkey_business/encoding'
-require 'distorted/monkey_business/string'  # String#map
-require 'distorted/modular_technology/pango'
-require 'distorted/modular_technology/ttfunk'
-require 'distorted/modular_technology/vips/save'
+require 'distorted-floor/monkey_business/encoding'
+require 'distorted-floor/monkey_business/string'  # String#map
+require 'distorted-floor/modular_technology/pango'
+require 'distorted-floor/modular_technology/ttfunk'
+require 'distorted-floor/modular_technology/vips/save'
 
-require 'distorted/checking_you_out'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
 
 

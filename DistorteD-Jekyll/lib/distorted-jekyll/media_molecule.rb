@@ -1,5 +1,5 @@
 require 'set'
-require 'distorted/media_molecule'
+require 'distorted-floor/media_molecule'
 
 module Jekyll::DistorteD
   # Load Jekyll Molecules which will implicitly also load

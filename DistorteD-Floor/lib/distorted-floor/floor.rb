@@ -1,10 +1,10 @@
 
 require 'set'
-require 'distorted/monkey_business/set'
+require 'distorted-floor/monkey_business/set'
 
-require 'distorted/invoker'
-require 'distorted/click_again'
-require 'distorted/checking_you_out'
+require 'distorted-floor/invoker'
+require 'distorted-floor/click_again'
+require 'distorted-floor/checking_you_out'
 
 
 module Cooltrainer; end

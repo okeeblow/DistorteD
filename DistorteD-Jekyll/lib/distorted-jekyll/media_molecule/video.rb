@@ -1,6 +1,6 @@
-require 'distorted/checking_you_out'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
-require 'distorted/media_molecule/video'
+require 'distorted-floor/media_molecule/video'
 
 
 module Jekyll; end

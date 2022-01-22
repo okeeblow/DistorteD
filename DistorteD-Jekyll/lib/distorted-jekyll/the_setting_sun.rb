@@ -2,8 +2,8 @@ require 'yaml'
 require 'jekyll'
 require 'set'
 
-require 'distorted/monkey_business/hash'
-require 'distorted/checking_you_out'
+require 'distorted-floor/monkey_business/hash'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
 
 

@@ -3,7 +3,7 @@
 DistorteD is a multimedia toolkit comprised of several related but standalone components:
 - [`CHECKING YOU OUT`](https://rubygems.org/gems/checking-you-out) is DD's file-type identification library à la `ruby-mime-types`, `filemagic`, `marcel`, etc.
 - [`DistorteD-Jekyll`](https://rubygems.org/gems/distorted-jekyll) contains anything and everything that relates to markup generation and Jekyll integration.
-- [`DistorteD-Floor`](https://rubygems.org/gems/distorted) — a.k.a. just 'DistorteD' — contains media format conversion routines and a CLI to use them.
+- [`DistorteD-Floor`](https://rubygems.org/gems/distorted-floor) contains media format conversion routines and a CLI to use them.
 - [`DistorteD-Booth`](https://rubygems.org/gems/distorted-booth) is a very early proof-of-concept DD GUI that isn't very interesting or useful yet :)
 - [`XROSS THE XOUL`](https://rubygems.org/gems/xross-the-xoul) contains routines for cross-CPU / cross-OS / cross-Desktop / etc portability.
 

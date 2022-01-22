@@ -1,7 +1,7 @@
 require 'tmpdir'
 
-require 'distorted/invoker'
-require 'distorted/checking_you_out'
+require 'distorted-floor/invoker'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
 
 # https://saveriomiroddi.github.io/Installing-ruby-tk-bindings-gem-on-ubuntu/

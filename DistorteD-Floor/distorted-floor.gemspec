@@ -7,14 +7,14 @@ require_relative('../i_was_the_one')
     spec.send(_1, _2)
   }
 
-  spec.name          = 'distorted'
+  spec.name          = 'distorted-floor'
   spec.summary       = 'Multimedia toolkit core.'
   spec.description   = 'Ruby implementation of core file-format operations used by DistorteD-Jekyll.'
 
   spec.files         = ::Dir.glob('{bin,font,lib}/**/*').keep_if { |file| ::File.file?(file) } + %w(LICENSE README.md)
   spec.require_paths = ['lib']
 
-  spec.executables = ['distorted']
+  spec.executables = ['distorted-floor']
 
   # Ours
   spec.add_runtime_dependency('checking-you-out', "~> #{COOLTRAINER::DistorteD::VERSION}")

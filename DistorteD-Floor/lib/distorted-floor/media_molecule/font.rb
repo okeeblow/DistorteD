@@ -3,10 +3,10 @@ require 'set'
 # Font metadata extraction
 require 'ttfunk'
 
-require 'distorted/modular_technology/pango'
-require 'distorted/modular_technology/ttfunk'
-require 'distorted/modular_technology/vips/save'
-require 'distorted/checking_you_out'
+require 'distorted-floor/modular_technology/pango'
+require 'distorted-floor/modular_technology/ttfunk'
+require 'distorted-floor/modular_technology/vips/save'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
 
 

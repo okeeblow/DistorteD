@@ -1,13 +1,13 @@
 require 'set'
-require 'distorted/monkey_business/set'
+require 'distorted-floor/monkey_business/set'
 
 require 'optparse'
 require 'shellwords'  # Necessary for inclusion in OptionParser coercions list.
 
-require 'distorted/invoker'
-require 'distorted/checking_you_out'
+require 'distorted-floor/invoker'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
-require 'distorted/element_of_media/compound'
+require 'distorted-floor/element_of_media/compound'
 
 
 module Cooltrainer; end

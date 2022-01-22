@@ -7,7 +7,7 @@ rescue LoadError
   # This is an optional dependency: https://github.com/Shopify/liquid-c
 end
 
-require 'distorted/checking_you_out'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
 
 

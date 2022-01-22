@@ -1,10 +1,10 @@
 
 require 'set'
 
-require 'distorted/checking_you_out'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
-require 'distorted/modular_technology/vips/operation'
-require 'distorted/modular_technology/vips/save'
+require 'distorted-floor/modular_technology/vips/operation'
+require 'distorted-floor/modular_technology/vips/save'
 
 
 module Cooltrainer; end

@@ -1,11 +1,11 @@
 # Our custom Exceptions
-require 'distorted/error_code'
+require 'distorted-floor/error_code'
 
 # Molecule loading and plugging functionality
-require 'distorted/invoker'
+require 'distorted-floor/invoker'
 
 # File Typer
-require 'distorted/checking_you_out'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
 
 # Configuration-loading code
@@ -25,7 +25,7 @@ require 'shellwords'
 # Set is in stdlib but is not in core.
 require 'set'
 # Set.to_hash
-require 'distorted/monkey_business/set'
+require 'distorted-floor/monkey_business/set'
 
 # I mean, this is why we're here, right?
 require 'jekyll'

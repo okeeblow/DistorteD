@@ -1,8 +1,8 @@
-require 'distorted/checking_you_out'
+require 'distorted-floor/checking_you_out'
 using ::DistorteD::CHECKING::YOU::OUT
 require 'distorted-jekyll/liquid_liquid'
-require 'distorted/modular_technology/vips/save'
-require 'distorted/media_molecule'
+require 'distorted-floor/modular_technology/vips/save'
+require 'distorted-floor/media_molecule'
 
 module Jekyll; end
 module Jekyll::DistorteD; end
