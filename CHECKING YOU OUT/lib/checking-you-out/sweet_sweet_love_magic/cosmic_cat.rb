@@ -114,6 +114,10 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
     #
     # TODO: Identify optical media for `x-content/blank-cd`, `x-content/blank-dvd`, `x-content/blank-bd`, and `x-content/blank-hddvd`.
     # TODO: Identify USB devices for e.g. `x-content/audio-player`.
+    #
+    # TODO: The above is no longer relevant and this is broken entirely as of
+    #       https://bugs.ruby-lang.org/issues/14456 :(
+    #       Come up with a new solution.
     def =~(otra)
       return if self.here_we_are.nil?
       case otra
