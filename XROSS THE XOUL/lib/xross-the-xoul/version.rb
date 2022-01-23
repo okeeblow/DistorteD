@@ -18,12 +18,22 @@ class XROSS::THE::Version
 
     def to_s = self.values.join(-?.)
 
-    def =~(otra) = (self[:major] == otra.major) && (se;f[:minor] == otra.minor)
+    def =~(otra) = (self[:major] == otra.major) && (self[:minor] == otra.minor)
 
-    ::Array[:eql?, :>=, :<=, :>, :<].each { |method|
+    # Comparisons where `#any?` success counts.
+    ::Array[:>, :<].each { |method|
       define_method(method, ::Proc::new { |otra|
-        members.zip(otra.members).all? {
-          _1.send(method, _2)
+        self.values.zip(otra.values).any? { |ours, theirs|
+          ours.send(method, theirs)
+        }
+      })
+    }
+
+    # Comparisons where `#all?` must be true.
+    ::Array[:eql?, :>=, :<=].each { |method|
+      define_method(method, ::Proc::new { |otra|
+        self.values.zip(otra.values).all? { |ours, theirs|
+          ours.send(method, theirs)
         }
       })
     }
