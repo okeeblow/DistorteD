@@ -367,7 +367,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
             all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)
           else remember_you.call(uri_match)
           end
-
+        when ::Enumerable then
+          # Don't `#map!` because it will change an `EverlastingMessage`'s content by reference.
+          needle.map(&remember_you)
         end  # case needle
       }  # remember_you
 
@@ -402,7 +404,10 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           # We will fill in its `#response` member with the result of running its `#request` through our type-matching logic,
           # then send the mutated message to the `::Ractor` specified in its `#destination` member.
           i_member = last_message[message.in_motion.hash] || remember_you.call(message.in_motion)
-          if nφ_crime.delete?(message.in_motion.hash) or not i_member.nil? then
+          if nφ_crime.delete?(message.in_motion.hash) or not (
+            # An `::Array` needle will come back as e.g. `[nil, nil]` if we need to load data.
+            i_member.is_a?(::Enumerable) ? i_member.none? : i_member.nil?
+          ) then
             unless last_message.has_key?(message.in_motion.hash)
               refrain.push(message.in_motion.hash)
               # Ensure shareability of our response value or we will hit a `::Ractor::MovedObject`

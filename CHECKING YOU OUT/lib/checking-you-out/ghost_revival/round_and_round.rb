@@ -54,7 +54,11 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND
   )
     return if query.nil? or (query&.empty? if query.respond_to?(:empty?))
     message = ::CHECKING::YOU::OUT::EverlastingMessage::new(
-      coerce.nil? ? query.dup : coerce.new(query),
+      coerce.nil? ? query.dup : (
+        # If we're given e.g. an `::Array`, coerce everything it contains.
+        # Otherwise coerce the given value itself.
+        query.is_a?(::Enumerable) ? query.dup.map!(&coerce.method(:new)) : coerce.new(query)
+      ),
       receiver
     )
     wanted = message.erosion_mark
