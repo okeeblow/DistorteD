@@ -65,7 +65,8 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE
       # `EXTGLOB` enables the brace-delimited glob syntax, used here to allow an optional `'.in'` extname
       # as found on the `'freedesktop.org.xml.in'` bundled with our Gem since I don't want to rename
       # the file from the XDG repo even though that extname means they don't want us to use that file directly.
-      _1.glob(File.join(-'**', -'*.xml{.in,}'), ::File::FNM_EXTGLOB)
+      # Also `#reverse!` each directory's results so earlier matches get sent to the `::Ractor` last.
+      _1.glob(::File.join(-'**', -'*.xml{.in,}'), ::File::FNM_EXTGLOB).reverse!
     }.each_with_object(::CHECKING::YOU::OUT::GEM_ROOT.call).with_object(Array.new) { |(xml_path, gem_root), out|
 
       # Load the bundled `shared-mime-info` database if the system-level one exists but is out of date
