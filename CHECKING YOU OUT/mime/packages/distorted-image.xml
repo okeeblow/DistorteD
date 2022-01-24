@@ -40,6 +40,16 @@
     <glob pattern="*.v"/>
   </mime-type>
 
+  <!--
+    HACK: Disable `application/fits` for now until I fix CYO's alias/main resolution,
+          I dubmit a fix to `shared-mime-info` changing the definition of `image/fits` to `application/fits`,
+          or both. Tika's database uses `application/fits`, and the RFC does imply it to be the more "generic"
+          of the two (based on number of planes in the file): https://fits.gsfc.nasa.gov/rfc4047.txt
+  -->
+  <mime-type type="application/fits">
+    <glob-deleteall/>
+    <magic-deleteall/>
+  </mime-type>
   <!-- fd.o has an `image/fits` definition but only with `*.fits` glob. -->
   <mime-type type="image/fits">
     <glob pattern="*.fts"/>
