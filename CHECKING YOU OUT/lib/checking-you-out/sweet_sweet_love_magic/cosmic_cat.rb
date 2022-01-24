@@ -44,7 +44,7 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
     def inner_spirit=(otra)
       self[:inner_spirit] = case otra
         when ::CHECKING::YOU::IN then otra
-        when ::String            then ::CHECKING::YOU::IN::from_ietf_media_type(otra)
+        when ::String            then ::CHECKING::YOU::IN::from_iana_media_type(otra)
       end
     end
 

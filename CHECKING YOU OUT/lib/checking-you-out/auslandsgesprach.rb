@@ -4,7 +4,7 @@ require_relative(-'ghost_revival/filter_house') unless defined?(::CHECKING::YOU:
 require_relative(-'ghost_revival/ultravisitor') unless defined?(::CHECKING::YOU::OUT::ULTRAVISITOR)
 
 
-# IETF Media-Type `String`-handling components.
+# IANA Media-Type `String`-handling components.
 # CYI class-level components.
 module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
@@ -46,7 +46,7 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
   TYPE_SUFFIXES = self::SUFFIX_TYPES.invert.freeze
 
 
-  # Parse IETF Media-Type `::String` → `::CHECKING::YOU::IN`
+  # Parse IANA Media-Type `::String` → `::CHECKING::YOU::IN`
   GOLDEN_I = ::Ractor::new(
     ::Ractor::make_shareable(proc {
     # Keep these allocated instead of fragmenting our heap, since this will be called very frequently.
@@ -66,7 +66,7 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
       }
     }
 
-    # Take a single codepoint from a reversed-then-NULL-terminated IETF Type `String`,
+    # Take a single codepoint from a reversed-then-NULL-terminated IANA Type `String`,
     # e.g. "ttub=traf;lmbe+fnb.ppg3.dnv/noitacilppa#{-?\u{0}}".
     #
     #
@@ -181,7 +181,7 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
           what_you_doing.pop(3); :prs
         when what_you_doing[-5..] == (-'-sm-x').codepoints then
           # Microsoft formats like `text/x-ms-regedit`.
-          # I'm treating this separately from the IETF `x-` tree just because there are so many of them,
+          # I'm treating this separately from the IANA `x-` tree just because there are so many of them,
           # and it's nice to keep Winders formats logically-grouped.
           what_you_doing.pop(5); :"x-ms"
         when what_you_doing[-2..] == (-'-x').codepoints then
@@ -253,7 +253,7 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
   # if the `:receiver` is a `::Ractor` other than the one calling the method.
   # This is kind of hacky but allows e.g. `MIMEjr` to not have to block waiting for our reply
   # only to forward that reply immediately to its real destination.
-  def from_ietf_media_type(
+  def from_iana_media_type(
     ietf_string,
     envelope: ::CHECKING::YOU::IN::EverlastingMessage,
     receiver: ::Ractor::current
@@ -295,7 +295,7 @@ module ::CHECKING::YOU::IN::INLANDGESPRÄCH
     :"x-content",         # `shared-mime-info` directory/volume types.
   ].freeze
 
-  # Reconstruct an IETF Media-Type `String` from a loaded CYI/CYO's `#members`
+  # Reconstruct an IANA Media-Type `String` from a loaded CYI/CYO's `#members`
   # This method should return an unfrozen `String` because `CYO#to_s` may add a suffix to it.
   def say_yeeeahh
     # TODO: Fragments (e.g. `;what=ever`), and syntax identifiers (e.g. `+xml`)
@@ -321,7 +321,7 @@ end
 
 # Class-level method to fetch a CYO from a `::Ractor` area.
 module ::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
-  def from_ietf_media_type(ietf_string, area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE)
+  def from_iana_media_type(ietf_string, area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE)
     super(
       ietf_string,
       receiver: ::Ractor::make_shareable(
@@ -331,7 +331,7 @@ module ::CHECKING::YOU::OUT::AUSLANDSGESPRÄCH
   end
 end
 
-# Instance-level method to generate the full IETF Media-Type `::String` of composite types,
+# Instance-level method to generate the full IANA Media-Type `::String` of composite types,
 # e.g. `"image/svg+xml"`.
 module ::CHECKING::YOU::OUT::INLANDGESPRÄCH
   def to_s

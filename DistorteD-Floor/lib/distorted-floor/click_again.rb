@@ -299,7 +299,7 @@ class Cooltrainer::DistorteD::ClickAgain
           type = ::CHECKING::YOU::OUT::from_postfix(File.extname(out).prepend(-?*))
         else
           name = @name
-          type = ::CHECKING::YOU::OUT::from_ietf_media_type(out)
+          type = ::CHECKING::YOU::OUT::from_iana_media_type(out)
         end
 
         supported_options = [

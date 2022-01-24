@@ -206,7 +206,7 @@ module Cooltrainer::DistorteD::Technology::Vips
       search = case given
       when Array then given
       when ::CHECKING::YOU::OUT then Array[given]
-      when String then given.include?('/'.freeze) ? Array[::CHECKING::YOU::OUT::from_ietf_media_type(given)] : ::CHECKING::YOU::OUT(given)
+      when String then given.include?('/'.freeze) ? Array[::CHECKING::YOU::OUT::from_iana_media_type(given)] : ::CHECKING::YOU::OUT(given)
       end
       self.new(top_level).family_reunion.select { |vt| vt.types&.intersection(search)&.length&.method(:>)&.call(0) }
     end

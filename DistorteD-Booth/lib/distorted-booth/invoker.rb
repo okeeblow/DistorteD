@@ -41,7 +41,7 @@ class Cooltrainer::DistorteD::Booth
     end
 
     # Tk's only built-in color image format.
-    type = ::CHECKING::YOU::OUT::from_ietf_media_type('image/x-portable-pixmap')
+    type = ::CHECKING::YOU::OUT::from_iana_media_type('image/x-portable-pixmap')
     change = Cooltrainer::Change.new(type, src: @name)
 
     # Init DistorteD for our source file.

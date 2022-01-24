@@ -28,8 +28,8 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
     # Represent our sequence as either a byte `::String` or as an `::Integer`.
     #
     # We'll need one or the other depending on if we have a mask or not, e.g.
-    #   irb> ::CHECKING::YOU::OUT::from_ietf_media_type('image/png').cat_sequence.sequence_s => "\x89PNG"
-    #   irb> ::CHECKING::YOU::OUT::from_ietf_media_type('image/png').cat_sequence.sequence_i => 2303741511
+    #   irb> ::CHECKING::YOU::OUT::from_iana_media_type('image/png').cat_sequence.sequence_s => "\x89PNG"
+    #   irb> ::CHECKING::YOU::OUT::from_iana_media_type('image/png').cat_sequence.sequence_i => 2303741511
     #
     #   irb* ::XROSS::THE::CPU::swap(9894494448401390090).digits(0xFF.succ).each_with_object(::String::new) {
     #   irb*   _2.insert(-1, _1.chr(::Encoding::ASCII_8BIT))

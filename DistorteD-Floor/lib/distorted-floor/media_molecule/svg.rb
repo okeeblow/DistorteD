@@ -14,7 +14,7 @@ module Cooltrainer::DistorteD::Molecule::SVG
 
   include Cooltrainer::DistorteD::Technology::Vips::Save
 
-  SVG_TYPE = ::CHECKING::YOU::OUT::from_ietf_media_type('image/svg+xml')
+  SVG_TYPE = ::CHECKING::YOU::OUT::from_iana_media_type('image/svg+xml')
 
   LOWER_WORLD = Hash[
     SVG_TYPE => Cooltrainer::DistorteD::Technology::Vips::VipsType::loader_for(SVG_TYPE).map(&:options).reduce(&:merge)

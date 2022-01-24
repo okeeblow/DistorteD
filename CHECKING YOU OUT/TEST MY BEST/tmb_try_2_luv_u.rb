@@ -22,7 +22,7 @@ area_code = :TMB
 # Define a test for every type we have a test file for.
 TestTry2LuvU = extant_types.each_with_object(::Class.new(::Test::Unit::TestCase)) { |type, classkey_csupó|
   classkey_csupó.define_method("test_#{type.downcase.gsub(/[\/\-_+\.=;]/, ?_)}_extant_file") {
-    cyo = ::CHECKING::YOU::OUT::from_ietf_media_type(type, area_code:)
+    cyo = ::CHECKING::YOU::OUT::from_iana_media_type(type, area_code:)
     # We don't need to `::String#split` on systems where `/` is `::File::SEPARATOR`,
     # but do it anyway for consistency with systems where `::File::ALT_SEPARATOR` is defined.
     artifact_root.join(*type.split(-?/, 2)).glob("**").map(&:realpath).each { |artifact|

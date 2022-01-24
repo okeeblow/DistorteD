@@ -37,7 +37,7 @@ module Cooltrainer::DistorteD::Technology::GStreamer
     'application/dash+xml',
     'application/vnd.apple.mpegurl',
     'video/mp4',
-  ].map(&::CHECKING::YOU::OUT::method(:from_ietf_media_type))
+  ].map(&::CHECKING::YOU::OUT::method(:from_iana_media_type))
 
 
   def write_video_mp4(dest_root, change)

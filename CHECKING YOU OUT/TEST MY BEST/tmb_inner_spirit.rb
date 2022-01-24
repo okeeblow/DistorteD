@@ -39,7 +39,7 @@ class TestInnerSpirit < Test::Unit::TestCase
     assert_not_equal(jpeg_in, ::CHECKING::YOU::IN.new('possum', 'image', 'png'))
 
     # `CYI#eql?` should also match `::String`s against the output of `CYI#to_s`.
-    # More comprehensive tests for the IETF Media-Type parser and `CYI#to_s`
+    # More comprehensive tests for the IANA Media-Type parser and `CYI#to_s`
     # can be found in `tmb_auslandsgesprach.rb`.
     assert_equal(jpeg_in, 'image/jpeg')
     assert_not_equal(jpeg_in, 'image/png')

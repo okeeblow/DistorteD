@@ -15,7 +15,7 @@ module Jekyll::DistorteD::Molecule::SVG
   include Jekyll::DistorteD::LiquidLiquid::Picture
 
   define_method(
-    ::CHECKING::YOU::OUT::from_ietf_media_type(-'image/svg+xml').distorted_template_method,
+    ::CHECKING::YOU::OUT::from_iana_media_type(-'image/svg+xml').distorted_template_method,
     ::Jekyll::DistorteD::LiquidLiquid::Picture::render_picture_source,
   )
 

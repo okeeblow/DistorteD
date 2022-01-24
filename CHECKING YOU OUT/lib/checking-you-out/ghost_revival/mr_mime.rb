@@ -122,7 +122,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     # Avoid the `Array` allocation necessary when using pattern matching `case` syntax.
     case @parse_stack.last
     when :"mime-type"    then
-      ::CHECKING::YOU::IN::from_ietf_media_type(
+      ::CHECKING::YOU::IN::from_iana_media_type(
         value.as_s,
         envelope: ::CHECKING::YOU::OUT::EverlastingMessage
       ).tap {
@@ -151,8 +151,8 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       when :"non-empty"  then @mother_tree.last.non_empty      = value.as_bool
       when :mimetype     then @mother_tree.last.inner_spirit   = value.as_s
       end
-    when :alias          then self.cyo.add_aka(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s)) if attr_name == :type
-    when :"sub-class-of" then self.cyo.add_parent(::CHECKING::YOU::IN::from_ietf_media_type(value.as_s)) if attr_name == :type
+    when :alias          then self.cyo.add_aka(::CHECKING::YOU::IN::from_iana_media_type(value.as_s)) if attr_name == :type
+    when :"sub-class-of" then self.cyo.add_parent(::CHECKING::YOU::IN::from_iana_media_type(value.as_s)) if attr_name == :type
     when :glob           then
       case attr_name
       when :weight           then @astraia.weight = value.as_i

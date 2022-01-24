@@ -203,7 +203,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         # TODO: Handle conflicting aliasing like how freedesktop-dot-org XML has `<mime-type type="application/x-kword">`
         #       but tika-mimetypes has `<mime-type type="application/vnd.kde.kword"><alias type="application/x-kword"/>`.
         #       Right now these get loaded as two separate types:
-        #         irb> CHECKING::YOU::OUT::from_ietf_media_type("application/x-kword").map(&:to_s)
+        #         irb> CHECKING::YOU::OUT::from_iana_media_type("application/x-kword").map(&:to_s)
         #              => ["application/x-kword", "application/vnd.kde.kword"]
 
         # Memoize single-extnames separately from more complex filename fragments
@@ -364,7 +364,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           # NOTE: Make sure this logic matches what's in the generic `CHECKING::YOU::OUT()` entry-point method!
           if uri_match.nil? or uri_match.scheme.nil? then
             # The `String` needle is not a URI.
-            all_night[::CHECKING::YOU::IN::from_ietf_media_type(needle)].yield_self(&together_4ever)
+            all_night[::CHECKING::YOU::IN::from_iana_media_type(needle)].yield_self(&together_4ever)
           else remember_you.call(uri_match)
           end
         when ::Enumerable then

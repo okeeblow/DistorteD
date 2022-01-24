@@ -22,10 +22,10 @@ module Cooltrainer::DistorteD::Molecule::Font
   # https://gitlab.gnome.org/GNOME/pango/-/issues/386
   # https://blogs.gnome.org/mclasen/2019/05/25/pango-future-directions/
   LOWER_WORLD = {
-    ::CHECKING::YOU::OUT::from_ietf_media_type('font/ttf') => nil,
+    ::CHECKING::YOU::OUT::from_iana_media_type('font/ttf') => nil,
   }
   OUTER_LIMITS = {
-    ::CHECKING::YOU::OUT::from_ietf_media_type('font/ttf') => nil,
+    ::CHECKING::YOU::OUT::from_iana_media_type('font/ttf') => nil,
   }
 
   ATTRIBUTES = Set[

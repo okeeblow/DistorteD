@@ -13,7 +13,7 @@ module Cooltrainer::DistorteD::Molecule; end
 module Cooltrainer::DistorteD::Molecule::Video
 
   LOWER_WORLD = {
-    ::CHECKING::YOU::OUT::from_ietf_media_type('video/mp4') => nil,
+    ::CHECKING::YOU::OUT::from_iana_media_type('video/mp4') => nil,
   }
 
   include Cooltrainer::DistorteD::Technology::GStreamer

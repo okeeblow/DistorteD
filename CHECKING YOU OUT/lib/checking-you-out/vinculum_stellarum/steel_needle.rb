@@ -5,7 +5,7 @@ module ::CHECKING::YOU::OUT::VinculumStellarum
 
   # Check the filesystem extended attributes for manually-defined types.
   #
-  # These attributes should contain IETF-style `media/sub`-type Strings,
+  # These attributes should contain IANA-style `media/sub`-type Strings,
   # but they are technically freeform and must be assumed to contain anything.
   # It's very very unlikely that anybody will ever use one of these at all,
   # but hey how cool is it that we will support it if they do? :)
@@ -38,7 +38,7 @@ module ::CHECKING::YOU::OUT::VinculumStellarum
         ::ExtAttr.list(pathname.to_s, namespace).keep_if(&SUPPORTED_XATTR_NAMES.method(:include?)).map! { |attr_name|
           ::ExtAttr::get(pathname.to_s, ::ExtAttr::USER, attr_name)
         }
-      }.map! { ::CHECKING::YOU::IN::from_ietf_media_type(_1, receiver:) }
+      }.map! { ::CHECKING::YOU::IN::from_iana_media_type(_1, receiver:) }
     rescue ::SystemCallError => sce
       # e.g. `#<Errno::ENOTSUP: Operation not supported - listxattr call error>`
       nil

@@ -3,7 +3,7 @@ require(-'ox') unless defined?(::Ox)
 require('test/unit') unless defined?(::Test::Unit)
 require_relative('../lib/checking-you-out') unless defined?(::CHECKING::YOU::OUT)
 
-# This file contains tests for our IETF Media-Type `String` parsing and reassembly round-trip,
+# This file contains tests for our IANA Media-Type `String` parsing and reassembly round-trip,
 # e.g. `"application/vnd.ms-word"`
 #        →  `#<struct CHECKING::YOU::OUT kingdom=:vnd, phylum=:application, genus=:"ms-word">`
 #          →  `"application/vnd.ms-word"`
@@ -13,7 +13,7 @@ require_relative('only_one_package') unless defined?(::CHECKING::YOU::OUT::OnlyO
 # Quick-'n'-dirty barebones `MrMIME`-equivalent.
 # All this version does is list out all `String` sttribute values from `<mime-type attr="whatever"/>`,
 # then we can tell if our `String` parsing works properly iff that same type exists via CYO.
-class IETFTypeChecker < ::Ox::Sax
+class IANATypeChecker < ::Ox::Sax
   def initialize(...)
     @out = Array.new
     @parse_stack = Array.new
@@ -58,8 +58,8 @@ area_code = :TMB
 ::CHECKING::YOU::OUT.set_type_cache_size(::Float::INFINITY, area_code:)
 ::CHECKING::YOU::OUT[/.*/, area_code:]
 
-# Load all `<mime-type>` IETF Media-Type `String`s from the same test package.
-handler = IETFTypeChecker.new
+# Load all `<mime-type>` IANA Media-Type `String`s from the same test package.
+handler = IANATypeChecker.new
 fdo_types = handler.open(::CHECKING::YOU::OUT::OnlyOnePackage::FDO_MIME)
 
 # Define a test for every `<mime-type>` element in `shared-mime-info`'s XML
@@ -67,8 +67,8 @@ fdo_types = handler.open(::CHECKING::YOU::OUT::OnlyOnePackage::FDO_MIME)
 TestAuslandsgesprach = fdo_types.each_with_object(::Class.new(::Test::Unit::TestCase)) { |type, classkey_csupó|
   classkey_csupó.define_method("test_#{type.downcase.gsub(/[\/\-_+\.=;]/, ?_)}_ietf_type_decomposition") {
     # TODO: Fix suffixed types (remove `unless` guard)
-    assert_equal(type, ::CHECKING::YOU::IN::from_ietf_media_type(type).to_s) unless type.include?(?+)
-    assert_equal(type, ::CHECKING::YOU::OUT::from_ietf_media_type(type, area_code:).to_s) unless type.include?(?+)
-    #assert_include(::CHECKING::YOU::OUT::from_ietf_media_type(type).aka.map(&:to_s), type) unless type.include?(?+)
+    assert_equal(type, ::CHECKING::YOU::IN::from_iana_media_type(type).to_s) unless type.include?(?+)
+    assert_equal(type, ::CHECKING::YOU::OUT::from_iana_media_type(type, area_code:).to_s) unless type.include?(?+)
+    #assert_include(::CHECKING::YOU::OUT::from_iana_media_type(type).aka.map(&:to_s), type) unless type.include?(?+)
   }
 }

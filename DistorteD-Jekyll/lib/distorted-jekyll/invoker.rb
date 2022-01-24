@@ -85,7 +85,7 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
     @type_mars ||= (Set[::CHECKING::YOU::OUT(path)].flatten & lower_world.keys.to_set).tap { |gemini|
       raise ArgumentError(gemini)
       if gemini.empty? && the_setting_sun(:never_let_you_down)
-        gemini << ::CHECKING::YOU::OUT::from_ietf_media_type('application/x.distorted.never-let-you-down')
+        gemini << ::CHECKING::YOU::OUT::from_iana_media_type('application/x.distorted.never-let-you-down')
       end
     }
     raise MediaTypeNotImplementedError.new(@name) if @type_mars.empty?
@@ -107,7 +107,7 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
       # If there is no config, treat it as a change to the same Type as the input,
       # otherwise instantiate each "mediatype/subtype" config `String` to a `::CHECKING::YOU::OUT`.
       ((change_config.nil? || change_config&.empty?) ? Set[lower] : change_config.map { |t|
-        ::CHECKING::YOU::OUT::from_ietf_media_type(t)
+        ::CHECKING::YOU::OUT::from_iana_media_type(t)
       }).each { |type|
         # Query our configuration again for variations on each Type.
         # For example, one single image Type may want multiple resolutions to enable responsive <picture> tags,

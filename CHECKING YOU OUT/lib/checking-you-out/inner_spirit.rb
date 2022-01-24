@@ -4,11 +4,11 @@ require(-'securerandom') unless defined?(::SecureRandom)
 
 
 # This base Struct will be used as the Hash key for its matching `OUT` subclass object,
-# and its members correspond to the three major parts of an IETF "Content-Type" String,
+# and its members correspond to the three major parts of an IANA "Content-Type" String,
 # e.g. "application/x-saturn-rom" → :x, :application, :"saturn-rom".
 #
-# This is kind of a leaky abstraction since I want to support non-IETF type systems too,
-# but the IETF system is by far the most relevant one to us because the most exhaustive
+# This is kind of a leaky abstraction since I want to support non-IANA type systems too,
+# but the IANA system is by far the most relevant one to us because the most exhaustive
 # source data (`shared-mime-info`) is based on that format and because, you know, Internet.
 # See the adjacent `auslandsgespräch.rb` for the parser and more info.
 #
@@ -30,7 +30,7 @@ class ::CHECKING::YOU; end
   :genus,
 ) do
 
-  # This `::Set` subclass will represent the sum of `CYI`s for a `CYO` whose IETF media-type `::String`
+  # This `::Set` subclass will represent the sum of `CYI`s for a `CYO` whose IANA media-type `::String`
   # uses a "suffix" designated by `+` or `;`, e.g. `image/svg+xml` will be `B4U[ CYI(svg), CYI(xml) ]`.
   self::B4U = ::Class::new(::Set)
 
@@ -81,14 +81,14 @@ class ::CHECKING::YOU; end
   # It can still be done by decomposing `#values`, but this will allow us to "splat"
   # without worrying if we are splatting a single CYI/CYO or a `::Set` of them.
   #
-  # Before: `irb> [*(CYI::from_ietf_media_type('image/jpeg'))] => [:possum, :image, :jpeg]`
+  # Before: `irb> [*(CYI::from_iana_media_type('image/jpeg'))] => [:possum, :image, :jpeg]`
   #
   # After, with `#to_a = nil`:
-  # `irb> [*(CYI::from_ietf_media_type('image/jpeg'))]
+  # `irb> [*(CYI::from_iana_media_type('image/jpeg'))]
   #   => [#<struct CHECKING::YOU::IN kingdom=:possum, phylum=:image, genus=:jpeg>]`
   def to_a; nil; end
 
-  # e.g. irb> CYI::from_ietf_media_type('image/jpeg') == 'image/jpeg' => true
+  # e.g. irb> CYI::from_iana_media_type('image/jpeg') == 'image/jpeg' => true
   def eql?(otra)
     case otra
     when ::String then self.to_s.eql?(otra.index(/[;+]/) ? otra.slice(...otra.index(/[;+]/)) : otra)
@@ -102,7 +102,7 @@ end
 # Main Struct subclass for in-memory type representation.
 class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
-  # HACK: Sending a `CYO::EM` to the IETF Media Type parser will cause it to instantiate
+  # HACK: Sending a `CYO::EM` to the IANA Media Type parser will cause it to instantiate
   #       a `{CYI => CYO}` reply instead of a plain `CYI`.
   self::EverlastingMessage = ::Class::new(self::superclass::EverlastingMessage)
 
@@ -205,7 +205,7 @@ class ::CHECKING::YOU::OUT < ::CHECKING::YOU::IN
 
 end
 
-# IETF Media-Type parser and methods that use that parser.
+# IANA Media-Type parser and methods that use that parser.
 require_relative(-'auslandsgesprach') unless defined?(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.extend(::CHECKING::YOU::IN::AUSLANDSGESPRÄCH)
 ::CHECKING::YOU::IN.include(::CHECKING::YOU::IN::INLANDGESPRÄCH)

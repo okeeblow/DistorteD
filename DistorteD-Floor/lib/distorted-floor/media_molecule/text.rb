@@ -83,14 +83,14 @@ module Cooltrainer::DistorteD::Molecule::Text
 
 
   LOWER_WORLD = {
-    ::CHECKING::YOU::OUT::from_ietf_media_type('text/plain') => nil,
-    ::CHECKING::YOU::OUT::from_ietf_media_type('text/x-nfo') => nil,
+    ::CHECKING::YOU::OUT::from_iana_media_type('text/plain') => nil,
+    ::CHECKING::YOU::OUT::from_iana_media_type('text/x-nfo') => nil,
   }.transform_values { |v| Hash[
     :encoding => Cooltrainer::Compound.new(:encoding, valid: Encoding, blurb: 'Character encoding used in this document. (default: automatically detect)', default: nil),
   ]}
   OUTER_LIMITS = {
-    ::CHECKING::YOU::OUT::from_ietf_media_type('text/plain') => nil,
-    ::CHECKING::YOU::OUT::from_ietf_media_type('text/x-nfo') => nil,
+    ::CHECKING::YOU::OUT::from_iana_media_type('text/plain') => nil,
+    ::CHECKING::YOU::OUT::from_iana_media_type('text/x-nfo') => nil,
   }.merge(
     Cooltrainer::DistorteD::Technology::Vips::Save::OUTER_LIMITS.dup.transform_values{ |v| Hash[
       :spacing => Cooltrainer::Compound.new(:spacing, blurb: 'Document-wide character spacing style.', valid: Set[:monospace, :proportional]),
@@ -163,7 +163,7 @@ module Cooltrainer::DistorteD::Molecule::Text
         # Fix files with ASCII/ANSI art (like NFOs) from being detected as ISO-8859-1
         # when they should be IBM437 to display properly.
         [
-          type_mars.include?(::CHECKING::YOU::OUT::from_ietf_media_type('text/x-nfo')),  # Only certain souce file types.
+          type_mars.include?(::CHECKING::YOU::OUT::from_iana_media_type('text/x-nfo')),  # Only certain souce file types.
           detected == Encoding::ISO_8859_1,  # Only if ICU detects ISO-8859-1.
           oobe?(Encoding::IBM437),  # Does this look like IBM437 based on box-drawing characters?
         ].all? ? Encoding::IBM437 : detected

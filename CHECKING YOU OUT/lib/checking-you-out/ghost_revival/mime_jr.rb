@@ -442,7 +442,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
         @needles[classkey_csupó].each {
           (
             @needles[classkey_csupó].delete(_1) &&
-            ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor)
+            ::CHECKING::YOU::IN::from_iana_media_type(@media_type.dup, receiver: @receiver_ractor)
           ) if _1.to_s.eql?(alias_media_type)
         }
       }
@@ -515,7 +515,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # The `<magic>` stack represents a complete match only the first time we encounter end_element(match)
       # after pushing a `<match>` to the `<magic>` stack and setting `@i_can_haz_filemagic = true`.
       if @i_can_haz_filemagic
-        ::CHECKING::YOU::IN::from_ietf_media_type(
+        ::CHECKING::YOU::IN::from_iana_media_type(
           @media_type.dup,
           receiver: @receiver_ractor,
         ) if @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:stream).map! {
@@ -529,7 +529,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # The `<treemagic>` stack represents a complete match only the first time we encounter end_element(treematch)
       # after pushing a `<treematch>` to the `<treemagic>` stack and setting `@i_can_haz_treemagic = true`.
       if @i_can_haz_treemagic
-        ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
+        ::CHECKING::YOU::IN::from_iana_media_type(@media_type.dup, receiver: @receiver_ractor) if (
           @needles[::Dir].map { @mother_tree.=~(_1) }.any?
         )
         # Send any `mimetype` CYIs to `MrMIME` for `<treematch>` elements which want a certain inner file type.
@@ -538,14 +538,14 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @mother_tree.pop
       @i_can_haz_treemagic = false
     when :glob then
-      ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
+      ::CHECKING::YOU::IN::from_iana_media_type(@media_type.dup, receiver: @receiver_ractor) if (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:astraia).map!(&@astraia.method(:eql?)).any? or
         @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].map(&@astraia.method(:eql?)).any? or
         @needles[::CHECKING::YOU::OUT::StellaSinistra].map(&@astraia.method(:eql?)).any? or
         @needles[::CHECKING::YOU::OUT::DeusDextera].map(&@astraia.method(:eql?)).any?
       )
     when :"root-XML" then
-      ::CHECKING::YOU::IN::from_ietf_media_type(@media_type.dup, receiver: @receiver_ractor) if (
+      ::CHECKING::YOU::IN::from_iana_media_type(@media_type.dup, receiver: @receiver_ractor) if (
         @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].map(&@re_roots.method(:eql?)).any?
       ) unless @re_roots.nil? or @re_roots&.empty?
       @re_roots.clear unless @re_roots.nil? or @re_roots&.empty?

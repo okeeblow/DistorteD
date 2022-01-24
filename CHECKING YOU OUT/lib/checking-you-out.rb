@@ -16,7 +16,7 @@ require_relative(-'checking-you-out/inner_spirit') unless defined?(::CHECKING::Y
 # I'm not trying to be an exact clone of `shared-mime-info`, but I think its "Recommended checking order"
 # is pretty sane: https://specifications.freedesktop.org/shared-mime-info-spec/latest/
 #
-# In addition to the above, CYO() supports IETF-style Media Type strings like "application/xhtml+xml"
+# In addition to the above, CYO() supports IANA-style Media Type strings like "application/xhtml+xml"
 # and supports `stat`-less testing of `.extname`-style Strings.
 class CHECKING::YOU
   def self.OUT(unknown_identifier, area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE)
@@ -35,7 +35,7 @@ class CHECKING::YOU
       when !uri_match.scheme.nil? then
         ::CHECKING::YOU::OUT::from_uri(uri_match, area_code:)
       when unknown_identifier.count(-?/) == 1 then  # TODO: Additional String validation here.
-        ::CHECKING::YOU::OUT::from_ietf_media_type(unknown_identifier, area_code:)
+        ::CHECKING::YOU::OUT::from_iana_media_type(unknown_identifier, area_code:)
       when unknown_identifier.start_with?(-?.) && unknown_identifier.count(-?.) == 1 then
         ::CHECKING::YOU::OUT::from_postfix(unknown_identifier, area_code:)
       else
