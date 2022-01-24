@@ -18,17 +18,23 @@ module ::CHECKING::YOU::OUT::SweetSweet♥Magic
   # Read, write, and clear (respectively) a CYO's weighted filemagic sequences.
   attr_reader(:cat_sequence)
   def add_content_fragment(fragment); self.awen(:@cat_sequence, fragment); end
-  def clear_content_fragments; self.remove_instance_variable(:@cat_sequence); end
+  def clear_content_fragments
+    self.remove_instance_variable(:@cat_sequence) if self.instance_variable_defined?(:@cat_sequence)
+  end
 
   # Read, write, and clear (respectively) a CYO's weighted treemagic sequences.
   attr_reader(:mother_tree)
   def add_tree_branch(branch); self.awen(:@mother_tree, branch); end
-  def clear_tree_branches; self.remove_instance_variable(:@mother_tree); end
+  def clear_tree_branches
+    self.remove_instance_variable(:@mother_tree) if self.instance_variable_defined?(:@mother_tree)
+  end
 
   # Read, write, and clear (respectively) a CYO's XML roots/namespaces.
   attr_reader(:re_roots)
   def add_xml_root(root); self.awen(:@re_roots, root); end
-  def clear_xml_roots; self.remove_instance_variable(:@re_roots); end
+  def clear_xml_roots
+    self.remove_instance_variable(:@re_roots) if self.instance_variable_defined?(:@re_roots)
+  end
 
 end  # module CHECKING::YOU::SweetSweet♥Magic
 

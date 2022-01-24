@@ -91,8 +91,8 @@ module ::CHECKING::YOU::OUT::VotumStellarum
 
   # Unset the IVars for Postfixes and Globs.
   def clear_pathname_fragments(include_super=false)
-    self.remove_instance_variable(:@sinistar)
-    self.remove_instance_variable(:@astraia)
+    self.remove_instance_variable(:@sinistar) if self.instance_variable_defined?(:@sinistar)
+    self.remove_instance_variable(:@astraia) if self.instance_variable_defined?(:@astraia)
     if include_super then
       case self.parents
       when ::NilClass then  # No-op
