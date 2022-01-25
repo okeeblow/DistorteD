@@ -41,9 +41,9 @@
   generate separate `glob2`/`magic`/etc files from the XML package files instead of using the packages directly.
 
 
-## Usage
+## Example Usage
 
-### Get a Type Object
+### Get a single Type Object
 
 …by file extension:
 
@@ -82,7 +82,7 @@ x-content/image-dcf
 ```
 
 
-### Use a Type Object
+### Use a single Type Object
 
 Once retrieved, a `CYO` Type Object contains everything defined for that type across all `shared-mime-info` XML packages:
 
@@ -96,6 +96,88 @@ Once retrieved, a `CYO` Type Object contains everything defined for that type ac
 
 `irb> CHECKING::YOU::OUT('audio/mpeg').aka => #<Set: {#<CHECKING::YOU::IN audio/mpeg>, #<CHECKING::YOU::IN audio/x-mp3>, #<CHECKING::YOU::IN audio/x-mpg>, #<CHECKING::YOU::IN audio/x-mpeg>, #<CHECKING::YOU::IN audio/mp3>}>`
 
+
+### Use multiple Type Objects simultaneously
+
+One of the main design goals for CHECKING YOU OUT is to act as part of the interface definitions for DistorteD Modules supporting various types of files.
+
+Let's look at [`libvips`](https://www.libvips.org/), an image library which is itself modular, relying on system libraries like `libjpeg-turbo`, `libwebp`, `libgif`, etc. VIPS' "Foreign" Loaders/Savers define a set of filename suffixes, and `libvips` has its own routing mechanism to test file names/contents and use the appropriate Foreign Loader.
+
+My problem arises when I want to mix DistorteD's `libvips` Module with Modules supporting other totally-unrelated types of files. How can I route my files to the correct Module without wastefully trying every single one and catching the failures? VIPS provides us with a list of our installation's supported file extensions via [vips_foreign_get_suffixes()](https://www.libvips.org/API/current/VipsForeignSave.html#vips-foreign-get-suffixes). We can look at it via `ruby-vips` or via `gobject-introspection`:
+
+```
+require('gobject-introspection') unless defined?(::GObjectIntrospection)
+
+module Vips
+  Loader = ::Class::new(::GObjectIntrospection::Loader)
+
+  begin
+    Loader.load("Vips", self)
+  rescue(::GObjectIntrospection::RepositoryError::TypelibNotFound)
+    raise
+  end
+end
+```
+
+```
+irb(main)> Vips::Foreign::suffixes => [".csv", ".mat", ".v", ".vips", ".ppm", ".pgm", ".pbm", ".pfm", ".hdr", ".dz", ".png", ".jpg", ".jpeg", ".jpe", ".webp", ".tif", ".tiff", ".fits", ".fit", ".fts", ".gif", ".bmp"]
+```
+
+That's a start, but what if we have a file with no extension, or with an incorrect extension (like all those CDNs serving WebP with `.jpg` file names)? I want to do my own file matching and only invoke my `libvips` Module when I'm sure I need it. CHECKING YOU OUT makes this very easy!
+
+```
+irb(main)> ::Vips::Foreign::suffixes.zip(::Vips::Foreign::suffixes.yield_self(&::CHECKING::YOU::OUT::method(:from_postfix))).to_h
+=>
+{".csv"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:text, genus=:csv>,
+ ".mat"=>#<struct CHECKING::YOU::OUT kingdom=:x, phylum=:application, genus=:"matlab-data">,
+ ".v"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:vips>,
+ ".vips"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:vips>,
+ ".ppm"=>#<struct CHECKING::YOU::OUT kingdom=:x, phylum=:image, genus=:"portable-pixmap">,
+ ".pgm"=>#<struct CHECKING::YOU::OUT kingdom=:x, phylum=:image, genus=:"portable-graymap">,
+ ".pbm"=>#<struct CHECKING::YOU::OUT kingdom=:x, phylum=:image, genus=:"portable-bitmap">,
+ ".pfm"=>#<struct CHECKING::YOU::OUT kingdom=:x, phylum=:application, genus=:"font-type1">,
+ ".hdr"=>#<struct CHECKING::YOU::OUT kingdom=:x, phylum=:image, genus=:hdr>,
+ ".dz"=>#<struct CHECKING::YOU::OUT kingdom=:microsoft, phylum=:image, genus=:"deep-zoom">,
+ ".png"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:png>,
+ ".jpg"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:jpeg>,
+ ".jpeg"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:jpeg>,
+ ".jpe"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:jpeg>,
+ ".webp"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:webp>,
+ ".tif"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:tiff>,
+ ".tiff"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:tiff>,
+ ".fits"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:fits>,
+ ".fit"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:fits>,
+ ".fts"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:fits>,
+ ".gif"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:gif>,
+ ".bmp"=>#<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:bmp>}
+```
+
+```
+irb(main)> ::Vips::Foreign::suffixes.yield_self(&::CHECKING::YOU::OUT::method(:from_postfix)).uniq.map(&:inspect)
+=>
+["#<CHECKING::YOU::OUT text/csv>",
+ "#<CHECKING::YOU::OUT application/x-matlab-data>",
+ "#<CHECKING::YOU::OUT image/vips>",
+ "#<CHECKING::YOU::OUT image/x-portable-pixmap>",
+ "#<CHECKING::YOU::OUT image/x-portable-graymap>",
+ "#<CHECKING::YOU::OUT image/x-portable-bitmap>",
+ "#<CHECKING::YOU::OUT application/x-font-type1>",
+ "#<CHECKING::YOU::OUT image/x-hdr>",
+ "#<CHECKING::YOU::OUT image/vnd.microsoft.deep-zoom+xml>",
+ "#<CHECKING::YOU::OUT image/png>",
+ "#<CHECKING::YOU::OUT image/jpeg>",
+ "#<CHECKING::YOU::OUT image/webp>",
+ "#<CHECKING::YOU::OUT image/tiff>",
+ "#<CHECKING::YOU::OUT image/fits>",
+ "#<CHECKING::YOU::OUT image/gif>",
+ "#<CHECKING::YOU::OUT image/bmp>"]
+```
+
+Boom, now we're defining our Module interface with live Objects instead of with Strings! All we have to do is perform the same matching on an individual file and connect the dots.
+
+```
+irb(main)> ::CHECKING::YOU::OUT::from_pathname("/home/okeeblow/224031.jpg") => #<struct CHECKING::YOU::OUT kingdom=:possum, phylum=:image, genus=:jpeg>
+```
 
 ## Alternatives
 
