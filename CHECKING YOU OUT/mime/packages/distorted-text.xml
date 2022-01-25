@@ -7,4 +7,12 @@
     -->
     <glob pattern="*.conf"/>
   </mime-type>
+
+  <!--
+    TODO: Re-enable this glob when I have a better way to hint the CYO interface.
+          Its `*.v` conflicts with libvips' native-format extname.
+  -->
+  <mime-type type="text/x-verilog">
+    <glob-deleteall/>
+  </mime-type>
 </mime-info>
