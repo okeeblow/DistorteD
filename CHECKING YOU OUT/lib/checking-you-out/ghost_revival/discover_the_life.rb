@@ -1,7 +1,7 @@
 require(-'pathname') unless defined?(::Pathname)
 
 # Components for data-directory discovery.
-require(-'xross-the-xoul/path') unless defined?(::XROSS::THE::PATH.DATA_DIRS)
+require(-'xross-the-xoul/path') unless defined?(::XROSS::THE::PATH)
 
 
 # Methods for finding all appropriate source data files in the running environment.
@@ -40,7 +40,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE
     #       "The [`PATH`] list shall be searched from beginning to end, applying the filename to each prefix,
     #        until an executable file with the specified name and appropriate execution permissions is found."
     #       Our XML packages aren't executables, but you get the idea :)
-    ::XROSS::THE::PATH.DATA_DIRS.reverse!.push(
+    ::XROSS::THE::PATH.data_dirs.reverse!.push(
       # Sandwich the Gem-local path between the XDG system-wide and user-specific dirs,
       # so we can provide our own bundled `shared-mime-info` if one isn't installed system-wide,
       # while still allowing the user to override any of our types.
@@ -49,7 +49,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::DISCOVER_THE_LIFE
       # Append user-specific `XDG_DATA_HOME` to the very end so the system-wide
       # and CYO-bundled items can be overriden with e.g. `<glob-deleteall>`.
       # See the note above about why we're `#reverse`ing this.
-      ::XROSS::THE::PATH.DATA_HOME.reverse!
+      ::XROSS::THE::PATH.data_home.reverse!
     ).map {
       # Add path fragments for finding `shared-mime-info` package files.
       # This same subdir path applies when searching *any* `PATH` for `shared-mime-info` XML,

@@ -49,7 +49,7 @@ class XROSS::THE::PATH
   #   #<Pathname:/home/okeeblow/Works/DistorteD/CHECKING YOU OUT/$HOME/hello.jpg>
   #
   # I'm not going to attempt to interpret raw variable-name `::String`s (like `'$HOME'`) for now.
-  def self.ENVIRONMENTAL_PATHNAMES(variable, allow_relative = false)
+  def self.environmental_pathnames(variable, allow_relative = false)
     # Skip empty-`String` variables as well as missing variables.
     # Helper methods should provide appropriate defaults when we fail this condition and return `nil`.
     if self::DD_ENV.has_key?(variable) and not self::DD_ENV[variable]&.empty?
@@ -70,12 +70,12 @@ class XROSS::THE::PATH
 
   # "`$XDG_DATA_DIRS` defines the preference-ordered set of base directories to
   # search for data files in addition to the `$XDG_DATA_HOME` base directory."
-  def self.DATA_DIRS
+  def self.data_dirs
     # "If `$XDG_DATA_DIRS` is either not set or empty,
     # a value equal to `/usr/local/share/:/usr/share/` should be used."
-    self.ENVIRONMENTAL_PATHNAMES(-'XDG_DATA_DIRS') || ['/usr/local/share/', '/usr/share/'].tap {
+    self.environmental_pathnames(-'XDG_DATA_DIRS') || ['/usr/local/share/', '/usr/share/'].tap {
       # Fixup platforms where we know to expect filez outside the fd.o defaults.
-      if ::XROSS::THE::OS::mac? then
+      if ::XROSS::THE::OS::is_macOS? then
         # Specific documentation references:
         # - https://www.finkproject.org/doc/install/install-first.php?phpLang=en#directory
         # - https://www.finkproject.org/faq/general.php?phpLang=en#usr-local
@@ -87,27 +87,27 @@ class XROSS::THE::PATH
         _1.append('/sw/share')             # Fink
       end
     }.map(&::Pathname::method(:new)).keep_if(&:directory?).map(&:realpath)
-  end  # DATA_DIRS
+  end  # data_dirs
 
   # "`$XDG_DATA_HOME` defines the base directory relative to which user-specific data files should be stored."
-  def self.DATA_HOME
-    self.ENVIRONMENTAL_PATHNAMES(-'XDG_DATA_HOME') || [
+  def self.data_home
+    self.environmental_pathnames(-'XDG_DATA_HOME') || [
       # "If `$XDG_DATA_HOME` is either not set or empty, a default equal to $HOME/.local/share should be used."
       ::Pathname.new(::Dir::home).expand_path.realpath.join(-'.local', -'share')
     ]
   end
 
   # "`$XDG_CONFIG_HOME` defines the base directory relative to which user-specific configuration files should be stored."
-  def self.CONFIG_HOME
-    self.ENVIRONMENTAL_PATHNAMES(-'XDG_CONFIG_HOME') || [
+  def self.config_home
+    self.environmental_pathnames(-'XDG_CONFIG_HOME') || [
       # "If `$XDG_CONFIG_HOME` is either not set or empty, a default equal to `$HOME/.config` should be used."
       ::Pathname.new(::Dir::home).expand_path.realpath.join(-'.config')
     ]
   end
 
   # "`$XDG_STATE_HOME` defines the base directory relative to which user-specific state files should be stored."
-  def self.STATE_HOME
-    self.ENVIRONMENTAL_PATHNAMES(-'XDG_STATE_HOME') || [
+  def self.state_home
+    self.environmental_pathnames(-'XDG_STATE_HOME') || [
       # "If `$XDG_STATE_HOME` is either not set or empty, a default equal to `$HOME/.local/state` should be used. "
       ::Pathname.new(::Dir::home).expand_path.realpath.join(-'.local', -'state')
     ]
@@ -118,8 +118,8 @@ class XROSS::THE::PATH
   # - https://gitlab.freedesktop.org/xdg/xdg-specs/-/issues/14
   # - https://gitlab.freedesktop.org/xdg/xdg-specs/-/issues/63
   # - https://lists.freedesktop.org/archives/xdg/2017-August/013943.html
-  def self.BIN_HOME
-    self.ENVIRONMENTAL_PATHNAMES(-'XDG_BIN_HOME') || [
+  def self.bin_home
+    self.environmental_pathnames(-'XDG_BIN_HOME') || [
       # The current specification *does* name the actual path, just not the `$XDG_BIN_HOME` variable for it:
       # "User-specific executable files may be stored in `$HOME/.local/bin`.
       #  Distributions should ensure this directory shows up in the UNIX `$PATH` environment variable,
@@ -131,14 +131,14 @@ class XROSS::THE::PATH
   end
 
   # Returns a combined `Array` of user-specific and system-wide XDG Data `Pathname`s.
-  def self.DATA
+  def self.data
     # The base directory defined by `$XDG_DATA_HOME` is considered more important
     # than any of the base directories defined by `$XDG_DATA_DIRS`.
-    self.DATA_DIRS + self.DATA_HOME
+    self.data_dirs + self.data_home
   end
 
   # Hide the `Pathname`-making helper method.
-  private_class_method(:ENVIRONMENTAL_PATHNAMES)
+  private_class_method(:environmental_pathnames)
 
 end
 
