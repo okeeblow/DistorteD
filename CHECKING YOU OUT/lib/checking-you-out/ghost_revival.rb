@@ -7,7 +7,6 @@ require(-'addressable') unless defined?(::Addressable)
 
 # Assorted specialty data structure classes / modules for storing loaded type data in-memory in a usable way.
 require_relative(-'ghost_revival/set_me_free') unless defined?(::CHECKING::YOU::OUT::GHOST_REVIVAL::SET_ME_FREE)
-require_relative(-'ghost_revival/astraia') unless defined?(::CHECKING::YOU::OUT::StellaSinistra)
 require_relative(-'ghost_revival/ultravisitor') unless defined?(::CHECKING::YOU::OUT::ULTRAVISITOR)
 require_relative(-'ghost_revival/weighted_action') unless defined?(::CHECKING::YOU::OUT::WeightedAction)
 require_relative(-'ghost_revival/wild_io') unless defined?(::CHECKING::YOU::OUT::Wild_I∕O)
