@@ -110,7 +110,7 @@ class XROSS::THE::CPU
   # NOTE that the 'N' here stands for "'N'ative Endianness" and is different from
   #      the 'N' directive to `::Array#pack` which represents a 'N'etwork (Big) endian 32-bit int.
   #      We're following the same method-naming convention as Carbon's `Endian.h`.
-  def self.swapBtoN(otra) = self::ORIGIN_OF_SYMMETRY.eql?(:BE) ? otra : self.swap(otra)
-  def self.swapLtoN(otra) = self::ORIGIN_OF_SYMMETRY.eql?(:LE) ? otra : self.swap(otra)
+  def self.swapBtoN(otra) = self::ORIGIN_OF_SYMMETRY.eql?(:>) ? otra : self.swap(otra)
+  def self.swapLtoN(otra) = self::ORIGIN_OF_SYMMETRY.eql?(:<) ? otra : self.swap(otra)
 
 end
