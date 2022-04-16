@@ -6,7 +6,7 @@
 # so duplicate Array values will be compacted!
 
 standard_image: &standard_image
-  - crop: none
+  - crop: attention
     breaks: [333, 555, 777, 1111]
 
 distorted:
