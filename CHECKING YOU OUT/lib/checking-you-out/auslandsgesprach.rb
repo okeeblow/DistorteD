@@ -215,7 +215,7 @@ module ::CHECKING::YOU::IN::AUSLANDSGESPRÄCH
 
     # 𝘐𝘛'𝘚 𝘠𝘖𝘜 !!
     cats = ->(gentlemen) {
-      gentlemen.encode!(::Encoding::UTF_8).each_codepoint.reverse_each(&move_zig)
+      gentlemen.to_s.encode!(::Encoding::UTF_8).each_codepoint.reverse_each(&move_zig)
       move_zig.call(0)
       return my_base.yield_self(
         &::CHECKING::YOU::OUT::GHOST_REVIVAL::ONE_OR_EIGHT

@@ -17,8 +17,8 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
   # Browsers old enough to lack <picture> support almost certainly lack support
   # for newer Image Types like WebP/AVIF. Use a MetaType to trigger the selection
   # and rendering of one (1) fallback.
-  FALLBACK_IMAGE_TYPE = ::CHECKING::YOU::IN::from_iana_media_type('image/x.distorted.fallback')
-  OUTER_LIMITS = Hash[FALLBACK_IMAGE_TYPE => nil]
+  FALLBACK_IMAGE_TYPE = ::CHECKING::YOU::OUT::from_iana_media_type('image/x-distorted-fallback')
+  OUTER_LIMITS = Hash[::CHECKING::YOU::OUT::from_iana_media_type('image/x-distorted-fallback') => nil]
 
   # Given an input Change, what `::CHECKING::YOU::OUT` should we use as the fallback?
   def detect_fallback_image_type
@@ -43,7 +43,7 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
     }
   end
 
-  define_method(FALLBACK_IMAGE_TYPE.distorted_template_method) { |change|
+  define_method(::CHECKING::YOU::OUT::from_iana_media_type('image/x-distorted-fallback').distorted_template_method) { |change|
     # TODO: Fix the interaction between Change#name and any Tags, stop modifying this Change
     # in-place since it will currently go on to run the modified-Type's :write method,
     # and stop regenerating all files when only one has changed.
@@ -54,7 +54,7 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
       Cooltrainer::ElementalCreation.new(:img, change, parent: :picture),
     ]
   }
-  define_method(FALLBACK_IMAGE_TYPE.distorted_file_method) { |dest_root, change|
+  define_method(::CHECKING::YOU::OUT::from_iana_media_type('image/x-distorted-fallback').distorted_file_method) { |dest_root, change|
     # TODO: Handle `:modified?` more gracefully and stop relying on the above fallback
     # `:distorted_template_method` to modify our Change for us.
     # This currently never runs!
@@ -65,7 +65,7 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
   def self.render_picture_source
     @@render_picture_source = lambda { |change|
       # Fill in missing CSS media queries for any original-size (tag == null) Change that lacks one.
-      if change.width.nil? and not change.type.genus.include?('svg'.freeze)
+      if change.width.nil? and not change.type.genus.eql?(:svg) then
         change.width = to_vips_image(change).width
       end
       Cooltrainer::ElementalCreation.new(:picture_source, change, parent: :picture)

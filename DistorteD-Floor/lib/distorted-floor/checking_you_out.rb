@@ -32,6 +32,16 @@ module DistorteD::CHECKING::YOU::OUT
 
   end
 
+  refine ::CHECKING::YOU::OUT::singleton_class do
+    def from_iana_media_type(otra)
+      case otra
+      when "image/x-distorted-fallback", :"image/x-distorted-fallback" then
+        @fallback_image_type ||= ::CHECKING::YOU::OUT::new(:x, :image, :"distorted-fallback")
+      else super
+      end
+    end
+  end
+
 
   refine ::CHECKING::YOU::IN do
 
@@ -55,7 +65,7 @@ module DistorteD::CHECKING::YOU::OUT
     # `nil` `:genus` will just be compacted out.
     # Every non-nil :phylum will also request a key path [media_type, '*']
     # to allow for similar-type defaults, e.g. every image type outputting a fallback.
-    def settings_paths; [[self.phylum, -?*], [self.phylum, self.genus&.split(-?+)&.first].compact]; end
+    def settings_paths; [[self.phylum, -?*], [self.phylum, self.genus].compact]; end
 
     private
 
