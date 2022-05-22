@@ -176,7 +176,12 @@ module Cooltrainer
       has_matching_parent.group_by(&:parent).each_pair { |parent, children|
         # NOTE: This currently only appends the matched children to the last (usually only)
         # matching parent Element. I don't yet have a use-case to add anything more advanced.
-        direct_children[parent].last.children.concat(children)
+        (direct_children[parent].nil? ?
+          (direct_children.empty?     ?
+            self.children : direct_children.values.last.last.children
+          ) :
+          direct_children[parent].last.children
+        ).concat(children)
       }
 
       # Now we're ready to render! Our template will need to interate any child Elements in Liquid.

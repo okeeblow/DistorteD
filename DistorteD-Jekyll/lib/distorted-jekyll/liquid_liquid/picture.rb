@@ -51,6 +51,7 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
     change.href = "#{change.dir}#{change.name}"
     Array[
       Cooltrainer::ElementalCreation.new(:anchor, change, **{}),
+      Cooltrainer::ElementalCreation.new(:picture, change, parent: :anchor),
       Cooltrainer::ElementalCreation.new(:img, change, parent: :picture),
     ]
   }
