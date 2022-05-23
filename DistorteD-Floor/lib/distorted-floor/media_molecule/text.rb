@@ -93,7 +93,7 @@ module Cooltrainer::DistorteD::Molecule::Text
     ::CHECKING::YOU::OUT::from_iana_media_type('text/x-nfo') => nil,
   }.merge(
     Cooltrainer::DistorteD::Technology::Vips::Save::OUTER_LIMITS.dup.transform_values{ |v| Hash[
-      :spacing => Cooltrainer::Compound.new(:spacing, blurb: 'Document-wide character spacing style.', valid: Set[:monospace, :proportional]),
+      :spacing => Cooltrainer::Compound.new(:spacing, blurb: 'Document-wide character spacing style.', valid: Set[:monospace, :proportional], default: :monospace),
       :dpi => Cooltrainer::Compound.new(:dpi, blurb: 'Dots per inch for text rendering.', valid: Integer, default: 144),
       :font => Cooltrainer::Compound.new(:font, blurb: 'Font to use for text rendering.', valid: self::FONT_FILENAME.keys.to_set),
     ]}
