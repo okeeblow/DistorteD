@@ -53,6 +53,10 @@ distorted:
         ? image/svg+xml
         ? image/png
         ? image/webp
+      svg+xml:
+        ? image/svg+xml
+        ? image/png
+        ? image/webp
     text:
       plain:
         ? text/plain
