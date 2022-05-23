@@ -101,7 +101,6 @@ module Cooltrainer::DistorteD::Molecule::Text
 
   self::LOWER_WORLD.keys.each { |t|
     define_method(t.distorted_file_method) { |dest_root, change|
-      p change.paths(dest_root)
       copy_file(change.paths(dest_root).first)
     }
   }
