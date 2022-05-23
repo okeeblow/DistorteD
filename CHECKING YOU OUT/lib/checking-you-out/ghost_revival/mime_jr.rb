@@ -572,6 +572,11 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:pathname).keep_if(&:directory?)
     )
 
+    # HACK: Pull an additional file-extension needle out of our path needles.
+    @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:sinistar).each {
+      @needles[_1.class].add(_1)
+    }
+
     # HACK: Do a one-time `String`-ification of CYI-like keys since we need to do a lot of comparisons of them
     #       and don't want to be allocating them over and over.
     # TODO: Do the same for Glob-like keys.
