@@ -92,12 +92,12 @@ module Cooltrainer
     # then modern annoying formats like AVIF/WebP, then old standby types like PNG.
     # TODO: Sort things other than Images
     SORT_WEIGHTS = [
-      'svg+xml'.freeze,
-      'avif'.freeze,
-      'webp'.freeze,
-      'png'.freeze,
-      'jpeg'.freeze,
-      'gif'.freeze,
+      :svg,
+      :avif,
+      :webp,
+      :png,
+      :jpeg,
+      :gif,
     ].map.with_index.to_h
     # Return a static 0 weight for unknown types.
     SORT_WEIGHTS.default_proc = Proc.new { 0 }
