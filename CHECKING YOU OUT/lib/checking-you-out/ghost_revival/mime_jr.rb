@@ -378,8 +378,8 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       when :treemagic, :treematch then @needles[::Dir].empty?
       when :glob                  then (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
-        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].empty?
-        @needles[::CHECKING::YOU::OUT::StellaSinistra].empty?
+        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].empty?           and
+        @needles[::CHECKING::YOU::OUT::StellaSinistra].empty?          and
         @needles[::CHECKING::YOU::OUT::DeusDextera].empty?
       )
       when :"root-XML"            then @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
@@ -419,8 +419,8 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       when :treemagic, :treematch then @needles[::Dir].empty?
       when :glob                  then (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
-        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].empty?
-        @needles[::CHECKING::YOU::OUT::StellaSinistra].empty?
+        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].empty?           and
+        @needles[::CHECKING::YOU::OUT::StellaSinistra].empty?          and
         @needles[::CHECKING::YOU::OUT::DeusDextera].empty?
       )
       when :"root-XML"            then @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
@@ -498,8 +498,8 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       when :treemagic, :treematch then @needles[::Dir].empty?
       when :glob                  then (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].empty? and
-        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].empty?
-        @needles[::CHECKING::YOU::OUT::StellaSinistra].empty?
+        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].empty?           and
+        @needles[::CHECKING::YOU::OUT::StellaSinistra].empty?          and
         @needles[::CHECKING::YOU::OUT::DeusDextera].empty?
       )
       when :"root-XML"            then @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].empty?
