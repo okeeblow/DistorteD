@@ -69,6 +69,7 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
       if change.width.nil? or not change.type.genus.eql?(:svg) then
         change.width = to_vips_image(change).width
       end
+      # https://html.spec.whatwg.org/multipage/images.html#select-an-image-source-from-a-source-set
       Cooltrainer::ElementalCreation.new(:picture_source, change, parent: :picture)
     }
   end
