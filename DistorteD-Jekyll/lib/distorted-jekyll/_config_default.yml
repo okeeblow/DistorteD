@@ -7,7 +7,6 @@
 
 standard_image: &standard_image
   - crop: attention
-    breaks: [333, 555, 777, 1111]
 
 distorted:
 

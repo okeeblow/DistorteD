@@ -23,6 +23,7 @@ module DistorteD::CHECKING::YOU::OUT
         :file => 'write'.freeze,
         :open => 'open'.freeze,
         :template => 'render'.freeze,
+        :break => 'break'.freeze,
       ]
     end
 

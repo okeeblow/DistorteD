@@ -12,6 +12,40 @@ module Cooltrainer::DistorteD::Technology; end
 module Cooltrainer::DistorteD::Technology::Vips::Save
 
 
+  # Generate a repeating sequence of `digit` to the `length` place.
+  BREAK_CORE = proc { |(digit, length)|
+    (10 ** Math.log10(10 ** length).ceil - 1) / 9 * digit
+  }
+
+  # Generate an `::Array` of indices which will be used to
+  # get `#values_at` the contents of another `::Array`
+  def index_logspace(a, b, n)
+    (0...n).map { |i| (Float(i) / 4).yield_self { (1 - _1) * a + (_1 * b) }}.map!(&:floor)
+  end
+
+  # Generate an `::Array` of breakpoint widths
+  # for a given maximum or the current `Vips::Image`.
+  def break_corps(limit = nil)
+    limit = to_vips_image.width if limit.nil?
+    (1..9).to_a.product(
+      # Don't generate thumbnails smaller than 111px (`to: 3` digits).
+      limit.digits.size.step(to: 3, by: -1).to_a
+    ).map!(&BREAK_CORE).sort!.keep_if(&limit.method(:>)).reverse!.yield_self {
+      _1.values_at(
+        *index_logspace(
+          1,                      # Minimum key
+          _1.size,                # Maximum key
+          case limit.digits.size  # Number of results
+            # We limited to 3 digits already
+            when 3 then 3
+            when 4 then 5
+            else 6
+          end
+        )
+      ).uniq.compact
+    }
+  end
+
   # There is one (only one) native libvips image format, with file extname `.vips`.
   # As I write this—running libvips 8.8—the :get_suffixes function does not include
   # its own '.vips' as a supported extension.
@@ -72,6 +106,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
   # context where this module is included.
   self::OUTER_LIMITS.each_key { |t|
     next if t.nil?
+
     define_method(t.distorted_file_method) { |dest_root, change|
       # Find a VipsType Struct for the saver operation
       vips_operation = Cooltrainer::DistorteD::Technology::Vips::VipsType::saver_for(change.type).first
@@ -105,12 +140,15 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
       loaded_image = to_vips_image(change)
 
       # Assume the first destination_path has a :nil limit-break.
-      change.paths(dest_root).zip(Array[nil].concat(change.breaks)).each { |(dest_path, width)|
+      change.paths(dest_root).zip(
+        # Allow configuration to override automatically-detected breaks.
+        Array[nil].concat(change.breaks&.empty? ? break_corps : change.breaks)
+      ).each { |(dest_path, width)|
         # Chain a call to VipsThumbnailImage into our input Vips::Image iff we were given a width.
         # TODO: Exand this to aarbitrary other operations and consume their options Hash e.g.
         # Cooltrainer::DistorteD::Technology::Vips::VipsType.new(:VipsThumbnailImage).options
         input_image = (width or not [nil, :none].include?(change.to_hash.fetch(:crop, nil))) ?
-          loaded_image.thumbnail_image(loaded_image.width, crop: change.to_hash.fetch(:crop, :none)) :
+          loaded_image.thumbnail_image(width || loaded_image.width, crop: change.to_hash.fetch(:crop, :none)) :
           loaded_image
         # Do the thing.
         Vips::Operation.call(

@@ -111,7 +111,7 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
         # Query our configuration again for variations on each Type.
         # For example, one single image Type may want multiple resolutions to enable responsive <picture> tags,
         # or a single video Type may want multiple bitrates for adaptive streaming.
-        limit_breaks = the_setting_sun(:outer_limits, *(type&.settings_paths)) || Array[Hash[]]
+        limit_breaks = the_setting_sun(:outer_limits, *(type&.settings_paths)) || Set[Hash[]]
         # Which MediaMolecule Modules support this Type as an output? Probably just one.
         outer_limits.keep_if { |k, v| v.has_key?(type) }.keys.each { |molecule|
           # As before, if there is nothing in the config just treat it as a Change to
@@ -120,6 +120,10 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
             # Merge each variation's config with any/all attributes given to our Liquid Tag,
             # as well as any Jekyll Stuff™ like the relative destination path.
             change_arguments = limit_break.merge(Hash[:dir => @relative_dest]).merge(context_arguments)
+            # HACK: Calculate image thumbnail breakpoints automatically if not defined in config.
+            if Cooltrainer::DistorteD::Technology::Vips::VipsType::saver_types.include?(type) then
+              change_arguments[:breaks] = break_corps unless change_arguments.has_key?(:breaks)
+            end
             # Each Change will carry instance Compound data in Atom Structs so we can avoid modifying
             # the Compound Struct with any variation-specific values since they will be reused.
             atoms = Hash.new
