@@ -56,7 +56,7 @@ module Cooltrainer::DistorteD::Molecule::Font
   # => [255, 1, 2, 3, 4]
   # irb(main):091:0> chars.values.map(&:chr).take(5)
   # => ["\xFF", "\x01", "\x02", "\x03", "\x04"]
-  def to_pango(change)
+  def to_pango(change = nil)
     output = '' << cr << '<span>' << cr
 
     output << "<span size='35387'> #{font_name}</span>" << cr << cr
@@ -66,7 +66,7 @@ module Cooltrainer::DistorteD::Molecule::Font
     output << "<span size='24576'> #{font_version}</span>" << cr << cr
 
     # Print a preview String in using the loaded font. Or don't.
-    if change.title
+    if !change.nil? and change.title
       output << cr << cr << "<span size='24576' foreground='grey'> #{g_markup_escape_text(abstract(:title))}</span>" << cr << cr << cr
     end
 
@@ -153,7 +153,7 @@ module Cooltrainer::DistorteD::Molecule::Font
     path
   end
 
-  def to_vips_image(change)
+  def to_vips_image(change = nil)
     # https://libvips.github.io/libvips/API/current/libvips-create.html#vips-text
     Vips::Image.text(
       # This string must be well-escaped Pango Markup:
@@ -171,7 +171,7 @@ module Cooltrainer::DistorteD::Molecule::Font
         :spacing => to_ttfunk.line_gap,
         # Requires libvips 8.8
         :justify => false,
-        :dpi => change.dpi&.to_i,
+        :dpi => change&.dpi&.to_i || 144,
       },
     )
   end

@@ -175,10 +175,10 @@ module Cooltrainer::DistorteD::Molecule::Text
 
   def vips_font
     # Set the shorthand Symbol key for our chosen font.
-    CODEPAGE_FONT[text_file_encoding&.code_page].first
+    @vips_font || CODEPAGE_FONT[text_file_encoding&.code_page].first
   end
 
-  def to_vips_image(change)
+  def to_vips_image(change = nil)
     # Load font metadata directly from the file so we don't have to
     # duplicate it here to feed to Vips/Pango.
     #
@@ -195,11 +195,12 @@ module Cooltrainer::DistorteD::Molecule::Text
 
     # It would be gross to pass this through so many methods in this mostly-untouched-since-0.5 code,
     # so just stick these directly into the instance variables used for memoization.
-    unless change.encoding.nil?
-      # TODO: Turning the String arguments into an Encoding should be a centralized thing
-      # of some sort, probably in Cooltrainer::Compound.
-      @text_file_encoding = change.encoding.is_a?(Encoding) ? change.encoding : Encoding::find(change.encoding)
-    end
+    # TODO: Turning the String arguments into an Encoding should be a centralized thing
+    # of some sort, probably in Cooltrainer::Compound.
+    @text_file_encoding = (change&.encoding.nil?) ?
+      ::Encoding::UTF_8 :
+      change&.encoding.is_a?(Encoding) ? change.encoding : Encoding::find(change.encoding)
+    @vips_font = (change&.font.nil?) ? nil : (FONT_FILENAME.include?(change.font.to_sym) ? change.font.to_sym : nil)
 
     # https://libvips.github.io/libvips/API/current/libvips-create.html#vips-text
     Vips::Image.text(
@@ -217,7 +218,7 @@ module Cooltrainer::DistorteD::Molecule::Text
         # Space between lines (in Points).
         :spacing => to_ttfunk.line_gap,
         :justify => true,  # Requires libvips 8.8
-        :dpi => change.dpi&.to_i,
+        :dpi => change&.dpi&.to_i || 144,
       },
     )
   end
