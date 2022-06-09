@@ -48,7 +48,7 @@ module Jekyll::DistorteD::LiquidLiquid::Picture
     # in-place since it will currently go on to run the modified-Type's :write method,
     # and stop regenerating all files when only one has changed.
     change_fallback_image!(change)
-    change.href = "#{change.dir}#{change.name}"
+    change.href = "#{change.dir}#{change.name}" if change.href.nil?
     Array[
       Cooltrainer::ElementalCreation.new(:anchor, change, **{}),
       Cooltrainer::ElementalCreation.new(:picture, change, parent: :anchor),
