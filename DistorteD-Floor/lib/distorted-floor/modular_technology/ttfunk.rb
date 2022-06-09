@@ -5,10 +5,16 @@ module Cooltrainer::DistorteD; end
 module Cooltrainer::DistorteD::Technology; end
 module Cooltrainer::DistorteD::Technology::TTFunk
 
+  # TTFunk is pretty slow to open a font, so I'm going to memoize them
+  # due to frequent `to_ttfunk` calls.
+  def ttfunk_files
+    @ttfunk_files ||= ::Hash::new
+  end
+
   def to_ttfunk
     # TODO: Check that src exists, because TTFunk won't and will just
     # give us an unusable object instead.
-    @ttfunk_file ||= TTFunk::File.open(font_path)
+    ttfunk_files[font_path] ||= TTFunk::File.open(font_path)
   end
 
   # Returns a boolean for whether or not this font is monospaced.
