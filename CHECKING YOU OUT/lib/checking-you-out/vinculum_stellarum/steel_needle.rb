@@ -24,6 +24,25 @@ module ::CHECKING::YOU::OUT::VinculumStellarum
     # https://redmine.lighttpd.net/projects/1/wiki/Mimetype_use-xattrDetails
     -'Content-Type',
 
+    # Dublin Core Metadata Element Set specifies a `Format` element which will contain a Media-Type `::String`:
+    # https://www.dublincore.org/specifications/dublin-core/format-element/
+    #
+    # XDG Extended Attributes docs suggest the viability of using `dublincore.format` attribute:
+    # https://www.freedesktop.org/wiki/CommonExtendedAttributes/#relationtodublincore
+    #
+    # T0DO: Extreme edge case — Structured `dublincore.format` for nested types:
+    #
+    #       "Structured `DC.Format` will also be used to indicate formats contained in nested-format files
+    #        (for example, a zip-compressed file will have an outermost format `application/zip`
+    #        but might contain LaTEX source of format `text/vnd.latex-z`)."
+    #
+    #       "The structure and syntax of `Qualified` DC has not been resolved at this time.
+    #        A refined structure for Format will be implemented according to the
+    #        general recommendations for `Qualified` DC."
+    #
+    #       See https://www.dublincore.org/specifications/dublin-core/format-element/
+    -'dublincore.format',
+
   ].freeze
 
   # On Lunix, "user extended attributes are allowed only for regular files and directories,
