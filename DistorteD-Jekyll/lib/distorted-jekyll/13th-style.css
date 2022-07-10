@@ -4,7 +4,6 @@ div.distorted::after {
     display: block;
     clear: left;
 }
-div.distorted.svg {background-color: #fbfbf8;}
 div.distorted.pdf > object {min-height: 76vh;}
 div.distorted > video {object-fit: contain;}
 div.distorted-caption {
