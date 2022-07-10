@@ -30,7 +30,7 @@ module Cooltrainer::DistorteD::Technology::Vips::Save
     (1..9).to_a.product(
       # Don't generate thumbnails smaller than 111px (`to: 3` digits).
       limit.digits.size.step(to: 3, by: -1).to_a
-    ).map!(&BREAK_CORE).sort!.keep_if(&limit.method(:>)).reverse!.yield_self {
+    ).map!(&BREAK_CORE).sort!.keep_if(&limit.method(:>)).yield_self {
       _1.values_at(
         *index_logspace(
           1,                      # Minimum key
