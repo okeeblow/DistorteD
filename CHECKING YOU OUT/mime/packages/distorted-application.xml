@@ -241,4 +241,64 @@
     </magic>
   </mime-type>
 
+  <!--
+    Microsoft "Channel Definition Format" — Used for Channels in IE4 and Offline Favorites in IE5.
+
+    Modern documentation:
+    https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/aa768137(v=vs.85)
+
+    Ye Olde Docere:
+    http://xml.coverpages.org/cdf970314.html
+    https://web.archive.org/web/19991013120513/http://msdn.microsoft.com/workshop/delivery/cdf/tutorials/generic.asp
+    https://www.w3.org/TR/NOTE-CDFsubmit.html
+    https://people.apache.org/~jim/NewArchitect/webrevu/1997/09_12/webauthors/09_12_97_5.html
+
+    This is *not* related to NASA's 1980s "Common Data Format":
+    https://en.wikipedia.org/wiki/Common_Data_Format
+
+    It doesn't seem to be registered, but software like WolframAlpha use `application/cdf` for NASA's CDF:
+    https://bugs.python.org/issue31867#msg304979
+
+    This is *not* related to the XML format `application/cdfx+xml` describing mechanical calibration data:
+    https://www.iana.org/assignments/media-types/application/CDFX+XML
+
+    This is *not* related to W3C's dead "Compound Document Format" whose spec proposes `application/cdf+xml`:
+    https://www.w3.org/2004/CDF/specs/CDI/cdi-framework/Indentification.src.html
+    https://arstechnica.com/uncategorized/2007/10/opendocument-foundation-drops-support-for-odf-backs-obscure-w3c-format/
+
+    According to a 1997 e-mail from Microsoft, the registration process for `application/cdf` was underway
+    and "Internet Explorer will support [`application/x-cdf`] forever."
+    http://scripting.com/davenet/stories/MIMEtypeforCDF.html
+
+    I can find no evidence the '90s `application/cdf` registration was ever granted,
+    and W3C's 2004 draft Common Document Format proposal makes it difficult to search for.
+    Presumably W3C would not have proposed `application/cdf` in 2004 for Compound Document Format
+    if it had already been registered by Microsoft in 1998 for Channel Definition Format.
+
+    Microsoft's C# `System.Web.MimeMapping` only defines `application/x-cdf` for `*.cdf` files,
+    so I'm going to define that as the main type here and leave `application/cdf` to NASA's Common Data Format:
+    https://referencesource.microsoft.com/#System.Web/MimeMapping.cs,133
+  -->
+  <mime-type type="application/x-cdf">
+    <comment>Microsoft Active Channel definition file</comment>
+    <acronym>CDF</acronym>
+    <expanded-acronym>Channel Definition Format</expanded-acronym>
+    <generic-icon name="text-html"/>
+    <!--
+      This format predates the XML 1.0 standard and does not define a `namespaceURI`,
+      something currently required by `shared-mime-info`'s `<root-XML/>`.
+
+      I have also found example Channel Definition Files which seem to be
+      SGML-based instead of the proto-XML, e.g.:
+      https://sceweb.uhcl.edu/liaw/odi/osji/COM/odi/demo/xml/samples/Channel.xml
+
+      Note the SGML-style empty end-tags (`</>`) and lack of `<?xml?>` prolog.
+      I need to confirm the behavior of these in IE4/IE5 before explicitly declaring this
+      as an XML sub-format.
+    <sub-class-of type="application/xml"/>
+    <root-XML localName="channel"/>
+    -->
+    <glob pattern="*.cdf" weight="55"/>  <!-- NetCDF has `*.cdf` weight 50 -->
+  </mime-type>
+
 </mime-info>
