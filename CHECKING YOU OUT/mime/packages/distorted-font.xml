@@ -31,4 +31,36 @@
     <glob pattern="*.dfont"/>
   </mime-type>
 
+
+  <!--
+    Bitstream's TrueDoc Portable Font Resource format is part of several
+    digital TV broadcast specifications and is documented as RFC 3073:
+    https://datatracker.ietf.org/doc/html/rfc3073
+
+    ```
+    Magic number(s): 50 46 52 30 hex
+    File extension(s): PFR
+    Macintosh File Type Code(s): Creator: 'b$pw' Type: 'PFR '
+    ```
+
+    There is also a newer version of the format with 50 46 52 31 hex (PFR1),
+    such as the test file included here. libmagic also recognizes PFR1:
+    https://github.com/file/file/blob/7a821aedc144f70ec848ea632a64db74b79563c1/magic/Magdir/fonts#L249-L252
+
+    The Bitstream specifications are available from Wayback Machine:
+    https://web.archive.org/web/20040407162455/http://www.bitstream.com/categories/developer/truedoc/pfrspec.html
+  -->
+  <mime-type type="application/font-tdpfr">
+    <comment>PFR font</comment>
+    <acronym>TDPFR</acronym>
+    <expanded-acronym>TrueDoc Portable Font Resource</expanded-acronym>
+    <generic-icon name="font-x-generic"/>
+    <magic>
+      <match type="big32" value="0x50465230" offset="0"/>
+      <match type="big32" value="0x50465231" offset="0"/>
+    </magic>
+    <glob pattern="*.pfr"/>
+    <alias type="application/vnd.truedoc"/>
+  </mime-type>
+
 </mime-info>
