@@ -186,7 +186,28 @@ class Jekyll::DistorteD::Invoker < Liquid::Tag
     # `relative_path` doesn't seem to always exist, but `path` does? idk.
     # I was testing with `relative_path` only with `_posts`, but it broke
     # when I invoked DD on a _page. Both have `path`.
-    @dir = File.dirname(page_data['path'.freeze])
+    dir = File.dirname(page_data['path'.freeze])
+
+    # HACK: If the Markdown source exists alongside a directory sharing its basename,
+    #       assume our media files will exist only in that subdirectory.
+    #
+    #       This lets me use Jekyll permalinks like `/:collection/:path/` due to an
+    #       awkward difference between `:path` for files in collections vs not.
+    #       See https://jekyllrb.com/docs/permalinks/ —
+    #
+    #       "Collections  —  `:path`:  Path to the document relative to the
+    #        collection's directory, *including* base filename of the document. "
+    #
+    #       "Pages  —  `:path`:   Path to the page relative to the site's
+    #        source directory, *excluding* base filename of the page."
+    #
+    # TODO: Silence obnoxious "Conflict: The following destination is shared by multiple files."
+    #       when using this permalink style workaround.
+    if File.directory?(File.join(dir, File.basename(page_data[-'path'], -'.*'))) then
+      @dir = File.join(dir, File.basename(page_data[-'path'], -'.*'))
+    else
+      @dir = dir
+    end
 
     # Every one of Ruby's `File.directory?` / `Pathname.directory?` /
     # `FileTest.directory?` methods actually tests that path on the
