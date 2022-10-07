@@ -58,9 +58,9 @@ if [
   # to instances of our liquid tag {% distorted %}
   # Available hooks can be seen here:
   #   https://github.com/jekyll/jekyll/blob/master/lib/jekyll/hooks.rb
-  # `:documents` does not seem to include `_pages` but does include `_posts`.
+  # `:documents` is `:posts`-plus-files-in-collections.
   Jekyll::Hooks.register(:pages, :pre_render, &md_injection)
-  Jekyll::Hooks.register(:posts, :pre_render, &md_injection)
+  Jekyll::Hooks.register(:documents, :pre_render, &md_injection)
 
 else
   # Example of how this looks with the outdated Ruby 2.5 on my Mint 19 laptop:
