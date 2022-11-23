@@ -83,4 +83,12 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND
   )
     self.[](query, area_code:, receiver:, coerce: ::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O)
   end
+
+  def from_fourcc(
+    query,
+    area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE,
+    receiver: ::Ractor::current
+  )
+    self.[](query, area_code:, receiver:, coerce: ::CHECKING::YOU::OUT::Miracle4::FourLeaf)
+  end
 end  # ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND = ::Ractor.make_shareable(

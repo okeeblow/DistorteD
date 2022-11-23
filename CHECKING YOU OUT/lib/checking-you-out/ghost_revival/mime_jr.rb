@@ -170,6 +170,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     :treemagic          => :content_match,
     :"root-XML"         => :content_match,
     :match              => :content_match,
+    :fourcc             => :content_match,  # TODO: Split this into a new category
     :glob               => :pathname_match,
     :alias              => :family_tree,
     :"sub-child-of"     => :family_tree,
@@ -387,6 +388,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
         @needles[::CHECKING::YOU::IN].empty? and
         @needles[::CHECKING::YOU::IN::B4U].empty?
       )
+      when :fourcc                then @needles[::CHECKING::YOU::OUT::Miracle4::FourLeaf].empty?
     end
 
     # Otherwise set up needed container objects.
@@ -403,8 +405,9 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       # the next `end_element(treematch)` will check the entire stack against our `@needles`.
       @i_can_haz_treemagic = true
       @mother_tree.append(::CHECKING::YOU::OUT::CosmicCat::new)
-    when :glob        then @astraia = ::CHECKING::YOU::OUT::ASTRAIAの双皿::new if @astraia.nil?
+    when :glob        then @astraia      = ::CHECKING::YOU::OUT::ASTRAIAの双皿::new if @astraia.nil?
     when :"root-XML"  then @re_roots     = ::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots::new if @re_roots.nil?
+    when :fourcc      then @four_leaf    = ::CHECKING::YOU::OUT::Miracle4::FourLeaf::new if @four_leaf.nil?
     end
   end
 
@@ -428,6 +431,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
         @needles[::CHECKING::YOU::IN].empty? and
         @needles[::CHECKING::YOU::IN::B4U].empty?
       )
+      when :fourcc                then @needles[::CHECKING::YOU::OUT::Miracle4::FourLeaf].empty?
     end
 
     case @parse_stack.last
@@ -484,6 +488,11 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       when :namespaceURI then @re_roots.namespace = value.as_s
       when :localName    then @re_roots.localname = value.as_s
       end
+    when :fourcc         then
+      case attr_name
+      when :type         then @four_leaf.format   = MAGIC_EYE[value.as_sym]
+      when :value        then @four_leaf.fourcc = value.as_s
+      end
     end
   end
 
@@ -507,6 +516,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
         @needles[::CHECKING::YOU::IN].empty? and
         @needles[::CHECKING::YOU::IN::B4U].empty?
       )
+      when :fourcc                then @needles[::CHECKING::YOU::OUT::Miracle4::FourLeaf].empty?
     end
 
     case name
@@ -540,8 +550,8 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
     when :glob then
       ::CHECKING::YOU::IN::from_iana_media_type(@media_type.dup, receiver: @receiver_ractor) if (
         @needles[::CHECKING::YOU::OUT::GHOST_REVIVAL::Wild_I∕O].map(&:astraia).map!(&@astraia.method(:eql?)).any? or
-        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].map(&@astraia.method(:eql?)).any? or
-        @needles[::CHECKING::YOU::OUT::StellaSinistra].map(&@astraia.method(:eql?)).any? or
+        @needles[::CHECKING::YOU::OUT::ASTRAIAの双皿].map(&@astraia.method(:eql?)).any?                           or
+        @needles[::CHECKING::YOU::OUT::StellaSinistra].map(&@astraia.method(:eql?)).any?                          or
         @needles[::CHECKING::YOU::OUT::DeusDextera].map(&@astraia.method(:eql?)).any?
       )
     when :"root-XML" then
@@ -549,6 +559,11 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
         @needles[::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots].map(&@re_roots.method(:eql?)).any?
       ) unless @re_roots.nil? or @re_roots&.empty?
       @re_roots.clear unless @re_roots.nil? or @re_roots&.empty?
+    when :fourcc then
+      ::CHECKING::YOU::IN::from_iana_media_type(@media_type.dup, receiver: @receiver_ractor) if (
+        @needles[::CHECKING::YOU::OUT::Miracle4::FourLeaf].map(&@four_leaf.method(:eql?)).any?
+      ) unless @four_leaf.nil? or @four_leaf&.empty?
+      @four_leaf.clear unless @four_leaf.nil? or @four_leaf&.empty?
     end
   end
 

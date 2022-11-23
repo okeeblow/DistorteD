@@ -130,8 +130,9 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       sinistar      = set_me_free.new          # `{StellaSinistra/DeusDextera => CYO}` container for Postfixes (extnames).
       astraia       = set_me_free.new          # `{ASTRAIAの双皿 => CYO}` container for more complex filename fragments.
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
-      mother_tree   = set_me_free.new          # `<treemagic>` => CYO container.
-      re_roots      = set_me_free.new          # `<root-XML>` => CYO container.
+      four_leaf     = set_me_free.new          # `{FourLead => CYO}` FourCC container.
+      mother_tree   = set_me_free.new          # `{<treemagic> => CYO}` container.
+      re_roots      = set_me_free.new          # `{<root-XML> => CYO}` container.
       regulus       = nil                      # `::Regexp::union` of `CYO#astraia`s — boolean gate for expensive glob comparison.
 
       # Cache recent results to avoid re-running matching logic.
@@ -177,6 +178,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
           sinistar.baleet(cyo.sinistar, cyo)
           astraia.baleet(cyo.astraia, cyo)
           mother_tree.baleet(cyo.mother_tree, cyo)
+          four_leaf.baleet(cyo.four_pieces_of_heaven, cyo)
           re_roots.baleet(cyo.re_roots, cyo)
 
           # There isn't a "subtraction" method like the opposite of `::Regexp::union`,
@@ -219,6 +221,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
         when ::Set then cyo.cat_sequence&.each { |action| as_above.bury(action.min, action.max, action, cyo) }
         else as_above.bury(cyo.cat_sequence.min, cyo.cat_sequence.max, cyo.cat_sequence, cyo)
         end
+        four_leaf.bury(cyo.four_pieces_of_heaven, cyo)
         mother_tree.bury(cyo.mother_tree, cyo)
         re_roots.bury(cyo.re_roots, cyo) unless cyo.eql?(APPLICATION_XML)
 
@@ -311,6 +314,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
               else (casiotone_nation.frozen? ? casiotone_nation.dup : casiotone_nation).add_parent(irregular_nation)
             end  # case casiotone_nation
           end
+        when ::CHECKING::YOU::OUT::Miracle4::FourLeaf then four_leaf[needle].yield_self(&together_4ever)
         when ::Addressable::URI then
           # `#downcase` any matched URI scheme since `::Addressable::URI#scheme` won't,
           # but `#scheme#downcase!` will mutate an unfrozen `::Addressable::URI` instance:

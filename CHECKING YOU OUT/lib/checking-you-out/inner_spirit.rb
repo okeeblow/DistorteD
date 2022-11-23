@@ -232,6 +232,11 @@ require_relative(-'sweet_sweet_love_magic') unless defined?(::CHECKING::YOU::OUT
 ::CHECKING::YOU::OUT.extend(::CHECKING::YOU::OUT::SweetSweet♡Magic)
 ::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::SweetSweet♥Magic)
 
+# FourCC / Macintosh OSType / QuickTime / DirectShow
+require_relative(-'four_pieces_of_heaven') unless defined?(::CHECKING::YOU::OUT::FourPiecesOfHeaven)
+::CHECKING::YOU::OUT::extend(::CHECKING::YOU::OUT::Miracle4)
+::CHECKING::YOU::OUT::include(::CHECKING::YOU::OUT::FourPiecesOfHeaven)
+
 # Methods for loading type data from `shared-mime-info` package XML files.
 require_relative(-'ghost_revival') unless defined?(::CHECKING::YOU::GHOST_REVIVAL)
 ::CHECKING::YOU::OUT.singleton_class.prepend(::CHECKING::YOU::OUT::GHOST_REVIVAL)

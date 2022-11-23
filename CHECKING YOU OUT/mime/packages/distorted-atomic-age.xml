@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mime-info [
+  <!ELEMENT mime-info (mime-type)+>
+  <!ATTLIST mime-info xmlns CDATA #FIXED "http://www.freedesktop.org/standards/shared-mime-info">
+
+  <!ELEMENT mime-type (fourcc+, fourcc-deleteall*)>
+  <!ATTLIST mime-type type CDATA #REQUIRED>
+
+  <!ELEMENT fourcc EMPTY>
+  <!ATTLIST fourcc xmlns CDATA #FIXED "http://cooltrainer.org/distorted/">
+  <!ATTLIST fourcc type (string|big32|little32|host32) #REQUIRED>
+  <!ATTLIST fourcc value CDATA #REQUIRED>
+
+  <!ELEMENT fourcc-deleteall EMPTY>
+  <!ATTLIST fourcc-deleteall xmlns CDATA #FIXED "http://cooltrainer.org/distorted/">
+]>
+
+<!--
+  Data Sources
+  - https://developer.apple.com/library/archive/documentation/QuickTime/QTFF/QTFFChap3/qtff3.html
+  - https://www.macdisk.com/macsigen.php
+  - http://www.zeusprod.com/technote/filetype.html
+  - https://filesignatures.net/index.php?page=all
+  - http://mp4ra.org/
+-->
+
+<mime-info>
+  <mime-type type="audio/mpeg">
+    <fourcc type="string" value=".mp3"/>       <!-- MPEG-1 layer 3, CBR & VBR (QT4.1 and later) -->
+    <fourcc type="big32" value="0x6D730055"/>  <!-- MPEG-1 layer 3, CBR only (pre-QT4.1) -->
+  </mime-type>
+</mime-info>

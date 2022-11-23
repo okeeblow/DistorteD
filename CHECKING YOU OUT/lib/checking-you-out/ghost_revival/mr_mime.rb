@@ -105,6 +105,8 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       @i_can_haz_treemagic = true
       @mother_tree.append(::CHECKING::YOU::OUT::CosmicCat.new)
     when :"root-XML" then @re_roots = ::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots::new if @re_roots.nil?
+    when :fourcc then @four_leaf = ::CHECKING::YOU::OUT::Miracle4::FourLeaf::new if @four_leaf.nil?
+    when :"fourcc-deleteall" then self.cyo.clear_fourccs
     end
   end
 
@@ -159,10 +161,15 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       when :pattern          then @astraia.replace(value.as_s)
       when :"case-sensitive" then @astraia.case_sensitive = value.as_bool
       end
-    when :"root-XML" then
+    when :"root-XML"     then
       case attr_name
       when :namespaceURI then @re_roots.namespace = value.as_s
       when :localName    then @re_roots.localname = value.as_s
+      end
+    when :fourcc         then
+      case attr_name
+      when :type         then @four_leaf.format   = MAGIC_EYE[value.as_sym]
+      when :value        then @four_leaf.fourcc   = value.as_s
       end
     end
   end
@@ -233,6 +240,9 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
     when :"root-XML" then
       self.cyo.add_xml_root(@re_roots.dup) unless @re_roots.nil? or @re_roots&.empty?
       @re_roots.clear unless @re_roots.nil? or @re_roots&.empty?
+    when :fourcc then
+      self.cyo.add_fourcc(@four_leaf.dup) unless @four_leaf.nil? or @four_leaf&.empty?
+      @four_leaf.clear unless @four_leaf.nil? or @four_leaf&.empty?
     end
   end
 
