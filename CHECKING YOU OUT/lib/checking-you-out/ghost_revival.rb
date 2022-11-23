@@ -48,14 +48,14 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   # These types are just very common as parents for other types,
   # so I'm always going to load them in the interest of minimizing XML parser restarts for their children.
   #
-  # [okeeblow@emi#shared-mime-info] grep sub-class-of freedesktop.org.xml.in | sed 's/ //g' | sort | uniq -c | sort -nr | head -n 7
-  #     153 <sub-class-oftype="text/plain"/>
-  #      54 <sub-class-oftype="application/zip"/>
-  #      43 <sub-class-oftype="application/xml"/>
-  #      19 <sub-class-oftype="image/x-dcraw"/>
-  #      12 <sub-class-oftype="image/tiff"/>
-  #      11 <sub-class-oftype="text/x-csrc"/>
-  #       8 <sub-class-oftype="application/gzip"/>
+  # [okeeblow@emi#shared-mime-info] grep sub-class-of freedesktop.org.xml.in | sed 's/^\s*//g' | sort | uniq -c | sort -nr | head -n 7
+  #     153 <sub-class-of type="text/plain"/>
+  #      54 <sub-class-of type="application/zip"/>
+  #      43 <sub-class-of type="application/xml"/>
+  #      19 <sub-class-of type="image/x-dcraw"/>
+  #      12 <sub-class-of type="image/tiff"/>
+  #      11 <sub-class-of type="text/x-csrc"/>
+  #       8 <sub-class-of type="application/gzip"/>
   APPLICATION_XML = ::CHECKING::YOU::IN::new(:possum, :application, :xml).freeze
   APPLICATION_ZIP = ::CHECKING::YOU::IN::new(:possum, :application, :zip).freeze
 
