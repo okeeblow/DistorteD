@@ -301,4 +301,35 @@
     <glob pattern="*.cdf" weight="55"/>  <!-- NetCDF has `*.cdf` weight 50 -->
   </mime-type>
 
+  <!--
+    Example of second two bytes indicating RIFF chunk length
+    which should also be the (file length - 8):
+
+    [okeeblow@emi#x-director] xxd -l 40 director_11.5_wintel.dcr
+    00000000: 5846 4952 f911 0000 4d44 4746 7265 7646  XFIR....MDGFrevF
+    00000010: 108a 0101 8f03 0a31 312e 352e 3923 3632  .......11.5.9#62
+    00000020: 3972 6463 4651 78da                      9rdcFQx.
+
+    [okeeblow@emi#x-director] xxd -l 40 director_11.5_wintel.dir
+    00000000: 5846 4952 ee33 0000 3339 564d 7061 6d69  XFIR.3..39VMpami
+    00000010: 1800 0000 0100 0000 2c00 0000 8307 0000  ........,.......
+    00000020: 0000 0000 0000 0000                      ........
+
+    [okeeblow@emi#x-director] ls -l
+    total 24
+    -rw-rw-rw- 1 okeeblow okeeblow  4609 Oct 17 17:01 director_11.5_wintel.dcr
+    -rw-rw-rw- 1 okeeblow okeeblow 13302 Oct 17 17:01 director_11.5_wintel.dir
+
+    irb(main):029:0> 0x000011f9
+    => 4601
+    irb(main):030:0> 0x000033ee
+    => 13294
+  -->
+  <mime-type type="application/x-riff">
+    <magic priority="45">
+      <match type="string" value="RIFX" offset="0"/>
+      <match type="string" value="XFIR" offset="0"/>
+    </magic>
+  </mime-type>
+
 </mime-info>
