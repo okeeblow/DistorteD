@@ -16,19 +16,23 @@ module ::CHECKING::YOU::OUT::TEXTURE
   #     […]
   #   </mini-type>
 
-  # For `<comment/>`.
-  attr_accessor(:description)
+  # For `<comment/>` — I want to call it 'description' instead of 'comment' because idk
+  attr_accessor(:description, :acronym)
 
   # Container for short and expanded acronym.
-  ACRNYM = ::Struct.new(:acronym, :description) do
+  ACRNYM = ::Struct.new(:initialism, :meaning) do
     # e.g. `"PDF (Portable Document Format)"`
-    def to_s; "#{self[:acronym]} (#{self[:description]})".-@; end
+    def to_s; "#{self[:initialism]} (#{self[:meaning]})".-@; end
   end
 
   # For `<acronym/>` and `<expanded-acronym/>`.
-  def acronym; @acrnym ||= ACRNYM.new; end
+  # Both elements' callback will invoke this same setter since:
+  # - there can only be one of each per the `shared-mime-info` DTD
+  # - they are stored in a single `Struct` together.
+  # We decide which `Struct` setter to call based on the presense of a space (' ').
+  # TOD0: Change this iff I find a breaking case (an `<expanded-acronym/>` with no space)
   def acronym=(otra)
-    self.acronym.send(otra.include?(-' ') ? :description= : :acronym=, otra)
+    (@acronym ||= ACRNYM.new).send(otra.include?(-' ') ? :meaning= : :initialism=, otra)
   end
 
 end
