@@ -137,4 +137,20 @@
     <glob pattern="*.fh11"/>
   </mime-type>
 
+  <!--
+    https://en.wikipedia.org/wiki/CPT_(file_format)
+    http://fileformats.archiveteam.org/wiki/Corel_Photo-Paint_image
+    https://web.archive.org/web/20220715204225/http://blog.argasinski.eu/wp-content/uploads/2011/08/cpt-specification-0.01.pdf
+  -->
+  <mime-type type="image/x-corel-cpt"/>
+    <generic-icon name="image-x-generic"/>
+    <comment>Corel PHOTO-PAINT drawing</comment>
+    <magic>
+      <match type="string" value="Corel PHOTO-PAINT" offset="14"/>       <!-- 3.0–6.0 -->
+      <match type="string" value="CPTXFILE" mask="0xffffff00ffffffff"/>  <!-- {7,8,9} -->
+      <match type="string" value="CPTFILE"/>
+    </magic>
+    <glob value="*.cpt"/>
+  </mime-type>
+
 </mime-info>
