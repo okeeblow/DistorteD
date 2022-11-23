@@ -332,4 +332,29 @@
     </magic>
   </mime-type>
 
+  <mime-type type="application/x-director">
+    <comment>Adobe Shockwave Director</comment>
+    <sub-type-of type="application/x-riff"/>
+    <generic-icon name="video-x-generic"/>
+    <glob pattern="*.dir"/>
+    <glob pattern="*.dcr"/>
+    <glob pattern="*.dxr"/>
+    <glob pattern="*.drx"/>
+    <glob pattern="*.cst"/>
+    <glob pattern="*.cxt"/>
+    <glob pattern="*.cct"/>
+    <magic>
+      <!-- RIFX -->
+      <match type="string" value="MV93" offset="8"/>  <!-- Director 4.0 -->
+      <match type="string" value="MV95" offset="8"/>  <!-- Director 5.0 -->
+      <match type="string" value="M!95" offset="8"/>
+      <match type="string" value="MV85" offset="8"/>  <!-- Director 8.5 -->
+      <!-- XFIR -->
+      <match type="string" value="39VM" offset="8"/>
+      <match type="string" value="59VM" offset="8"/>
+      <match type="string" value="59!M" offset="8"/>
+      <match type="string" value="58MV" offset="8"/>
+    </magic>
+  </mime-type>
+
 </mime-info>
