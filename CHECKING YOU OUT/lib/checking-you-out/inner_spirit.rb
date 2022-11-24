@@ -22,6 +22,8 @@ require(-'securerandom') unless defined?(::SecureRandom)
 # - http://patshaughnessy.net/2013/2/8/ruby-mri-source-code-idioms-3-embedded-objects
 class ::CHECKING; end
 class ::CHECKING::YOU; end
+# TODO: Convert this from `::Struct` to `::Data` once Ruby 3.2 is released:
+#       https://bugs.ruby-lang.org/issues/16122
 ::CHECKING::YOU::IN = ::Struct.new(
   # Intentionally avoiding naming taxonomic ranks like "domain", "class", or "order"
   # whose names are already common in computing.
