@@ -115,7 +115,7 @@
 # For example the EA IFF spec sez:
 #   "Spaces (hex 20) should not precede printing characters; trailing spaces are ok."
 
-module ::CHECKING::YOU::OUT::Miracle4
+module ::CHECKING::YOU::OUT::AtomicAge
   FourLeaf = ::Struct::new(:fourcc) do
     # TODO: Reject prefixed or infixed space characters (0x20). See RIFF specs.
     def fourcc=(cat); self[:fourcc] = self[:fourcc].nil? ? cat : self[:fourcc].call(cat); end
@@ -131,7 +131,7 @@ end
 
 
 module ::CHECKING::YOU::OUT::FourPiecesOfHeaven
-  attr_reader(:four_pieces_of_heaven)
-  def add_fourcc(four_leaf) = self.awen(:@four_pieces_of_heaven, four_leaf)
-  def clear_fourccs = self.remove_instance_variable(:@four_pieces_of_heaven) if self.instance_variable_defined?(:@four_pieces_of_heaven)
+  attr_reader(:four_leaf)
+  def add_fourcc(four_leaf) = self.awen(:@four_leaf, four_leaf)
+  def clear_fourccs = self.remove_instance_variable(:@four_leaf) if self.instance_variable_defined?(:@four_leaf)
 end

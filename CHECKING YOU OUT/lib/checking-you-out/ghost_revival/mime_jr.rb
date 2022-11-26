@@ -388,7 +388,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
         @needles[::CHECKING::YOU::IN].empty? and
         @needles[::CHECKING::YOU::IN::B4U].empty?
       )
-      when :fourcc                then @needles[::CHECKING::YOU::OUT::Miracle4::FourLeaf].empty?
+      when :fourcc                then @needles[::CHECKING::YOU::OUT::AtomicAge::FourLeaf].empty?
     end
 
     # Otherwise set up needed container objects.
@@ -407,7 +407,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @mother_tree.append(::CHECKING::YOU::OUT::CosmicCat::new)
     when :glob        then @astraia      = ::CHECKING::YOU::OUT::ASTRAIAの双皿::new if @astraia.nil?
     when :"root-XML"  then @re_roots     = ::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots::new if @re_roots.nil?
-    when :fourcc      then @four_leaf    = ::CHECKING::YOU::OUT::Miracle4::FourLeaf::new if @four_leaf.nil?
+    when :fourcc      then @four_leaf    = ::CHECKING::YOU::OUT::AtomicAge::FourLeaf::new if @four_leaf.nil?
     end
   end
 
@@ -431,7 +431,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
         @needles[::CHECKING::YOU::IN].empty? and
         @needles[::CHECKING::YOU::IN::B4U].empty?
       )
-      when :fourcc                then @needles[::CHECKING::YOU::OUT::Miracle4::FourLeaf].empty?
+      when :fourcc                then @needles[::CHECKING::YOU::OUT::AtomicAge::FourLeaf].empty?
     end
 
     case @parse_stack.last
@@ -516,7 +516,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
         @needles[::CHECKING::YOU::IN].empty? and
         @needles[::CHECKING::YOU::IN::B4U].empty?
       )
-      when :fourcc                then @needles[::CHECKING::YOU::OUT::Miracle4::FourLeaf].empty?
+      when :fourcc                then @needles[::CHECKING::YOU::OUT::AtomicAge::FourLeaf].empty?
     end
 
     case name
@@ -561,7 +561,7 @@ class ::CHECKING::YOU::OUT::MIMEjr < ::Ox::Sax
       @re_roots.clear unless @re_roots.nil? or @re_roots&.empty?
     when :fourcc then
       ::CHECKING::YOU::IN::from_iana_media_type(@media_type.dup, receiver: @receiver_ractor) if (
-        @needles[::CHECKING::YOU::OUT::Miracle4::FourLeaf].map(&@four_leaf.method(:eql?)).any?
+        @needles[::CHECKING::YOU::OUT::AtomicAge::FourLeaf].map(&@four_leaf.method(:eql?)).any?
       ) unless @four_leaf.nil? or @four_leaf&.empty?
       @four_leaf.clear unless @four_leaf.nil? or @four_leaf&.empty?
     end

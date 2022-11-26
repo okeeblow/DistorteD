@@ -89,6 +89,6 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND
     area_code: ::CHECKING::YOU::IN::DEFAULT_AREA_CODE,
     receiver: ::Ractor::current
   )
-    self.[](query, area_code:, receiver:, coerce: ::CHECKING::YOU::OUT::Miracle4::FourLeaf)
+    self.[](query, area_code:, receiver:, coerce: ::CHECKING::YOU::OUT::AtomicAge::FourLeaf)
   end
 end  # ::CHECKING::YOU::OUT::GHOST_REVIVAL::ROUND_AND_ROUND = ::Ractor.make_shareable(

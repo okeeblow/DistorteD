@@ -235,8 +235,8 @@ require_relative(-'sweet_sweet_love_magic') unless defined?(::CHECKING::YOU::OUT
 ::CHECKING::YOU::OUT.include(::CHECKING::YOU::OUT::SweetSweet♥Magic)
 
 # FourCC / Macintosh OSType / QuickTime / DirectShow
-require_relative(-'four_pieces_of_heaven') unless defined?(::CHECKING::YOU::OUT::FourPiecesOfHeaven)
-::CHECKING::YOU::OUT::extend(::CHECKING::YOU::OUT::Miracle4)
+require_relative(-'atomic_age') unless defined?(::CHECKING::YOU::OUT::AtomicAge)
+::CHECKING::YOU::OUT::extend(::CHECKING::YOU::OUT::AtomicAge)
 ::CHECKING::YOU::OUT::include(::CHECKING::YOU::OUT::FourPiecesOfHeaven)
 
 # Methods for loading type data from `shared-mime-info` package XML files.

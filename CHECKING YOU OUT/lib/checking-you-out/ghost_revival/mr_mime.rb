@@ -105,7 +105,7 @@ class ::CHECKING::YOU::OUT::MrMIME < ::CHECKING::YOU::OUT::MIMEjr
       @i_can_haz_treemagic = true
       @mother_tree.append(::CHECKING::YOU::OUT::CosmicCat.new)
     when :"root-XML" then @re_roots = ::CHECKING::YOU::OUT::SweetSweet♥Magic::ReRoots::new if @re_roots.nil?
-    when :fourcc then @four_leaf = ::CHECKING::YOU::OUT::Miracle4::FourLeaf::new if @four_leaf.nil?
+    when :fourcc then @four_leaf = ::CHECKING::YOU::OUT::AtomicAge::FourLeaf::new if @four_leaf.nil?
     when :"fourcc-deleteall" then self.cyo.clear_fourccs
     end
   end
