@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'globeglitter'
+require 'benchmark/ips'
+
+Benchmark.ips do |bm|
+  bm.report 'GlobeGlitter random' do
+    ::GlobeGlitter::random
+  end
+end

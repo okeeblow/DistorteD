@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'globeglitter'
+
+require 'ruby-prof'
+
+
+result = RubyProf.profile(:track_allocations => true) do
+  1_234_56.times do
+    ::GlobeGlitter::random
+  end
+end
+printer = RubyProf::GraphPrinter.new(result)
+printer.print(STDOUT, :min_percent => 2)

@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require('bundler/setup')
+require_relative('../lib/globeglitter')
+require_relative('../TEST MY BEST/test-my-best')

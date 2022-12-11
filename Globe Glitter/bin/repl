@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "irb"
+require "objspace"
+require "globeglitter"
+
+IRB.start(__FILE__)
