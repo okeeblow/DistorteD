@@ -8,12 +8,16 @@ require('securerandom') unless defined?(::SecureRandom)
   # Generate version 4 UUID
   def self.random = self::new(::SecureRandom::uuid.gsub(?-, '').to_i(16))
 
-  def time_low                    =  self[:inner_spirit] >> 96
-  def time_mid                    = (self[:inner_spirit] >> 80) & 0xFFFF
-  def time_high_and_version       = (self[:inner_spirit] >> 64) & 0xFFFF
-  def clock_seq_high_and_reserved = (self[:inner_spirit] >> 56) & 0xFF
-  def clock_seq_low               = (self[:inner_spirit] >> 48) & 0xFF
-  def node                        =  self[:inner_spirit]        & 0xFFFFFFFFFFFF
+  def time_low                    =   self[:inner_spirit] >> 96
+  def time_mid                    =  (self[:inner_spirit] >> 80) & 0xFFFF
+  def time_high_and_version       =  (self[:inner_spirit] >> 64) & 0xFFFF
+  def clock_seq_high_and_reserved = ((self[:inner_spirit] >> 56) & 0xFF) & case self.variant
+    when 0    then 0b01111111
+    when 1    then 0b00111111
+    when 2, 3 then 0b00011111
+  end
+  def clock_seq_low               =  (self[:inner_spirit] >> 48) & 0xFF
+  def node                        =   self[:inner_spirit]        & 0xFFFFFFFFFFFF
 
   def version = (self.time_high_and_version & 0xF000) >> 12
 
@@ -37,7 +41,18 @@ require('securerandom') unless defined?(::SecureRandom)
   #    1     1     0    Reserved, Microsoft Corporation backward compatibility
   #
   #    1     1     1    Reserved for future definition.
-  def variant =  self.clock_seq_high_and_reserved     >> 5
+  def variant
+    # Can't use getter for this since the getter return value will rely on this variant.
+    clock_seq_high_and_reserved = ((self[:inner_spirit] >> 56) & 0xFF)
+    # The variant is masked backwards, but with a variable number of bits,
+    # so we can't just swap it and mask.
+    case
+    when (clock_seq_high_and_reserved >> 7).zero?       then 0
+    when (clock_seq_high_and_reserved >> 6).eql?(0b10)  then 1
+    when (clock_seq_high_and_reserved >> 5).eql?(0b110) then 2
+    when (clock_seq_high_and_reserved >> 5).eql?(0b111) then 3
+    end
+  end
 
   # ITU-T Rec. X.667 sez —
   #
@@ -82,7 +97,7 @@ require('securerandom') unless defined?(::SecureRandom)
     end
   end
 
-  def inspect = "#<#{self.class.name} #{to_s}>"
+  def inspect = "#<#{self.class.name} #{self.to_s}>"
 
   # ITU-T Rec. X.667 sez —
   #
@@ -109,7 +124,19 @@ require('securerandom') unless defined?(::SecureRandom)
   end
   def clock_seq_high_and_reserved=(otra)
     self[:inner_spirit] = (
-      (self[:inner_spirit] & 0xFFFFFFFF_FFFFFFFF_00FFFFFF_FFFFFFFF) | ((otra & 0b00011111) | (self.variant << 5))
+      (self[:inner_spirit] & 0xFFFFFFFF_FFFFFFFF_00FFFFFF_FFFFFFFF) |
+      (
+        (otra & case self.variant
+          when 0    then 0b01111111
+          when 1    then 0b00111111
+          when 2, 3 then 0b00011111
+        end) | (case self.variant
+          when 0    then 0b00000000
+          when 1    then 0b10000000
+          when 2    then 0b11000000
+          when 3    then 0b11100000
+        end)
+      )
     )
   end
   def clock_seq_low=(otra)
