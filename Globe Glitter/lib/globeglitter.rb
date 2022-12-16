@@ -5,6 +5,11 @@ require('securerandom') unless defined?(::SecureRandom)
 # https://www.ietf.org/rfc/rfc4122.txt
 ::GlobeGlitter = ::Struct::new(:inner_spirit) do
 
+  # ITU-T Rec. X.667 sez —
+  #
+  # “The nil UUID is special form of UUID that is specified to have all 128 bits set to zero.”
+  def self.nil = self::new(0)
+
   # Generate version 4 UUID
   def self.random = self::new(::SecureRandom::uuid.gsub(?-, '').to_i(16))
 
