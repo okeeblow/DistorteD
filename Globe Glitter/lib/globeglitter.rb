@@ -24,6 +24,9 @@ require('securerandom') unless defined?(::SecureRandom)
   def clock_seq_low               =  (self[:inner_spirit] >> 48) & 0xFF
   def node                        =   self[:inner_spirit]        & 0xFFFFFFFFFFFF
 
+  # Getter for Base-16 `::String` output where these two fields are combined.
+  def clock_seq = (self.clock_seq_high_and_reserved << 8) | self.clock_seq_low
+
   def version = (self.time_high_and_version & 0xF000) >> 12
 
   # ITU-T Rec. X.667 sez —
@@ -61,39 +64,33 @@ require('securerandom') unless defined?(::SecureRandom)
 
   # ITU-T Rec. X.667 sez —
   #
-  # “To accurately represent a UUID as a URN, it is necessary to convert the bit sequence
-  #  to a string representation. Each field is treated as an integer and has its value printed
-  #  as a zero-filled hexadecimal digit string with the most significant digit first.”
-  # “The hexadecimal values "a" through "f" are output as lower case characters
-  #  and are case insensitive on input. The formal definition of the UUID string representation
-  #  is provided by the following ABNF:
+  # “Each field is treated as an integer and has its value printed as a
+  # *zero-filled* hexadecimal digit string with the most significant digit first.”
+  #    ^--- (emphasis mine)
   #
-  #  UUID                   = time-low "-" time-mid "-"
-  #                           time-high-and-version "-"
-  #                           clock-seq-and-reserved
-  #                           clock-seq-low "-" node
-  #  time-low               = 4hexOctet
-  #  time-mid               = 2hexOctet
-  #  time-high-and-version  = 2hexOctet
-  #  clock-seq-and-reserved = hexOctet
-  #  clock-seq-low          = hexOctet
-  #  node                   = 6hexOctet
-  #  hexOctet               = hexDigit hexDigit
-  #  hexDigit =
-  #        "0" / "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9" /
-  #        "a" / "b" / "c" / "d" / "e" / "f" /
-  #        "A" / "B" / "C" / "D" / "E" / "F"
+  # Convert a given `::Integer` to a hexadecimal `::String`, and prepend `0` characters
+  # until the new `::String` is as long as needed.
+  def left_pad(wanted_size, component) = component.to_s(16).yield_self {
+    _1.size.>=(wanted_size) ? _1 : _1.prepend(?0 * wanted_size.-(_1.size))
+  }
+  private(:left_pad)
+
+  # SAY YEEEAHH
   def to_s(base=16)
     case base
     when 16 then
+      # ITU-T Rec. X.667 sez —
+      #
+      # “Each field is treated as an integer and has its value printed as a
+      #  zero-filled hexadecimal digit string with the most significant digit first.
+      #  The hexadecimal values "a" through "f" are output as lower case characters.”
       ::Array[
-        self.time_low,
-        self.time_mid,
-        self.time_high_and_version,
-        self.clock_seq_high_and_reserved,
-        self.clock_seq_low,
-        self.node,
-      ].map!{ _1.to_s(16) }.join(?-)
+        self.left_pad(8,  self.time_low),
+        self.left_pad(4,  self.time_mid),
+        self.left_pad(4,  self.time_high_and_version),
+        self.left_pad(4,  self.clock_seq),
+        self.left_pad(12, self.node),
+      ].join(?-).-@
     else
       # Compare to `::Integer#to_s` behavior:
       #   irb> 333.to_s(666)
