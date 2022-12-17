@@ -1,19 +1,6 @@
 # `::String`-printing components.
 module ::GlobeGlitter::SAY_YEEEAHH
 
-  # ITU-T Rec. X.667 sez —
-  #
-  # “Each field is treated as an integer and has its value printed as a
-  # *zero-filled* hexadecimal digit string with the most significant digit first.”
-  #    ^--- (emphasis mine)
-  #
-  # Convert a given `::Integer` to a hexadecimal `::String`, and prepend `0` characters
-  # until the new `::String` is as long as needed.
-  def left_pad(wanted_size, component) = component.to_s(16).yield_self {
-    _1.size.>=(wanted_size) ? _1 : _1.prepend(?0 * wanted_size.-(_1.size))
-  }
-  private(:left_pad)
-
   # SAY YEEEAHH
   def to_s(base=16)
     case base
@@ -24,11 +11,11 @@ module ::GlobeGlitter::SAY_YEEEAHH
       #  zero-filled hexadecimal digit string with the most significant digit first.
       #  The hexadecimal values "a" through "f" are output as lower case characters.”
       ::Array[
-        self.left_pad(8,  self.time_low),
-        self.left_pad(4,  self.time_mid),
-        self.left_pad(4,  self.time_high_and_version),
-        self.left_pad(4,  self.clock_seq),
-        self.left_pad(12, self.node),
+        self.time_low.to_s(16).rjust(8, ?0),
+        self.time_mid.to_s(16).rjust(4, ?0),
+        self.time_high_and_version.to_s(16).rjust(4, ?0),
+        self.clock_seq.to_s(16).rjust(4, ?0),
+        self.node.to_s(16).rjust(12, ?0),
       ].join(?-).-@
     else
       # Compare to `::Integer#to_s` behavior:
