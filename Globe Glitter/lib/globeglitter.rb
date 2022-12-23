@@ -26,6 +26,8 @@ require('securerandom') unless defined?(::SecureRandom)
 
   # ITU-T Rec. X.667 sez —
   #
+  def to_i = self[:inner_spirit]
+
 
 end  # ::GlobeGlitter
 
