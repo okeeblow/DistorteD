@@ -26,4 +26,7 @@ class TestGlobeGlitter < Test::Unit::TestCase
     assert_nil(::GlobeGlitter::try_convert(1 << 33, 1 << 17, i << 49))
   end
 
+  #def to_a
+  #https://learn.microsoft.com/en-us/dotnet/api/system.guid.tobytearray#examples
+
 end

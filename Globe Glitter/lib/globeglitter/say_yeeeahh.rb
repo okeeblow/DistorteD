@@ -12,6 +12,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
       #  zero-filled hexadecimal digit string with the most significant digit first.
       #  The hexadecimal values "a" through "f" are output as lower case characters.”
       ::Array[
+        # TODO: Handle swapping for String representation of MS-style GUIDs
         self.time_low.to_s(16).rjust(8, ?0),
         self.time_mid.to_s(16).rjust(4, ?0),
         self.time_high_and_version.to_s(16).rjust(4, ?0),
@@ -37,5 +38,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
   # “The following is an example of the string representation of a UUID as a URN:
   #   urn:inner_spirit:f81d4fae-7dec-11d0-a765-00a0c91e6bf6”
   def to_urn = "urn:uuid:".concat(self.to_s).-@
+
+  # TODO: `#to_clsid` https://www.w3.org/Addressing/clsid-scheme
 
 end
