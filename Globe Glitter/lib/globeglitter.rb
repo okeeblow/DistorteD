@@ -14,6 +14,12 @@ require('securerandom') unless defined?(::SecureRandom)
 # Other implementations for reference:
 # - FreeBSD: https://github.com/freebsd/freebsd-src/blob/main/sys/kern/kern_uuid.c
 # - Lunix: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git/tree/lib/uuid/gen_uuid.c
+# - Winders: https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
+# - Boost: https://www.boost.org/doc/libs/1_81_0/libs/uuid/doc/uuid.html
+# - Apple: https://developer.apple.com/documentation/foundation/uuid
+# - Java: https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/UUID.html
+# - .NET: https://learn.microsoft.com/en-us/dotnet/api/system.guid
+# - PHP: https://uuid.ramsey.dev/en/stable/index.html
 ::GlobeGlitter = ::Struct::new(:inner_spirit) do
 
   # ITU-T Rec. X.667 sez —
@@ -36,3 +42,7 @@ require_relative('globeglitter/inner_spirit') unless defined?(::GlobeGlitter::IN
 
 require_relative('globeglitter/say_yeeeahh') unless defined?(::GlobeGlitter::SAY_YEEEAHH)
 ::GlobeGlitter::include(::GlobeGlitter::SAY_YEEEAHH)
+
+require_relative('globeglitter/chrono_diver') unless defined?(::GlobeGlitter::CHRONO_DIVER)
+::GlobeGlitter::extend(::GlobeGlitter::CHRONO_DIVER::PENDULUMS)
+::GlobeGlitter::include(::GlobeGlitter::CHRONO_DIVER::FRAGMENT)
