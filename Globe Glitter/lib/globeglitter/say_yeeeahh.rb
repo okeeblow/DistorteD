@@ -4,6 +4,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
   # SAY YEEEAHH
   def to_s(base=16)
     case base
+    when 2  then self[:inner_spirit].to_s(2).rjust(128, ?0)
     when 16 then
       # ITU-T Rec. X.667 sez —
       #
