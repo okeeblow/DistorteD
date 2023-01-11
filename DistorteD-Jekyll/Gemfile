@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gemspec
 
 # Depend on the DistorteD core in the same repo as us.
-gem 'distorted', :path => File.join(File.dirname(__FILE__), '..', 'DistorteD-Floor')
+gem 'distorted-floor', :path => File.join(File.dirname(__FILE__), '..', 'DistorteD-Floor')
 
 # `bundle config set --local with 'distorted_optional_dependencies'`
 group :distorted_optional_dependencies do

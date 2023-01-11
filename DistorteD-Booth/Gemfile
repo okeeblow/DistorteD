@@ -3,5 +3,6 @@ source 'https://rubygems.org'
 gemspec
 
 # Depend on the DistorteD core in the same repo as us.
-gem 'distorted', :path => File.join(File.dirname(__FILE__), '..', 'DistorteD-Floor')
-gem 'checking-you-out', :path => File.join(File.dirname(__FILE__), '..', 'CHECKING-YOU-OUT')
+gem 'distorted-floor', :path => File.join(File.dirname(__FILE__), '..', 'DistorteD-Floor')
+gem 'checking-you-out', :path => File.join(File.dirname(__FILE__), '..', 'CHECKING YOU OUT')
+gem('xross-the-xoul', :path => File.join(File.dirname(__FILE__), '..', 'XROSS THE XOUL'))

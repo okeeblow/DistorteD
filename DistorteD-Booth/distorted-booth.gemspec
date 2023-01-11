@@ -20,6 +20,6 @@ require_relative('../i_was_the_one')
   spec.add_development_dependency('bundler', '~> 2.0')
   spec.add_development_dependency('rake', '~> 10.0')
 
-  spec.add_runtime_dependency('distorted', "~> #{COOLTRAINER::DistorteD::VERSION}")
+  spec.add_runtime_dependency('distorted-floor', "~> #{COOLTRAINER::DistorteD::VERSION}")
   spec.add_runtime_dependency('tk', '~> 0.3.0')
 end
