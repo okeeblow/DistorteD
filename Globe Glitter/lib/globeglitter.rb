@@ -57,9 +57,9 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   #
   #       Our third match condition allows mixed-case, because we have to contend with nonconforming software,
   #       with hand-authored input by people unfamiliar with those conventions, etc. We will treat these as UUID.
-  self::MATCH_GUID         = /\{?([0-9A-F]{8})-?([0-9A-F]{4})-?([0-9A-F]{4})-?([0-9A-F]{4})-?([0-9A-F]{12})\}?/
-  self::MATCH_UUID         = /\{?([0-9a-f]{8})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{12})\}?/
-  self::MATCH_UUID_OR_GUID = /\{?(\h{8})-?(\h{4})-?(\h{4})-?(\h{4})-?(\h{12})\}?/
+  self::MATCH_GUID         = /\A\{?([0-9A-F]{8})-?([0-9A-F]{4})-?([0-9A-F]{4})-?([0-9A-F]{4})-?([0-9A-F]{12})\}?\Z/
+  self::MATCH_UUID         = /\A\{?([0-9a-f]{8})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{12})\}?\Z/
+  self::MATCH_UUID_OR_GUID = /\A\{?(\h{8})-?(\h{4})-?(\h{4})-?(\h{4})-?(\h{12})\}?\Z/
 
   def self.new(*parts, variant: self::VARIANT_ITU_T_REC_X_667, version: self::VERSION_TIME)
     self::allocate.tap { |gg|
