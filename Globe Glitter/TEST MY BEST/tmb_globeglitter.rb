@@ -8,8 +8,11 @@ require_relative('../lib/globeglitter') unless defined?(::GlobeGlitter)
 class TestGlobeGlitter < Test::Unit::TestCase
 
   def test_random
-    assert_equal(::GlobeGlitter::random.version, 4)
-    assert_equal(::GlobeGlitter::random.variant, 1)
+    111.times {
+      # Test these enough times to trust the result.
+      assert_equal(::GlobeGlitter::random.version, 4)
+      assert_equal(::GlobeGlitter::random.variant, 1)
+    }
   end
 
   def test_nil_uuid
