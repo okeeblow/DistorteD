@@ -92,8 +92,8 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
           else raise ::ArgumentError::new("invalid number or structure of arguments")  #TOD0: "given/expected"?
         end
       )
-      gg.send(:variant=, variant) unless (!variant.respond_to?(:>=) or variant.>=(0))
-      gg.send(:version=, version) unless (!version.respond_to?(:>=) or version.>=(0))
+      gg.send(:variant=, variant) if variant.respond_to?(:>=) and variant&.>=(0) and not gg.eql?(0)
+      gg.send(:version=, version) if version.respond_to?(:>=) and version&.>=(0)
     }
   end
 
