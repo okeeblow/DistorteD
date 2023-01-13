@@ -98,7 +98,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   end
 
   # Our custom `::new` handles most of this functionality already but `raise`s on mismatch.
-  def self.try_convert(otra) = begin; self.new(otra); rescue ::ArgumentError; nil; end
+  def self.try_convert(...) = begin; self.new(...); rescue ::ArgumentError; nil; end
 
   # ITU-T Rec. X.667 sez —
   #
