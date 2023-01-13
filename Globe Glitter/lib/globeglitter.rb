@@ -82,7 +82,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
             ::Regexp::last_match.captures.map!(&:hex).yield_self {
               (_1[0] << 96) | (_1[1] << 80) | (_1[2] << 64) | (_1[3] << 48) | (_1[4])
             }
-          in [::Integer => spirit] if spirit.bit_length.bit_length.<=(128) then spirit
+          in [::Integer => spirit] if spirit.bit_length.<=(128) then spirit
           in [::Integer => msb, ::Integer => lsb] if (
             msb.bit_length.<=(64) and lsb.bit_length.<=(64)
           ) then ((msb << 64) | lsb)
