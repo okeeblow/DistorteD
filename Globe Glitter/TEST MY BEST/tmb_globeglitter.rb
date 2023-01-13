@@ -26,7 +26,7 @@ class TestGlobeGlitter < Test::Unit::TestCase
     assert_nil(::GlobeGlitter::try_convert("11223344-5566-7788-9900-aabbccddeefff"))
     assert_nil(::GlobeGlitter::try_convert(1 << 129))
     assert_nil(::GlobeGlitter::try_convert(1 << 65, 1 << 65))
-    assert_nil(::GlobeGlitter::try_convert(1 << 33, 1 << 17, i << 49))
+    assert_nil(::GlobeGlitter::try_convert(1 << 33, 1 << 17, 1 << 49))
   end
 
   #def to_a
