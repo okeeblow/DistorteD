@@ -69,7 +69,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   self::MATCH_UUID         = /\A\{?([0-9a-f]{8})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{12})\}?\Z/
   self::MATCH_UUID_OR_GUID = /\A\{?(\h{8})-?(\h{4})-?(\h{4})-?(\h{4})-?(\h{12})\}?\Z/
 
-  def self.new(*parts, variant: self::VARIANT_ITU_T_REC_X_667, version: self::VERSION_TIME)
+  def self.new(*parts, variant: self::VARIANT_ITU_T_REC_X_667, version: self::VERSION_UNSET)
     self::allocate.tap { |gg|
       gg.send(
         :initialize,
