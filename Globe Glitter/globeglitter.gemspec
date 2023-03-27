@@ -8,7 +8,7 @@ require_relative('../i_was_the_one')
     spec.send(_1, _2)
   }
 
-  spec.name          = 'globe-glitter'
+  spec.name          = 'globeglitter'
   spec.summary       = 'Surrogate keys'
   spec.description   = 'DistorteD UUID/GUID library'
 
