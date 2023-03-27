@@ -2,10 +2,20 @@
 
 require 'bundler/setup'
 require 'globeglitter'
+require 'securerandom'
 require 'benchmark/ips'
 
 Benchmark.ips do |bm|
-  bm.report 'GlobeGlitter random' do
+  bm.report 'SecureRandom::uuid random String' do
+    ::SecureRandom::uuid
+  end
+  bm.report 'SecureRandom::uuid random String to Integer' do
+    ::SecureRandom::uuid.gsub(?-, '').to_i(16)
+  end
+  bm.report 'GlobeGlitter random from SecureRandom::uuid' do
+    ::GlobeGlitter::new(::SecureRandom::uuid.gsub(?-, '').to_i(16))
+  end
+  bm.report 'GlobeGlitter random native' do
     ::GlobeGlitter::random
   end
 end

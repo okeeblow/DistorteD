@@ -39,8 +39,9 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   self::VARIANT_MICROSOFT       =  2
   self::VARIANT_FUTURE          =  3
 
-  self::VERSION_UNSET = -1
-  self::VERSION_TIME  = 1
+  self::VERSION_UNSET           = -1
+  self::VERSION_TIME            =  1
+  self::VERSION_RANDOM          =  4
   # TODO: Versions 2–8 (WIP)
 
   # NOTE: I am adopting two conventions here which are ***not*** part of any specification despite their wide use!
@@ -114,12 +115,14 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   # “The nil UUID is special form of UUID that is specified to have all 128 bits set to zero.”
   def self.nil = self::new(0)
 
-  # Generate version 4 UUID
-  def self.random = self::new(::SecureRandom::uuid.gsub(?-, '').to_i(16))
-
-  def to_i = self[:inner_spirit]
-
-  # TODO: `<=>`
+  # Generate version 4 random UUID.
+  # `::SecureRandom::uuid` does this already and is built-in,
+  # but that only provides a `::String` representation and ours is much faster.
+  def self.random = self::new(
+    ::SecureRandom::random_number(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+    variant: self::VARIANT_ITU_T_REC_X_667,
+    version: self::VERSION_RANDOM,
+  )
 
 end  # ::GlobeGlitter
 

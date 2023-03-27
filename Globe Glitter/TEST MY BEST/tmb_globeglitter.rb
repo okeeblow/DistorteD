@@ -7,7 +7,7 @@ require_relative('../lib/globeglitter') unless defined?(::GlobeGlitter)
 # - https://github.com/gofrs/uuid/blob/master/uuid_test.go
 class TestGlobeGlitter < Test::Unit::TestCase
 
-  def test_random
+  def test_random_uuid
     assert_equal(
       333.times.with_object(::Array::new) {
         _2.push(::GlobeGlitter::random)
