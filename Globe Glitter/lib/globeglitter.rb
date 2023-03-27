@@ -25,6 +25,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 # - Winders: https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
 # - Boost: https://www.boost.org/doc/libs/1_81_0/libs/uuid/doc/uuid.html
 # - Apple: https://developer.apple.com/documentation/foundation/uuid
+# - Apple: https://opensource.apple.com/source/CF/CF-299.35/Base.subproj/uuid.c.auto.html
 # - Java: https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/UUID.html
 # - .NET: https://learn.microsoft.com/en-us/dotnet/api/system.guid
 # - PHP: https://uuid.ramsey.dev/en/stable/index.html
