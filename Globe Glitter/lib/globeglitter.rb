@@ -33,6 +33,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 
   self::VARIANT_UNSET           = -1
   self::VARIANT_NCS             =  0
+  self::VARIANT_LEACH_SALZ      =  1
   self::VARIANT_ITU_T_REC_X_667 =  1
   self::VARIANT_RFC_4122        =  1
   self::VARIANT_MICROSOFT       =  2
