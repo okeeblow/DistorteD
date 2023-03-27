@@ -4,6 +4,13 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 
 # TODO: Convert to `Data` in Ruby 3.2
 #
+# Apollo AEGIS UID:
+# - https://dl.acm.org/doi/pdf/10.1145/800220.806679  (1982)
+#
+# Apollo NCS:
+# - https://jim.rees.org/apollo-archive/papers/ncs.pdf.gz
+# - https://bitsavers.org/pdf/apollo/014962-A00_Domain_OS_Design_Principles_Jan89.pdf
+#
 # Version 1/3/4/5, variant 1 UUID:
 # - https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-X.667-201210-I!!PDF-E&type=items
 # - https://www.ietf.org/rfc/rfc4122.txt
