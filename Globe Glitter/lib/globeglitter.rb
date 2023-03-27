@@ -38,7 +38,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   #
   #       Within this library, usage of the term "GUID" (versus "UUID") and usage of upper-case hexadecimal `A-F`
   #       indicate Microsoft-style mixed-endianness, i.e. the `time` bits are little-endian while the `clock_seq`
-  #       and `node` bites are big/network-endian, represented in Windows-land as an `Array` of bytes, e.g.:
+  #       and `node` bits are big/network-endian, represented in Windows-land as an `Array` of bytes, e.g.:
   #       https://learn.microsoft.com/en-us/windows/win32/wic/-wic-guids-clsids
   #
   #       My support of the GUID/UUID differentiation convention is based on the fact that ITU-T Rec X.667 does not
