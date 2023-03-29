@@ -116,10 +116,10 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   def self.nil = self::new(0)
 
   # Generate version 4 random UUID.
-  # `::SecureRandom::uuid` does this already and is built-in,
-  # but that only provides a `::String` representation and ours is much faster.
+  # `::SecureRandom::uuid` does this already and is built-in, but it only provides a `::String`.
+  # Our implementation with `random_number` is much faster than converting that `::String` to `::Integer`.
   def self.random = self::new(
-    ::SecureRandom::random_number(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+    ::SecureRandom::random_number(0xFFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF),  # "Maximum" 128-bit UUID
     variant: self::VARIANT_ITU_T_REC_X_667,
     version: self::VERSION_RANDOM,
   )
