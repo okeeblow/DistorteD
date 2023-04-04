@@ -113,6 +113,8 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
     current_time,
     clock_sequence,
     current_node,
+    structure: ::GlobeGlitter::STRUCTURE_ITU_T_REC_X_667,
+    rules: ::GlobeGlitter::RULES_TIME_GREGORIAN,
   )
 end
 

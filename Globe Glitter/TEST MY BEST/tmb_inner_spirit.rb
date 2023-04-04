@@ -7,7 +7,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
   def test_rules
     ::GlobeGlitter::nil.tap { |gg|
       assert_equal(gg.rules, ::GlobeGlitter::RULES_UNSET)
-      #assert_equal(::GlobeGlitter::RULES_TIME, gg.rules=(::GlobeGlitter::RULES_TIME).rules)
+      #assert_equal(::GlobeGlitter::RULES_TIME_GREGORIAN, gg.rules=(::GlobeGlitter::RULES_TIME_GREGORIAN).rules)
       #assert_equal(::GlobeGlitter::RULES_RANDOM, gg.rules=(::GlobeGlitter::RULES_RANDOM).rules)
       assert_raise(::ArgumentError) { gg.rules = 0 }
       assert_raise(::ArgumentError) { gg.rules = 9 }

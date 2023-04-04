@@ -41,7 +41,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   self::STRUCTURE_FUTURE          =  3
 
   self::RULES_UNSET               = -1
-  self::RULES_TIME                =  1
+  self::RULES_TIME_GREGORIAN      =  1
   self::RULES_RANDOM              =  4
   # TODO: Versions 2–8 (WIP)
 
