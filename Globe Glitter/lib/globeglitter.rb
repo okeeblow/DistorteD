@@ -171,6 +171,19 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
     rules: self::RULES_RANDOM,
   )
 
+  # Compare to dotNET `Guid.ToByteArray` https://learn.microsoft.com/en-us/dotnet/api/system.guid.tobytearray
+  # Explicitly loop 16 times to handle most-significant zeros that `until quotient.zero?`-style loop won't.
+  def bytes = (0xF.succ).times.with_object(
+    # Prime our scratch area with a copy of the main value buffer.
+    # I would prefer to avoid this allocation, but we have to use a mutable rules with `with_object` —
+    # trying it with an immediate results in the same value every loop despite any in-loop reassignment.
+    ::Array::new.push(self.inner_spirit)
+  ).with_object(::Array::new) { |(_position, scratch), bytes|
+    quotient, modulus = scratch.pop.divmod(0xFF.succ)
+    scratch.push(quotient)
+    bytes.unshift(modulus)
+  }
+
 end  # ::GlobeGlitter
 
 require_relative('globeglitter/inner_spirit') unless defined?(::GlobeGlitter::INNER_SPIRIT)
