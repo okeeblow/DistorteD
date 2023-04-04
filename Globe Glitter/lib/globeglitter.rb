@@ -156,6 +156,12 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   # “The nil UUID is special form of UUID that is specified to have all 128 bits set to zero.”
   def self.nil = self::new(0)
 
+  # New UUID Formats draft
+  # https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-04.html#name-max-uuid sez —
+  # “The Max UUID is special form of UUID that is specified to have all 128 bits set to 1.
+  #  This UUID can be thought of as the inverse of Nil UUID defined in [RFC4122], Section 4.1.7”
+  def self.max = self::new(0xFFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF)
+
   # Generate version 4 random UUID.
   # `::SecureRandom::uuid` does this already and is built-in since Ruby 1.9, but it only provides a `::String`.
   # Our implementation with `random_number` is much faster than converting that `::String` to `::Integer`.

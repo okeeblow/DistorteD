@@ -29,6 +29,11 @@ class TestGlobeGlitter < Test::Unit::TestCase
     assert_equal("00000000-0000-0000-0000-000000000000", ::GlobeGlitter::nil.to_s)
   end
 
+  # https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-04.html#name-max-uuid
+  def test_max_uuid
+    assert_equal("ffffffff-ffff-ffff-ffff-ffffffffffff", ::GlobeGlitter::max.to_s)
+  end
+
   def test_dont_parse_invalid_input
     assert_nil(::GlobeGlitter::try_convert(nil))
 
