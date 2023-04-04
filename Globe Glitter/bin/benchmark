@@ -18,4 +18,9 @@ Benchmark.ips do |bm|
   bm.report 'GlobeGlitter random native' do
     ::GlobeGlitter::random
   end
+  bm.report 'GlobeGlitter random native to String' do
+    ::GlobeGlitter::random.to_s
+  end
 end
+
+# TODO: Benchmark `::IO::Buffer` vs `::Integer` immediates https://docs.ruby-lang.org/en/master/IO/Buffer.html
