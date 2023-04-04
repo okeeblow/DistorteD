@@ -2,6 +2,15 @@
 module ::GlobeGlitter::SAY_YEEEAHH
 
   # SAY YEEEAHH
+  # NOTE: Built-in Ruby classes emit `US-ASCII` as their `#to_s`, thus so shall we.
+  #       Some relevant discussions:
+  #       - In https://bugs.ruby-lang.org/issues/7752 `naruse` sez —
+  #         “On current policy, strings which always include only US-ASCII characters are US-ASCII.
+  #          If there is a practical issue, I may change the policy in the future.
+  #          Note that US-ASCII string is faster than UTF-8 on getting length or index access.”
+  #       - `::Time`:       https://bugs.ruby-lang.org/issues/6820
+  #       - `::Integer`:    https://bugs.ruby-lang.org/issues/15876
+  #       - `::BigDecimal`: https://bugs.ruby-lang.org/issues/17011
   def to_s(base=16)
     case base
     when 2  then self[:inner_spirit].to_s(2).rjust(128, ?0)
