@@ -91,8 +91,8 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   #
   #       National Security Agency UEFI Secure Boot Customization Cybersecurity Technical Report
   #       https://media.defense.gov/2020/Sep/15/2002497594/-1/-1/0/CTR-UEFI-Secure-Boot-Customization-UOO168873-20.PDF#page=18 sez —
-  #       “Note that GUIDs and UUIDs are similar. However, EFI GUID ruless observe an 8-4-4-16
-  #        format in source code. UUID ruless, in contrast, observe an 8-4-4-4-12 format.”
+  #       “Note that GUIDs and UUIDs are similar. However, EFI GUID structures observe an 8-4-4-16
+  #        format in source code. UUID structures, in contrast, observe an 8-4-4-4-12 format.”
   #
   #       UEFI 2.0 errata https://uefi.org/sites/default/files/resources/UEFI_Spec_Errata_Only.pdf sez —
   #       “Add clarification to the spec so that we avoid references to GUIDs that do not comply to the
@@ -175,7 +175,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   # Explicitly loop 16 times to handle most-significant zeros that `until quotient.zero?`-style loop won't.
   def bytes = (0xF.succ).times.with_object(
     # Prime our scratch area with a copy of the main value buffer.
-    # I would prefer to avoid this allocation, but we have to use a mutable rules with `with_object` —
+    # I would prefer to avoid this allocation, but we have to use a mutable object with `with_object` —
     # trying it with an immediate results in the same value every loop despite any in-loop reassignment.
     ::Array::new.push(self.inner_spirit)
   ).with_object(::Array::new) { |(_position, scratch), bytes|
