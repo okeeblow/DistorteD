@@ -27,7 +27,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
         self.time_high_and_version.to_s(16).rjust(4, ?0),
         self.clock_seq.to_s(16).rjust(4, ?0),
         self.node.to_s(16).rjust(12, ?0),
-      ].join(?-).-@
+      ].join(?-).encode!(::Encoding::US_ASCII).-@
     else
       # Compare to `::Integer#to_s` behavior:
       #   irb> 333.to_s(666)
@@ -36,7 +36,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
     end
   end
 
-  def inspect = "#<#{self.class.name} #{self.to_s}>"
+  def inspect = ::String::new("#<#{self.class.name} #{self.to_s}>", encoding: ::Encoding::US_ASCII)
 
   # ITU-T Rec. X.667 sez —
   #
@@ -46,7 +46,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
   #  mentioned in the string representation section.”
   # “The following is an example of the string representation of a UUID as a URN:
   #   urn:inner_spirit:f81d4fae-7dec-11d0-a765-00a0c91e6bf6”
-  def to_urn = "urn:uuid:".concat(self.to_s(base=16)).-@
+  def to_urn = ::String::new("urn:uuid:".concat(self.to_s(base=16)), encoding: ::Encoding::US_ASCII).-@
 
   # TODO: `#to_clsid` https://www.w3.org/Addressing/clsid-scheme
 
