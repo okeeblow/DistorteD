@@ -144,6 +144,15 @@ module ::GlobeGlitter::INNER_SPIRIT
   # as the decimal representation of their integer value.”
   def to_i = (self.inner_spirit.get_value(:U64, 0) << 64) | self.inner_spirit.get_value(:U64, 8)
 
+  # ITU-T Rec. X.667 sez —
+  # “An alternative URN format [alternative to `"urn:uuid:<hex-string>"`] is available,
+  #  but is not recommended for URNs generated using UUIDs.
+  #  This alternative format uses the single integer value of the UUID, and represents the UUID
+  #  `f81d4fae-7dec-11d0-a765-00a0c91e6bf6` as `urn:oid:2.25.329800735698586629295641978511506172918`.”
+  #
+  # Explicitly call `#to_i#to_s` to avoid `RangeError: bignum out of char range`.
+  def to_oid = ::String::new("urn:oid:2.25.".concat(self.to_i.to_s), encoding: ::Encoding::US_ASCII).-@
+
   # Compare to dotNET `Guid.ToByteArray` https://learn.microsoft.com/en-us/dotnet/api/system.guid.tobytearray
   # Match the naming of `::String#bytes` since we behave identically.
   def bytes = self.inner_spirit.values

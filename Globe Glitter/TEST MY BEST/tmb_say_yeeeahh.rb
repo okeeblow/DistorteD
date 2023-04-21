@@ -18,4 +18,17 @@ class TestGlobeGlitterSayYeeeahh < Test::Unit::TestCase
     assert_equal(::Encoding::US_ASCII, ::Time::now.to_s.encoding)
   end
 
+  # ITU-T Rec. X.667 sez —
+  #
+  # “A UUID can be used as the primary integer value of a Joint UUID arc using the single integer value of the UUID.
+  #  The hexadecimal representation of the UUID can also be used as a non-integer Unicode label for the arc.
+  #  EXAMPLE — The following is an example of the use of a UUID to form an IRI/URI value: 
+  #            "oid:/UUID/f81d4fae-7dec-11d0-a765-00a0c91e6bf6"”
+  def test_to_oid_s
+    assert_equal(
+      "oid:/UUID/f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+      ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_oid_s,
+    )
+  end
+
 end
