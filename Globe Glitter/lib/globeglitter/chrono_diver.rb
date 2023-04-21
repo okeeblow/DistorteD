@@ -67,6 +67,8 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
     _1.match(/hwaddr=(?<hwaddr>\h\h:\h\h:\h\h:\h\h:\h\h:\h\h)/)&.captures&.pop&.gsub(?:, '')&.to_i(16)
   }.compact.tap {
     # Remove `00:00:00:00:00:00` loopback address.
+    # TODO: Better logic. There can be multiple loopback interfaces or no loopback interface.
+    #       Maybe alter the `::Regexp` above and remove this `tap`/`delete` section entirely.
     _1.delete(0)
   }&.max {
     # Choose the hwaddr that gives up the most entropy for a UUID,
@@ -119,6 +121,80 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
 end
 
 module ::GlobeGlitter::CHRONO_DIVER::FRAGMENT
-  # TODO: Convert internal representation back into `::Time` Object.
-  def to_time = self.time
+
+  # Getters for fields defined in the specification.
+  def time_low                    = self.bits127–96
+  def time_mid                    = self.bits95–80
+  def time_high_and_version       = self.bits79–64
+  def clock_seq_high_and_reserved = self.bits63–56 & case self.structure
+    # This field is overlayed by the backward-masked `structure` a.k.a. """variant""",
+    # so we return a different number of bits from the chunk depending on that value.
+    when 0    then 0b01111111
+    when 1    then 0b00111111
+    when 2, 3 then 0b00011111
+    else           0b11111111  # Non-compliant structure. This should never happen.
+  end
+  def clock_seq_low               =  self.bits55–48
+  def node                        =  self.bits47–0
+
+  # Setters for fields defined in the specification.
+  def time_low=(otra);  self.bits127–96=(otra); end
+  def time_mid=(otra);  self.bits95–80=(otra);  end
+  def time_high=(otra); self.bits79–64=(((self.inner_spirit >> 64) & 0xF000) | (otra & 0x0FFF)); end
+  def time=(otra)
+    self.bits79–64=(((self.inner_spirit >> 64) & 0x00000000_0000F000) | (otra & 0xFFFFFFFF_FFFF0FFF))
+  end
+  def clock_seq_high_and_reserved=(otra)
+    # This field is overlayed by the backward-masked `structure` a.k.a. """variant""",
+    # so we set a different number of bits from the chunk depending on that value
+    # along with saving the existing value.
+    self.bits63–56=(
+      (otra & case self.structure
+        when 0    then 0b01111111
+        when 1    then 0b00111111
+        when 2, 3 then 0b00011111
+        else           0b11111111  # Non-compliant structure. This should never happen.
+      end) | (case self.structure
+        when 0    then 0b00000000
+        when 1    then 0b10000000
+        when 2    then 0b11000000
+        when 3    then 0b11100000
+        else           0b00000000  # Non-compliant structure. This should never happen.
+      end)
+    )
+  end
+  def clock_seq_low=(otra)
+    self.bits55–48=(otra)
+  end
+  def node=(otra)
+    self.bits47–0=(otra)
+  end
+
+  # Getter for Base-16 `::String` output where these two fields are combined.
+  def clock_seq = (self.clock_seq_high_and_reserved << 8) | self.clock_seq_low
+  def clock_seq=(otra)
+    self.with(inner_spirit: (
+      (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_0000FFFF_FFFFFFFF) |
+      (
+        case self.structure
+          when 0    then 0b00000000
+          when 1    then 0b10000000
+          when 2    then 0b11000000
+          when 3    then 0b11100000
+        end << 56
+      ) | (otra << 48)
+    ))
+  end
+
+  # Construct the full timestamp from the split chunk contents.
+  def time = (self.bits127–96 << 32) | (self.bits95–80 << 16) | (self.bits79–64 & 0x0FFF)
+
+  # ITU-T Rec. X.667 sez —
+  #
+  #  “The timestamp is a 60-bit value.  For UUID version 1, this is
+  #   represented by Coordinated Universal Time (UTC) as a count of 100-
+  #   nanosecond intervals since 00:00:00.00, 15 October 1582 (the date of
+  #   Gregorian reform to the Christian calendar).“
+  def to_time = ::Time::new(1582, 10, 15) + (self.time / 10000000)
+
 end

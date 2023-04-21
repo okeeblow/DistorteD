@@ -13,7 +13,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
   #       - `::BigDecimal`: https://bugs.ruby-lang.org/issues/17011
   def to_s(base=16)
     case base
-    when 2  then self.inner_spirit.to_s(2).rjust(128, ?0)
+    when 2  then self.to_i.to_s(2).rjust(128, ?0)
     when 16 then
       # ITU-T Rec. X.667 sez —
       #
@@ -46,7 +46,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
   #  mentioned in the string representation section.”
   # “The following is an example of the string representation of a UUID as a URN:
   #   urn:inner_spirit:f81d4fae-7dec-11d0-a765-00a0c91e6bf6”
-  def to_urn = "urn:uuid:".concat(self.to_s).-@
+  def to_urn = "urn:uuid:".concat(self.to_s(base=16)).-@
 
   # TODO: `#to_clsid` https://www.w3.org/Addressing/clsid-scheme
 

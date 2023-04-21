@@ -1,6 +1,10 @@
 require('securerandom') unless defined?(::SecureRandom)
 require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 
+# Silence warning for `::IO::Buffer` as of Ruby 3.2.
+# TODO: Remove this once it is "stable".
+::Warning[:experimental] = false
+
 
 # Apollo AEGIS UID:
 # - https://dl.acm.org/doi/pdf/10.1145/800220.806679  (1982)
@@ -32,15 +36,47 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 # - LAS: https://github.com/ASPRSorg/LAS/wiki/LAS-ProjectID-Encoding-and-Representation
 ::GlobeGlitter = ::Data::define(:inner_spirit, :rules, :structure) do
 
+  # Terminology NOTE:
+  #
+  # `::GlobeGlitter`'s `structure` and `rules` are broadly equivalent to ITU-T Rec. X.667's / RFC 4122's
+  # `variant` and `version`, respectively. I am renaming them for two reasons:
+  #
+  # - because `variant` and `version` are terrible names,
+  #   telling you only that something varies and not *how* or *why* it varies.
+  # - because `::GlobeGlitter` implements more than just the one specification,
+  #   and I prefer to avoid defining one spec in terms of another.
+  #
+  # TL;DR:
+  # - `structure` describes the boundaries and endianness of the chunks making up a single `::GlobeGlitter`.
+  # - `rules` describe the meaning of chunks within a single `::GlobeGlitter` as well as how it should
+  #   relate to other `GG` instances.
+
+  # Default constructor arguments.
   self::STRUCTURE_UNSET           = -1
+  self::RULES_UNSET               = -1
+
+  #
   self::STRUCTURE_NCS             =  0
+
+  # ITU-T Rec. X.667, ISO/IEC 9834-8, and RFC 4122 are all the same standard,
+  # via either the telecom world or the Internet world.
+  # Many people [who?] refer to this standard by the names of the RFC draft authors, P. Leach & R. Salz.
+  # - Draft: http://upnp.org/resources/draft-leach-uuids-guids-00.txt
+  # - ITU: https://www.itu.int/rec/T-REC-X.667
+  # - ISO: https://www.iso.org/standard/62795.html
+  # - IETF: https://www.ietf.org/rfc/rfc4122.txt
   self::STRUCTURE_LEACH_SALZ      =  1
   self::STRUCTURE_ITU_T_REC_X_667 =  1
   self::STRUCTURE_RFC_4122        =  1
+  self::STRUCTURE_ISO_9834_8      =  1
+  self::STRUCTURE_IEC_9834_8      =  1
+
+  # These two values correspond to the equivalent ITU-T Rec. X.667 / RFC 4122 `variant` for MS and future-reservation.
+  # The `microsoft` type is awkwardly mixed-endian, and future is afaik still unused.
   self::STRUCTURE_MICROSOFT       =  2
   self::STRUCTURE_FUTURE          =  3
 
-  self::RULES_UNSET               = -1
+  #
   self::RULES_TIME_GREGORIAN      =  1
   self::RULES_RANDOM              =  4
   # TODO: Versions 2–8 (WIP)
@@ -71,6 +107,12 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   #       `typedef struct _GUID { unsigned long  Data1; unsigned short Data2; unsigned short Data3; unsigned char Data4[8]; } GUID;`
   #       “The first 2 bytes [of `Data4`] contain the third group of 4 hexadecimal digits.
   #        The remaining 6 bytes contain the final 12 hexadecimal digits.”
+  #
+  #       https://www.mandiant.com/resources/blog/hunting-com-objects sez —
+  #       “Every COM object is identified by a unique binary identifier. These 128 bit (16 byte) globally
+  #        unique identifiers are generically referred to as GUIDs.  When a GUID is used to identify a COM object,
+  #        it is a CLSID (class identifier), and when it is used to identify an Interface it is an IID (interface identifier).
+  #        Some CLSIDs also have human-readable text equivalents called a ProgID.”
   #
   #       Laser file format describes Microsoft-style endianness: https://github.com/ASPRSorg/LAS/wiki/LAS-ProjectID-Encoding-and-Representation
   #       “LAS GUIDs as encoded in the four ProjectID fields of the LAS header are intended to follow Microsoft-style 4-2-2-2-6 UUIDs
@@ -114,45 +156,59 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 
   # https://zverok.space/blog/2023-01-03-data-initialize.html
   def self.new(*parts, structure: self::STRUCTURE_UNSET, rules: self::RULES_UNSET) = self::allocate.tap { |gg|
-    gg.send(
-      :initialize,
-      **{
-        :inner_spirit => case parts
-          in [::String => probably_guid] if probably_guid.match(self::MATCH_GUID) then
-            # NOTE: This *must* come before `MATCH_UUID`.
-            ::Regexp::last_match.captures.map!(&:hex).yield_self {
-              (::XROSS::THE::CPU::swap32(_1[0]) << 96) |
-              (::XROSS::THE::CPU::swap16(_1[1]) << 80) |
-              (::XROSS::THE::CPU::swap16(_1[2]) << 64) |
-              (_1[3] << 48)                            |
-              (_1[4])
-            }
-          in [::String => either_or] if (
-            either_or.match(self::MATCH_UUID) or either_or.match(self::MATCH_UUID_OR_GUID)
-          ) then
-            ::Regexp::last_match.captures.map!(&:hex).yield_self {
-              (_1[0] << 96) | (_1[1] << 80) | (_1[2] << 64) | (_1[3] << 48) | (_1[4])
-            }
-          in [::Integer => spirit] if spirit.bit_length.<=(128) then spirit
-          in [::Integer => msb, ::Integer => lsb] if (
-            msb.bit_length.<=(64) and lsb.bit_length.<=(64)
-          ) then ((msb << 64) | lsb)
-          in [::Integer => time, ::Integer => seq, ::Integer => node] if (
-            time.bit_length.<=(64) and seq.bit_length.<=(16) and node.bit_length.<=(48)
-          ) then ((time << 64) | (seq << 48) | node)
-          else raise ::ArgumentError::new("invalid number or rules of arguments")  #TOD0: "given/expected"?
-        end,
-        :structure => (structure.respond_to?(:>=) and structure&.>=(0)) ? structure : self::STRUCTURE_UNSET,
-        :rules => (rules.respond_to?(:>=) and rules&.>=(1)) ? rules : self::RULES_UNSET
-      }
-    )
-  }
+    gg.send(:initialize, **{
+      :inner_spirit => ::IO::Buffer::new(
+        size=16,  # “UUIDs are an octet string of 16 octets (128 bits).”
+        flags=::IO::Buffer::INTERNAL,
+      ).tap { |buffer|
+        case parts
+        in [::String => probably_guid] if probably_guid.match(self::MATCH_GUID) then
+          ::Regexp::last_match.captures.map!(&:hex).tap {
+            buffer.set_value(:u32, 0, _1[0])
+            buffer.set_value(:u16, 4, _1[1])
+            buffer.set_value(:u16, 6, _1[2])
+            buffer.set_value(:U16, 8, _1[3])
+            buffer.set_value(:U16, 10, (_1[4] >> 32))
+            buffer.set_value(:U32, 12, (_1[4] & 0xFFFFFFFF))
+          }
+        in [::String => either_or] if (
+          either_or.match(self::MATCH_UUID) or either_or.match(self::MATCH_UUID_OR_GUID)
+        ) then
+          ::Regexp::last_match.captures.map!(&:hex).tap {
+            buffer.set_value(:U32, 0, _1[0])
+            buffer.set_value(:U16, 4, _1[1])
+            buffer.set_value(:U16, 6, _1[2])
+            buffer.set_value(:U16, 8, _1[3])
+            buffer.set_value(:U16, 10, (_1[4] >> 32))
+            buffer.set_value(:U32, 12, (_1[4] & 0xFFFFFFFF))
+          }
+        in [::Integer => spirit] if spirit.bit_length.<=(128) then
+          buffer.set_value(:U64, 0, (spirit >> 64))
+          buffer.set_value(:U64, 8, (spirit & 0xFFFFFFFF_FFFFFFFF))
+        in [::Integer => msb, ::Integer => lsb] if (
+          msb.bit_length.<=(64) and lsb.bit_length.<=(64)
+        ) then
+          buffer.set_value(:U64, 0, msb)
+          buffer.set_value(:U64, 8, lsb)
+        in [::Integer => time, ::Integer => seq, ::Integer => node] if (
+          time.bit_length.<=(64) and seq.bit_length.<=(16) and node.bit_length.<=(48)
+        ) then
+            buffer.set_value(:U64, 0, time)
+            buffer.set_value(:U16, 8, seq)
+            buffer.set_value(:U16, 10, (node >> 32))
+            buffer.set_value(:U32, 12, (node & 0xFFFFFFFF))
+        else raise ::ArgumentError::new("invalid number or rules of arguments")  #TOD0: "given/expected"?
+        end
+      },
+      :structure => (structure.respond_to?(:>=) and structure&.>=(0)) ? structure : self::STRUCTURE_UNSET,
+      :rules => (rules.respond_to?(:>=) and rules&.>=(1)) ? rules : self::RULES_UNSET
+    })  # send
+  }  # def self.new
 
   # Our custom `::new` handles most of this functionality already but `raise`s on mismatch.
   def self.try_convert(...) = begin; self.new(...); rescue ::ArgumentError; nil; end
 
   # ITU-T Rec. X.667 sez —
-  #
   # “The nil UUID is special form of UUID that is specified to have all 128 bits set to zero.”
   def self.nil = self::new(0)
 
@@ -171,27 +227,17 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
     rules: self::RULES_RANDOM,
   )
 
-  # Compare to dotNET `Guid.ToByteArray` https://learn.microsoft.com/en-us/dotnet/api/system.guid.tobytearray
-  # Explicitly loop 16 times to handle most-significant zeros that `until quotient.zero?`-style loop won't.
-  def bytes = (0xF.succ).times.with_object(
-    # Prime our scratch area with a copy of the main value buffer.
-    # I would prefer to avoid this allocation, but we have to use a mutable object with `with_object` —
-    # trying it with an immediate results in the same value every loop despite any in-loop reassignment.
-    ::Array::new.push(self.inner_spirit)
-  ).with_object(::Array::new) { |(_position, scratch), bytes|
-    quotient, modulus = scratch.pop.divmod(0xFF.succ)
-    scratch.push(quotient)
-    bytes.unshift(modulus)
-  }
-
 end  # ::GlobeGlitter
 
+# Bit-twiddling and bit-chunking components.
 require_relative('globeglitter/inner_spirit') unless defined?(::GlobeGlitter::INNER_SPIRIT)
 ::GlobeGlitter::include(::GlobeGlitter::INNER_SPIRIT)
 
+# `::String`-printing components.
 require_relative('globeglitter/say_yeeeahh') unless defined?(::GlobeGlitter::SAY_YEEEAHH)
 ::GlobeGlitter::include(::GlobeGlitter::SAY_YEEEAHH)
 
+# Time-based components for UUIDv1, UUIDv6, UUIDv7, etc.
 require_relative('globeglitter/chrono_diver') unless defined?(::GlobeGlitter::CHRONO_DIVER)
 ::GlobeGlitter::extend(::GlobeGlitter::CHRONO_DIVER::PENDULUMS)
 ::GlobeGlitter::include(::GlobeGlitter::CHRONO_DIVER::FRAGMENT)
