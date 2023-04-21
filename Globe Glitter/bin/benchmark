@@ -6,6 +6,50 @@ require 'securerandom'
 require 'benchmark/ips'
 
 Benchmark.ips do |bm|
+  integer_buffer = ::Data::define(:lol, :rofl, :lmao) do
+    def self.new(msb, lsb, rofl: nil, lmao: nil) = self.allocate.tap { |gg|
+      gg.send(
+        :initialize,
+        **{
+          lol: ((msb << 64) | lsb),
+          rofl:,
+          lmao:,
+        }
+      )
+    }
+  end
+
+  io_buffer = ::Data::define(:lol, :rofl, :lmao) do
+    def self.new(msb, lsb, rofl: nil, lmao: nil) = self.allocate.tap { |gg|
+      gg.send(
+        :initialize,
+        **{
+          lol: ::IO::Buffer::new(size=16).tap {
+            _1.set_value(:U64, 0, msb)
+            _1.set_value(:U64, 8, lsb)
+          },
+          rofl:,
+          lmao:,
+        }
+      )
+    }
+  end
+
+  bm.report('Embedded buffer as `::Integer`') do
+    integer_buffer.new(
+      ::SecureRandom::random_number(0xFFFFFFFF_FFFFFFFF),
+      ::SecureRandom::random_number(0xFFFFFFFF_FFFFFFFF),
+    )
+  end
+  bm.report('Embedded buffer as `::IO::Buffer`') do
+    io_buffer.new(
+      ::SecureRandom::random_number(0xFFFFFFFF_FFFFFFFF),
+      ::SecureRandom::random_number(0xFFFFFFFF_FFFFFFFF),
+    )
+  end
+end
+
+Benchmark.ips do |bm|
   bm.report 'SecureRandom::uuid random String' do
     ::SecureRandom::uuid
   end
