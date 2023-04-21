@@ -30,7 +30,7 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
   # - https://stackoverflow.com/questions/11835193/how-do-i-use-ruby-date-constants-gregorian-julian-england-and-even-italy
   #
   # TODO: Figure out how to handle date rollover.
-  private def current_time = (((::Time::now - ::Time::new(1582, 10, 15)) * 1_000_000_000) / 100).to_i
+  private def current_time = (((::Time::now.utc - ::Time::new(1582, 10, 15)) * 1_000_000_000) / 100).to_i
 
   # ITU-T Rec. X.667 sez —
   #
@@ -195,6 +195,6 @@ module ::GlobeGlitter::CHRONO_DIVER::FRAGMENT
   #   represented by Coordinated Universal Time (UTC) as a count of 100-
   #   nanosecond intervals since 00:00:00.00, 15 October 1582 (the date of
   #   Gregorian reform to the Christian calendar).“
-  def to_time = ::Time::new(1582, 10, 15) + (self.time / 10000000)
+  def to_time = ::Time::new(1582, 10, 15).utc + (self.time / 10000000)
 
 end
