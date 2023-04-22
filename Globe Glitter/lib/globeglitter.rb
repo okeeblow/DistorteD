@@ -122,6 +122,20 @@ require('securerandom') unless defined?(::SecureRandom)
   #        The first three integers are customarily encoded in Little-Endian (LE) format,
   #        while the last two integers are encoded in Big-Endian (BE) format.”
   #
+  #       SMBIOS spec https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.6.0.pdf#page=21 sez —
+  #       “Although RFC 4122 recommends network byte order for all fields, the PC industry (including the ACPI, UEFI,
+  #        and Microsoft specifications) has consistently used little-endian byte encoding for the first three fields:
+  #        `time_low`, `time_mid`, `time_hi_and_version`. The same encoding, also known as wire format, should also
+  #        be used for the SMBIOS representation of the UUID. The UUID `{00112233-4455-6677-8899-AABBCCDDEEFF}`
+  #        would thus be represented as `33 22 11 00 55 44 77 66 88 99 AA BB CC DD EE FF`.
+  #        If the value is all `FFh`, the ID is not currently present in the system, but can be set.
+  #        If the value is all `00h`, the ID is not present in the system.”
+  #
+  #       These posts show examples of poor endian handling SMBIOS tools:
+  #       https://ocdnix.wordpress.com/2013/02/26/fuckin-uuids/
+  #       http://howtowriteaprogram.blogspot.com/2009/03/uuid-and-byte-order.html
+  #       http://howtowriteaprogram.blogspot.com/2012/06/smbios-uuid-fail.html
+  #
   #       New-Microsoft seem to use lower-case hex indiscriminately despite still calling them GUIDs,
   #       e.g. https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ns-winioctl-partition_information_gpt
   #
@@ -176,6 +190,17 @@ require('securerandom') unless defined?(::SecureRandom)
             buffer.set_value(:U16, 10, (_1[4] >> 32))
             buffer.set_value(:U32, 12, (_1[4] & 0xFFFFFFFF))
           }
+        in [::Integer => data1, ::Integer => data2, ::Integer => data3, ::Array => data4] if (
+          data1.bit_length.<=(32) and data2.bit_length.<=(16) and data3.bit_length.<=(16) and (
+            data4.all?(&::Integer::method(:===)) and data4.max.bit_length.<=(8)
+          )
+        ) then
+          # https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
+          structure = self::STRUCTURE_MICROSOFT
+          buffer.set_value(:u32, 0, data1)
+          buffer.set_value(:u16, 4, data2)
+          buffer.set_value(:u16, 6, data3)
+          data4.each_with_index { buffer.set_value(:U8, (8 + _2), _1) }
         in [::String => either_or] if (
           either_or.match(self::MATCH_UUID) or either_or.match(self::MATCH_UUID_OR_GUID)
         ) then

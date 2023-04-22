@@ -31,6 +31,15 @@ class TestGlobeGlitterSayYeeeahh < Test::Unit::TestCase
 
   # UEFI GUID bytes + strings https://github.com/jethrogb/uefireverse/blob/master/guiddb/efi_guid.c
   def test_microsoft_style_guids
+    # Example bytes from https://uefi.org/sites/default/files/resources/UEFI_Spec_2_10_Aug29.pdf#page=409
+    assert_equal(
+      ::String::new("18a031ab-b443-4d1a-a5c0-0c09261e9f71", encoding: ::Encoding::US_ASCII),
+      ::GlobeGlitter::try_convert(0x18a031ab, 0xb443, 0x4d1a, [0xa5, 0xc0, 0xc, 0x9, 0x26, 0x1e, 0x9f, 0x71]).to_s,
+    )
+    assert_equal(
+      ::String::new("{18A031AB-B443-4D1A-A5C0-0C09261E9F71}", encoding: ::Encoding::US_ASCII),
+      ::GlobeGlitter::try_convert(0x18a031ab, 0xb443, 0x4d1a, [0xa5, 0xc0, 0xc, 0x9, 0x26, 0x1e, 0x9f, 0x71]).to_guid,
+    )
     assert_equal(
       ::String::new("00112233-4455-6677-8899-aabbccddeeff", encoding: ::Encoding::US_ASCII),
       ::GlobeGlitter::new("00112233-4455-6677-8899-aabbccddeeff", structure: ::GlobeGlitter::STRUCTURE_MICROSOFT).to_s,
