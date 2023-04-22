@@ -4,6 +4,181 @@ require_relative('../lib/globeglitter') unless defined?(::GlobeGlitter)
 
 class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
 
+  def test_hex_string_constructor_chunks
+    ::GlobeGlitter::new("ffffffff-0000-0000-0000-000000000000").tap {
+      assert_equal(0xFFFFFFFF, _1.bits127–96)
+      assert_equal(0, _1.bits95–80)
+      assert_equal(0, _1.bits79–64)
+      assert_equal(0, _1.bits63–56)
+      assert_equal(0, _1.bits55–48)
+      assert_equal(0, _1.bits47–0)
+    }
+    ::GlobeGlitter::new("00000000-ffff-0000-0000-000000000000").tap {
+      assert_equal(0, _1.bits127–96)
+      assert_equal(0xFFFF, _1.bits95–80)
+      assert_equal(0, _1.bits79–64)
+      assert_equal(0, _1.bits63–56)
+      assert_equal(0, _1.bits55–48)
+      assert_equal(0, _1.bits47–0)
+    }
+    ::GlobeGlitter::new("00000000-0000-ffff-0000-000000000000").tap {
+      assert_equal(0, _1.bits127–96)
+      assert_equal(0, _1.bits95–80)
+      assert_equal(0xFFFF, _1.bits79–64)
+      assert_equal(0, _1.bits63–56)
+      assert_equal(0, _1.bits55–48)
+      assert_equal(0, _1.bits47–0)
+    }
+    ::GlobeGlitter::new("00000000-0000-0000-ff00-000000000000").tap {
+      assert_equal(0, _1.bits127–96)
+      assert_equal(0, _1.bits95–80)
+      assert_equal(0, _1.bits79–64)
+      assert_equal(0xFF, _1.bits63–56)
+      assert_equal(0, _1.bits55–48)
+      assert_equal(0, _1.bits47–0)
+    }
+    ::GlobeGlitter::new("00000000-0000-0000-00ff-000000000000").tap {
+      assert_equal(0, _1.bits127–96)
+      assert_equal(0, _1.bits95–80)
+      assert_equal(0, _1.bits79–64)
+      assert_equal(0, _1.bits63–56)
+      assert_equal(0xFF, _1.bits55–48)
+      assert_equal(0, _1.bits47–0)
+    }
+    ::GlobeGlitter::new("00000000-0000-0000-0000-ffffffffffff").tap {
+      assert_equal(0, _1.bits127–96)
+      assert_equal(0, _1.bits95–80)
+      assert_equal(0, _1.bits79–64)
+      assert_equal(0, _1.bits63–56)
+      assert_equal(0, _1.bits55–48)
+      assert_equal(0xFFFFFFFFFFFF, _1.bits47–0)
+    }
+  end
+
+  def test_single_integer_constructor_chunks
+    ::GlobeGlitter::new(0xFFFFFFFF_00000000_00000000_00000000).tap {
+      assert_equal(0xFFFFFFFF, _1.bits127–96)
+      assert_equal(0, _1.bits95–80)
+      assert_equal(0, _1.bits79–64)
+      assert_equal(0, _1.bits63–56)
+      assert_equal(0, _1.bits55–48)
+      assert_equal(0, _1.bits47–0)
+    }
+    ::GlobeGlitter::new(0x00000000_FFFF0000_00000000_00000000).tap {
+      assert_equal(0, _1.bits127–96)
+      assert_equal(0xFFFF, _1.bits95–80)
+      assert_equal(0, _1.bits79–64)
+      assert_equal(0, _1.bits63–56)
+      assert_equal(0, _1.bits55–48)
+      assert_equal(0, _1.bits47–0)
+    }
+    ::GlobeGlitter::new(0x00000000_0000FFFF_00000000_00000000).tap {
+      assert_equal(0, _1.bits127–96)
+      assert_equal(0, _1.bits95–80)
+      assert_equal(0xFFFF, _1.bits79–64)
+      assert_equal(0, _1.bits63–56)
+      assert_equal(0, _1.bits55–48)
+      assert_equal(0, _1.bits47–0)
+    }
+    ::GlobeGlitter::new(0X00000000_00000000_FF000000_00000000).tap {
+      assert_equal(0, _1.bits127–96)
+      assert_equal(0, _1.bits95–80)
+      assert_equal(0, _1.bits79–64)
+      assert_equal(0xFF, _1.bits63–56)
+      assert_equal(0, _1.bits55–48)
+      assert_equal(0, _1.bits47–0)
+    }
+    ::GlobeGlitter::new(0x00000000_00000000_00FF0000_00000000).tap {
+      assert_equal(0, _1.bits127–96)
+      assert_equal(0, _1.bits95–80)
+      assert_equal(0, _1.bits79–64)
+      assert_equal(0, _1.bits63–56)
+      assert_equal(0xFF, _1.bits55–48)
+      assert_equal(0, _1.bits47–0)
+    }
+    ::GlobeGlitter::new(0x00000000_00000000_0000FFFF_FFFFFFFF).tap {
+      assert_equal(0, _1.bits127–96)
+      assert_equal(0, _1.bits95–80)
+      assert_equal(0, _1.bits79–64)
+      assert_equal(0, _1.bits63–56)
+      assert_equal(0, _1.bits55–48)
+      assert_equal(0xFFFFFFFFFFFF, _1.bits47–0)
+    }
+  end
+
+  # Chunk helper methods should set their associated part of the buffer,
+  # and they must *not* affect any bits outside that.
+  def test_marching_chunks
+    ::GlobeGlitter::new(0).tap { |gg|
+
+      assert_equal(0, gg.bits127–96)
+      gg.bits127–96 = 0xFFFFFFFF
+      assert_equal(0xFFFFFFFF, gg.bits127–96)
+      assert_equal(0, gg.bits95–80)
+      assert_equal(0, gg.bits79–64)
+      assert_equal(0, gg.bits63–56)
+      assert_equal(0, gg.bits55–48)
+      assert_equal(0, gg.bits47–0)
+      gg.bits127–96 = 0
+      assert_equal(0, gg.bits127–96)
+
+      assert_equal(0, gg.bits95–80)
+      gg.bits95–80 = 0xFFFF
+      assert_equal(0, gg.bits127–96)
+      assert_equal(0xFFFF, gg.bits95–80)
+      assert_equal(0, gg.bits79–64)
+      assert_equal(0, gg.bits63–56)
+      assert_equal(0, gg.bits55–48)
+      assert_equal(0, gg.bits47–0)
+      gg.bits95–80 = 0
+      assert_equal(0, gg.bits95–80)
+
+      assert_equal(0, gg.bits79–64)
+      gg.bits79–64 = 0xFFFF
+      assert_equal(0, gg.bits127–96)
+      assert_equal(0, gg.bits95–80)
+      assert_equal(0xFFFF, gg.bits79–64)
+      assert_equal(0, gg.bits63–56)
+      assert_equal(0, gg.bits55–48)
+      assert_equal(0, gg.bits47–0)
+      gg.bits79–64 = 0
+      assert_equal(0, gg.bits79–64)
+
+      assert_equal(0, gg.bits63–56)
+      gg.bits63–56 = 0xFF
+      assert_equal(0, gg.bits127–96)
+      assert_equal(0, gg.bits95–80)
+      assert_equal(0, gg.bits79–64)
+      assert_equal(0xFF, gg.bits63–56)
+      assert_equal(0, gg.bits55–48)
+      assert_equal(0, gg.bits47–0)
+      gg.bits63–56 = 0
+      assert_equal(0, gg.bits63–56)
+
+      assert_equal(0, gg.bits55–48)
+      gg.bits55–48 = 0xFF
+      assert_equal(0, gg.bits127–96)
+      assert_equal(0, gg.bits95–80)
+      assert_equal(0, gg.bits79–64)
+      assert_equal(0, gg.bits63–56)
+      assert_equal(0xFF, gg.bits55–48)
+      assert_equal(0, gg.bits47–0)
+      gg.bits55–48 = 0
+      assert_equal(0, gg.bits55–48)
+
+      assert_equal(0, gg.bits47–0)
+      gg.bits47–0 = 0xFFFFFFFFFFFF
+      assert_equal(0, gg.bits127–96)
+      assert_equal(0, gg.bits95–80)
+      assert_equal(0, gg.bits79–64)
+      assert_equal(0, gg.bits63–56)
+      assert_equal(0, gg.bits55–48)
+      assert_equal(0xFFFFFFFFFFFF, gg.bits47–0)
+      gg.bits47–0 = 0
+      assert_equal(0, gg.bits47–0)
+    }
+  end
+
   def test_rules
     ::GlobeGlitter::nil.tap { |gg|
       assert_equal(gg.rules, ::GlobeGlitter::RULES_UNSET)
