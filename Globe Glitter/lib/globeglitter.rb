@@ -165,7 +165,10 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
         flags=::IO::Buffer::INTERNAL,
       ).tap { |buffer|
         case parts
-        in [::String => probably_guid] if probably_guid.match(self::MATCH_GUID) then
+        in [::String => probably_guid] if (
+          probably_guid.match(self::MATCH_GUID) or
+          (probably_guid.match(self::MATCH_UUID) and structure.eql?(self::STRUCTURE_MICROSOFT))
+        ) then
           ::Regexp::last_match.captures.map!(&:hex).tap {
             buffer.set_value(:u32, 0, _1[0])
             buffer.set_value(:u16, 4, _1[1])

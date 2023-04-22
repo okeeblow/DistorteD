@@ -11,18 +11,18 @@ module ::GlobeGlitter::INNER_SPIRIT
   #
   # I am going to 1-index the boundaries in these helper methods because I think the resulting numbers
   # are easier to remember, but our structure is otherwise identical to what's described in the quote.
-  def bits127–96 = self.inner_spirit.get_value(:U32, 0)
-  def bits95–80  = self.inner_spirit.get_value(:U16, 4)
-  def bits79–64  = self.inner_spirit.get_value(:U16, 6)
+  def bits127–96 = self.inner_spirit.get_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u32 : :U32, 0)
+  def bits95–80  = self.inner_spirit.get_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u16 : :U16, 4)
+  def bits79–64  = self.inner_spirit.get_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u16 : :U16, 6)
   def bits63–56  = self.inner_spirit.get_value(:U8, 8)
   def bits55–48  = self.inner_spirit.get_value(:U8, 9)
   def bits47–0   = (self.inner_spirit.get_value(:U16, 10) << 32) | self.inner_spirit.get_value(:U32, 12)
 
-  def bits127–96=(otra); self.inner_spirit.set_value(:U32, 0, otra); end
-  def bits95–80=(otra);  self.inner_spirit.set_value(:U16, 4, otra); end
-  def bits79–64=(otra);  self.inner_spirit.set_value(:U16, 6, otra); end
-  def bits63–56=(otra);  self.inner_spirit.set_value(:U8, 8, otra);  end
-  def bits55–48=(otra);  self.inner_spirit.set_value(:U8, 9, otra);  end
+  def bits127–96=(otra); self.inner_spirit.set_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u32 : :U32, 0, otra); end
+  def bits95–80=(otra);  self.inner_spirit.set_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u16 : :U16, 4, otra); end
+  def bits79–64=(otra);  self.inner_spirit.set_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u16 : :U16, 6, otra); end
+  def bits63–56=(otra);  self.inner_spirit.set_value(:U8, 8, otra); end
+  def bits55–48=(otra);  self.inner_spirit.set_value(:U8, 9, otra); end
   def bits47–0=(otra)
     self.inner_spirit.set_value(:U16, 10, otra >> 32)
     self.inner_spirit.set_value(:U32, 12, otra & 0xFFFFFFFF)
