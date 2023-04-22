@@ -12,6 +12,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 # Apollo NCS:
 # - https://jim.rees.org/apollo-archive/papers/ncs.pdf.gz
 # - https://bitsavers.org/pdf/apollo/014962-A00_Domain_OS_Design_Principles_Jan89.pdf
+# - https://stuff.mit.edu/afs/athena/astaff/project/opssrc/quotasrc/src/ncs/nck/uuid.c
 #
 # Version 1/3/4/5, variant 1 UUID:
 # - https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-X.667-201210-I!!PDF-E&type=items
@@ -34,6 +35,8 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 # - TianoCore EDKⅡ: https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/35_guids
 # - GUID Partition Table: https://en.wikipedia.org/wiki/GUID_Partition_Table#Partition_type_GUIDs
 # - LAS: https://github.com/ASPRSorg/LAS/wiki/LAS-ProjectID-Encoding-and-Representation
+# - Python: https://docs.python.org/3/library/uuid.html
+# - ReactOS: https://doxygen.reactos.org/d9/d36/psdk_2guiddef_8h_source.html
 ::GlobeGlitter = ::Data::define(:inner_spirit, :rules, :structure) do
 
   # Terminology NOTE:
