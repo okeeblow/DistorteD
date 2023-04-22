@@ -1,5 +1,4 @@
 require('securerandom') unless defined?(::SecureRandom)
-require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 
 # Silence warning for `::IO::Buffer` as of Ruby 3.2.
 # TODO: Remove this once it is "stable".

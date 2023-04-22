@@ -1,5 +1,3 @@
 source 'https://rubygems.org'
 
 gemspec
-
-gem('xross-the-xoul', :path => File.join(File.dirname(__FILE__), '..', 'XROSS THE XOUL'))

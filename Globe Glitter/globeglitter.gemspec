@@ -15,8 +15,6 @@ require_relative('../i_was_the_one')
   spec.files         = ::Dir.glob('{bin,lib}/**/*').keep_if { |file| ::File.file?(file) } + %w(LICENSE README.md)
   spec.require_paths = ['lib']
 
-  spec.add_runtime_dependency('xross-the-xoul', "~> #{COOLTRAINER::DistorteD::VERSION}")
-
   spec.add_development_dependency('test-unit', '~> 3.5')
   spec.add_development_dependency('ruby-prof', '~> 1.4')
   spec.add_development_dependency('memory_profiler', '~> 1.0')  # https://github.com/SamSaffron/memory_profiler
