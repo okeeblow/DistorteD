@@ -17,7 +17,7 @@ require_relative('XROSS THE XOUL/lib/xross-the-xoul/version')
 module COOLTRAINER
   module DistorteD
 
-    VERSION = ::XROSS::THE::Version::TripleCounter.new(0, 7, 7)
+    VERSION = ::XROSS::THE::Version::TripleCounter.new(1, 0, 0)
 
     I_WAS_THE_ONE = ::Hash[
       :required_ruby_version= => '>= 3.2.0',
