@@ -156,8 +156,8 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 
   # https://zverok.space/blog/2023-01-03-data-initialize.html
   def self.new(*parts, structure: self::STRUCTURE_UNSET, rules: self::RULES_UNSET) = self::allocate.tap { |gg|
-    gg.send(:initialize, **{
-      :inner_spirit => ::IO::Buffer::new(
+    gg.send(:initialize,
+      inner_spirit: ::IO::Buffer::new(
         size=16,  # “UUIDs are an octet string of 16 octets (128 bits).”
         flags=::IO::Buffer::INTERNAL,
       ).tap { |buffer|
@@ -200,9 +200,9 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
         else raise ::ArgumentError::new("invalid number or rules of arguments")  #TOD0: "given/expected"?
         end
       },
-      :structure => (structure.respond_to?(:>=) and structure&.>=(0)) ? structure : self::STRUCTURE_UNSET,
-      :rules => (rules.respond_to?(:>=) and rules&.>=(1)) ? rules : self::RULES_UNSET
-    })  # send
+      structure: (structure.respond_to?(:>=) and structure&.>=(0)) ? structure : self::STRUCTURE_UNSET,
+      rules: (rules.respond_to?(:>=) and rules&.>=(1)) ? rules : self::RULES_UNSET
+    )  # send
   }  # def self.new
 
   # Our custom `::new` handles most of this functionality already but `raise`s on mismatch.
