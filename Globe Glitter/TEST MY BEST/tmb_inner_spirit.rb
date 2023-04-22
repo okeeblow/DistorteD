@@ -199,6 +199,32 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
     }
   end
 
+  def test_to_i
+    # https://www.itu.int/en/ITU-T/asn1/Pages/UUID/uuids.aspx sez —
+    # “UUIDs forming a component of an OID are represented in ASN.1 value notation as the decimal representation
+    #  of their integer value, but for all other display purposes it is more usual to represent them with
+    #  hexadecimal digits with a hyphen separating the different fields within the 16-octet UUID.
+    #  This representation is defined in Rec. ITU-T X.667 | ISO/IEC 9834-8.
+    #  Example: `f81d4fae-7dec-11d0-a765-00a0c91e6bf6` is the hexadecimal notation that denotes the same UUID
+    #           as `329800735698586629295641978511506172918` in decimal notation.”
+    assert_equal(
+      329800735698586629295641978511506172918,
+      ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_i,
+    )
+  end
+
+  def test_to_oid
+    # ITU-T Rec. X.667 sez —
+    # “An alternative URN format [alternative to `"urn:uuid:<hex-string>"`] is available,
+    #  but is not recommended for URNs generated using UUIDs.
+    #  This alternative format uses the single integer value of the UUID, and represents the UUID
+    #  `f81d4fae-7dec-11d0-a765-00a0c91e6bf6` as `urn:oid:2.25.329800735698586629295641978511506172918`.”
+    assert_equal(
+      "urn:oid:2.25.329800735698586629295641978511506172918",
+      ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_oid,
+    )
+  end
+
   def test_bytes
     # Wikipedia https://en.wikipedia.org/wiki/Universally_unique_identifier#Encoding sez —
     # “The binary encoding of UUIDs varies between systems. Variant 1 UUIDs, nowadays the most common structure,
