@@ -26,7 +26,7 @@ class TestGlobeGlitterSayYeeeahh < Test::Unit::TestCase
   #            "oid:/UUID/f81d4fae-7dec-11d0-a765-00a0c91e6bf6"”
   def test_to_oid_s
     assert_equal(
-      "oid:/UUID/f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+      ::String::new("oid:/UUID/f81d4fae-7dec-11d0-a765-00a0c91e6bf6", encoding: ::Encoding::US_ASCII),
       ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_oid_s,
     )
   end

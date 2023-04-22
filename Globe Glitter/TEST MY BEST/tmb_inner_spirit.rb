@@ -220,7 +220,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
     #  This alternative format uses the single integer value of the UUID, and represents the UUID
     #  `f81d4fae-7dec-11d0-a765-00a0c91e6bf6` as `urn:oid:2.25.329800735698586629295641978511506172918`.”
     assert_equal(
-      "urn:oid:2.25.329800735698586629295641978511506172918",
+      ::String::new("urn:oid:2.25.329800735698586629295641978511506172918", encoding: ::Encoding::US_ASCII),
       ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_oid,
     )
   end
