@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'memory_profiler'
+
+$: << File.expand_path('../lib', __dir__)
+result = MemoryProfiler.report do
+  require 'globeglitter'
+  333.times { GlobeGlitter::random }
+end.pretty_print
