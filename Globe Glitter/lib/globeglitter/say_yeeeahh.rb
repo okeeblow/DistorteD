@@ -36,6 +36,9 @@ module ::GlobeGlitter::SAY_YEEEAHH
     end
   end
 
+  # In Microsoft-land, GUIDs were ALL-CAPS hex packaged between curly braces
+  def to_guid = ::String::new("{#{self.to_s(16).upcase}}", encoding: ::Encoding::US_ASCII)
+
   def inspect = ::String::new("#<#{self.class.name} #{self.to_s}>", encoding: ::Encoding::US_ASCII)
 
   # ITU-T Rec. X.667 sez —
