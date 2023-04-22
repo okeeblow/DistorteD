@@ -22,11 +22,11 @@ module ::GlobeGlitter::SAY_YEEEAHH
       #  The hexadecimal values "a" through "f" are output as lower case characters.”
       ::Array[
         # TODO: Handle swapping for String representation of MS-style GUIDs
-        self.time_low.to_s(16).rjust(8, ?0),
-        self.time_mid.to_s(16).rjust(4, ?0),
-        self.time_high_and_version.to_s(16).rjust(4, ?0),
-        self.clock_seq.to_s(16).rjust(4, ?0),
-        self.node.to_s(16).rjust(12, ?0),
+        self.bits127–96.to_s(16).rjust(8, ?0),
+        self.bits95–80.to_s(16).rjust(4, ?0),
+        self.bits79–64.to_s(16).rjust(4, ?0),
+        ((self.bits63–56 << 8) | self.bits55–48).to_s(16).rjust(4, ?0),
+        self.bits47–0.to_s(16).rjust(12, ?0),
       ].join(?-).encode!(::Encoding::US_ASCII).-@
     else
       # Compare to `::Integer#to_s` behavior:
