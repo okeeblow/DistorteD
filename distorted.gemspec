@@ -17,6 +17,9 @@ require_relative('i_was_the_one')
 
   # Add a runtime dependency for every other gemspec in this repository regardless of nesting.
   ::Dir::glob("*/**/*.gemspec").map!(&::Gem::Specification::method(:load)).map!(&:name).each {
-    spec.add_runtime_dependency(_1, "~> #{::COOLTRAINER::DistorteD::VERSION}")
+    # Don't depend on mid-development components.
+    # `::Gem::Specification#metadata` is supported since 2.0, but keys and values must be `::String`s.
+    # We don't really care what the value is — if it's set at all then it's set.
+    spec.add_runtime_dependency(_1, "~> #{::COOLTRAINER::DistorteD::VERSION}") unless spec.metadata.has_key?("experimental")
   }
 end

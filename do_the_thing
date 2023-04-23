@@ -12,6 +12,11 @@ require('rubygems/package')
   ::Dir::chdir(::File::absolute_path(::File::dirname(_1)))
   spec = ::Gem::Specification::load(_1)
 
+  # Don't auto-build-and-release components mid-development.
+  # `::Gem::Specification#metadata` is supported since 2.0, but keys and values must be `::String`s.
+  # We don't really care what the value is — if it's set at all then it's set.
+  next if spec.metadata.has_key?("experimental")
+
   # Collect built gems in a separate location. This should be identical for every gem in a build run,
   # since they all share a version number, but we will recompute it off of each `Specification` anyway.
   gem_dir = ::File::join(__dir__, 'gems', spec.version.to_s)
