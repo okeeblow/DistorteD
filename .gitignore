@@ -7,6 +7,7 @@
 /spec/reports/
 /tmp/
 Gemfile.lock
+/gems/
 *.gem
 
 # RVM / rbenv marker file for desired Ruby interpreter version.

@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+require('fileutils')
+require('rubygems')
+require('rubygems/package')
+
+::Dir::glob("**/*.gemspec").map!(&::File::method(:absolute_path)).each {
+  # NOTE: We must `chdir` *before* `::Gem::Spec::load` to make each spec's `::Dir::glob` work correctly.
+  # I did try using `#glob`'s `base:` argument and transforming the results with `#absolute_path`,
+  # but then the files get added to the built gem along with the absolute directory tree,
+  # so they need to stay relative to the `gemspec`'s location.
+  ::Dir::chdir(::File::absolute_path(::File::dirname(_1)))
+  spec = ::Gem::Specification::load(_1)
+
+  # Collect built gems in a separate location. This should be identical for every gem in a build run,
+  # since they all share a version number, but we will recompute it off of each `Specification` anyway.
+  gem_dir = ::File::join(__dir__, 'gems', spec.version.to_s)
+  ::FileUtils::mkdir_p(gem_dir)
+
+  # Fix up the permissions of each spec's `#files` to avoid annoying "not world-readable" Warning.
+  # Alternative to `::FileUtils`: `stat`, `mode` mask, and `chmod`: https://stackoverflow.com/a/35852139
+  spec.files.each { |file| ::FileUtils::chmod('o+r', file) }
+
+  # Do it. Do it now.
+  # This will emit the normal `stdout` that `gem build <path>` would for each gem.
+  # See https://github.com/rubygems/rubygems/blob/master/lib/rubygems/package.rb
+  ::Gem::Package::build(spec, false, false, ::File::join(gem_dir, "#{spec.name}-#{spec.version.to_s}.gem"))
+}
