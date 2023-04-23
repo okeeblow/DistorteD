@@ -14,6 +14,8 @@
 
 ## Alternative Ruby Libraries
 
+- `::SecureRandom::uuid` obviously
 - https://github.com/sporkmonger/uuidtools
 - https://github.com/assaf/uuid  /  https://www.rubydoc.info/gems/uuid/
 - https://gist.github.com/brandur/1bddb5215540889983dc7e3a66ef4e41
+- https://github.com/cassandra-rb/simple_uuid
