@@ -2,9 +2,11 @@
 
 require('fileutils')
 require('rubygems')
+require('rubygems/command')
+require('rubygems/commands/push_command')
 require('rubygems/package')
 
-::Dir::glob("**/*.gemspec").map!(&::File::method(:absolute_path)).each {
+built_gems = ::Dir::glob("**/*.gemspec").map!(&::File::method(:absolute_path)).each_with_object(::Array::new) {
   # NOTE: We must `chdir` *before* `::Gem::Spec::load` to make each spec's `::Dir::glob` work correctly.
   # I did try using `#glob`'s `base:` argument and transforming the results with `#absolute_path`,
   # but then the files get added to the built gem along with the absolute directory tree,
@@ -29,5 +31,18 @@ require('rubygems/package')
   # Do it. Do it now.
   # This will emit the normal `stdout` that `gem build <path>` would for each gem.
   # See https://github.com/rubygems/rubygems/blob/master/lib/rubygems/package.rb
-  ::Gem::Package::build(spec, false, false, ::File::join(gem_dir, "#{spec.name}-#{spec.version.to_s}.gem"))
+  _2.append(::Gem::Package::build(spec, false, false, ::File::join(gem_dir, "#{spec.name}-#{spec.version.to_s}.gem")))
+}
+
+# Take OTP once and re-use it to avoid each iteration prompting for its own.
+puts "Please enter OTP code:\t"
+otp = gets.chomp
+
+# Use our own list of built gems and avoid `::Dir::glob` to avoid the possibility of unintentional uploads
+# of files mistakenly (or maliciously) left in the `gems/<version>` directory.
+built_gems.each { |absolute_path|
+  ::Gem::Commands::PushCommand::new.tap {
+    _1.options.store(:args, [absolute_path])
+    _1.options.store(:otp, otp)
+  }.execute
 }
