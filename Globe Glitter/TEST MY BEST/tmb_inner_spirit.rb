@@ -213,18 +213,6 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
     )
   end
 
-  def test_to_oid
-    # ITU-T Rec. X.667 sez —
-    # “An alternative URN format [alternative to `"urn:uuid:<hex-string>"`] is available,
-    #  but is not recommended for URNs generated using UUIDs.
-    #  This alternative format uses the single integer value of the UUID, and represents the UUID
-    #  `f81d4fae-7dec-11d0-a765-00a0c91e6bf6` as `urn:oid:2.25.329800735698586629295641978511506172918`.”
-    assert_equal(
-      ::String::new("urn:oid:2.25.329800735698586629295641978511506172918", encoding: ::Encoding::US_ASCII),
-      ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_oid,
-    )
-  end
-
   def test_bytes
     # Wikipedia https://en.wikipedia.org/wiki/Universally_unique_identifier#Encoding sez —
     # “The binary encoding of UUIDs varies between systems. Variant 1 UUIDs, nowadays the most common structure,

@@ -15,8 +15,19 @@ class TestGlobeGlitterSayYeeeahh < Test::Unit::TestCase
     assert_equal(::Encoding::US_ASCII, ::Time::now.to_s.encoding)
   end
 
+  def test_to_oid
+    # ITU-T Rec. X.667 sez —
+    # “An alternative URN format [alternative to `"urn:uuid:<hex-string>"`] is available,
+    #  but is not recommended for URNs generated using UUIDs.
+    #  This alternative format uses the single integer value of the UUID, and represents the UUID
+    #  `f81d4fae-7dec-11d0-a765-00a0c91e6bf6` as `urn:oid:2.25.329800735698586629295641978511506172918`.”
+    assert_equal(
+      ::String::new("urn:oid:2.25.329800735698586629295641978511506172918", encoding: ::Encoding::US_ASCII),
+      ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_oid,
+    )
+  end
+
   # ITU-T Rec. X.667 sez —
-  #
   # “A UUID can be used as the primary integer value of a Joint UUID arc using the single integer value of the UUID.
   #  The hexadecimal representation of the UUID can also be used as a non-integer Unicode label for the arc.
   #  EXAMPLE — The following is an example of the use of a UUID to form an IRI/URI value: 

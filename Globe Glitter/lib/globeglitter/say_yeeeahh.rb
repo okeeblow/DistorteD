@@ -42,7 +42,15 @@ module ::GlobeGlitter::SAY_YEEEAHH
   def inspect = ::String::new("#<#{self.class.name} #{self.to_s}>", encoding: ::Encoding::US_ASCII)
 
   # ITU-T Rec. X.667 sez —
+  # “An alternative URN format [alternative to `"urn:uuid:<hex-string>"`] is available,
+  #  but is not recommended for URNs generated using UUIDs.
+  #  This alternative format uses the single integer value of the UUID, and represents the UUID
+  #  `f81d4fae-7dec-11d0-a765-00a0c91e6bf6` as `urn:oid:2.25.329800735698586629295641978511506172918`.”
   #
+  # Explicitly call `#to_i#to_s` to avoid `RangeError: bignum out of char range`.
+  def to_oid = ::String::new("urn:oid:2.25.".concat(self.to_i.to_s), encoding: ::Encoding::US_ASCII).-@
+
+  # ITU-T Rec. X.667 sez —
   # “A UUID can be used as the primary integer value of a Joint UUID arc using the single integer value of the UUID.
   #  The hexadecimal representation of the UUID can also be used as a non-integer Unicode label for the arc.
   #  EXAMPLE — The following is an example of the use of a UUID to form an IRI/URI value: 
@@ -50,7 +58,6 @@ module ::GlobeGlitter::SAY_YEEEAHH
   def to_oid_s = ::String::new("oid:/UUID/".concat(self.to_s(base=16)), encoding: ::Encoding::US_ASCII).-@
 
   # ITU-T Rec. X.667 sez —
-  #
   # “The string representation of a UUID is fully compatible with the URN syntax.
   #  When converting from a bit-oriented, in-memory representation of a UUID into a URN,
   #  care must be taken to strictly adhere to the byte order issues
