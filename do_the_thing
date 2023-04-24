@@ -1,18 +1,22 @@
 #!/usr/bin/env ruby
 
 require('fileutils')
+require('tmpdir')
 require('rubygems')
 require('rubygems/command')
 require('rubygems/commands/push_command')
 require('rubygems/package')
+require_relative('i_was_the_one')
 
-built_gems = ::Dir::glob("**/*.gemspec").map!(&::File::method(:absolute_path)).each_with_object(::Array::new) {
+built_gems = ::Dir::glob("**/*.gemspec").map!(
+  &::File::method(:absolute_path)
+).each_with_object(::Array::new) { |gemspec_path, built_gems|
   # NOTE: We must `chdir` *before* `::Gem::Spec::load` to make each spec's `::Dir::glob` work correctly.
   # I did try using `#glob`'s `base:` argument and transforming the results with `#absolute_path`,
   # but then the files get added to the built gem along with the absolute directory tree,
   # so they need to stay relative to the `gemspec`'s location.
-  ::Dir::chdir(::File::absolute_path(::File::dirname(_1)))
-  spec = ::Gem::Specification::load(_1)
+  ::Dir::chdir(::File::absolute_path(::File::dirname(gemspec_path)))
+  spec = ::Gem::Specification::load(gemspec_path)
 
   # Don't auto-build-and-release components mid-development.
   # `::Gem::Specification#metadata` is supported since 2.0, but keys and values must be `::String`s.
@@ -31,8 +35,72 @@ built_gems = ::Dir::glob("**/*.gemspec").map!(&::File::method(:absolute_path)).e
   # Do it. Do it now.
   # This will emit the normal `stdout` that `gem build <path>` would for each gem.
   # See https://github.com/rubygems/rubygems/blob/master/lib/rubygems/package.rb
-  _2.append(::Gem::Package::build(spec, false, false, ::File::join(gem_dir, "#{spec.name}-#{spec.version.to_s}.gem")))
-}
+  built_gems.append(
+    ::Gem::Package::build(
+      spec,
+      skip_validation=false,
+      strict_validation=true,
+      ::File::join(gem_dir, "#{spec.name}-#{spec.version.to_s}.gem")
+    )
+  )
+
+  # Some of our Gem names have hyphens. Some of them don't.
+  # Make it impossible for people to typo underscores for hyphens, or typo hyphens for underscores,
+  # or add a hyphen or underscore where one isn't needed.
+  squats = ::Set::new
+  # Automatically add names to squat by inverting hyphens/underscores from our real Gem name.
+  squats.add(spec.name.gsub(?-, ?_)) if spec.name.include?(?-)
+  squats.add(spec.name.gsub(?_, ?-)) if spec.name.include?(?_)
+  # Also allow `::Gem::Specification#metadata` to manually specify additional squats.
+  # Since the `#metadata` `::Hash` can only contain `::String` keys and values,
+  # we will specify them as a single comma-and-space-separated `::String`.
+  spec.metadata["squat"]&.split(", ")&.each(&squats.method(:add))
+
+  # Build a fake package for any squattable Gem names we've detected or manually specified.
+  # When installed and `required`, each fake package will `require` the real Gem name.
+  squats.each { |squat_name|
+    # Fake-Gem root
+    ::Dir::mktmpdir(spec.name) do |squat_root|
+
+      # Each fake-Gem root will contain only a `lib` directory with a single chain-loader file.
+      # See https://man.freebsd.org/cgi/man.cgi?chmod for octal permissions.
+      ::Dir::mkdir(::File::join(squat_root, "lib"), 0755)
+      ::File.open(::File::join(squat_root, "lib", "#{squat_name}.rb"), ?w, 0644) { _1.write("require('#{spec.name}')") }
+
+      # The `mode` positional-argument to `::File::open` should have taken care of this,
+      # but I'm still getting the not-world-readable Warning and idk why so fix it again lmao
+      ::FileUtils::chmod('o+r', ::File::join(squat_root, "lib", "#{squat_name}.rb"))
+
+      # Like the parent Gem, we must `chdir` to make the `::Gem::Specification's` relative paths work properly
+      # and build a Gem with the correct structure (i.e. `lib` in the root of `data.tar.gz`).
+      ::Dir::chdir(squat_root)
+      squat_spec = ::Gem::Specification::new do |squat_spec|
+        # Shared default version/author/contact/minimum_ver/etc values.
+        # The same values will have been used to build the parent `Specification`.
+        ::COOLTRAINER::DistorteD::I_WAS_THE_ONE.each_pair {
+          squat_spec.send(_1, _2)
+        }
+        squat_spec.name          = squat_name
+        # Try to make it clear that these are not supposed to be used under normal circumstances.
+        squat_spec.summary       = "Typo prevention for `#{spec.name}`"
+        squat_spec.description   = "Typo prevention for `#{spec.name}` — use that instead!"
+        # No need to `::Dir::glob` since we know what single filename to expect.
+        squat_spec.files         = ["lib/#{squat_name}.rb"]
+        squat_spec.require_paths = ['lib']
+      end
+
+      # Add the `absolute_path` of each packaged squat Gem to the same `::Array` as its parent.
+      built_gems.append(
+        ::Gem::Package::build(
+          squat_spec,
+          skip_validation=false,
+          strict_validation=true,
+          ::File::join(gem_dir, "#{squat_name}-#{squat_spec.version.to_s}.gem")
+        )
+      )
+    end  # ::Dir::mktmpdir
+  }  # squats.each
+}  # built_gems
 
 # Take OTP once and re-use it to avoid each iteration prompting for its own.
 puts "Please enter OTP code:\t"

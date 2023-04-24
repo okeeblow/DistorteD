@@ -19,4 +19,6 @@ require_relative('../i_was_the_one')
   spec.add_development_dependency('ruby-prof', '~> 1.4')
   spec.add_development_dependency('memory_profiler', '~> 1.0')  # https://github.com/SamSaffron/memory_profiler
   spec.add_development_dependency('benchmark-ips', '~> 2.0')  # https://github.com/evanphx/benchmark-ips
+
+  spec.metadata      = { "squat" => "globe-glitter, globe_glitter" }
 end
