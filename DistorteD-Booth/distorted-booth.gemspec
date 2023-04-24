@@ -22,4 +22,6 @@ require_relative('../i_was_the_one')
 
   spec.add_runtime_dependency('distorted-floor', "~> #{COOLTRAINER::DistorteD::VERSION}")
   spec.add_runtime_dependency('tk', '~> 0.3.0')
+
+  spec.metadata      = { "experimental" => "very yes" }
 end
