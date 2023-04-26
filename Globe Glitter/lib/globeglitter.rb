@@ -192,7 +192,7 @@ require('securerandom') unless defined?(::SecureRandom)
           }
         in [::Integer => data1, ::Integer => data2, ::Integer => data3, ::Array => data4] if (
           data1.bit_length.<=(32) and data2.bit_length.<=(16) and data3.bit_length.<=(16) and (
-            data4.all?(&::Integer::method(:===)) and data4.max.bit_length.<=(8)
+            data4.size.eql?(8) and data4.all?(::Integer) and data4.max.bit_length.<=(8)
           )
         ) then
           # https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
