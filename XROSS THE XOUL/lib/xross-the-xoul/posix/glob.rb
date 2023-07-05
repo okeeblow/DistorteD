@@ -72,7 +72,7 @@ class ::XROSS::THE::POSIX::Glob
     ].compact.map!(&:ord)  # Remove the likely `nil`s from disabled `ALT_SEPARATOR`.
 
     # Work with codepoints to avoid allocation of the single-character `::String`s in `#each_char`.
-    otra.each_codepoint.with_index { |codepoint, index|
+    otra.each_codepoint { |codepoint|
       case codepoint
       when ?*.ord then
         # "A '*' (not between brackets) matches any string, including the empty string."
