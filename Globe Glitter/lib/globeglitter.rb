@@ -36,11 +36,11 @@ require('securerandom') unless defined?(::SecureRandom)
 # - LAS: https://github.com/ASPRSorg/LAS/wiki/LAS-ProjectID-Encoding-and-Representation
 # - Python: https://docs.python.org/3/library/uuid.html
 # - ReactOS: https://doxygen.reactos.org/d9/d36/psdk_2guiddef_8h_source.html
-::GlobeGlitter = ::Data::define(:inner_spirit, :rules, :structure) do
+::GlobeGlitter = ::Data::define(:inner_spirit, :behavior, :structure) do
 
   # Terminology NOTE:
   #
-  # `::GlobeGlitter`'s `structure` and `rules` are broadly equivalent to ITU-T Rec. X.667's / RFC 4122's
+  # `::GlobeGlitter`'s `structure` and `behavior` are broadly equivalent to ITU-T Rec. X.667's / RFC 4122's
   # `variant` and `version`, respectively. I am renaming them for two reasons:
   #
   # - because `variant` and `version` are terrible names,
@@ -50,12 +50,12 @@ require('securerandom') unless defined?(::SecureRandom)
   #
   # TL;DR:
   # - `structure` describes the boundaries and endianness of the chunks making up a single `::GlobeGlitter`.
-  # - `rules` describe the meaning of chunks within a single `::GlobeGlitter` as well as how it should
+  # - `behavior` describe the meaning of chunks within a single `::GlobeGlitter` as well as how it should
   #   relate to other `GG` instances.
 
   # Default constructor arguments.
   self::STRUCTURE_UNSET           = -1
-  self::RULES_UNSET               = -1
+  self::BEHAVIOR_UNSET            = -1
 
   #
   self::STRUCTURE_NCS             =  0
@@ -79,8 +79,8 @@ require('securerandom') unless defined?(::SecureRandom)
   self::STRUCTURE_FUTURE          =  3
 
   #
-  self::RULES_TIME_GREGORIAN      =  1
-  self::RULES_RANDOM              =  4
+  self::BEHAVIOR_TIME_GREGORIAN   =  1
+  self::BEHAVIOR_RANDOM           =  4
   # TODO: Versions 2–8 (WIP)
 
   # NOTE: I am adopting two conventions here which are ***not*** explicitly part of any specification
@@ -171,7 +171,7 @@ require('securerandom') unless defined?(::SecureRandom)
   self::MATCH_UUID_OR_GUID = /\A\{?(\h{8})-?(\h{4})-?(\h{4})-?(\h{4})-?(\h{12})\}?\Z/
 
   # https://zverok.space/blog/2023-01-03-data-initialize.html
-  def self.new(*parts, structure: self::STRUCTURE_UNSET, rules: self::RULES_UNSET) = self::allocate.tap { |gg|
+  def self.new(*parts, structure: self::STRUCTURE_UNSET, behavior: self::BEHAVIOR_UNSET) = self::allocate.tap { |gg|
     gg.send(:initialize,
       inner_spirit: ::IO::Buffer::new(
         size=16,  # “UUIDs are an octet string of 16 octets (128 bits).”
@@ -231,7 +231,7 @@ require('securerandom') unless defined?(::SecureRandom)
         end
       },
       structure: (structure.respond_to?(:>=) and structure&.>=(0)) ? structure : self::STRUCTURE_UNSET,
-      rules: (rules.respond_to?(:>=) and rules&.>=(1)) ? rules : self::RULES_UNSET
+      behavior: (behavior.respond_to?(:>=) and behavior&.>=(1)) ? behavior : self::BEHAVIOR_UNSET
     )  # send
   }  # def self.new
 
@@ -254,7 +254,7 @@ require('securerandom') unless defined?(::SecureRandom)
   def self.random = self::new(
     ::SecureRandom::random_number(0xFFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF),  # "Maximum" 128-bit UUID
     structure: self::STRUCTURE_ITU_T_REC_X_667,
-    rules: self::RULES_RANDOM,
+    behavior: self::BEHAVIOR_RANDOM,
   )
 
 end  # ::GlobeGlitter

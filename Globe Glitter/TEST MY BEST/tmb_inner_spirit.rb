@@ -179,13 +179,13 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
     }
   end
 
-  def test_rules
+  def test_behavior
     ::GlobeGlitter::nil.tap { |gg|
-      assert_equal(gg.rules, ::GlobeGlitter::RULES_UNSET)
-      assert_equal(::GlobeGlitter::RULES_TIME_GREGORIAN, gg.replace_rules(::GlobeGlitter::RULES_TIME_GREGORIAN).rules)
-      assert_equal(::GlobeGlitter::RULES_RANDOM, gg.replace_rules(::GlobeGlitter::RULES_RANDOM).rules)
-      assert_raise(::ArgumentError) { gg.replace_rules(0) }
-      assert_raise(::ArgumentError) { gg.replace_rules(9) }
+      assert_equal(gg.behavior, ::GlobeGlitter::BEHAVIOR_UNSET)
+      assert_equal(::GlobeGlitter::BEHAVIOR_TIME_GREGORIAN, gg.replace_behavior(::GlobeGlitter::BEHAVIOR_TIME_GREGORIAN).behavior)
+      assert_equal(::GlobeGlitter::BEHAVIOR_RANDOM, gg.replace_behavior(::GlobeGlitter::BEHAVIOR_RANDOM).behavior)
+      assert_raise(::ArgumentError) { gg.replace_behavior(0) }
+      assert_raise(::ArgumentError) { gg.replace_behavior(9) }
     }
   end
 

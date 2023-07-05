@@ -13,7 +13,7 @@ class TestGlobeGlitter < Test::Unit::TestCase
       333.times.with_object(::Array::new) {
         _2.push(::GlobeGlitter::random)
         # `random` identifiers should always be structure 1 version 4.
-        assert_equal(::GlobeGlitter::RULES_RANDOM, _2.last.rules)
+        assert_equal(::GlobeGlitter::BEHAVIOR_RANDOM, _2.last.behavior)
         assert_equal(::GlobeGlitter::STRUCTURE_ITU_T_REC_X_667, _2.last.structure)
       }.uniq.size,
     )

@@ -56,11 +56,11 @@ module ::GlobeGlitter::INNER_SPIRIT
   #                                   that uses SHA-1 hashing.
   #
   # “The version is more accurately a sub-type; again, we retain the term for compatibility.”
-  def rules = (self.to_i >> 76) & 0xF
+  def behavior = (self.to_i >> 76) & 0xF
     # NOTE: Assignment methods in Ruby can only return their argument, so we name this `replace` instead.
-  def replace_rules(otra)
+  def replace_behavior(otra)
     raise ::ArgumentError::new("invalid version #{otra.to_s}") unless otra.is_a?(::Integer) and otra.between?(1, 8)
-    return self.with(rules: otra).tap {
+    return self.with(behavior: otra).tap {
       _1.inner_spirit.set_value(:U8, 7, ((otra << 0xF) | (self.inner_spirit.get_value(:U8, 7) & 0xF)))
     }
   end
@@ -68,7 +68,7 @@ module ::GlobeGlitter::INNER_SPIRIT
   # but I don't want to call it that because it's a terrible ambiguous word
   # for anybody unfamiliar with the minutae of the specs.
   # We should still provide it as `#version` because why not??
-  alias_method(:version, :rules)
+  alias_method(:version, :behavior)
 
   # ITU-T Rec. X.667 sez —
   #
