@@ -91,6 +91,36 @@ require('securerandom') unless defined?(::SecureRandom)
   # These two values correspond to the equivalent ITU-T Rec. X.667 / RFC 4122 `variant` for MS and future-reservation.
   # The `microsoft` type is awkwardly mixed-endian, and future is afaik still unused.
   self::STRUCTURE_MICROSOFT       =  2
+
+  # We can auto-detect endianness of certain known GUID ranges.
+  self::KNOWN_MICROSOFT_DATA4     =  [
+
+    # COM/OLE CLSIDs.
+    #
+    # `ole2spec.doc` https://archive.org/details/MSDN_Operating_Systems_SDKs_Tools_October_1996_Disc_2
+    # shows the example CLSID `{12345678-9ABC-DEF0-C000-000000000046}`, indicating the variable and constant parts.
+    #
+    # These CLSIDs are (AFAICT) the reason for ITU-T Rec. X.667 / RFC 4122's "Microsoft backwards-compatibility" variant.
+    # Note the leading `0xC` byte of CLSIDs' `DATA4`, the same byte that marks the `variant` in the ITU/RFC layout,
+    # with the same value as the "0b110x" MS variant:  irb> 0b11000000.chr => "\xC0"
+    # https://github.com/libyal/libfwsi/blob/main/documentation/Windows%20Shell%20Item%20format.asciidoc#88-class-identifiers
+    # http://justsolve.archiveteam.org/wiki/Microsoft_Compound_File#Root_storage_object_CLSIDs
+    0xC000000000000046,
+
+    # DirectShow codec GUIDs.
+    #
+    # The generic form of `XXXXXXXX-0000-0010-8000-00AA00389B71` is given on
+    # https://learn.microsoft.com/en-us/windows/win32/directshow/fourccmap
+    #
+    # As I write this, https://gix.github.io/media-types/ has 684 matches for "8000-00AA00389B71".
+    #
+    # The "8000-00AA00389B71" `DATA4` could be still more accurately matched by also looking for
+    # little-endian 0x0010 `DATA3` and 0x0 `DATA2`, but just matching the `DATA4` seems unique enough
+    # and I don't feel like making this more complicated right now lol
+    0x800000AA00389B71,
+
+  ]
+
   self::STRUCTURE_FUTURE          =  3
 
   #
@@ -237,9 +267,11 @@ require('securerandom') unless defined?(::SecureRandom)
           either_or.match(self::MATCH_UUID) or either_or.match(self::MATCH_UUID_OR_GUID)
         ) then
           ::Regexp::last_match.captures.map!(&:hex).tap {
-            buffer.set_value(:U32, 0, _1[0])
-            buffer.set_value(:U16, 4, _1[1])
-            buffer.set_value(:U16, 6, _1[2])
+            # Detect known Microsoft GUIDs by their `DATA4` and apply our Microsoft structure flag.
+            structure = self::STRUCTURE_MICROSOFT if self::KNOWN_MICROSOFT_DATA4.include?((_1[3] << 48) | _1[4])
+            buffer.set_value(structure.eql?(self::STRUCTURE_MICROSOFT) ? :u32 : :U32, 0, _1[0])
+            buffer.set_value(structure.eql?(self::STRUCTURE_MICROSOFT) ? :u16 : :U16, 4, _1[1])
+            buffer.set_value(structure.eql?(self::STRUCTURE_MICROSOFT) ? :u16 : :U16, 6, _1[2])
             buffer.set_value(:U16, 8, _1[3])
             buffer.set_value(:U16, 10, (_1[4] >> 32))
             buffer.set_value(:U32, 12, (_1[4] & 0xFFFFFFFF))

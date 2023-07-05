@@ -34,6 +34,46 @@ class TestGlobeGlitter < Test::Unit::TestCase
     assert_equal("ffffffff-ffff-ffff-ffff-ffffffffffff", ::GlobeGlitter::max.to_s)
   end
 
+  def test_microsoft_detection
+    # `ole2spec.doc` https://archive.org/details/MSDN_Operating_Systems_SDKs_Tools_October_1996_Disc_2
+    # shows the example CLSID `{12345678-9ABC-DEF0-C000-000000000046}`, indicating the variable and constant parts.
+    # This should be matched by the enclosing braces and by the upper-case hex digits.
+    assert_equal(
+      ::GlobeGlitter::STRUCTURE_MICROSOFT,
+      ::GlobeGlitter::new("{12345678-9ABC-DEF0-C000-000000000046}").structure
+    )
+    # It should still be matched with enclosing braces but lower-case hex digits.
+    assert_equal(
+      ::GlobeGlitter::STRUCTURE_MICROSOFT,
+      ::GlobeGlitter::new("{12345678-9abc-def0-c000-000000000046}").structure
+    )
+    # It should *still* by matched without by known `DATA4` without braces and lower-case.
+    assert_equal(
+      ::GlobeGlitter::STRUCTURE_MICROSOFT,
+      ::GlobeGlitter::new("12345678-9abc-def0-c000-000000000046").structure
+    )
+
+    # WaveFormat `0x0001 (WAVE_FORMAT_PCM)` tests our known DirectShow `DATA4`: `0x800000AA00389B71`.
+    assert_equal(
+      ::GlobeGlitter::STRUCTURE_MICROSOFT,
+      ::GlobeGlitter::new("00000001-0000-0010-8000-00aa00389b71").structure
+    )
+
+    # Unknown-`DATA4` GUIDs should still be matched by braces and by case.
+    assert_equal(
+      ::GlobeGlitter::STRUCTURE_MICROSOFT,
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF}").structure
+    )
+    assert_equal(
+      ::GlobeGlitter::STRUCTURE_MICROSOFT,
+      ::GlobeGlitter::new("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF").structure
+    )
+    #assert_equal(
+    #  ::GlobeGlitter::STRUCTURE_MICROSOFT,
+    #  ::GlobeGlitter::new("{ffffffff-ffff-ffff-ffff-ffffffffffff}").structure
+    #)  # TODO: Fix this lol
+  end
+
   def test_dont_parse_invalid_input
     assert_nil(::GlobeGlitter::try_convert(nil))
 
