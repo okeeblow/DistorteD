@@ -7,15 +7,29 @@ require('securerandom') unless defined?(::SecureRandom)
 
 # Apollo AEGIS UID:
 # - https://dl.acm.org/doi/pdf/10.1145/800220.806679  (1982)
+# - https://utzoo.superglobalmegacorp.com/usenet/news084f1/b105/comp/unix/wizards/11047.txt
+# - AEGIS & Domain/OS 1997 date bug http://web.mit.edu/kolya/www/csa-faq.html#4.25
 #
 # Apollo NCS:
 # - https://jim.rees.org/apollo-archive/papers/ncs.pdf.gz
 # - https://bitsavers.org/pdf/apollo/014962-A00_Domain_OS_Design_Principles_Jan89.pdf
 # - https://stuff.mit.edu/afs/athena/astaff/project/opssrc/quotasrc/src/ncs/nck/uuid.c
+# - https://utzoo.superglobalmegacorp.com/usenet/b173/comp/object/1506.txt
+# - https://techpubs.jurassic.nl/manuals/0530/admin/NetLS_AG/sgi_html/ch07.html#id75980
+# - https://utzoo.superglobalmegacorp.com/usenet/b176/comp/sys/apollo/6124.txt
+# - https://utzoo.superglobalmegacorp.com/usenet/b176/comp/sys/apollo/6151.txt
+# - https://utzoo.superglobalmegacorp.com/usenet/news068f1/b88/comp/os/research/189.txt
+# - https://utzoo.superglobalmegacorp.com/usenet/news084f1/b105/comp/unix/wizards/11047.txt
+# - https://utzoo.superglobalmegacorp.com/usenet/b174/comp/sys/sun/11032.txt
+# - https://utzoo.superglobalmegacorp.com/usenet/b179/comp/sys/apollo/6345.txt
+# - https://utzoo.superglobalmegacorp.com/usenet/b229/comp/sys/sun/15342.txt
+# - https://utzoo.superglobalmegacorp.com/usenet/b179/comp/protocols/misc/989.txt
+# - http://www.typewritten.org/Articles/Apollo/005488-02.pdf DOMAIN System User’s Guide
 #
 # Version 1/3/4/5, variant 1 UUID:
 # - https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-X.667-201210-I!!PDF-E&type=items
 # - https://www.ietf.org/rfc/rfc4122.txt
+# - https://github.com/ietf-wg-uuidrev/rfc4122bis
 #
 # Version 2, variant 1 UUID:
 # - https://pubs.opengroup.org/onlinepubs/9696989899/chap5.htm#tagcjh_08_02_01_01
@@ -36,6 +50,7 @@ require('securerandom') unless defined?(::SecureRandom)
 # - LAS: https://github.com/ASPRSorg/LAS/wiki/LAS-ProjectID-Encoding-and-Representation
 # - Python: https://docs.python.org/3/library/uuid.html
 # - ReactOS: https://doxygen.reactos.org/d9/d36/psdk_2guiddef_8h_source.html
+# - FreeDCE: https://github.com/dcerpc/dcerpc/tree/master/dcerpc/uuid
 ::GlobeGlitter = ::Data::define(:inner_spirit, :behavior, :structure) do
 
   # Terminology NOTE:
@@ -109,6 +124,21 @@ require('securerandom') unless defined?(::SecureRandom)
   #       `typedef struct _GUID { unsigned long  Data1; unsigned short Data2; unsigned short Data3; unsigned char Data4[8]; } GUID;`
   #       “The first 2 bytes [of `Data4`] contain the third group of 4 hexadecimal digits.
   #        The remaining 6 bytes contain the final 12 hexadecimal digits.”
+  #
+  #       https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-RPCE/%5bMS-RPCE%5d-210407.pdf sez —
+  #       “globally unique identifier (GUID): A term used interchangeably with universally unique identifier (UUID)
+  #        in Microsoft protocol technical documents (TDs). Interchanging the usage of these terms does not imply
+  #        or require a specific algorithm or mechanism to generate the value.
+  #        Specifically, the use of this term does not imply or require that the algorithms described in [RFC4122]
+  #        or [C706] must be used for generating the GUID. See also universally unique identifier (UUID).”
+  #       “universally unique identifier (UUID): A 128-bit value. UUIDs can be used for multiple purposes,
+  #        from tagging objects with an extremely short lifetime, to reliably identifying very persistent objects in
+  #        cross-process communication such as client and server interfaces, manager entry-point vectors, and RPC objects.
+  #        UUIDs are highly likely to be unique. UUIDs are also known as globally unique identifiers (GUIDs)
+  #        and these terms are used interchangeably in the Microsoft protocol technical documents (TDs).
+  #        Interchanging the usage of these terms does not imply or require a specific algorithm or mechanism
+  #        to generate the UUID. Specifically, the use of this term does not imply or require that the algorithms
+  #        described in [RFC4122] or [C706] must be used for generating the UUID.”
   #
   #       https://www.mandiant.com/resources/blog/hunting-com-objects sez —
   #       “Every COM object is identified by a unique binary identifier. These 128 bit (16 byte) globally
