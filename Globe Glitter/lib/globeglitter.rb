@@ -192,12 +192,8 @@ require('securerandom') unless defined?(::SecureRandom)
   #
   #       When asked to emit a "GUID", GlobeGlitter will produce upper-case.
   #       By default (e.g. `#to_s`) — and when asked to emit a "UUID", GlobeGlitter will produce lower-case.
-  #
-  #
-  # MAYBE: Should we assume any bracketed string is a GUID regardless of hex case?
-  #        Search for counter-examples in the form of bracketed-UUIDs to decide.
   self::MATCH_GUID         = /\A\{?([0-9A-F]{8})-?([0-9A-F]{4})-?([0-9A-F]{4})-?([0-9A-F]{4})-?([0-9A-F]{12})\}?\Z/
-  self::MATCH_UUID         = /\A\{?([0-9a-f]{8})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{12})\}?\Z/
+  self::MATCH_UUID         = /\A([0-9a-f]{8})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{12})\Z/
   self::MATCH_UUID_OR_GUID = /\A\{?(\h{8})-?(\h{4})-?(\h{4})-?(\h{4})-?(\h{12})\}?\Z/
 
   # https://zverok.space/blog/2023-01-03-data-initialize.html
@@ -212,6 +208,9 @@ require('securerandom') unless defined?(::SecureRandom)
           probably_guid.match(self::MATCH_GUID) or
           (probably_guid.match(self::MATCH_UUID) and structure.eql?(self::STRUCTURE_MICROSOFT))
         ) then
+          # Assume components are little-endian from a Microsoft-style GUID.
+          # Explicitly set structure flag in case we got here by `::Regexp` match.
+          structure = self::STRUCTURE_MICROSOFT
           ::Regexp::last_match.captures.map!(&:hex).tap {
             buffer.set_value(:u32, 0, _1[0])
             buffer.set_value(:u16, 4, _1[1])
@@ -225,6 +224,9 @@ require('securerandom') unless defined?(::SecureRandom)
             data4.size.eql?(8) and data4.all?(::Integer) and data4.max.bit_length.<=(8)
           )
         ) then
+          # Assume components are little-endian from a Microsoft-style GUID.
+          # The `::Array` form of `DATA4` is a way they sidestepped the endianness issue, allowing `DATA4`
+          # to be *effectively* big-endian. This is why people mistakenly refer to GUIDs as "mixed-endian".
           # https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
           structure = self::STRUCTURE_MICROSOFT
           buffer.set_value(:u32, 0, data1)
