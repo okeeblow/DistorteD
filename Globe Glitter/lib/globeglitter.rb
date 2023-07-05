@@ -227,7 +227,7 @@ require('securerandom') unless defined?(::SecureRandom)
             buffer.set_value(:U16, 8, seq)
             buffer.set_value(:U16, 10, (node >> 32))
             buffer.set_value(:U32, 12, (node & 0xFFFFFFFF))
-        else raise ::ArgumentError::new("invalid number or rules of arguments")  #TOD0: "given/expected"?
+        else raise ::ArgumentError::new("invalid number or structure of arguments")  #TOD0: "given/expected"?
         end
       },
       structure: (structure.respond_to?(:>=) and structure&.>=(0)) ? structure : self::STRUCTURE_UNSET,
