@@ -92,7 +92,15 @@ require('securerandom') unless defined?(::SecureRandom)
   # The `microsoft` type is awkwardly mixed-endian, and future is afaik still unused.
   self::LAYOUT_MICROSOFT          =  2
 
-  # We can auto-detect endianness of certain known GUID ranges.
+  # Auto-detect Microsoft-style `layout` given certain known GUID ranges.
+  #
+  # "`DATA4`" here refers to the second 64 bits in a 128-bit GUID, i.e. it has a *different layout of bits*
+  # compared to ITU/RFC-style 128-bit UUIDs: https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
+  #
+  # A GUID's `DATA4` is often expressed in Windows-land as an `::Array` of eight bytes as a sidestep around endianness.
+  # All components of a GUID are little-endian, but any single byte is the same in either endianness,
+  # so an `::Array` of eight little-endian bytes is effectively the same thing as a big-endian 64-bit value.
+  # This is why many sources describe MS-style GUIDs as mixed-endian.
   self::KNOWN_MICROSOFT_DATA4     =  [
 
     # COM/OLE CLSIDs.
@@ -119,7 +127,7 @@ require('securerandom') unless defined?(::SecureRandom)
     # and I don't feel like making this more complicated right now lol
     0x800000AA00389B71,
 
-  ]
+  ]  # KNOWN_MICROSOFT_DATA4
 
   self::LAYOUT_FUTURE             =  3
 
