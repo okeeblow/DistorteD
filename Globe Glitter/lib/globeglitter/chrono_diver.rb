@@ -56,7 +56,7 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
   #  #<Addrinfo: ::1>,
   #  #<Addrinfo: fe80::d9d7:4890:9ebc:486%wlp2s0>]
   #
-  # …but there seems to be no way to get it in Ruby code without parsing the `::String` output
+  # …but there seems to be no way to get the raw 48-bit value in Ruby code without parsing the `::String` output
   # of `::Addrinfo#inspect`, confirmed when we look at `raddrinfo.c` and see it constructing a `str`:
   # https://github.com/ruby/ruby/blob/ea8a7287e2b96b9c24e5e89fe863e5bfa60bfdda/ext/socket/raddrinfo.c#L1375
   #
@@ -66,15 +66,10 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
   private def hardware_node = ::Socket::getifaddrs.map(&:addr).map(&:inspect_sockaddr).map! {
     _1.match(/hwaddr=(?<hwaddr>\h\h:\h\h:\h\h:\h\h:\h\h:\h\h)/)&.captures&.pop&.gsub(?:, '')&.to_i(16)
   }.compact.tap {
-    # Remove `00:00:00:00:00:00` loopback address.
-    # TODO: Better logic. There can be multiple loopback interfaces or no loopback interface.
-    #       Maybe alter the `::Regexp` above and remove this `tap`/`delete` section entirely.
+    # There can be multiple loopback interfaces or no loopback interface.
+    # Since we have `#compact`ed, a single `#delete` will delete any and all of the same `hwaddr`.
     _1.delete(0)
-  }&.max {
-    # Choose the hwaddr that gives up the most entropy for a UUID,
-    # rather than always the first-enumerated hwaddr.
-    _1.bit_length
-  }
+  }.first  # TOD0: Is there any reason to pick a particular `hwaddr` besides first-enumerated?
 
   # Fall back to random node ID if a hardware ID is unavailable.
   private def current_node = self.hardware_node || self.random_node

@@ -210,7 +210,7 @@ require('securerandom') unless defined?(::SecureRandom)
   #       National Security Agency UEFI Secure Boot Customization Cybersecurity Technical Report
   #       https://media.defense.gov/2020/Sep/15/2002497594/-1/-1/0/CTR-UEFI-Secure-Boot-Customization-UOO168873-20.PDF#page=18 sez —
   #       “Note that GUIDs and UUIDs are similar. However, EFI GUID structures observe an 8-4-4-16
-  #        format in source code. UUID structures, in contrast, observe an 8-4-4-4-12 format.”
+  #        format in source code. UUID layouts, in contrast, observe an 8-4-4-4-12 format.”
   #
   #       UEFI 2.0 errata https://uefi.org/sites/default/files/resources/UEFI_Spec_Errata_Only.pdf sez —
   #       “Add clarification to the spec so that we avoid references to GUIDs that do not comply to the
