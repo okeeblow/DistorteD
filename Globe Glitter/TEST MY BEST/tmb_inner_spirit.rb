@@ -189,13 +189,13 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
     }
   end
 
-  def test_structure
+  def test_layout
     ::GlobeGlitter::nil.tap { |gg|
-      assert_equal(::GlobeGlitter::STRUCTURE_UNSET, gg.structure)
-      assert_equal(::GlobeGlitter::STRUCTURE_ITU_T_REC_X_667, gg.replace_structure(::GlobeGlitter::STRUCTURE_ITU_T_REC_X_667).structure)
-      assert_equal(::GlobeGlitter::STRUCTURE_MICROSOFT, gg.replace_structure(::GlobeGlitter::STRUCTURE_MICROSOFT).structure)
-      assert_equal(::GlobeGlitter::STRUCTURE_FUTURE, gg.replace_structure(::GlobeGlitter::STRUCTURE_FUTURE).structure)
-      assert_raise(::ArgumentError) { gg.replace_structure(4) }
+      assert_equal(::GlobeGlitter::LAYOUT_UNSET, gg.layout)
+      assert_equal(::GlobeGlitter::LAYOUT_ITU_T_REC_X_667, gg.replace_layout(::GlobeGlitter::LAYOUT_ITU_T_REC_X_667).layout)
+      assert_equal(::GlobeGlitter::LAYOUT_MICROSOFT, gg.replace_layout(::GlobeGlitter::LAYOUT_MICROSOFT).layout)
+      assert_equal(::GlobeGlitter::LAYOUT_FUTURE, gg.replace_layout(::GlobeGlitter::LAYOUT_FUTURE).layout)
+      assert_raise(::ArgumentError) { gg.replace_layout(4) }
     }
   end
 
@@ -215,7 +215,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
 
   def test_bytes
     # Wikipedia https://en.wikipedia.org/wiki/Universally_unique_identifier#Encoding sez —
-    # “The binary encoding of UUIDs varies between systems. Variant 1 UUIDs, nowadays the most common structure,
+    # “The binary encoding of UUIDs varies between systems. Variant 1 UUIDs, nowadays the most common variant,
     #  are encoded in a big-endian format. For example, `00112233-4455-6677-8899-aabbccddeeff` is encoded as
     #  the bytes `00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff`.”
     assert_equal(
@@ -230,13 +230,13 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
     #  See the section on Variants for details on why the '88' byte becomes 'c8' in Variant 2.”
     assert_equal(
      [0x33, 0x22, 0x11, 0x00, 0x55, 0x44, 0x77, 0x66, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF],
-      ::GlobeGlitter::new("00112233-4455-6677-8899-aabbccddeeff", structure: ::GlobeGlitter::STRUCTURE_MICROSOFT).bytes
+      ::GlobeGlitter::new("00112233-4455-6677-8899-aabbccddeeff", layout: ::GlobeGlitter::LAYOUT_MICROSOFT).bytes
     )
 
     # Example values from https://learn.microsoft.com/en-us/dotnet/api/system.guid.tobytearray#examples
     assert_equal(
       [0xC9, 0x8B, 0x91, 0x35, 0x6D, 0x19, 0xEA, 0x40, 0x97, 0x79, 0x88, 0x9D, 0x79, 0xB7, 0x53, 0xF0],
-      ::GlobeGlitter::new("35918bc9-196d-40ea-9779-889d79b753f0", structure: ::GlobeGlitter::STRUCTURE_MICROSOFT).bytes
+      ::GlobeGlitter::new("35918bc9-196d-40ea-9779-889d79b753f0", layout: ::GlobeGlitter::LAYOUT_MICROSOFT).bytes
     )
   end
 

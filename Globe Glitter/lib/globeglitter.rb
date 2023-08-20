@@ -51,11 +51,11 @@ require('securerandom') unless defined?(::SecureRandom)
 # - Python: https://docs.python.org/3/library/uuid.html
 # - ReactOS: https://doxygen.reactos.org/d9/d36/psdk_2guiddef_8h_source.html
 # - FreeDCE: https://github.com/dcerpc/dcerpc/tree/master/dcerpc/uuid
-::GlobeGlitter = ::Data::define(:inner_spirit, :behavior, :structure) do
+::GlobeGlitter = ::Data::define(:inner_spirit, :behavior, :layout) do
 
   # Terminology NOTE:
   #
-  # `::GlobeGlitter`'s `structure` and `behavior` are broadly equivalent to ITU-T Rec. X.667's / RFC 4122's
+  # `::GlobeGlitter`'s `layout` and `behavior` are broadly equivalent to ITU-T Rec. X.667's / RFC 4122's
   # `variant` and `version`, respectively. I am renaming them for two reasons:
   #
   # - because `variant` and `version` are terrible names,
@@ -64,16 +64,16 @@ require('securerandom') unless defined?(::SecureRandom)
   #   and I prefer to avoid defining one spec in terms of another.
   #
   # TL;DR:
-  # - `structure` describes the boundaries and endianness of the chunks making up a single `::GlobeGlitter`.
+  # - `layout` describes the boundaries and endianness of the chunks making up a single `::GlobeGlitter`.
   # - `behavior` describe the meaning of chunks within a single `::GlobeGlitter` as well as how it should
   #   relate to other `GG` instances.
 
   # Default constructor arguments.
-  self::STRUCTURE_UNSET           = -1
+  self::LAYOUT_UNSET              = -1
   self::BEHAVIOR_UNSET            = -1
 
   #
-  self::STRUCTURE_NCS             =  0
+  self::LAYOUT_NCS                =  0
 
   # ITU-T Rec. X.667, ISO/IEC 9834-8, and RFC 4122 are all the same standard,
   # via either the telecom world or the Internet world.
@@ -82,15 +82,15 @@ require('securerandom') unless defined?(::SecureRandom)
   # - ITU: https://www.itu.int/rec/T-REC-X.667
   # - ISO: https://www.iso.org/standard/62795.html
   # - IETF: https://www.ietf.org/rfc/rfc4122.txt
-  self::STRUCTURE_LEACH_SALZ      =  1
-  self::STRUCTURE_ITU_T_REC_X_667 =  1
-  self::STRUCTURE_RFC_4122        =  1
-  self::STRUCTURE_ISO_9834_8      =  1
-  self::STRUCTURE_IEC_9834_8      =  1
+  self::LAYOUT_LEACH_SALZ         =  1
+  self::LAYOUT_ITU_T_REC_X_667    =  1
+  self::LAYOUT_RFC_4122           =  1
+  self::LAYOUT_ISO_9834_8         =  1
+  self::LAYOUT_IEC_9834_8         =  1
 
   # These two values correspond to the equivalent ITU-T Rec. X.667 / RFC 4122 `variant` for MS and future-reservation.
   # The `microsoft` type is awkwardly mixed-endian, and future is afaik still unused.
-  self::STRUCTURE_MICROSOFT       =  2
+  self::LAYOUT_MICROSOFT          =  2
 
   # We can auto-detect endianness of certain known GUID ranges.
   self::KNOWN_MICROSOFT_DATA4     =  [
@@ -121,7 +121,7 @@ require('securerandom') unless defined?(::SecureRandom)
 
   ]
 
-  self::STRUCTURE_FUTURE          =  3
+  self::LAYOUT_FUTURE             =  3
 
   #
   self::BEHAVIOR_TIME_GREGORIAN   =  1
@@ -227,7 +227,7 @@ require('securerandom') unless defined?(::SecureRandom)
   self::MATCH_UUID_OR_GUID = /\A\{?(\h{8})-?(\h{4})-?(\h{4})-?(\h{4})-?(\h{12})\}?\Z/
 
   # https://zverok.space/blog/2023-01-03-data-initialize.html
-  def self.new(*parts, structure: self::STRUCTURE_UNSET, behavior: self::BEHAVIOR_UNSET) = self::allocate.tap { |gg|
+  def self.new(*parts, layout: self::LAYOUT_UNSET, behavior: self::BEHAVIOR_UNSET) = self::allocate.tap { |gg|
     gg.send(:initialize,
       inner_spirit: ::IO::Buffer::new(
         size=16,  # “UUIDs are an octet string of 16 octets (128 bits).”
@@ -236,11 +236,11 @@ require('securerandom') unless defined?(::SecureRandom)
         case parts
         in [::String => probably_guid] if (
           probably_guid.match(self::MATCH_GUID) or
-          (probably_guid.match(self::MATCH_UUID) and structure.eql?(self::STRUCTURE_MICROSOFT))
+          (probably_guid.match(self::MATCH_UUID) and layout.eql?(self::LAYOUT_MICROSOFT))
         ) then
           # Assume components are little-endian from a Microsoft-style GUID.
-          # Explicitly set structure flag in case we got here by `::Regexp` match.
-          structure = self::STRUCTURE_MICROSOFT
+          # Explicitly set layout flag in case we got here by `::Regexp` match.
+          layout = self::LAYOUT_MICROSOFT
           ::Regexp::last_match.captures.map!(&:hex).tap {
             buffer.set_value(:u32, 0, _1[0])
             buffer.set_value(:u16, 4, _1[1])
@@ -258,7 +258,7 @@ require('securerandom') unless defined?(::SecureRandom)
           # The `::Array` form of `DATA4` is a way they sidestepped the endianness issue, allowing `DATA4`
           # to be *effectively* big-endian. This is why people mistakenly refer to GUIDs as "mixed-endian".
           # https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
-          structure = self::STRUCTURE_MICROSOFT
+          layout = self::LAYOUT_MICROSOFT
           buffer.set_value(:u32, 0, data1)
           buffer.set_value(:u16, 4, data2)
           buffer.set_value(:u16, 6, data3)
@@ -267,11 +267,11 @@ require('securerandom') unless defined?(::SecureRandom)
           either_or.match(self::MATCH_UUID) or either_or.match(self::MATCH_UUID_OR_GUID)
         ) then
           ::Regexp::last_match.captures.map!(&:hex).tap {
-            # Detect known Microsoft GUIDs by their `DATA4` and apply our Microsoft structure flag.
-            structure = self::STRUCTURE_MICROSOFT if self::KNOWN_MICROSOFT_DATA4.include?((_1[3] << 48) | _1[4])
-            buffer.set_value(structure.eql?(self::STRUCTURE_MICROSOFT) ? :u32 : :U32, 0, _1[0])
-            buffer.set_value(structure.eql?(self::STRUCTURE_MICROSOFT) ? :u16 : :U16, 4, _1[1])
-            buffer.set_value(structure.eql?(self::STRUCTURE_MICROSOFT) ? :u16 : :U16, 6, _1[2])
+            # Detect known Microsoft GUIDs by their `DATA4` and apply our Microsoft layout flag.
+            layout = self::LAYOUT_MICROSOFT if self::KNOWN_MICROSOFT_DATA4.include?((_1[3] << 48) | _1[4])
+            buffer.set_value(layout.eql?(self::LAYOUT_MICROSOFT) ? :u32 : :U32, 0, _1[0])
+            buffer.set_value(layout.eql?(self::LAYOUT_MICROSOFT) ? :u16 : :U16, 4, _1[1])
+            buffer.set_value(layout.eql?(self::LAYOUT_MICROSOFT) ? :u16 : :U16, 6, _1[2])
             buffer.set_value(:U16, 8, _1[3])
             buffer.set_value(:U16, 10, (_1[4] >> 32))
             buffer.set_value(:U32, 12, (_1[4] & 0xFFFFFFFF))
@@ -294,7 +294,7 @@ require('securerandom') unless defined?(::SecureRandom)
         else raise ::ArgumentError::new("invalid number or structure of arguments")  #TOD0: "given/expected"?
         end
       },
-      structure: (structure.respond_to?(:>=) and structure&.>=(0)) ? structure : self::STRUCTURE_UNSET,
+      layout: (layout.respond_to?(:>=) and layout&.>=(0)) ? layout : self::LAYOUT_UNSET,
       behavior: (behavior.respond_to?(:>=) and behavior&.>=(1)) ? behavior : self::BEHAVIOR_UNSET
     )  # send
   }  # def self.new
@@ -317,7 +317,7 @@ require('securerandom') unless defined?(::SecureRandom)
   # Our implementation with `random_number` is much faster than converting that `::String` to `::Integer`.
   def self.random = self::new(
     ::SecureRandom::random_number(0xFFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF),  # "Maximum" 128-bit UUID
-    structure: self::STRUCTURE_ITU_T_REC_X_667,
+    layout: self::LAYOUT_ITU_T_REC_X_667,
     behavior: self::BEHAVIOR_RANDOM,
   )
 

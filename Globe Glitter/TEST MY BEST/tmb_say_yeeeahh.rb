@@ -53,11 +53,11 @@ class TestGlobeGlitterSayYeeeahh < Test::Unit::TestCase
     )
     assert_equal(
       ::String::new("00112233-4455-6677-8899-aabbccddeeff", encoding: ::Encoding::US_ASCII),
-      ::GlobeGlitter::new("00112233-4455-6677-8899-aabbccddeeff", structure: ::GlobeGlitter::STRUCTURE_MICROSOFT).to_s,
+      ::GlobeGlitter::new("00112233-4455-6677-8899-aabbccddeeff", layout: ::GlobeGlitter::LAYOUT_MICROSOFT).to_s,
     )
     assert_equal(
       ::String::new("{00112233-4455-6677-8899-AABBCCDDEEFF}", encoding: ::Encoding::US_ASCII),
-      ::GlobeGlitter::new("00112233-4455-6677-8899-aabbccddeeff", structure: ::GlobeGlitter::STRUCTURE_MICROSOFT).to_guid,
+      ::GlobeGlitter::new("00112233-4455-6677-8899-aabbccddeeff", layout: ::GlobeGlitter::LAYOUT_MICROSOFT).to_guid,
     )
     efi_system = ::GlobeGlitter::new(::String::new("c12a7328-f81f-11d2-ba4b-00a0c93ec93b", encoding: Encoding::US_ASCII))
     assert_equal(::String::new("c12a7328-f81f-11d2-ba4b-00a0c93ec93b", encoding: Encoding::US_ASCII), efi_system.to_s)

@@ -10,17 +10,17 @@ module ::GlobeGlitter::INNER_SPIRIT
   #   significant bit of octet 15 and bit 0 as the least significant bit of octet 0.”
   #
   # I am going to 1-index the boundaries in these helper methods because I think the resulting numbers
-  # are easier to remember, but our structure is otherwise identical to what's described in the quote.
-  def bits127–96 = self.inner_spirit.get_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u32 : :U32, 0)
-  def bits95–80  = self.inner_spirit.get_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u16 : :U16, 4)
-  def bits79–64  = self.inner_spirit.get_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u16 : :U16, 6)
+  # are easier to remember, but our layout is otherwise identical to what's described in the quote.
+  def bits127–96 = self.inner_spirit.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u32 : :U32, 0)
+  def bits95–80  = self.inner_spirit.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 4)
+  def bits79–64  = self.inner_spirit.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 6)
   def bits63–56  = self.inner_spirit.get_value(:U8, 8)
   def bits55–48  = self.inner_spirit.get_value(:U8, 9)
   def bits47–0   = (self.inner_spirit.get_value(:U16, 10) << 32) | self.inner_spirit.get_value(:U32, 12)
 
-  def bits127–96=(otra); self.inner_spirit.set_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u32 : :U32, 0, otra); end
-  def bits95–80=(otra);  self.inner_spirit.set_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u16 : :U16, 4, otra); end
-  def bits79–64=(otra);  self.inner_spirit.set_value(self.structure.eql?(self.class::STRUCTURE_MICROSOFT) ? :u16 : :U16, 6, otra); end
+  def bits127–96=(otra); self.inner_spirit.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u32 : :U32, 0, otra); end
+  def bits95–80=(otra);  self.inner_spirit.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 4, otra); end
+  def bits79–64=(otra);  self.inner_spirit.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 6, otra); end
   def bits63–56=(otra);  self.inner_spirit.set_value(:U8, 8, otra); end
   def bits55–48=(otra);  self.inner_spirit.set_value(:U8, 9, otra); end
   def bits47–0=(otra)
@@ -33,7 +33,7 @@ module ::GlobeGlitter::INNER_SPIRIT
   # “The version number is in the most significant 4 bits of the time
   #  stamp (bits 4 through 7 of the time_hi_and_version field).”
   #
-  # “The following table lists the currently-defined versions for this UUID structure.”
+  # “The following table lists the currently-defined versions for this UUID variant.”
   #
   # Msb0  Msb1  Msb2  Msb3   Version  Description
   #
@@ -57,7 +57,9 @@ module ::GlobeGlitter::INNER_SPIRIT
   #
   # “The version is more accurately a sub-type; again, we retain the term for compatibility.”
   def behavior = (self.to_i >> 76) & 0xF
-    # NOTE: Assignment methods in Ruby can only return their argument, so we name this `replace` instead.
+  # NOTE: Assignment methods in Ruby can only return their argument,
+  #       so we name this `:replace_behavior` instead of `:behavior=`
+  #       because we have to return `self.with`.
   def replace_behavior(otra)
     raise ::ArgumentError::new("invalid version #{otra.to_s}") unless otra.is_a?(::Integer) and otra.between?(1, 8)
     return self.with(behavior: otra).tap {
@@ -85,7 +87,7 @@ module ::GlobeGlitter::INNER_SPIRIT
   #
   #    0     x     x    Reserved, NCS backward compatibility.
   #
-  #    1     0     x    The structure specified in this document.
+  #    1     0     x    The variant specified in this document.
   #
   #    1     1     0    Reserved, Microsoft Corporation backward compatibility
   #
@@ -96,10 +98,12 @@ module ::GlobeGlitter::INNER_SPIRIT
   #       https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/UUID.html#variant()
   #
   #       I think it makes more sense for it to count upward like `version` rather than use the raw bit value.
-  def structure
-    # Can't use getter for this since the getter return value will rely on this structure.
+  def variant
+    # TODO: Figure out how this should interact with our instance `layout` member
+    #       since only certain variants should be embedded here.
+    # Can't use getter for this since the getter return value will rely on this layout.
     clock_seq_high_and_reserved = self.inner_spirit.get_value(:U8, 8)
-    # The structure is masked backwards, but with a variable number of bits,
+    # The variant is masked backwards, but with a variable number of bits,
     # so we can't just swap it and mask.
     case
     when (clock_seq_high_and_reserved >> 7).zero?       then 0
@@ -109,10 +113,12 @@ module ::GlobeGlitter::INNER_SPIRIT
     end
   end
 
-    # NOTE: Assignment methods in Ruby can only return their argument, so we name this `replace` instead.
-  def replace_structure(otra)
-    raise ::ArgumentError::new("invalid structure #{otra.to_s}") unless otra.respond_to?(:<) and otra.<(4)
-    return self.with(structure: otra).tap {
+  # NOTE: Assignment methods in Ruby can only return their argument,
+  #       so we name this `:replace_layout` instead of `:layout=`
+  #       because we have to return `self.with`.
+  def replace_layout(otra)
+    raise ::ArgumentError::new("invalid layout #{otra.to_s}") unless otra.respond_to?(:<) and otra.<(4)
+    return self.with(layout: otra).tap {
       _1.inner_spirit.set_value(:U8, 9,
         (
           (case otra
@@ -120,13 +126,13 @@ module ::GlobeGlitter::INNER_SPIRIT
             when 1    then 0b10000000
             when 2    then 0b11000000
             when 3    then 0b11100000
-            else      raise ::ArgumentError::new("invalid structure #{otra.to_s}")
+            else      raise ::ArgumentError::new("invalid layout #{otra.to_s}")
           end) |
           (_1.inner_spirit.get_value(:U8, 9) & case otra
             when 0    then 0b01111111
             when 1    then 0b00111111
             when 2, 3 then 0b00011111
-            else      raise ::ArgumentError::new("invalid structure #{otra.to_s}")
+            else      raise ::ArgumentError::new("invalid layout #{otra.to_s}")
             end)
         )
       )

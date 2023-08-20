@@ -115,7 +115,7 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
     current_time,
     clock_sequence,
     current_node,
-    structure: ::GlobeGlitter::STRUCTURE_ITU_T_REC_X_667,
+    layout: ::GlobeGlitter::LAYOUT_ITU_T_REC_X_667,
     behavior: ::GlobeGlitter::BEHAVIOR_TIME_GREGORIAN,
   )
 end
@@ -126,13 +126,13 @@ module ::GlobeGlitter::CHRONO_DIVER::FRAGMENT
   def time_low                    = self.bits127–96
   def time_mid                    = self.bits95–80
   def time_high_and_version       = self.bits79–64
-  def clock_seq_high_and_reserved = self.bits63–56 & case self.structure
-    # This field is overlayed by the backward-masked `structure` a.k.a. """variant""",
+  def clock_seq_high_and_reserved = self.bits63–56 & case self.layout
+    # This field is overlayed by the backward-masked `layout` a.k.a. """variant""",
     # so we return a different number of bits from the chunk depending on that value.
     when 0    then 0b01111111
     when 1    then 0b00111111
     when 2, 3 then 0b00011111
-    else           0b11111111  # Non-compliant structure. This should never happen.
+    else           0b11111111  # Non-compliant layout. This should never happen.
   end
   def clock_seq_low               =  self.bits55–48
   def node                        =  self.bits47–0
@@ -145,21 +145,21 @@ module ::GlobeGlitter::CHRONO_DIVER::FRAGMENT
     self.bits79–64=(((self.inner_spirit >> 64) & 0x00000000_0000F000) | (otra & 0xFFFFFFFF_FFFF0FFF))
   end
   def clock_seq_high_and_reserved=(otra)
-    # This field is overlayed by the backward-masked `structure` a.k.a. """variant""",
+    # This field is overlayed by the backward-masked `layout` a.k.a. """variant""",
     # so we set a different number of bits from the chunk depending on that value
     # along with saving the existing value.
     self.bits63–56=(
-      (otra & case self.structure
+      (otra & case self.layout
         when 0    then 0b01111111
         when 1    then 0b00111111
         when 2, 3 then 0b00011111
-        else           0b11111111  # Non-compliant structure. This should never happen.
-      end) | (case self.structure
+        else           0b11111111  # Non-compliant layout. This should never happen.
+      end) | (case self.layout
         when 0    then 0b00000000
         when 1    then 0b10000000
         when 2    then 0b11000000
         when 3    then 0b11100000
-        else           0b00000000  # Non-compliant structure. This should never happen.
+        else           0b00000000  # Non-compliant layout. This should never happen.
       end)
     )
   end
@@ -176,7 +176,7 @@ module ::GlobeGlitter::CHRONO_DIVER::FRAGMENT
     self.with(inner_spirit: (
       (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_0000FFFF_FFFFFFFF) |
       (
-        case self.structure
+        case self.layout
           when 0    then 0b00000000
           when 1    then 0b10000000
           when 2    then 0b11000000

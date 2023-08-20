@@ -12,9 +12,9 @@ class TestGlobeGlitter < Test::Unit::TestCase
       333,  # Ensure `random` doesn't generate any duplicates (up to a confidence point lol)
       333.times.with_object(::Array::new) {
         _2.push(::GlobeGlitter::random)
-        # `random` identifiers should always be structure 1 version 4.
+        # `random` identifiers should always be layout 1 version 4.
         assert_equal(::GlobeGlitter::BEHAVIOR_RANDOM, _2.last.behavior)
-        assert_equal(::GlobeGlitter::STRUCTURE_ITU_T_REC_X_667, _2.last.structure)
+        assert_equal(::GlobeGlitter::LAYOUT_ITU_T_REC_X_667, _2.last.layout)
       }.uniq.size,
     )
   end
@@ -39,38 +39,38 @@ class TestGlobeGlitter < Test::Unit::TestCase
     # shows the example CLSID `{12345678-9ABC-DEF0-C000-000000000046}`, indicating the variable and constant parts.
     # This should be matched by the enclosing braces and by the upper-case hex digits.
     assert_equal(
-      ::GlobeGlitter::STRUCTURE_MICROSOFT,
-      ::GlobeGlitter::new("{12345678-9ABC-DEF0-C000-000000000046}").structure
+      ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ::GlobeGlitter::new("{12345678-9ABC-DEF0-C000-000000000046}").layout
     )
     # It should still be matched with enclosing braces but lower-case hex digits.
     assert_equal(
-      ::GlobeGlitter::STRUCTURE_MICROSOFT,
-      ::GlobeGlitter::new("{12345678-9abc-def0-c000-000000000046}").structure
+      ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ::GlobeGlitter::new("{12345678-9abc-def0-c000-000000000046}").layout
     )
     # It should *still* by matched without by known `DATA4` without braces and lower-case.
     assert_equal(
-      ::GlobeGlitter::STRUCTURE_MICROSOFT,
-      ::GlobeGlitter::new("12345678-9abc-def0-c000-000000000046").structure
+      ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ::GlobeGlitter::new("12345678-9abc-def0-c000-000000000046").layout
     )
 
     # WaveFormat `0x0001 (WAVE_FORMAT_PCM)` tests our known DirectShow `DATA4`: `0x800000AA00389B71`.
     assert_equal(
-      ::GlobeGlitter::STRUCTURE_MICROSOFT,
-      ::GlobeGlitter::new("00000001-0000-0010-8000-00aa00389b71").structure
+      ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ::GlobeGlitter::new("00000001-0000-0010-8000-00aa00389b71").layout
     )
 
     # Unknown-`DATA4` GUIDs should still be matched by braces and by case.
     assert_equal(
-      ::GlobeGlitter::STRUCTURE_MICROSOFT,
-      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF}").structure
+      ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF}").layout
     )
     assert_equal(
-      ::GlobeGlitter::STRUCTURE_MICROSOFT,
-      ::GlobeGlitter::new("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF").structure
+      ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ::GlobeGlitter::new("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF").layout
     )
     #assert_equal(
-    #  ::GlobeGlitter::STRUCTURE_MICROSOFT,
-    #  ::GlobeGlitter::new("{ffffffff-ffff-ffff-ffff-ffffffffffff}").structure
+    #  ::GlobeGlitter::LAYOUT_MICROSOFT,
+    #  ::GlobeGlitter::new("{ffffffff-ffff-ffff-ffff-ffffffffffff}").layout
     #)  # TODO: Fix this lol
   end
 
