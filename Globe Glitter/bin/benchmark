@@ -56,13 +56,13 @@ Benchmark.ips do |bm|
   bm.report 'SecureRandom::uuid random String to Integer' do
     ::SecureRandom::uuid.gsub(?-, '').to_i(16)
   end
-  bm.report 'GlobeGlitter random from SecureRandom::uuid' do
+  bm.report 'GlobeGlitter random from SecureRandom::uuid String' do
     ::GlobeGlitter::new(::SecureRandom::uuid.gsub(?-, '').to_i(16))
   end
-  bm.report 'GlobeGlitter random native' do
+  bm.report 'GlobeGlitter random from SecureRandom::random_number' do
     ::GlobeGlitter::random
   end
-  bm.report 'GlobeGlitter random native to String' do
+  bm.report 'GlobeGlitter random from SecureRandom::random_number to String' do
     ::GlobeGlitter::random.to_s
   end
 end
