@@ -11,21 +11,21 @@ module ::GlobeGlitter::INNER_SPIRIT
   #
   # I am going to 1-index the boundaries in these helper methods because I think the resulting numbers
   # are easier to remember, but our layout is otherwise identical to what's described in the quote.
-  def bits127–96 = self.inner_spirit.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u32 : :U32, 0)
-  def bits95–80  = self.inner_spirit.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 4)
-  def bits79–64  = self.inner_spirit.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 6)
-  def bits63–56  = self.inner_spirit.get_value(:U8, 8)
-  def bits55–48  = self.inner_spirit.get_value(:U8, 9)
-  def bits47–0   = (self.inner_spirit.get_value(:U16, 10) << 32) | self.inner_spirit.get_value(:U32, 12)
+  def bits127–96 = self.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u32 : :U32, 0)
+  def bits95–80  = self.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 4)
+  def bits79–64  = self.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 6)
+  def bits63–56  = self.get_value(:U8, 8)
+  def bits55–48  = self.get_value(:U8, 9)
+  def bits47–0   = (self.get_value(:U16, 10) << 32) | self.get_value(:U32, 12)
 
-  def bits127–96=(otra); self.inner_spirit.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u32 : :U32, 0, otra); end
-  def bits95–80=(otra);  self.inner_spirit.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 4, otra); end
-  def bits79–64=(otra);  self.inner_spirit.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 6, otra); end
-  def bits63–56=(otra);  self.inner_spirit.set_value(:U8, 8, otra); end
-  def bits55–48=(otra);  self.inner_spirit.set_value(:U8, 9, otra); end
+  def bits127–96=(otra); self.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u32 : :U32, 0, otra); end
+  def bits95–80=(otra);  self.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 4, otra); end
+  def bits79–64=(otra);  self.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 6, otra); end
+  def bits63–56=(otra);  self.set_value(:U8, 8, otra); end
+  def bits55–48=(otra);  self.set_value(:U8, 9, otra); end
   def bits47–0=(otra)
-    self.inner_spirit.set_value(:U16, 10, otra >> 32)
-    self.inner_spirit.set_value(:U32, 12, otra & 0xFFFFFFFF)
+    self.set_value(:U16, 10, otra >> 32)
+    self.set_value(:U32, 12, otra & 0xFFFFFFFF)
   end
 
   # ITU-T Rec. X.667 sez —
@@ -56,21 +56,26 @@ module ::GlobeGlitter::INNER_SPIRIT
   #                                   that uses SHA-1 hashing.
   #
   # “The version is more accurately a sub-type; again, we retain the term for compatibility.”
-  def behavior = (self.to_i >> 76) & 0xF
+  def version = (self.to_i >> 76) & 0xF
+
+  # TODO: This should validate the masked `version` when appropriate.
+  def behavior = self.instance_variable_get(:@behavior)
+
   # NOTE: Assignment methods in Ruby can only return their argument,
   #       so we name this `:replace_behavior` instead of `:behavior=`
-  #       because we have to return `self.with`.
+  #       because we want to return `self`.
   def replace_behavior(otra)
     raise ::ArgumentError::new("invalid version #{otra.to_s}") unless otra.is_a?(::Integer) and otra.between?(1, 8)
-    return self.with(behavior: otra).tap {
-      _1.inner_spirit.set_value(:U8, 7, ((otra << 0xF) | (self.inner_spirit.get_value(:U8, 7) & 0xF)))
+    return self.tap {
+      _1.instance_variable_set(:@behavior, otra)
+      _1.version=(otra)
     }
   end
-  # This is just straight-up the same thing as "version" in the UUID specification,
-  # but I don't want to call it that because it's a terrible ambiguous word
-  # for anybody unfamiliar with the minutae of the specs.
-  # We should still provide it as `#version` because why not??
-  alias_method(:version, :behavior)
+
+  def version=(otra)
+    raise ::ArgumentError::new("invalid version #{otra.to_s}") unless otra.is_a?(::Integer) and otra.between?(1, 8)
+    self.set_value(:U8, 7, ((otra << 0xF) | (self.get_value(:U8, 7) & 0xF)))
+  end
 
   # ITU-T Rec. X.667 sez —
   #
@@ -102,7 +107,7 @@ module ::GlobeGlitter::INNER_SPIRIT
     # TODO: Figure out how this should interact with our instance `layout` member
     #       since only certain variants should be embedded here.
     # Can't use getter for this since the getter return value will rely on this layout.
-    clock_seq_high_and_reserved = self.inner_spirit.get_value(:U8, 8)
+    clock_seq_high_and_reserved = self.get_value(:U8, 8)
     # The variant is masked backwards, but with a variable number of bits,
     # so we can't just swap it and mask.
     case
@@ -113,30 +118,39 @@ module ::GlobeGlitter::INNER_SPIRIT
     end
   end
 
+  # TODO: This should validate the masked `variant` when appropriate.
+  def layout = self.instance_variable_get(:@layout)
+
   # NOTE: Assignment methods in Ruby can only return their argument,
   #       so we name this `:replace_layout` instead of `:layout=`
-  #       because we have to return `self.with`.
+  #       because we want to return `self`.
   def replace_layout(otra)
     raise ::ArgumentError::new("invalid layout #{otra.to_s}") unless otra.respond_to?(:<) and otra.<(4)
-    return self.with(layout: otra).tap {
-      _1.inner_spirit.set_value(:U8, 9,
-        (
-          (case otra
-            when 0    then 0b00000000
-            when 1    then 0b10000000
-            when 2    then 0b11000000
-            when 3    then 0b11100000
-            else      raise ::ArgumentError::new("invalid layout #{otra.to_s}")
-          end) |
-          (_1.inner_spirit.get_value(:U8, 9) & case otra
-            when 0    then 0b01111111
-            when 1    then 0b00111111
-            when 2, 3 then 0b00011111
-            else      raise ::ArgumentError::new("invalid layout #{otra.to_s}")
-            end)
-        )
-      )
+    return self.tap {
+      _1.instance_variable_set(:@layout, otra)
+      _1.variant=(otra)
     }
+  end
+
+  def variant=(otra)
+    raise ::ArgumentError::new("invalid layout #{otra.to_s}") unless otra.respond_to?(:<) and otra.<(4)
+    self.set_value(:U8, 9,
+      (
+        (case otra
+          when 0    then 0b00000000
+          when 1    then 0b10000000
+          when 2    then 0b11000000
+          when 3    then 0b11100000
+          else      raise ::ArgumentError::new("invalid layout #{otra.to_s}")
+        end) |
+        (self.get_value(:U8, 9) & case otra
+          when 0    then 0b01111111
+          when 1    then 0b00111111
+          when 2, 3 then 0b00011111
+          else      raise ::ArgumentError::new("invalid layout #{otra.to_s}")
+          end)
+      )
+    )
   end
 
   # Return `::Integer` representation of the contents of our embedded buffer.
@@ -148,12 +162,10 @@ module ::GlobeGlitter::INNER_SPIRIT
   #  of the last of the sixteen octets (octet 0).”
   # “UUIDs forming a component of an OID are represented in ASN.1 value notation
   # as the decimal representation of their integer value.”
-  def to_i = (self.inner_spirit.get_value(:U64, 0) << 64) | self.inner_spirit.get_value(:U64, 8)
+  def to_i = (self.get_value(:U64, 0) << 64) | self.get_value(:U64, 8)
 
   # Compare to dotNET `Guid.ToByteArray` https://learn.microsoft.com/en-us/dotnet/api/system.guid.tobytearray
   # Match the naming of `::String#bytes` since we behave identically.
-  def bytes = self.inner_spirit.values
-  # Also keep the name `values` because why not lol
-  def values = self.inner_spirit.values
+  def bytes = self.values
 
 end

@@ -51,7 +51,7 @@ require('securerandom') unless defined?(::SecureRandom)
 # - Python: https://docs.python.org/3/library/uuid.html
 # - ReactOS: https://doxygen.reactos.org/d9/d36/psdk_2guiddef_8h_source.html
 # - FreeDCE: https://github.com/dcerpc/dcerpc/tree/master/dcerpc/uuid
-::GlobeGlitter = ::Data::define(:inner_spirit, :behavior, :layout) do
+::GlobeGlitter = ::Class::new(::IO::Buffer) do
 
   # Terminology NOTE:
   #
@@ -235,76 +235,72 @@ require('securerandom') unless defined?(::SecureRandom)
   self::MATCH_UUID_OR_GUID = /\A\{?(\h{8})-?(\h{4})-?(\h{4})-?(\h{4})-?(\h{12})\}?\Z/
 
   # https://zverok.space/blog/2023-01-03-data-initialize.html
-  def self.new(*parts, layout: self::LAYOUT_UNSET, behavior: self::BEHAVIOR_UNSET) = self::allocate.tap { |gg|
-    gg.send(:initialize,
-      inner_spirit: ::IO::Buffer::new(
-        size=16,  # “UUIDs are an octet string of 16 octets (128 bits).”
-        flags=::IO::Buffer::INTERNAL,
-      ).tap { |buffer|
-        case parts
-        in [::String => probably_guid] if (
-          probably_guid.match(self::MATCH_GUID) or
-          (probably_guid.match(self::MATCH_UUID) and layout.eql?(self::LAYOUT_MICROSOFT))
-        ) then
-          # Assume components are little-endian from a Microsoft-style GUID.
-          # Explicitly set layout flag in case we got here by `::Regexp` match.
-          layout = self::LAYOUT_MICROSOFT
-          ::Regexp::last_match.captures.map!(&:hex).tap {
-            buffer.set_value(:u32, 0, _1[0])
-            buffer.set_value(:u16, 4, _1[1])
-            buffer.set_value(:u16, 6, _1[2])
-            buffer.set_value(:U16, 8, _1[3])
-            buffer.set_value(:U16, 10, (_1[4] >> 32))
-            buffer.set_value(:U32, 12, (_1[4] & 0xFFFFFFFF))
-          }
-        in [::Integer => data1, ::Integer => data2, ::Integer => data3, ::Array => data4] if (
-          data1.bit_length.<=(32) and data2.bit_length.<=(16) and data3.bit_length.<=(16) and (
-            data4.size.eql?(8) and data4.all?(::Integer) and data4.max.bit_length.<=(8)
-          )
-        ) then
-          # Assume components are little-endian from a Microsoft-style GUID.
-          # The `::Array` form of `DATA4` is a way they sidestepped the endianness issue, allowing `DATA4`
-          # to be *effectively* big-endian. This is why people mistakenly refer to GUIDs as "mixed-endian".
-          # https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
-          layout = self::LAYOUT_MICROSOFT
-          buffer.set_value(:u32, 0, data1)
-          buffer.set_value(:u16, 4, data2)
-          buffer.set_value(:u16, 6, data3)
-          data4.each_with_index { buffer.set_value(:U8, (8 + _2), _1) }
-        in [::String => either_or] if (
-          either_or.match(self::MATCH_UUID) or either_or.match(self::MATCH_UUID_OR_GUID)
-        ) then
-          ::Regexp::last_match.captures.map!(&:hex).tap {
-            # Detect known Microsoft GUIDs by their `DATA4` and apply our Microsoft layout flag.
-            layout = self::LAYOUT_MICROSOFT if self::KNOWN_MICROSOFT_DATA4.include?((_1[3] << 48) | _1[4])
-            buffer.set_value(layout.eql?(self::LAYOUT_MICROSOFT) ? :u32 : :U32, 0, _1[0])
-            buffer.set_value(layout.eql?(self::LAYOUT_MICROSOFT) ? :u16 : :U16, 4, _1[1])
-            buffer.set_value(layout.eql?(self::LAYOUT_MICROSOFT) ? :u16 : :U16, 6, _1[2])
-            buffer.set_value(:U16, 8, _1[3])
-            buffer.set_value(:U16, 10, (_1[4] >> 32))
-            buffer.set_value(:U32, 12, (_1[4] & 0xFFFFFFFF))
-          }
-        in [::Integer => spirit] if spirit.bit_length.<=(128) then
-          buffer.set_value(:U64, 0, (spirit >> 64))
-          buffer.set_value(:U64, 8, (spirit & 0xFFFFFFFF_FFFFFFFF))
-        in [::Integer => msb, ::Integer => lsb] if (
-          msb.bit_length.<=(64) and lsb.bit_length.<=(64)
-        ) then
-          buffer.set_value(:U64, 0, msb)
-          buffer.set_value(:U64, 8, lsb)
-        in [::Integer => time, ::Integer => seq, ::Integer => node] if (
-          time.bit_length.<=(64) and seq.bit_length.<=(16) and node.bit_length.<=(48)
-        ) then
-            buffer.set_value(:U64, 0, time)
-            buffer.set_value(:U16, 8, seq)
-            buffer.set_value(:U16, 10, (node >> 32))
-            buffer.set_value(:U32, 12, (node & 0xFFFFFFFF))
-        else raise ::ArgumentError::new("invalid number or structure of arguments")  #TOD0: "given/expected"?
-        end
-      },
-      layout: (layout.respond_to?(:>=) and layout&.>=(0)) ? layout : self::LAYOUT_UNSET,
-      behavior: (behavior.respond_to?(:>=) and behavior&.>=(1)) ? behavior : self::BEHAVIOR_UNSET
-    )  # send
+  def self.new(*parts, layout: self::LAYOUT_UNSET, behavior: self::BEHAVIOR_UNSET) = super(
+    size=16,  # “UUIDs are an octet string of 16 octets (128 bits).”
+    flags=::IO::Buffer::INTERNAL,
+  ).tap { |buffer|
+    case parts
+    in [::String => probably_guid] if (
+      probably_guid.match(self::MATCH_GUID) or
+      (probably_guid.match(self::MATCH_UUID) and layout.eql?(self::LAYOUT_MICROSOFT))
+    ) then
+      # Assume components are little-endian from a Microsoft-style GUID.
+      # Explicitly set layout flag in case we got here by `::Regexp` match.
+      layout = self::LAYOUT_MICROSOFT
+      ::Regexp::last_match.captures.map!(&:hex).tap {
+        buffer.set_value(:u32, 0, _1[0])
+        buffer.set_value(:u16, 4, _1[1])
+        buffer.set_value(:u16, 6, _1[2])
+        buffer.set_value(:U16, 8, _1[3])
+        buffer.set_value(:U16, 10, (_1[4] >> 32))
+        buffer.set_value(:U32, 12, (_1[4] & 0xFFFFFFFF))
+      }
+    in [::Integer => data1, ::Integer => data2, ::Integer => data3, ::Array => data4] if (
+      data1.bit_length.<=(32) and data2.bit_length.<=(16) and data3.bit_length.<=(16) and (
+        data4.size.eql?(8) and data4.all?(::Integer) and data4.max.bit_length.<=(8)
+      )
+    ) then
+      # Assume components are little-endian from a Microsoft-style GUID.
+      # The `::Array` form of `DATA4` is a way they sidestepped the endianness issue, allowing `DATA4`
+      # to be *effectively* big-endian. This is why people mistakenly refer to GUIDs as "mixed-endian".
+      # https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
+      layout = self::LAYOUT_MICROSOFT
+      buffer.set_value(:u32, 0, data1)
+      buffer.set_value(:u16, 4, data2)
+      buffer.set_value(:u16, 6, data3)
+      data4.each_with_index { buffer.set_value(:U8, (8 + _2), _1) }
+    in [::String => either_or] if (
+      either_or.match(self::MATCH_UUID) or either_or.match(self::MATCH_UUID_OR_GUID)
+    ) then
+      ::Regexp::last_match.captures.map!(&:hex).tap {
+        # Detect known Microsoft GUIDs by their `DATA4` and apply our Microsoft layout flag.
+        layout = self::LAYOUT_MICROSOFT if self::KNOWN_MICROSOFT_DATA4.include?((_1[3] << 48) | _1[4])
+        buffer.set_value(layout.eql?(self::LAYOUT_MICROSOFT) ? :u32 : :U32, 0, _1[0])
+        buffer.set_value(layout.eql?(self::LAYOUT_MICROSOFT) ? :u16 : :U16, 4, _1[1])
+        buffer.set_value(layout.eql?(self::LAYOUT_MICROSOFT) ? :u16 : :U16, 6, _1[2])
+        buffer.set_value(:U16, 8, _1[3])
+        buffer.set_value(:U16, 10, (_1[4] >> 32))
+        buffer.set_value(:U32, 12, (_1[4] & 0xFFFFFFFF))
+      }
+    in [::Integer => spirit] if spirit.bit_length.<=(128) then
+      buffer.set_value(:U64, 0, (spirit >> 64))
+      buffer.set_value(:U64, 8, (spirit & 0xFFFFFFFF_FFFFFFFF))
+    in [::Integer => msb, ::Integer => lsb] if (
+      msb.bit_length.<=(64) and lsb.bit_length.<=(64)
+    ) then
+      buffer.set_value(:U64, 0, msb)
+      buffer.set_value(:U64, 8, lsb)
+    in [::Integer => time, ::Integer => seq, ::Integer => node] if (
+      time.bit_length.<=(64) and seq.bit_length.<=(16) and node.bit_length.<=(48)
+    ) then
+        buffer.set_value(:U64, 0, time)
+        buffer.set_value(:U16, 8, seq)
+        buffer.set_value(:U16, 10, (node >> 32))
+        buffer.set_value(:U32, 12, (node & 0xFFFFFFFF))
+    else raise ::ArgumentError::new("invalid number or structure of arguments")  #TOD0: "given/expected"?
+    end
+    buffer.instance_variable_set(:@layout, (layout.respond_to?(:>=) and layout&.>=(0)) ? layout : self::LAYOUT_UNSET)
+    buffer.instance_variable_set(:@behavior, (behavior.respond_to?(:>=) and behavior&.>=(1)) ? behavior : self::BEHAVIOR_UNSET)
   }  # def self.new
 
   # Our custom `::new` handles most of this functionality already but `raise`s on mismatch.

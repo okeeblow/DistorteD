@@ -135,9 +135,9 @@ module ::GlobeGlitter::CHRONO_DIVER::FRAGMENT
   # Setters for fields defined in the specification.
   def time_low=(otra);  self.bits127–96=(otra); end
   def time_mid=(otra);  self.bits95–80=(otra);  end
-  def time_high=(otra); self.bits79–64=(((self.inner_spirit >> 64) & 0xF000) | (otra & 0x0FFF)); end
+  def time_high=(otra); self.bits79–64=(((self >> 64) & 0xF000) | (otra & 0x0FFF)); end
   def time=(otra)
-    self.bits79–64=(((self.inner_spirit >> 64) & 0x00000000_0000F000) | (otra & 0xFFFFFFFF_FFFF0FFF))
+    self.bits79–64=(((self >> 64) & 0x00000000_0000F000) | (otra & 0xFFFFFFFF_FFFF0FFF))
   end
   def clock_seq_high_and_reserved=(otra)
     # This field is overlayed by the backward-masked `layout` a.k.a. """variant""",
@@ -169,7 +169,7 @@ module ::GlobeGlitter::CHRONO_DIVER::FRAGMENT
   def clock_seq = (self.clock_seq_high_and_reserved << 8) | self.clock_seq_low
   def clock_seq=(otra)
     self.with(inner_spirit: (
-      (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_0000FFFF_FFFFFFFF) |
+      (self & 0xFFFFFFFF_FFFFFFFF_0000FFFF_FFFFFFFF) |
       (
         case self.layout
           when 0    then 0b00000000
