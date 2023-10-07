@@ -130,7 +130,7 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
       sinistar      = set_me_free.new          # `{StellaSinistra/DeusDextera => CYO}` container for Postfixes (extnames).
       astraia       = set_me_free.new          # `{ASTRAIAの双皿 => CYO}` container for more complex filename fragments.
       as_above      = magic_without_tears.new  # `{offsets => (Speedy|Sequence)Cat` => CYO}` container for content matching.
-      four_leaf     = set_me_free.new          # `{FourLead => CYO}` FourCC container.
+      four_leaf     = set_me_free.new          # `{FourLeaf => CYO}` FourCC container.
       mother_tree   = set_me_free.new          # `{<treemagic> => CYO}` container.
       re_roots      = set_me_free.new          # `{<root-XML> => CYO}` container.
       regulus       = nil                      # `::Regexp::union` of `CYO#astraia`s — boolean gate for expensive glob comparison.
