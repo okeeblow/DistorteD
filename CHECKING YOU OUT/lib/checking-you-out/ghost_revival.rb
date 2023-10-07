@@ -32,13 +32,13 @@ module ::CHECKING::YOU::OUT::GHOST_REVIVAL
   # We will memoize a configurable number of CYO type objects. When we reach that limit, the oldest type will be purged.
   # The default cache size used to be `111`, but I bumped it up because it was easy to load more types
   # than that at once with popular categories like images, e.g. `irb> CYO[/image/].size => 122`.
-  DEFAULT_TYPE_CACHE_SIZE = 333.freeze
+  DEFAULT_TYPE_CACHE_SIZE = 333
 
   # We will memoize our computed answer (even if it's `nil`) to a configurable number of recently-seen needles,
   # letting us skip the entire matching sequence, skip the allocation hit from `CYI` to `CYO` enrichment (`together_4ever`),
   # and lets us avoid `MrMIME` round-trips from needles which explicitly always trigger that parser (i.e. `Regexp`)
   # and from invalid needles which eventually produce two `nil` responses in a row.
-  DEFAULT_QUERY_CACHE_SIZE = 111.freeze
+  DEFAULT_QUERY_CACHE_SIZE = 111
 
   # These two types are the implicit parents for any streamable type and any text type, respectively.
   # See https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html#subclassing
