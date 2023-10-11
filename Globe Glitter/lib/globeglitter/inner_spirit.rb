@@ -8,25 +8,40 @@ module ::GlobeGlitter::INNER_SPIRIT
   #   using the terms first and last. The first octet is also called "octet 15" and the last octet "octet 0".
   #   The bits within a UUID are also numbered as "bit 127" to "bit 0", with bit 127 as the most-
   #   significant bit of octet 15 and bit 0 as the least significant bit of octet 0.”
-  #
-  # I am going to 1-index the boundaries in these helper methods because I think the resulting numbers
-  # are easier to remember, but our layout is otherwise identical to what's described in the quote.
-  def bits127–96 = self.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u32 : :U32, 0)
-  def bits95–80  = self.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 4)
-  def bits79–64  = self.get_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 6)
-  def bits63–56  = self.get_value(:U8, 8)
-  def bits55–48  = self.get_value(:U8, 9)
-  def bits47–0   = (self.get_value(:U16, 10) << 32) | self.get_value(:U32, 12)
+  def bits127–96 = ((self.inner_spirit >> 96) & 0xFFFFFFFF).yield_self {
+    self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(_1) : _1
+  }
+  def bits95–80  = ((self.inner_spirit >> 80) & 0xFFFF).yield_self {
+    self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(_1) : _1
+  }
+  def bits79–64  = ((self.inner_spirit >> 64) & 0xFFFF).yield_self {
+    self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(_1) : _1
+  }
+  def bits63–56  = ((self.inner_spirit >> 56) & 0xFF)
+  def bits55–48  = ((self.inner_spirit >> 48) & 0xFF)
+  def bits47–0   = (self.inner_spirit & 0xFFFFFFFFFFFF)
 
-  def bits127–96=(otra); self.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u32 : :U32, 0, otra); end
-  def bits95–80=(otra);  self.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 4, otra); end
-  def bits79–64=(otra);  self.set_value(self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? :u16 : :U16, 6, otra); end
-  def bits63–56=(otra);  self.set_value(:U8, 8, otra); end
-  def bits55–48=(otra);  self.set_value(:U8, 9, otra); end
-  def bits47–0=(otra)
-    self.set_value(:U16, 10, otra >> 32)
-    self.set_value(:U32, 12, otra & 0xFFFFFFFF)
-  end
+  def replace_bits127–96(otra) = self.with(
+    inner_spirit: (self.inner_spirit & 0x00000000_FFFFFFFF_FFFFFFFF_FFFFFFFF) |
+                  ((self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(otra) : otra) << 96)
+  )
+  def replace_bits95–80(otra)  = self.with(
+    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_0000FFFF_FFFFFFFF_FFFFFFFF) |
+                  ((self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(otra) : otra) << 80)
+  )
+  def replace_bits79–64(otra)  = self.with(
+    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFF0000_FFFFFFFF_FFFFFFFF) |
+                  ((self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(otra) : otra) << 64)
+  )
+  def replace_bits63–56(otra)  = self.with(
+    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_00FFFFFF_FFFFFFFF) | (otra << 56)
+  )
+  def replace_bits55–48(otra)  = self.with(
+    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_FF00FFFF_FFFFFFFF) | (otra << 48)
+  )
+  def replace_bits47–0(otra)   = self.with(
+    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_FFFF0000_00000000) | otra
+  )
 
   # ITU-T Rec. X.667 sez —
   #
@@ -56,25 +71,22 @@ module ::GlobeGlitter::INNER_SPIRIT
   #                                   that uses SHA-1 hashing.
   #
   # “The version is more accurately a sub-type; again, we retain the term for compatibility.”
-  def version = (self.to_i >> 76) & 0xF
-
-  # TODO: This should validate the masked `version` when appropriate.
-  def behavior = self.instance_variable_get(:@behavior)
+  def version = (self.inner_spirit >> 76) & 0xF
 
   # NOTE: Assignment methods in Ruby can only return their argument,
   #       so we name this `:replace_behavior` instead of `:behavior=`
   #       because we want to return `self`.
   def replace_behavior(otra)
     raise ::ArgumentError::new("invalid version #{otra.to_s}") unless otra.is_a?(::Integer) and otra.between?(1, 8)
-    return self.tap {
-      _1.instance_variable_set(:@behavior, otra)
-      _1.version=(otra)
-    }
+    return self.with(
+      behavior: otra,
+      inner_spirit: self.replace_version(otra),
+    )
   end
 
-  def version=(otra)
+  def replace_version(otra)
     raise ::ArgumentError::new("invalid version #{otra.to_s}") unless otra.is_a?(::Integer) and otra.between?(1, 8)
-    self.set_value(:U8, 7, ((otra << 0xF) | (self.get_value(:U8, 7) & 0xF)))
+    (self.inner_spirit & 0xFFFFFFFF_FFFFFF0F_FFFFFFFF_FFFFFFFF) | (otra << 76)
   end
 
   # ITU-T Rec. X.667 sez —
@@ -107,7 +119,7 @@ module ::GlobeGlitter::INNER_SPIRIT
     # TODO: Figure out how this should interact with our instance `layout` member
     #       since only certain variants should be embedded here.
     # Can't use getter for this since the getter return value will rely on this layout.
-    clock_seq_high_and_reserved = self.get_value(:U8, 8)
+    clock_seq_high_and_reserved = (self.inner_spirit >> 64) & 0xF
     # The variant is masked backwards, but with a variable number of bits,
     # so we can't just swap it and mask.
     case
@@ -118,39 +130,29 @@ module ::GlobeGlitter::INNER_SPIRIT
     end
   end
 
-  # TODO: This should validate the masked `variant` when appropriate.
-  def layout = self.instance_variable_get(:@layout)
-
   # NOTE: Assignment methods in Ruby can only return their argument,
   #       so we name this `:replace_layout` instead of `:layout=`
   #       because we want to return `self`.
   def replace_layout(otra)
     raise ::ArgumentError::new("invalid layout #{otra.to_s}") unless otra.respond_to?(:<) and otra.<(4)
-    return self.tap {
-      _1.instance_variable_set(:@layout, otra)
-      _1.variant=(otra)
-    }
+    return self.with(
+      layout: otra,
+      inner_spirit: self.replace_variant(otra),
+    )
   end
 
-  def variant=(otra)
+  def replace_variant(otra)
     raise ::ArgumentError::new("invalid layout #{otra.to_s}") unless otra.respond_to?(:<) and otra.<(4)
-    self.set_value(:U8, 9,
-      (
-        (case otra
-          when 0    then 0b00000000
-          when 1    then 0b10000000
-          when 2    then 0b11000000
-          when 3    then 0b11100000
-          else      raise ::ArgumentError::new("invalid layout #{otra.to_s}")
-        end) |
-        (self.get_value(:U8, 9) & case otra
-          when 0    then 0b01111111
-          when 1    then 0b00111111
-          when 2, 3 then 0b00011111
-          else      raise ::ArgumentError::new("invalid layout #{otra.to_s}")
-          end)
-      )
-    )
+    (self.inner_spirit & case otra
+      when 0    then 0b01111111
+      when 1    then 0b00111111
+      when 2, 3 then 0b00011111
+    end) | case otra
+      when 0    then 0b00000000
+      when 1    then 0b10000000
+      when 2    then 0b11000000
+      when 3    then 0b11100000
+    end
   end
 
   # Return `::Integer` representation of the contents of our embedded buffer.
@@ -162,10 +164,22 @@ module ::GlobeGlitter::INNER_SPIRIT
   #  of the last of the sixteen octets (octet 0).”
   # “UUIDs forming a component of an OID are represented in ASN.1 value notation
   # as the decimal representation of their integer value.”
-  def to_i = (self.get_value(:U64, 0) << 64) | self.get_value(:U64, 8)
+  def to_i = self.inner_spirit
 
   # Compare to dotNET `Guid.ToByteArray` https://learn.microsoft.com/en-us/dotnet/api/system.guid.tobytearray
   # Match the naming of `::String#bytes` since we behave identically.
-  def bytes = self.values
+  # Explicitly loop 16 times to handle most-significant zeros that `until quotient.zero?`-style loop won't.
+  # TODO: Revise `#times` count when I get around to implementing 64-bit UIDs and 256-bit UUIDs.
+  def bytes = (0xF.succ).times.with_object(
+    # Prime our scratch area with a copy of the main value buffer as the first dividend. I would prefer to
+    # avoid allocation of the scratch `::Array` since it will contain only a single value at every iterator,
+    # but we have to use a mutable object with `with_object` — trying it with an immediate (i.e. `::Integer`)
+    # results in the same value every loop despite any in-loop reassignment.
+    ::Array::new.push(self.inner_spirit)
+  ).with_object(::Array::new) { |(_position, scratch), bytes|
+    quotient, modulus = scratch.pop.divmod(0xFF.succ)
+    scratch.push(quotient)
+    bytes.unshift(modulus)
+  }
 
 end

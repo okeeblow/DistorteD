@@ -15,6 +15,7 @@ class TestGlobeGlitter < Test::Unit::TestCase
         # `random` identifiers should always be layout 1 version 4.
         assert_equal(::GlobeGlitter::BEHAVIOR_RANDOM, _2.last.behavior)
         assert_equal(::GlobeGlitter::LAYOUT_ITU_T_REC_X_667, _2.last.layout)
+        assert_true(::Ractor::shareable?(_2.last))
       }.uniq.size,
     )
   end

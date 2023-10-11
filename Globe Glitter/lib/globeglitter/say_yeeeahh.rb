@@ -13,7 +13,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
   #       - `::BigDecimal`: https://bugs.ruby-lang.org/issues/17011
   def to_s(base=16)
     case base
-    when 2  then self.to_i.to_s(2).rjust(128, ?0)
+    when 2  then self.inner_spirit.to_s(2).rjust(128, ?0)
     when 16 then
       # ITU-T Rec. X.667 sez —
       #

@@ -112,69 +112,69 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
     ::GlobeGlitter::new(0).tap { |gg|
 
       assert_equal(0, gg.bits127–96)
-      gg.bits127–96 = 0xFFFFFFFF
+      gg = gg.replace_bits127–96(0xFFFFFFFF)
       assert_equal(0xFFFFFFFF, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
       assert_equal(0, gg.bits63–56)
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
-      gg.bits127–96 = 0
+      gg = gg.replace_bits127–96(0)
       assert_equal(0, gg.bits127–96)
 
       assert_equal(0, gg.bits95–80)
-      gg.bits95–80 = 0xFFFF
+      gg = gg.replace_bits95–80(0xFFFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0xFFFF, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
       assert_equal(0, gg.bits63–56)
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
-      gg.bits95–80 = 0
+      gg = gg.replace_bits95–80(0)
       assert_equal(0, gg.bits95–80)
 
       assert_equal(0, gg.bits79–64)
-      gg.bits79–64 = 0xFFFF
+      gg = gg.replace_bits79–64(0xFFFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0xFFFF, gg.bits79–64)
       assert_equal(0, gg.bits63–56)
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
-      gg.bits79–64 = 0
+      gg = gg.replace_bits79–64(0)
       assert_equal(0, gg.bits79–64)
 
       assert_equal(0, gg.bits63–56)
-      gg.bits63–56 = 0xFF
+      gg = gg.replace_bits63–56(0xFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
       assert_equal(0xFF, gg.bits63–56)
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
-      gg.bits63–56 = 0
+      gg = gg.replace_bits63–56(0)
       assert_equal(0, gg.bits63–56)
 
       assert_equal(0, gg.bits55–48)
-      gg.bits55–48 = 0xFF
+      gg = gg.replace_bits55–48(0xFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
       assert_equal(0, gg.bits63–56)
       assert_equal(0xFF, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
-      gg.bits55–48 = 0
+      gg = gg.replace_bits55–48(0)
       assert_equal(0, gg.bits55–48)
 
       assert_equal(0, gg.bits47–0)
-      gg.bits47–0 = 0xFFFFFFFFFFFF
+      gg = gg.replace_bits47–0(0xFFFFFFFFFFFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
       assert_equal(0, gg.bits63–56)
       assert_equal(0, gg.bits55–48)
       assert_equal(0xFFFFFFFFFFFF, gg.bits47–0)
-      gg.bits47–0 = 0
+      gg = gg.replace_bits47–0(0)
       assert_equal(0, gg.bits47–0)
     }
   end
