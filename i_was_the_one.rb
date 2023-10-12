@@ -13,11 +13,24 @@
 #                       `/oooooooooooooo:`-+o+/.  `+oo+o++++ooo+oooooo-       `-+oo/`   :oooooooooooooo/                
 #                                                                                                                       
 
+require('date')
 require_relative('XROSS THE XOUL/lib/xross-the-xoul/version')
 module COOLTRAINER
   module DistorteD
 
-    VERSION = ::XROSS::THE::Version::TripleCounter.new(1, 0, 0)
+    # DD's epoch is the `btime` of the original `cooltrainer-image.rb` ♎
+    BEGINNING_OF_LIFE = ::Time.new(2018, 9, 26, 9, 4, 11, in: ?R)
+
+    # DD's version number is automatic.
+    # - major version: years since epoch.
+    # - minor version: days-of-year since epoch.
+    VERSION = ::Time::now.yield_self {
+      ::XROSS::THE::Version::TripleCounter.new(
+         _1.year - BEGINNING_OF_LIFE.year,
+        (_1.yday - BEGINNING_OF_LIFE.yday) % (::Date::gregorian_leap?(_1.year) ? 366 : 365),
+        # Add a third level of differentiation here if I ever need to do two releases on the same day.
+      )
+    }
 
     I_WAS_THE_ONE = ::Hash[
       :required_ruby_version= => '>= 3.2.0',
