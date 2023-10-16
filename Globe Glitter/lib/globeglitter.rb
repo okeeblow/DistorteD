@@ -332,6 +332,10 @@ require_relative('globeglitter/inner_spirit') unless defined?(::GlobeGlitter::IN
 require_relative('globeglitter/say_yeeeahh') unless defined?(::GlobeGlitter::SAY_YEEEAHH)
 ::GlobeGlitter::include(::GlobeGlitter::SAY_YEEEAHH)
 
+# Sorting components.
+require_relative('globeglitter/first_resolution') unless defined?(::GlobeGlitter::FIRST_RESOLUTION)
+::GlobeGlitter::include(::GlobeGlitter::FIRST_RESOLUTION)
+
 # Time-based components for UUIDv1, UUIDv6, UUIDv7, etc.
 require_relative('globeglitter/chrono_diver') unless defined?(::GlobeGlitter::CHRONO_DIVER)
 ::GlobeGlitter::extend(::GlobeGlitter::CHRONO_DIVER::PENDULUMS)

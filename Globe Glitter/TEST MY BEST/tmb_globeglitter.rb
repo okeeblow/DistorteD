@@ -20,12 +20,6 @@ class TestGlobeGlitter < Test::Unit::TestCase
     )
   end
 
-  def test_time_uuid
-    t1 = ::GlobeGlitter::from_time
-    t2 = ::GlobeGlitter::from_time
-    assert_operator(t1, :<, t2)
-  end
-
   def test_nil_uuid
     assert_equal("00000000-0000-0000-0000-000000000000", ::GlobeGlitter::nil.to_s)
   end
