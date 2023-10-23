@@ -21,6 +21,9 @@ module ::GlobeGlitter::INNER_SPIRIT
   def bits55–48  = ((self.inner_spirit >> 48) & 0xFF)
   def bits47–0   = (self.inner_spirit & 0xFFFFFFFFFFFF)
 
+  # This one is used for building Microsoft GUID-style `data4`s.
+  def bits63–0   = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF)
+
   def replace_bits127–96(otra) = self.with(
     inner_spirit: (self.inner_spirit & 0x00000000_FFFFFFFF_FFFFFFFF_FFFFFFFF) |
                   ((self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(otra) : otra) << 96)
@@ -41,6 +44,9 @@ module ::GlobeGlitter::INNER_SPIRIT
   )
   def replace_bits47–0(otra)   = self.with(
     inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_FFFF0000_00000000) | otra
+  )
+  def replace_bits63–0(otra)   = self.with(
+    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_00000000_00000000) | otra
   )
 
   # ITU-T Rec. X.667 sez —
