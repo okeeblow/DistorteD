@@ -18,11 +18,66 @@ class TestGlobeGlitterFirstResolution < Test::Unit::TestCase
   #
   # In a lexicographical ordering of the hexadecimal representation of UUIDs (see 6.4), a larger UUID shall follow a smaller UUID.”
   def test_itu_t_rec_x667_comparator
-    assert_operator(
-      ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf6"),
-      :<,
-      ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf7"),
-    )
+    # Adapted from the first of four examples in Raymond Chen's
+    # “How many ways are there to sort GUIDs? How much time do you have?”
+    # https://devblogs.microsoft.com/oldnewthing/20190426-00/?p=102450
+    sorted_bytes = [
+      ::GlobeGlitter::new([0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF]),
+      ::GlobeGlitter::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00]),
+    ]
+    sorted_uuid_strings = [
+      ::GlobeGlitter::new("00ffffff-ffff-ffff-ffff-ffffffffffff"),
+      ::GlobeGlitter::new("ff00ffff-ffff-ffff-ffff-ffffffffffff"),
+      ::GlobeGlitter::new("ffff00ff-ffff-ffff-ffff-ffffffffffff"),
+      ::GlobeGlitter::new("ffffff00-ffff-ffff-ffff-ffffffffffff"),
+      ::GlobeGlitter::new("ffffffff-00ff-ffff-ffff-ffffffffffff"),
+      ::GlobeGlitter::new("ffffffff-ff00-ffff-ffff-ffffffffffff"),
+      ::GlobeGlitter::new("ffffffff-ffff-00ff-ffff-ffffffffffff"),
+      ::GlobeGlitter::new("ffffffff-ffff-ff00-ffff-ffffffffffff"),
+      ::GlobeGlitter::new("ffffffff-ffff-ffff-00ff-ffffffffffff"),
+      ::GlobeGlitter::new("ffffffff-ffff-ffff-ff00-ffffffffffff"),
+      ::GlobeGlitter::new("ffffffff-ffff-ffff-ffff-00ffffffffff"),
+      ::GlobeGlitter::new("ffffffff-ffff-ffff-ffff-ff00ffffffff"),
+      ::GlobeGlitter::new("ffffffff-ffff-ffff-ffff-ffff00ffffff"),
+      ::GlobeGlitter::new("ffffffff-ffff-ffff-ffff-ffffff00ffff"),
+      ::GlobeGlitter::new("ffffffff-ffff-ffff-ffff-ffffffff00ff"),
+      ::GlobeGlitter::new("ffffffff-ffff-ffff-ffff-ffffffffff00"),
+    ]
+    sorted_guid_strings = [
+      ::GlobeGlitter::new("{FFFFFF00-FFFF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFF00FF-FFFF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FF00FFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{00FFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FF00-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-00FF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FF00-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-00FF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-00FF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FF00-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-00FFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FF00FFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFF00FFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFFFF00FFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF00FF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFF00}"),
+    ]
+    sorted_bytes.combination(2).each { |(lower, higher)| assert_operator(lower, :<, higher) }
+    sorted_uuid_strings.combination(2).each { |(lower, higher)| assert_operator(lower, :<, higher) }
+    sorted_guid_strings.combination(2).each { |(lower, higher)| assert_operator(lower, :<, higher) }
   end
 
   # Example SQL Server sort from https://bornsql.ca/blog/how-sql-server-stores-data-types-guid/
