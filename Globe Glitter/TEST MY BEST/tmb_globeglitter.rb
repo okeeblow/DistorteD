@@ -69,6 +69,18 @@ class TestGlobeGlitter < Test::Unit::TestCase
     #)  # TODO: Fix this lol
   end
 
+  # Both decomposed and composed forms should be accepted
+  def test_sixteen_octet_constructor
+    assert_equal(
+      "00ff00ff-00ff-00ff-00ff-00ff00ff00ff",
+      ::GlobeGlitter::new(0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF).to_s,
+    )
+    assert_equal(
+      "00ff00ff-00ff-00ff-00ff-00ff00ff00ff",
+      ::GlobeGlitter::new([0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF]).to_s,
+    )
+  end
+
   def test_dont_parse_invalid_input
     assert_nil(::GlobeGlitter::try_convert(nil))
 

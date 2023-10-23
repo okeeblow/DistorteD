@@ -258,6 +258,17 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
           (_1[3] << 48) |
            _1[4]
         }
+      in [::Array => data] if (
+        data.size.eql?(16) and data.all?(::Integer) and data.max.bit_length.<=(8)
+      ) then
+        data.reduce { (_1 << 8) | _2 }
+      in ::Array => data if (
+        # I would prefer to combine this with the bracketed case above, but alternative patterns
+        # currently can't be used along with variable assignment. I tried to do it without assignment
+        # and use `parts` directly but the bracketed form refused to match regardless of order v(._. )v
+        data.size.eql?(16) and data.all?(::Integer) and data.max.bit_length.<=(8)
+      ) then
+        data.reduce { (_1 << 8) | _2 }
       in [::Integer => data1, ::Integer => data2, ::Integer => data3, ::Array => data4] if (
         data1.bit_length.<=(32) and data2.bit_length.<=(16) and data3.bit_length.<=(16) and (
           data4.size.eql?(8) and data4.all?(::Integer) and data4.max.bit_length.<=(8)
