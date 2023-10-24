@@ -37,7 +37,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 # - FreeBSD: https://github.com/freebsd/freebsd-src/blob/main/sys/kern/kern_uuid.c
 # - Lunix: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git/tree/lib/uuid/gen_uuid.c
 # - Winders: https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
-# - Boost: https://www.boost.org/doc/libs/1_81_0/libs/uuid/doc/uuid.html
+# - Boost: https://www.boost.org/doc/libs/release/libs/uuid/doc/uuid.html
 # - Apple: https://developer.apple.com/documentation/foundation/uuid
 # - Apple: https://opensource.apple.com/source/CF/CF-299.35/Base.subproj/uuid.c.auto.html
 # - Java: https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/UUID.html
