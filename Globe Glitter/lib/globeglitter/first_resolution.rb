@@ -50,14 +50,17 @@ require('comparable') unless defined?(::Comparable)
   #         by comparing the 128 bits of their in-memory representation considered as a 128 bit unsigned integer.
   #         Here, it is presumed that by the time the in-memory representation is obtained the appropriate
   #         byte-order canonicalizations have been carried out.”
-  COMPARATOR_MEMCMP          = 1
-  COMPARATOR_LEACH_SALZ      = 1
-  COMPARATOR_ITU_T_REC_X_667 = 1
-  COMPARATOR_RFC_4122        = 1
-  COMPARATOR_ISO_9834_8      = 1
-  COMPARATOR_IEC_9834_8      = 1
+  COMPARATOR_MEMCMP           = 1
+  COMPARATOR_LEACH_SALZ       = 1
+  COMPARATOR_ITU_T_REC_X_667  = 1
+  COMPARATOR_RFC_4122         = 1
+  COMPARATOR_ISO_9834_8       = 1
+  COMPARATOR_IEC_9834_8       = 1
 
+  # https://github.com/ruby/ruby/blob/master/compar.c
   include(::Comparable)
+
+  # TODO: Figure out how to make comparator selection usable from the C-defined `::Comparable` methods.
   def <=>(otra, comparator: COMPARATOR_ITU_T_REC_X_667)
     case otra
     when ::GlobeGlitter then
@@ -65,7 +68,7 @@ require('comparable') unless defined?(::Comparable)
       when COMPARATOR_ITU_T_REC_X_667 then self.inner_spirit.<=>(otra.inner_spirit)
       else raise ::ArgumentError::new("unsupported comparator #{comparator}")
       end
-    else self.<=>(::GlobeGlitter::try_convert(otra))
+    else self.<=>(::GlobeGlitter::try_convert(otra), comparator:)
     end
   end
 end
