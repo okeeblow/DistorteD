@@ -57,6 +57,26 @@ require('comparable') unless defined?(::Comparable)
   COMPARATOR_ISO_9834_8       = 1
   COMPARATOR_IEC_9834_8       = 1
 
+
+  # TL;DR: This comparator works by comparing the integer values (not the bit values!)
+  #        of the GUID-style layout from GUID-msb to GUID-lsb,
+  #        i.e. we need to care about endianness!
+  #
+  # DotNet `System.Guid.CompareTo` doc sez —
+  #
+  # “The CompareTo method compares the GUIDs as if they were values provided to
+  #  the Guid(Int32, Int16, Int16, Byte[]) constructor, as follows:
+  #   - It compares the UInt32 values, and returns a result if they are unequal.
+  #     If they are equal, it performs the next comparison.
+  #   - It compares the first UInt16 values, and returns a result if they are unequal.
+  #     If they are equal, it performs the next comparison.
+  #   - It compares the second UInt16 values, and returns a result if they are unequal.
+  #     If they are equal, it performs the next comparison.
+  #   - If performs a byte-by-byte comparison of the next eight Byte values.
+  #     When it encounters the first unequal pair, it returns the result.
+  #     Otherwise, it returns 0 to indicate that the two Guid values are equal.”
+  COMPARATOR_DOTNET           = 2
+
   # https://github.com/ruby/ruby/blob/master/compar.c
   include(::Comparable)
 
@@ -66,6 +86,10 @@ require('comparable') unless defined?(::Comparable)
     when ::GlobeGlitter then
       case comparator
       when COMPARATOR_ITU_T_REC_X_667 then self.inner_spirit.<=>(otra.inner_spirit)
+      when COMPARATOR_DOTNET          then
+        [self.data1, self.data2, self.data3, *self.data4].<=>(
+          [otra.data1, otra.data2, otra.data3, *otra.data4]
+        )
       else raise ::ArgumentError::new("unsupported comparator #{comparator}")
       end
     else self.<=>(::GlobeGlitter::try_convert(otra), comparator:)

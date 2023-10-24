@@ -80,6 +80,105 @@ class TestGlobeGlitterFirstResolution < Test::Unit::TestCase
     sorted_guid_strings.combination(2).each { |(lower, higher)| assert_operator(lower, :<, higher) }
   end
 
+  def test_dotnet_system_guid_compareto_comparator
+    # Example values from https://learn.microsoft.com/en-us/dotnet/api/system.guid.compareto
+    main_guid = ::GlobeGlitter::new("01e75c83-c6f5-4192-b57e-7427cec5560d", layout: ::GlobeGlitter::LAYOUT_MICROSOFT)
+    guid2 = ::GlobeGlitter::new(0x01e75c83, 0xc6f5, 0x4192, [0xb5, 0x7e, 0x74, 0x27, 0xce, 0xc5, 0x56, 0x0c], layout: ::GlobeGlitter::LAYOUT_MICROSOFT)
+    guid3 = ::GlobeGlitter::new("01e75c84-c6f5-4192-b57e-7427cec5560d", layout: ::GlobeGlitter::LAYOUT_MICROSOFT)
+    assert_operator(main_guid, :>, guid2)
+    assert_operator(main_guid, :<, guid3)
+
+    # Adapted from the second of four examples in Raymond Chen's
+    # “How many ways are there to sort GUIDs? How much time do you have?”
+    # https://devblogs.microsoft.com/oldnewthing/20190426-00/?p=102450
+    sorted_bytes = [
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+      ::GlobeGlitter::new(
+        [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00],
+        layout: ::GlobeGlitter::LAYOUT_MICROSOFT,
+      ),
+    ]
+    sorted_guid_strings = [
+      ::GlobeGlitter::new("{00FFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FF00FFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFF00FF-FFFF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFF00-FFFF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-00FF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FF00-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-00FF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FF00-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-00FF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FF00-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-00FFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FF00FFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFF00FFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFFFF00FFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFF00FF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFF00}"),
+    ]
+    sorted_bytes.combination(2).each { |(lower, higher)| assert_equal(-1, lower.<=>(higher, comparator: 2)) }
+    sorted_guid_strings.combination(2).each { |(lower, higher)| assert_equal(-1, lower.<=>(higher, comparator: 2)) }
+  end
+
   # Example SQL Server sort from https://bornsql.ca/blog/how-sql-server-stores-data-types-guid/
   def test_microsoft_sql_server_comparator
   end
