@@ -124,7 +124,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
     ::GlobeGlitter::new(0).tap { |gg|
 
       assert_equal(0, gg.bits127–96)
-      gg = gg.replace_bits127–96(0xFFFFFFFF)
+      gg = gg.with_bits127–96(0xFFFFFFFF)
       assert_equal(0xFFFFFFFF, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
@@ -132,11 +132,11 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
       assert_equal(0, gg.bits63–0)
-      gg = gg.replace_bits127–96(0)
+      gg = gg.with_bits127–96(0)
       assert_equal(0, gg.bits127–96)
 
       assert_equal(0, gg.bits95–80)
-      gg = gg.replace_bits95–80(0xFFFF)
+      gg = gg.with_bits95–80(0xFFFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0xFFFF, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
@@ -144,11 +144,11 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
       assert_equal(0, gg.bits63–0)
-      gg = gg.replace_bits95–80(0)
+      gg = gg.with_bits95–80(0)
       assert_equal(0, gg.bits95–80)
 
       assert_equal(0, gg.bits79–64)
-      gg = gg.replace_bits79–64(0xFFFF)
+      gg = gg.with_bits79–64(0xFFFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0xFFFF, gg.bits79–64)
@@ -156,11 +156,11 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
       assert_equal(0, gg.bits63–0)
-      gg = gg.replace_bits79–64(0)
+      gg = gg.with_bits79–64(0)
       assert_equal(0, gg.bits79–64)
 
       assert_equal(0, gg.bits63–56)
-      gg = gg.replace_bits63–56(0xFF)
+      gg = gg.with_bits63–56(0xFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
@@ -168,12 +168,12 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
       assert_equal(0xFF000000_00000000, gg.bits63–0)
-      gg = gg.replace_bits63–56(0)
+      gg = gg.with_bits63–56(0)
       assert_equal(0, gg.bits63–56)
       assert_equal(0, gg.bits63–0)
 
       assert_equal(0, gg.bits55–48)
-      gg = gg.replace_bits55–48(0xFF)
+      gg = gg.with_bits55–48(0xFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
@@ -181,12 +181,12 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0xFF, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
       assert_equal(0x00FF0000_00000000, gg.bits63–0)
-      gg = gg.replace_bits55–48(0)
+      gg = gg.with_bits55–48(0)
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits63–0)
 
       assert_equal(0, gg.bits47–0)
-      gg = gg.replace_bits47–0(0xFFFFFFFFFFFF)
+      gg = gg.with_bits47–0(0xFFFFFFFFFFFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
@@ -194,12 +194,12 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, gg.bits55–48)
       assert_equal(0xFFFFFFFFFFFF, gg.bits47–0)
       assert_equal(0x0000FFFF_FFFFFFFF, gg.bits63–0)
-      gg = gg.replace_bits47–0(0)
+      gg = gg.with_bits47–0(0)
       assert_equal(0, gg.bits47–0)
       assert_equal(0, gg.bits63–0)
 
       assert_equal(0, gg.bits63–0)
-      gg = gg.replace_bits63–0(0xFFFFFFFF_FFFFFFFF)
+      gg = gg.with_bits63–0(0xFFFFFFFF_FFFFFFFF)
       assert_equal(0, gg.bits127–96)
       assert_equal(0, gg.bits95–80)
       assert_equal(0, gg.bits79–64)
@@ -207,7 +207,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0xFF, gg.bits55–48)
       assert_equal(0xFFFFFFFFFFFF, gg.bits47–0)
       assert_equal(0xFFFFFFFF_FFFFFFFF, gg.bits63–0)
-      gg = gg.replace_bits63–0(0)
+      gg = gg.with_bits63–0(0)
       assert_equal(0, gg.bits63–56)
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
@@ -218,20 +218,20 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
   def test_behavior
     ::GlobeGlitter::nil.tap { |gg|
       assert_equal(gg.behavior, ::GlobeGlitter::BEHAVIOR_UNSET)
-      assert_equal(::GlobeGlitter::BEHAVIOR_TIME_GREGORIAN, gg.replace_behavior(::GlobeGlitter::BEHAVIOR_TIME_GREGORIAN).behavior)
-      assert_equal(::GlobeGlitter::BEHAVIOR_RANDOM, gg.replace_behavior(::GlobeGlitter::BEHAVIOR_RANDOM).behavior)
-      assert_raise(::ArgumentError) { gg.replace_behavior(0) }
-      assert_raise(::ArgumentError) { gg.replace_behavior(9) }
+      assert_equal(::GlobeGlitter::BEHAVIOR_TIME_GREGORIAN, gg.with_behavior(::GlobeGlitter::BEHAVIOR_TIME_GREGORIAN).behavior)
+      assert_equal(::GlobeGlitter::BEHAVIOR_RANDOM, gg.with_behavior(::GlobeGlitter::BEHAVIOR_RANDOM).behavior)
+      assert_raise(::ArgumentError) { gg.with_behavior(0) }
+      assert_raise(::ArgumentError) { gg.with_behavior(9) }
     }
   end
 
   def test_layout
     ::GlobeGlitter::nil.tap { |gg|
       assert_equal(::GlobeGlitter::LAYOUT_UNSET, gg.layout)
-      assert_equal(::GlobeGlitter::LAYOUT_ITU_T_REC_X_667, gg.replace_layout(::GlobeGlitter::LAYOUT_ITU_T_REC_X_667).layout)
-      assert_equal(::GlobeGlitter::LAYOUT_MICROSOFT, gg.replace_layout(::GlobeGlitter::LAYOUT_MICROSOFT).layout)
-      assert_equal(::GlobeGlitter::LAYOUT_FUTURE, gg.replace_layout(::GlobeGlitter::LAYOUT_FUTURE).layout)
-      assert_raise(::ArgumentError) { gg.replace_layout(4) }
+      assert_equal(::GlobeGlitter::LAYOUT_ITU_T_REC_X_667, gg.with_layout(::GlobeGlitter::LAYOUT_ITU_T_REC_X_667).layout)
+      assert_equal(::GlobeGlitter::LAYOUT_MICROSOFT, gg.with_layout(::GlobeGlitter::LAYOUT_MICROSOFT).layout)
+      assert_equal(::GlobeGlitter::LAYOUT_FUTURE, gg.with_layout(::GlobeGlitter::LAYOUT_FUTURE).layout)
+      assert_raise(::ArgumentError) { gg.with_layout(4) }
     }
   end
 

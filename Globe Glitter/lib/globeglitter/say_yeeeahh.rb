@@ -1,3 +1,6 @@
+require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
+
+
 # `::String`-printing components.
 module ::GlobeGlitter::SAY_YEEEAHH
 
@@ -21,10 +24,18 @@ module ::GlobeGlitter::SAY_YEEEAHH
       #  zero-filled hexadecimal digit string with the most significant digit first.
       #  The hexadecimal values "a" through "f" are output as lower case characters.”
       ::Array[
-        # TODO: Handle swapping for String representation of MS-style GUIDs
-        self.bits127–96.to_s(16).rjust(8, ?0),
-        self.bits95–80.to_s(16).rjust(4, ?0),
-        self.bits79–64.to_s(16).rjust(4, ?0),
+        # GUIDs (a.k.a Microsoft layout) are stored little-endian and must be reversed to be printed.
+        # Note that the lsb 64 bits represent a GUID's `data4`. i.e. an array of octets which are the same
+        # in either endianness. This is why we only swap `data1`, `data2`, and `data3`.
+        (
+          self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(self.bits127–96) : self.bits127–96
+        ).to_s(16).rjust(8, ?0),
+        (
+          self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(self.bits95–80)  : self.bits95–80
+        ).to_s(16).rjust(4, ?0),
+        (
+          self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(self.bits79–64)  : self.bits79–64
+        ).to_s(16).rjust(4, ?0),
         ((self.bits63–56 << 8) | self.bits55–48).to_s(16).rjust(4, ?0),
         self.bits47–0.to_s(16).rjust(12, ?0),
       ].join(?-).encode!(::Encoding::US_ASCII).-@

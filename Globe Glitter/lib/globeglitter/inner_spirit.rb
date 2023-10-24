@@ -8,15 +8,9 @@ module ::GlobeGlitter::INNER_SPIRIT
   #   using the terms first and last. The first octet is also called "octet 15" and the last octet "octet 0".
   #   The bits within a UUID are also numbered as "bit 127" to "bit 0", with bit 127 as the most-
   #   significant bit of octet 15 and bit 0 as the least significant bit of octet 0.”
-  def bits127–96 = ((self.inner_spirit >> 96) & 0xFFFFFFFF).yield_self {
-    self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(_1) : _1
-  }
-  def bits95–80  = ((self.inner_spirit >> 80) & 0xFFFF).yield_self {
-    self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(_1) : _1
-  }
-  def bits79–64  = ((self.inner_spirit >> 64) & 0xFFFF).yield_self {
-    self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(_1) : _1
-  }
+  def bits127–96 = ((self.inner_spirit >> 96) & 0xFFFFFFFF)
+  def bits95–80  = ((self.inner_spirit >> 80) & 0xFFFF)
+  def bits79–64  = ((self.inner_spirit >> 64) & 0xFFFF)
   def bits63–56  = ((self.inner_spirit >> 56) & 0xFF)
   def bits55–48  = ((self.inner_spirit >> 48) & 0xFF)
   def bits47–0   = (self.inner_spirit & 0xFFFFFFFFFFFF)
@@ -24,30 +18,22 @@ module ::GlobeGlitter::INNER_SPIRIT
   # This one is used for building Microsoft GUID-style `data4`s.
   def bits63–0   = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF)
 
-  def replace_bits127–96(otra) = self.with(
-    inner_spirit: (self.inner_spirit & 0x00000000_FFFFFFFF_FFFFFFFF_FFFFFFFF) |
-                  ((self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(otra) : otra) << 96)
-  )
-  def replace_bits95–80(otra)  = self.with(
-    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_0000FFFF_FFFFFFFF_FFFFFFFF) |
-                  ((self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(otra) : otra) << 80)
-  )
-  def replace_bits79–64(otra)  = self.with(
-    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFF0000_FFFFFFFF_FFFFFFFF) |
-                  ((self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(otra) : otra) << 64)
-  )
-  def replace_bits63–56(otra)  = self.with(
-    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_00FFFFFF_FFFFFFFF) | (otra << 56)
-  )
-  def replace_bits55–48(otra)  = self.with(
-    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_FF00FFFF_FFFFFFFF) | (otra << 48)
-  )
-  def replace_bits47–0(otra)   = self.with(
-    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_FFFF0000_00000000) | otra
-  )
-  def replace_bits63–0(otra)   = self.with(
-    inner_spirit: (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_00000000_00000000) | otra
-  )
+  def with_bits127–96(otra) = self.with(inner_spirit: self.replace_bits127–96(otra))
+  def with_bits95–80(otra)  = self.with(inner_spirit: self.replace_bits95–80(otra))
+  def with_bits79–64(otra)  = self.with(inner_spirit: self.replace_bits79–64(otra))
+  def with_bits63–56(otra)  = self.with(inner_spirit: self.replace_bits63–56(otra))
+  def with_bits55–48(otra)  = self.with(inner_spirit: self.replace_bits55–48(otra))
+  def with_bits47–0(otra)   = self.with(inner_spirit: self.replace_bits47–0(otra))
+  def with_bits63–0(otra)   = self.with(inner_spirit: self.replace_bits63–0(otra))
+
+  def replace_bits127–96(otra) = (self.inner_spirit & 0x00000000_FFFFFFFF_FFFFFFFF_FFFFFFFF) | (otra << 96)
+  def replace_bits95–80(otra)  = (self.inner_spirit & 0xFFFFFFFF_0000FFFF_FFFFFFFF_FFFFFFFF) | (otra << 80)
+  def replace_bits79–64(otra)  = (self.inner_spirit & 0xFFFFFFFF_FFFF0000_FFFFFFFF_FFFFFFFF) | (otra << 64)
+  def replace_bits63–56(otra)  = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_00FFFFFF_FFFFFFFF) | (otra << 56)
+  def replace_bits55–48(otra)  = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_FF00FFFF_FFFFFFFF) | (otra << 48)
+  def replace_bits47–0(otra)   = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_FFFF0000_00000000) |  otra
+  def replace_bits63–0(otra)   = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_00000000_00000000) |  otra
+
 
   # ITU-T Rec. X.667 sez —
   #
@@ -82,7 +68,7 @@ module ::GlobeGlitter::INNER_SPIRIT
   # NOTE: Assignment methods in Ruby can only return their argument,
   #       so we name this `:replace_behavior` instead of `:behavior=`
   #       because we want to return `self`.
-  def replace_behavior(otra)
+  def with_behavior(otra)
     raise ::ArgumentError::new("invalid version #{otra.to_s}") unless otra.is_a?(::Integer) and otra.between?(1, 8)
     return self.with(
       behavior: otra,
@@ -139,7 +125,7 @@ module ::GlobeGlitter::INNER_SPIRIT
   # NOTE: Assignment methods in Ruby can only return their argument,
   #       so we name this `:replace_layout` instead of `:layout=`
   #       because we want to return `self`.
-  def replace_layout(otra)
+  def with_layout(otra)
     raise ::ArgumentError::new("invalid layout #{otra.to_s}") unless otra.respond_to?(:<) and otra.<(4)
     return self.with(
       layout: otra,
