@@ -78,6 +78,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   self::BEHAVIOR_UNSET            = -1
 
   #
+  # https://bitsavers.org/pdf/apollo/014962-A00_Domain_OS_Design_Principles_Jan89.pdf
   self::LAYOUT_NCS                =  0
 
   # ITU-T Rec. X.667, ISO/IEC 9834-8, and RFC 4122 are all the same standard,
