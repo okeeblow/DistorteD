@@ -15,6 +15,12 @@ module ::GlobeGlitter::INNER_SPIRIT
   def bits55–48  = ((self.inner_spirit >> 48) & 0xFF)
   def bits47–0   = (self.inner_spirit & 0xFFFFFFFFFFFF)
 
+  # This one is used for MSSQL-style comparison (based on groups delimited
+  # by the `-` of the hex `::String` representation):
+  # `https://web.archive.org/web/20190122185434/https://blogs.msdn.microsoft.com/
+  #  sqlprogrammability/2006/11/06/how-are-guids-compared-in-sql-server-2005/`
+  def bits63–48  = ((self.inner_spirit >> 48) & 0xFFFF)
+
   # This one is used for building Microsoft GUID-style `data4`s.
   def bits63–0   = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF)
 
@@ -24,6 +30,7 @@ module ::GlobeGlitter::INNER_SPIRIT
   def with_bits63–56(otra)  = self.with(inner_spirit: self.replace_bits63–56(otra))
   def with_bits55–48(otra)  = self.with(inner_spirit: self.replace_bits55–48(otra))
   def with_bits47–0(otra)   = self.with(inner_spirit: self.replace_bits47–0(otra))
+  def with_bits63–48(otra)  = self.with(inner_spirit: self.replace_bits63–48(otra))
   def with_bits63–0(otra)   = self.with(inner_spirit: self.replace_bits63–0(otra))
 
   def replace_bits127–96(otra) = (self.inner_spirit & 0x00000000_FFFFFFFF_FFFFFFFF_FFFFFFFF) | (otra << 96)
@@ -32,6 +39,7 @@ module ::GlobeGlitter::INNER_SPIRIT
   def replace_bits63–56(otra)  = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_00FFFFFF_FFFFFFFF) | (otra << 56)
   def replace_bits55–48(otra)  = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_FF00FFFF_FFFFFFFF) | (otra << 48)
   def replace_bits47–0(otra)   = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_FFFF0000_00000000) |  otra
+  def replace_bits63–48(otra)  = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_0000FFFF_FFFFFFFF) | (otra << 48)
   def replace_bits63–0(otra)   = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF_00000000_00000000) |  otra
 
 

@@ -12,6 +12,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, _1.bits63–56)
       assert_equal(0, _1.bits55–48)
       assert_equal(0, _1.bits47–0)
+      assert_equal(0, _1.bits63–48)
       assert_equal(0, _1.bits63–0)
     }
     ::GlobeGlitter::new("00000000-ffff-0000-0000-000000000000").tap {
@@ -21,6 +22,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, _1.bits63–56)
       assert_equal(0, _1.bits55–48)
       assert_equal(0, _1.bits47–0)
+      assert_equal(0, _1.bits63–48)
       assert_equal(0, _1.bits63–0)
     }
     ::GlobeGlitter::new("00000000-0000-ffff-0000-000000000000").tap {
@@ -30,6 +32,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, _1.bits63–56)
       assert_equal(0, _1.bits55–48)
       assert_equal(0, _1.bits47–0)
+      assert_equal(0, _1.bits63–48)
       assert_equal(0, _1.bits63–0)
     }
     ::GlobeGlitter::new("00000000-0000-0000-ff00-000000000000").tap {
@@ -39,6 +42,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0xFF, _1.bits63–56)
       assert_equal(0, _1.bits55–48)
       assert_equal(0, _1.bits47–0)
+      assert_equal(0xFF00, _1.bits63–48)
       assert_equal(0xFF000000_00000000, _1.bits63–0)
     }
     ::GlobeGlitter::new("00000000-0000-0000-00ff-000000000000").tap {
@@ -48,6 +52,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, _1.bits63–56)
       assert_equal(0xFF, _1.bits55–48)
       assert_equal(0, _1.bits47–0)
+      assert_equal(0x00FF, _1.bits63–48)
       assert_equal(0x00FF0000_00000000, _1.bits63–0)
     }
     ::GlobeGlitter::new("00000000-0000-0000-0000-ffffffffffff").tap {
@@ -57,6 +62,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, _1.bits63–56)
       assert_equal(0, _1.bits55–48)
       assert_equal(0xFFFFFFFFFFFF, _1.bits47–0)
+      assert_equal(0, _1.bits63–48)
       assert_equal(0x0000FFFF_FFFFFFFF, _1.bits63–0)
     }
   end
@@ -69,6 +75,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, _1.bits63–56)
       assert_equal(0, _1.bits55–48)
       assert_equal(0, _1.bits47–0)
+      assert_equal(0, _1.bits63–48)
       assert_equal(0, _1.bits63–0)
     }
     ::GlobeGlitter::new(0x00000000_FFFF0000_00000000_00000000).tap {
@@ -78,6 +85,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, _1.bits63–56)
       assert_equal(0, _1.bits55–48)
       assert_equal(0, _1.bits47–0)
+      assert_equal(0, _1.bits63–48)
       assert_equal(0, _1.bits63–0)
     }
     ::GlobeGlitter::new(0x00000000_0000FFFF_00000000_00000000).tap {
@@ -87,6 +95,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, _1.bits63–56)
       assert_equal(0, _1.bits55–48)
       assert_equal(0, _1.bits47–0)
+      assert_equal(0, _1.bits63–48)
       assert_equal(0, _1.bits63–0)
     }
     ::GlobeGlitter::new(0X00000000_00000000_FF000000_00000000).tap {
@@ -96,6 +105,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0xFF, _1.bits63–56)
       assert_equal(0, _1.bits55–48)
       assert_equal(0, _1.bits47–0)
+      assert_equal(0xFF00, _1.bits63–48)
       assert_equal(0xFF000000_00000000, _1.bits63–0)
     }
     ::GlobeGlitter::new(0x00000000_00000000_00FF0000_00000000).tap {
@@ -105,6 +115,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, _1.bits63–56)
       assert_equal(0xFF, _1.bits55–48)
       assert_equal(0, _1.bits47–0)
+      assert_equal(0x00FF, _1.bits63–48)
       assert_equal(0x00FF0000_00000000, _1.bits63–0)
     }
     ::GlobeGlitter::new(0x00000000_00000000_0000FFFF_FFFFFFFF).tap {
@@ -114,6 +125,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, _1.bits63–56)
       assert_equal(0, _1.bits55–48)
       assert_equal(0xFFFFFFFFFFFF, _1.bits47–0)
+      assert_equal(0, _1.bits63–48)
       assert_equal(0x0000FFFF_FFFFFFFF, _1.bits63–0)
     }
   end
@@ -131,6 +143,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, gg.bits63–56)
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
+      assert_equal(0, gg.bits63–48)
       assert_equal(0, gg.bits63–0)
       gg = gg.with_bits127–96(0)
       assert_equal(0, gg.bits127–96)
@@ -143,6 +156,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, gg.bits63–56)
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
+      assert_equal(0, gg.bits63–48)
       assert_equal(0, gg.bits63–0)
       gg = gg.with_bits95–80(0)
       assert_equal(0, gg.bits95–80)
@@ -155,6 +169,7 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, gg.bits63–56)
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
+      assert_equal(0, gg.bits63–48)
       assert_equal(0, gg.bits63–0)
       gg = gg.with_bits79–64(0)
       assert_equal(0, gg.bits79–64)
@@ -168,8 +183,10 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
       assert_equal(0xFF000000_00000000, gg.bits63–0)
+      assert_equal(0xFF00, gg.bits63–48)
       gg = gg.with_bits63–56(0)
       assert_equal(0, gg.bits63–56)
+      assert_equal(0, gg.bits63–48)
       assert_equal(0, gg.bits63–0)
 
       assert_equal(0, gg.bits55–48)
@@ -181,8 +198,10 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0xFF, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
       assert_equal(0x00FF0000_00000000, gg.bits63–0)
+      assert_equal(0x00FF, gg.bits63–48)
       gg = gg.with_bits55–48(0)
       assert_equal(0, gg.bits55–48)
+      assert_equal(0, gg.bits63–48)
       assert_equal(0, gg.bits63–0)
 
       assert_equal(0, gg.bits47–0)
@@ -194,8 +213,27 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0, gg.bits55–48)
       assert_equal(0xFFFFFFFFFFFF, gg.bits47–0)
       assert_equal(0x0000FFFF_FFFFFFFF, gg.bits63–0)
+      assert_equal(0, gg.bits63–48)
       gg = gg.with_bits47–0(0)
       assert_equal(0, gg.bits47–0)
+      assert_equal(0, gg.bits63–48)
+      assert_equal(0, gg.bits63–0)
+
+      assert_equal(0, gg.bits63–0)
+      gg = gg.with_bits63–48(0xFFFF)
+      assert_equal(0, gg.bits127–96)
+      assert_equal(0, gg.bits95–80)
+      assert_equal(0, gg.bits79–64)
+      assert_equal(0xFF, gg.bits63–56)
+      assert_equal(0xFF, gg.bits55–48)
+      assert_equal(0x0, gg.bits47–0)
+      assert_equal(0xFFFF, gg.bits63–48)
+      assert_equal(0xFFFF0000_00000000, gg.bits63–0)
+      gg = gg.with_bits63–48(0)
+      assert_equal(0, gg.bits63–56)
+      assert_equal(0, gg.bits55–48)
+      assert_equal(0, gg.bits47–0)
+      assert_equal(0, gg.bits63–48)
       assert_equal(0, gg.bits63–0)
 
       assert_equal(0, gg.bits63–0)
@@ -206,11 +244,13 @@ class TestGlobeGlitterInnerSpirit < Test::Unit::TestCase
       assert_equal(0xFF, gg.bits63–56)
       assert_equal(0xFF, gg.bits55–48)
       assert_equal(0xFFFFFFFFFFFF, gg.bits47–0)
+      assert_equal(0xFFFF, gg.bits63–48)
       assert_equal(0xFFFFFFFF_FFFFFFFF, gg.bits63–0)
       gg = gg.with_bits63–0(0)
       assert_equal(0, gg.bits63–56)
       assert_equal(0, gg.bits55–48)
       assert_equal(0, gg.bits47–0)
+      assert_equal(0, gg.bits63–48)
       assert_equal(0, gg.bits63–0)
     }
   end

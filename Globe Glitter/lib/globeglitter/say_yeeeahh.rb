@@ -36,7 +36,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
         (
           self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(self.bits79–64)  : self.bits79–64
         ).to_s(16).rjust(4, ?0),
-        ((self.bits63–56 << 8) | self.bits55–48).to_s(16).rjust(4, ?0),
+        self.bits63–48.to_s(16).rjust(4, ?0),
         self.bits47–0.to_s(16).rjust(12, ?0),
       ].join(?-).encode!(::Encoding::US_ASCII).-@
     else
