@@ -77,6 +77,32 @@ require('comparable') unless defined?(::Comparable)
   #     Otherwise, it returns 0 to indicate that the two Guid values are equal.”
   COMPARATOR_DOTNET           = 2
 
+
+  # `https://web.archive.org/web/20190122185434/https://blogs.msdn.microsoft.com/
+  #  sqlprogrammability/2006/11/06/how-are-guids-compared-in-sql-server-2005/`
+  #
+  # SQL Server doc sez —
+  #
+  # “Given these two uniqueidentifier values:
+  #    `@g1 = '55666BEE-B3A0-4BF5-81A7-86FF976E763F'`
+  #    `@g2 = '8DD5BCA5-6ABE-4F73-B4B7-393AE6BBB849'`
+  #
+  #  Many people think that `@g1` is less than `@g2`, since `55666BEE` is certainly smaller than `8DD5BCA5`.
+  #  However, this is not how SQL Server 2005 compares uniqueidentifier values.
+  #
+  #  The comparison is made by looking at byte "groups" right-to-left, and left-to-right within a byte "group".
+  #  A byte group is what is delimited by the `-` character. More technically, we look at bytes {10 to 15} first,
+  #  then {8-9}, then {6-7}, then {4-5}, and lastly {0 to 3}.
+  #
+  #  In this specific example, we would start by comparing `86FF976E763F` with `393AE6BBB849`.
+  #  Immediately we see that `@g2` is indeed greater than `@g1`.
+  #
+  #  Note that in .NET languages, Guid values have a different default sort order than in SQL Server.
+  #  If you find the need to order an array or list of Guid [in .NET] using SQL Server comparison semantics,
+  #  you can use an array or list of `SqlGuid` instead, which implements `IComparable` in a way
+  #  which is consistent with SQL Server semantics.”
+  COMPARATOR_MS_SQL           = 3
+
   # https://github.com/ruby/ruby/blob/master/compar.c
   include(::Comparable)
 
@@ -89,6 +115,10 @@ require('comparable') unless defined?(::Comparable)
       when COMPARATOR_DOTNET          then
         [self.data1, self.data2, self.data3, *self.data4].<=>(
           [otra.data1, otra.data2, otra.data3, *otra.data4]
+        )
+      when COMPARATOR_MS_SQL          then
+        [self.bits47–0, self.bits55–48, self.bits79–64, self.bits95–80, self.bits127–96].<=>(
+          [otra.bits47–0, otra.bits63–48, otra.bits79–64, otra.bits95–80, otra.bits127–96]
         )
       else raise ::ArgumentError::new("unsupported comparator #{comparator}")
       end
