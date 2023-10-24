@@ -13,6 +13,10 @@ class TestGlobeGlitterSayYeeeahh < Test::Unit::TestCase
     assert_equal(::Encoding::US_ASCII, 333.to_f.to_s.encoding)
     assert_equal(::Encoding::US_ASCII, 69.420.to_s.encoding)
     assert_equal(::Encoding::US_ASCII, ::Time::now.to_s.encoding)
+    assert_equal(333.to_s.encoding, ::GlobeGlitter::random.to_s.encoding)
+    assert_equal(333.to_f.to_s.encoding, ::GlobeGlitter::random.to_s.encoding)
+    assert_equal(69.420.to_s.encoding, ::GlobeGlitter::random.to_s.encoding)
+    assert_equal(::Time::now.to_s.encoding, ::GlobeGlitter::random.to_s.encoding)
   end
 
   def test_to_oid
