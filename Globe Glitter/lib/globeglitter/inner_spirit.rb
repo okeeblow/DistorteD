@@ -1,19 +1,21 @@
 # Bitslicing components.
 module ::GlobeGlitter::INNER_SPIRIT
 
-  # NOTE: These method names are based on big-endian representation of our buffer, i.e. MSB <-> LSB.
+  # NOTE: All method names are based on big-endian representation of our buffer, i.e. MSB <-> LSB.
   #
   # ITU-T Rec. X.667 sez —
   #  “This Recommendation | International Standard specifies a sequence of octets for a UUID
   #   using the terms first and last. The first octet is also called "octet 15" and the last octet "octet 0".
   #   The bits within a UUID are also numbered as "bit 127" to "bit 0", with bit 127 as the most-
   #   significant bit of octet 15 and bit 0 as the least significant bit of octet 0.”
+
+  # These are used for most time-based and random UUIDs.
   def bits127–96 = ((self.inner_spirit >> 96) & 0xFFFFFFFF)
   def bits95–80  = ((self.inner_spirit >> 80) & 0xFFFF)
   def bits79–64  = ((self.inner_spirit >> 64) & 0xFFFF)
   def bits63–56  = ((self.inner_spirit >> 56) & 0xFF)
   def bits55–48  = ((self.inner_spirit >> 48) & 0xFF)
-  def bits47–0   = (self.inner_spirit & 0xFFFFFFFFFFFF)
+  def bits47–0   =  (self.inner_spirit        & 0xFFFFFFFFFFFF)
 
   # This one is used for MSSQL-style comparison (based on groups delimited
   # by the `-` of the hex `::String` representation):
@@ -22,7 +24,15 @@ module ::GlobeGlitter::INNER_SPIRIT
   def bits63–48  = ((self.inner_spirit >> 48) & 0xFFFF)
 
   # This one is used for building Microsoft GUID-style `data4`s.
-  def bits63–0   = (self.inner_spirit & 0xFFFFFFFF_FFFFFFFF)
+  def bits63–0   =  (self.inner_spirit        & 0xFFFFFFFF_FFFFFFFF)
+
+  # These are used for `Platform::Guid`-style comparison.
+  # https://learn.microsoft.com/en-us/cpp/cppcx/platform-guid-value-class sez —
+  # “The ordering is lexicographic after treating each `Platform::Guid` as if it's an array
+  #  of four 32-bit unsigned values.”
+  def bits95–64  = ((self.inner_spirit >> 64) & 0xFFFFFFFF)
+  def bits63–32  = ((self.inner_spirit >> 32) & 0xFFFFFFFF)
+  def bits31–0   =  (self.inner_spirit        & 0xFFFFFFFF)
 
   def with_bits127–96(otra) = self.with(inner_spirit: self.replace_bits127–96(otra))
   def with_bits95–80(otra)  = self.with(inner_spirit: self.replace_bits95–80(otra))

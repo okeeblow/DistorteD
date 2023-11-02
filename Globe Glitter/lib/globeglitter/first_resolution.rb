@@ -1,5 +1,5 @@
-require('forwardable') unless defined?(::Forwardable)
 require('comparable') unless defined?(::Comparable)
+require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 
 ::GlobeGlitter::FIRST_RESOLUTION = ::Module::new do
 
@@ -102,6 +102,16 @@ require('comparable') unless defined?(::Comparable)
   #  which is consistent with SQL Server semantics.”
   COMPARATOR_MS_SQL           = 3
 
+
+  # https://learn.microsoft.com/en-us/cpp/cppcx/platform-guid-value-class
+  #
+  # MS Windows CPP doc sez —
+  #
+  # “The ordering is lexicographic after treating each `Platform::Guid` as if it's an array
+  #  of four 32-bit unsigned values. This isn't the ordering used by SQL Server or the .NET Framework,
+  #  nor is it the same as lexicographical ordering by string representation.”
+  COMPARATOR_MS_PLATFORM_GUID = 4
+
   # https://github.com/ruby/ruby/blob/master/compar.c
   include(::Comparable)
 
@@ -110,18 +120,33 @@ require('comparable') unless defined?(::Comparable)
     case otra
     when ::GlobeGlitter then
       case comparator
-      when COMPARATOR_ITU_T_REC_X_667 then self.inner_spirit.<=>(otra.inner_spirit)
-      when COMPARATOR_DOTNET          then
+      when COMPARATOR_ITU_T_REC_X_667  then self.inner_spirit.<=>(otra.inner_spirit)
+      when COMPARATOR_DOTNET           then
         [self.data1, self.data2, self.data3, *self.data4].<=>(
           [otra.data1, otra.data2, otra.data3, *otra.data4]
         )
-      when COMPARATOR_MS_SQL          then
+      when COMPARATOR_MS_SQL           then
         [self.bits47–0, self.bits55–48, self.bits79–64, self.bits95–80, self.bits127–96].<=>(
           [otra.bits47–0, otra.bits63–48, otra.bits79–64, otra.bits95–80, otra.bits127–96]
+        )
+      when COMPARATOR_MS_PLATFORM_GUID then
+        [
+          self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(self.bits127–96) : self.bits127–96,
+          self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(self.bits95–64)  : self.bits95–64,
+          self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(self.bits63–32)  : self.bits63–32,
+          self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(self.bits31–0)   : self.bits31–0,
+        ].<=>(
+          [
+            otra.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(otra.bits127–96) : otra.bits127–96,
+            otra.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(otra.bits95–64)  : otra.bits95–64,
+            otra.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(otra.bits63–32)  : otra.bits63–32,
+            otra.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(otra.bits31–0)   : otra.bits31–0,
+          ]
         )
       else raise ::ArgumentError::new("unsupported comparator #{comparator}")
       end
     else self.<=>(::GlobeGlitter::try_convert(otra), comparator:)
     end
   end
+
 end
