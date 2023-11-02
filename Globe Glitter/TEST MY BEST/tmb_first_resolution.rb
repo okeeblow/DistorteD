@@ -276,6 +276,21 @@ class TestGlobeGlitterFirstResolution < Test::Unit::TestCase
     ]
     sorted_bytes.combination(2).each { |(lower, higher)| assert_equal(-1, lower.<=>(higher, comparator: 3)) }
     sorted_guid_strings.combination(2).each { |(lower, higher)| assert_equal(-1, lower.<=>(higher, comparator: 3)) }
+
+    # Adapted from https://bornsql.ca/blog/how-sql-server-stores-data-types-guid/
+    more_sorted_guid_strings = [
+      ::GlobeGlitter::new("{3433DC04-153E-4991-B7FF-056F4A8D9D6F}"),
+      ::GlobeGlitter::new("{5BEF8652-E7CC-43A4-962F-0A62F1CB830A}"),
+      ::GlobeGlitter::new("{B6963B80-3276-4132-9369-56A0BC9A60E7}"),
+      ::GlobeGlitter::new("{E31B3B98-FC94-4D01-B013-6C36E79B38EB}"),
+      ::GlobeGlitter::new("{CC05E271-BACF-4472-901C-957568484405}"),
+      ::GlobeGlitter::new("{3907FE5F-F618-4C04-A66C-9FCFAA487921}"),
+      ::GlobeGlitter::new("{7D99F0DC-19EE-4A6B-A085-B4756A6CB816}"),
+      ::GlobeGlitter::new("{A756B8AB-1EA8-4215-B165-BAAFE99020D2}"),
+      ::GlobeGlitter::new("{ADA0C238-5877-4296-880E-BED7B1F602DF}"),
+      ::GlobeGlitter::new("{27CC7C7B-BE46-486F-B7AF-EAB69C5E6630}"),
+    ]
+    more_sorted_guid_strings.combination(2).each { |(lower, higher)| assert_equal(-1, lower.<=>(higher, comparator: 3)) }
   end
 
   def test_time_uuid

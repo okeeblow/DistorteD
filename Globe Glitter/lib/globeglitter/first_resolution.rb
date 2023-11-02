@@ -3,11 +3,6 @@ require('comparable') unless defined?(::Comparable)
 
 ::GlobeGlitter::FIRST_RESOLUTION = ::Module::new do
 
-  # https://devblogs.microsoft.com/oldnewthing/20190426-00/?p=102450
-  # https://devblogs.microsoft.com/oldnewthing/20190913-00/?p=102859
-  # https://bornsql.ca/blog/how-sql-server-stores-data-types-guid/
-  # https://github.com/dcerpc/dcerpc/blob/master/dcerpc/uuid/uuid.c#L1203
-
   # TL;DR: This comparator works at the bit level, comparing the raw bits of each side regardless of endianness.
   #
   #
@@ -50,6 +45,10 @@ require('comparable') unless defined?(::Comparable)
   #         by comparing the 128 bits of their in-memory representation considered as a 128 bit unsigned integer.
   #         Here, it is presumed that by the time the in-memory representation is obtained the appropriate
   #         byte-order canonicalizations have been carried out.”
+  #
+  #
+  # DCE RPC sez — “lexical ordering is not temporal ordering!”
+  # https://github.com/dcerpc/dcerpc/blob/master/dcerpc/uuid/uuid.c#L1152-L1305
   COMPARATOR_MEMCMP           = 1
   COMPARATOR_LEACH_SALZ       = 1
   COMPARATOR_ITU_T_REC_X_667  = 1
