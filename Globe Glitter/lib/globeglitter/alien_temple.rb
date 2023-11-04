@@ -61,9 +61,9 @@ module ::GlobeGlitter::ALIEN_TEMPLE
   def data1 = self.layout.eql?(self.class::LAYOUT_MICROSOFT) ?
               ::XROSS::THE::CPU::swap32(self.bits127–96)     : self.bits127–96
   def data2 = self.layout.eql?(self.class::LAYOUT_MICROSOFT) ?
-              ::XROSS::THE::CPU::swap32(self.bits95–80)      : self.bits95–80
+              ::XROSS::THE::CPU::swap16(self.bits95–80)      : self.bits95–80
   def data3 = self.layout.eql?(self.class::LAYOUT_MICROSOFT) ?
-              ::XROSS::THE::CPU::swap32(self.bits79–64)      : self.bits79–64
+              ::XROSS::THE::CPU::swap16(self.bits79–64)      : self.bits79–64
   def data4 = 8.times.with_object(self.bits63–0).with_object(::Array::new) { |(which, sixtyfour), out|
     out.unshift((sixtyfour >> (which * 8) & 0xFF))
   }
