@@ -112,6 +112,20 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   #  nor is it the same as lexicographical ordering by string representation.”
   COMPARATOR_MS_PLATFORM_GUID = 4
 
+  # TL;DR: This comparator works by comparing the 64 most-significant bits of each UUID,
+  #        followed by the 64 least-significant bits of each UUID.
+  #        The complicating factor is that we must mimic the way Java treats numeric datatypes,
+  #        because those 64-bit chunks mean something different in Java-land than in Ruby-land.
+  #
+  # https://hg.openjdk.org/jdk/jdk/file/tip/src/java.base/share/classes/java/util/UUID.java sez —
+  # “`compareTo()` — The first of two UUIDs is greater than the second if the most significant field
+  #                  in which the UUIDs differ is greater for the first UUID.”
+  #
+  # https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html sez —
+  # “long: The long data type is a 64-bit two's complement integer.
+  #        The signed long has a minimum value of -2⁶³ and a maximum value of 2⁶³-1.”
+  COMPARATOR_JAVA_UTIL_UUID   = 5
+
   # https://github.com/ruby/ruby/blob/master/compar.c
   include(::Comparable)
 
@@ -130,6 +144,8 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
           [otra.bits47–0, otra.bits63–48, otra.bits79–64, otra.bits95–80, otra.bits127–96]
         )
       when COMPARATOR_MS_PLATFORM_GUID then
+        # Test layout and swap here instead of using our `data{1..4}` accessors
+        # because those accessors do not align to the 32-bit chunk sizes needed here.
         [
           self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(self.bits127–96) : self.bits127–96,
           self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(self.bits95–64)  : self.bits95–64,
@@ -141,6 +157,21 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
             otra.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(otra.bits95–64)  : otra.bits95–64,
             otra.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(otra.bits63–32)  : otra.bits63–32,
             otra.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(otra.bits31–0)   : otra.bits31–0,
+          ]
+        )
+      when COMPARATOR_JAVA_UTIL_UUID   then
+        # Two's-complement-to-decimal, then compare.
+        [
+          ((self.data1 << 32) | (self.data2 << 16) | self.data3).yield_self {
+            ((_1 & ~(1 << 63)) - (_1 & (1 << 63)))
+          },
+          ((self.bits63–0 & ~(1 << 63)) - (self.bits63–0 & (1 << 63))),
+        ].<=>(
+          [
+            ((otra.data1 << 32) | (otra.data2 << 16) | otra.data3).yield_self {
+              ((_1 & ~(1 << 63)) - (_1 & (1 << 63)))
+            },
+            ((otra.bits63–0 & ~(1 << 63)) - (otra.bits63–0 & (1 << 63))),
           ]
         )
       else raise ::ArgumentError::new("unsupported comparator #{comparator}")

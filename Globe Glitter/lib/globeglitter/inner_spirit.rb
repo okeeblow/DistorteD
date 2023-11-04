@@ -23,7 +23,11 @@ module ::GlobeGlitter::INNER_SPIRIT
   #  sqlprogrammability/2006/11/06/how-are-guids-compared-in-sql-server-2005/`
   def bits63–48  = ((self.inner_spirit >> 48) & 0xFFFF)
 
-  # This one is used for building Microsoft GUID-style `data4`s.
+  # This one is used for `java.util.UUID`-style comparison.
+  def bits127–64 = ((self.inner_spirit >> 64) & 0xFFFFFFFF_FFFFFFFF)
+
+  # This one is used for building Microsoft GUID-style `data4`s as well as for
+  # `java.util.UUID`-style comparison.
   def bits63–0   =  (self.inner_spirit        & 0xFFFFFFFF_FFFFFFFF)
 
   # These are used for `Platform::Guid`-style comparison.

@@ -40,7 +40,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 # - Boost: https://www.boost.org/doc/libs/release/libs/uuid/doc/uuid.html
 # - Apple: https://developer.apple.com/documentation/foundation/uuid
 # - Apple: https://opensource.apple.com/source/CF/CF-299.35/Base.subproj/uuid.c.auto.html
-# - Java: https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/UUID.html
+# - Java: https://hg.openjdk.org/jdk/jdk/file/tip/src/java.base/share/classes/java/util/UUID.java
 # - .NET: https://learn.microsoft.com/en-us/dotnet/api/system.guid
 # - PHP: https://uuid.ramsey.dev/en/stable/index.html
 # - TianoCore EDKⅡ: https://edk2-docs.gitbook.io/edk-ii-uefi-driver-writer-s-guide/3_foundation/35_guids

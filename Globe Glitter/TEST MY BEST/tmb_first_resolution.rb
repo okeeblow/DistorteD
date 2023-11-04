@@ -385,6 +385,36 @@ class TestGlobeGlitterFirstResolution < Test::Unit::TestCase
     sorted_guid_strings.combination(2).each { |(lower, higher)| assert_equal(-1, lower.<=>(higher, comparator: 4)) }
   end
 
+  def test_java_util_uuid_comparator
+    # Adapted from Raymond Chen's “Another way to sort GUIDs: Java”
+    # https://devblogs.microsoft.com/oldnewthing/20190913-00/?p=102859
+    sorted_uuid_strings = [
+      ::GlobeGlitter::new("{80000000-0000-0000-8000-000000000000}"),
+      ::GlobeGlitter::new("{80FFFFFF-FFFF-FFFF-7FFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{FFFFFFFF-FFFF-FFFF-7FFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{00FFFFFF-FFFF-FFFF-7FFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7F00FFFF-FFFF-FFFF-7FFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFF00FF-FFFF-FFFF-7FFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFF00-FFFF-FFFF-7FFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-00FF-FFFF-7FFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FF00-FFFF-7FFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-00FF-7FFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FF00-7FFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-80FF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-00FF-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-7F00-FFFFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-7FFF-00FFFFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-7FFF-FF00FFFFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-7FFF-FFFF00FFFFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-7FFF-FFFFFF00FFFF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-7FFF-FFFFFFFF00FF}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-7FFF-FFFFFFFFFF00}"),
+      ::GlobeGlitter::new("{7FFFFFFF-FFFF-FFFF-7FFF-FFFFFFFFFFFF}"),
+    ]
+    sorted_uuid_strings.combination(2).each { |(lower, higher)| assert_equal(-1, lower.<=>(higher, comparator: 5)) }
+  end
+
   def test_time_uuid
     t1 = ::GlobeGlitter::from_time
     t2 = ::GlobeGlitter::from_time
