@@ -74,7 +74,7 @@ module ::GlobeGlitter::SAY_YEEEAHH
   #  care must be taken to strictly adhere to the byte order issues
   #  mentioned in the string representation section.”
   # “The following is an example of the string representation of a UUID as a URN:
-  #   urn:inner_spirit:f81d4fae-7dec-11d0-a765-00a0c91e6bf6”
+  #   urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6”
   def to_urn = ::String::new("urn:uuid:".concat(self.to_s(base=16)), encoding: ::Encoding::US_ASCII).-@
 
   # TODO: `#to_clsid` https://www.w3.org/Addressing/clsid-scheme

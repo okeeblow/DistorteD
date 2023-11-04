@@ -41,6 +41,40 @@ class TestGlobeGlitterSayYeeeahh < Test::Unit::TestCase
       ::String::new("oid:/UUID/f81d4fae-7dec-11d0-a765-00a0c91e6bf6", encoding: ::Encoding::US_ASCII),
       ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_oid_s,
     )
+    assert_equal(
+      ::String::new("oid:/UUID/f81d4fae-7dec-11d0-a765-00a0c91e6bf6", encoding: ::Encoding::US_ASCII),
+      ::GlobeGlitter::new("oid:/UUID/f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_oid_s,
+    )
+    111.times {
+      ::GlobeGlitter::random.tap {
+        assert_equal(_1.to_s, ::GlobeGlitter::new(_1.to_oid_s).to_s)
+        assert_equal(_1.to_oid_s, ::GlobeGlitter::new(_1.to_s).to_oid_s)
+      }
+    }
+  end
+
+  # ITU-T Rec. X.667 sez —
+  # “The string representation of a UUID is fully compatible with the URN syntax.
+  #  When converting from a bit-oriented, in-memory representation of a UUID into a URN,
+  #  care must be taken to strictly adhere to the byte order issues
+  #  mentioned in the string representation section.”
+  # “The following is an example of the string representation of a UUID as a URN:
+  #   urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6”
+  def test_to_urn
+    assert_equal(
+      ::String::new("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", encoding: ::Encoding::US_ASCII),
+      ::GlobeGlitter::new("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_urn,
+    )
+    assert_equal(
+      ::String::new("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", encoding: ::Encoding::US_ASCII),
+      ::GlobeGlitter::new("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_urn,
+    )
+    111.times {
+      ::GlobeGlitter::random.tap {
+        assert_equal(_1.to_s, ::GlobeGlitter::new(_1.to_urn).to_s)
+        assert_equal(_1.to_urn, ::GlobeGlitter::new(_1.to_s).to_urn)
+      }
+    }
   end
 
 

@@ -199,8 +199,31 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   #       When asked to emit a "GUID", GlobeGlitter will produce upper-case.
   #       By default (e.g. `#to_s`) — and when asked to emit a "UUID", GlobeGlitter will produce lower-case.
   self::MATCH_GUID         = /\A\{?([0-9A-F]{8})-?([0-9A-F]{4})-?([0-9A-F]{4})-?([0-9A-F]{4})-?([0-9A-F]{12})\}?\Z/
-  self::MATCH_UUID         = /\A([0-9a-f]{8})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{12})\Z/
-  self::MATCH_UUID_OR_GUID = /\A\{?(\h{8})-?(\h{4})-?(\h{4})-?(\h{4})-?(\h{12})\}?\Z/
+  self::MATCH_UUID         = %r&
+    # Beginning-of-String anchor
+    \A
+    # Optional URN and hex-String-OID preambles
+    (?:(?:[oO][iI][dD]|[uU][rR][nN])(?::\/|:)[uU][uU][iI][dD](?:\/|:))?
+    # Dude (Looks Like a UUID)
+    ([0-9a-f]{8})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{12})
+    # End-of-String anchor
+    \Z
+  &x
+  self::MATCH_UUID_OR_GUID = %r&
+    # Beginning-of-String anchor
+    \A
+    # Optional URN and hex-String-OID preambles
+    (?:(?:[oO][iI][dD]|[uU][rR][nN])(?::\/|:)[uU][uU][iI][dD](?:\/|:))?
+    # Optional GUID-style leading brace
+    # TODO: Look ahead/behind to only match a pair of braces, not just one or the other
+    \{?
+    # Case-insensitive hex-String matches
+    (\h{8})-?(\h{4})-?(\h{4})-?(\h{4})-?(\h{12})
+    # Optional GUID-style trailing brace
+    \}?
+    # End-of-String anchor
+    \Z
+  &x
 
   # https://zverok.space/blog/2023-01-03-data-initialize.html
   def self.new(*parts, layout: self::LAYOUT_UNSET, behavior: self::BEHAVIOR_UNSET) = self::allocate.tap { |gg|
