@@ -207,14 +207,16 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
     gg.send(
       :initialize,
       inner_spirit: case parts
-      in [::String => probably_guid] if (
-        probably_guid.match(self::MATCH_GUID) or
-        (probably_guid.match(self::MATCH_UUID) and layout.eql?(self::LAYOUT_MICROSOFT))
-      ) then
-        # Assume components are little-endian from a Microsoft-style GUID.
-        # Explicitly set layout flag in case we got here by `::Regexp` match.
-        layout = self::LAYOUT_MICROSOFT
+      in [::String => uuid_or_guid] if uuid_or_guid.match(self::MATCH_UUID_OR_GUID) then
         ::Regexp::last_match.captures.map!(&:hex).yield_self {
+          # Minute differences in `::String` format can indicate intended endianness.
+          # Set the `layout` flag to little-endian iff it looks like a MS-style GUID
+          # (braces, uppercase hex, or known CLSID), otherwise assume it's ITU/RFC-style big-endian.
+          layout = self::LAYOUT_MICROSOFT if (
+            (layout.eql?(self::LAYOUT_UNSET) and uuid_or_guid.match(self::MATCH_GUID)) or
+            (self::KNOWN_MICROSOFT_DATA4.include?((_1[3] << 48) | _1[4]))
+          )
+          layout = self::LAYOUT_ITU_T_REC_X_667 if layout.eql?(self::LAYOUT_UNSET)
           ((layout.eql?(self::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(_1[0]) : _1[0]) << 96) |
           ((layout.eql?(self::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(_1[1]) : _1[1]) << 80) |
           ((layout.eql?(self::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(_1[2]) : _1[2]) << 64) |
@@ -246,17 +248,6 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
         ((layout.eql?(self::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(data2) : data2) << 80) |
         ((layout.eql?(self::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(data3) : data3) << 64) |
         data4.reduce { (_1 << 8) | _2 }
-      in [::String => either_or] if (
-        either_or.match(self::MATCH_UUID) or either_or.match(self::MATCH_UUID_OR_GUID)
-      ) then
-        ::Regexp::last_match.captures.map!(&:hex).yield_self {
-          # Detect known Microsoft GUIDs by their `DATA4` and apply our Microsoft layout flag.
-          layout = self::LAYOUT_MICROSOFT if self::KNOWN_MICROSOFT_DATA4.include?((_1[3] << 48) | _1[4])
-          ((layout.eql?(self::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(_1[0]) : _1[0]) << 96) |
-          ((layout.eql?(self::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(_1[1]) : _1[1]) << 80) |
-          ((layout.eql?(self::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(_1[2]) : _1[2]) << 64) |
-          (_1[3] << 48) | _1[4]
-        }
       in [::Integer => spirit] if spirit.bit_length.<=(128) then spirit
       in [::Integer => msb, ::Integer => lsb] if (
         msb.bit_length.<=(64) and lsb.bit_length.<=(64)
