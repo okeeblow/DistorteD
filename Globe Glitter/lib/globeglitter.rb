@@ -213,7 +213,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
     # Beginning-of-String anchor
     \A
     # Optional URN and hex-String-OID preambles
-    (?:(?:[oO][iI][dD]|[uU][rR][nN])(?::\/|:)[uU][uU][iI][dD](?:\/|:))?
+    (?:(?:oid|urn)(?::\/|:)uuid(?:\/|:))?
     # Optional GUID-style leading brace
     # TODO: Look ahead/behind to only match a pair of braces, not just one or the other
     \{?
@@ -223,7 +223,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
     \}?
     # End-of-String anchor
     \Z
-  &x
+  &xi
 
   # https://zverok.space/blog/2023-01-03-data-initialize.html
   def self.new(*parts, layout: self::LAYOUT_UNSET, behavior: self::BEHAVIOR_UNSET) = self::allocate.tap { |gg|
