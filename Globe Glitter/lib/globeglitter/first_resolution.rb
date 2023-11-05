@@ -176,8 +176,8 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
         )
       else raise ::ArgumentError::new("unsupported comparator #{comparator}")
       end
-    else self.<=>(::GlobeGlitter::try_convert(otra), comparator:)
+    else nil
     end
-  end
+  end  # <=>
 
 end
