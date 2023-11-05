@@ -225,6 +225,17 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
     \Z
   &xi
 
+  # NOTE: This is hacky because we are matching characters, not numeric ranges.
+  #       irb> ::GlobeGlitter::max.to_i => 340282366920938463463374607431768211455
+  #       irb> ::GlobeGlitter::max.to_i.digits.size => 39
+  #
+  #       We **MUST** check `#bit_length <= 128` after matching something with this,
+  #       because it will match any digits of the specified length, even if they exceed `::max`.
+  #
+  # TOD0: Come up with an error-proof no-secondary-check-needed way to do this.
+  self::MATCH_UUID_OID     = /\Aurn:oid:2.25.([0-9]{1,39})\Z/i
+
+
   # https://zverok.space/blog/2023-01-03-data-initialize.html
   def self.new(*parts, layout: self::LAYOUT_UNSET, behavior: self::BEHAVIOR_UNSET) = self::allocate.tap { |gg|
     gg.send(
@@ -246,6 +257,12 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
           (_1[3] << 48) |
            _1[4]
         }
+      in [::String => oid] if (
+        # Must test `#bit_length` here because our `::Regexp` is too broad and will match up to `9{39}`.
+        oid.match(self::MATCH_UUID_OID) and ::Regexp::last_match&.[](1).to_i.bit_length.<=(128)
+      ) then
+        layout = self::LAYOUT_ITU_T_REC_X_667 if layout.eql?(self::LAYOUT_UNSET)
+        ::Regexp::last_match&.[](1).to_i
       in [::Array => data] if (
         data.size.eql?(16) and data.all?(::Integer) and data.max.bit_length.<=(8)
       ) then

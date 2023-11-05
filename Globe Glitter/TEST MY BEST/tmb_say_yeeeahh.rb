@@ -29,6 +29,18 @@ class TestGlobeGlitterSayYeeeahh < Test::Unit::TestCase
       ::String::new("urn:oid:2.25.329800735698586629295641978511506172918", encoding: ::Encoding::US_ASCII),
       ::GlobeGlitter::new("f81d4fae-7dec-11d0-a765-00a0c91e6bf6").to_oid,
     )
+    assert_equal(
+      ::String::new("urn:oid:2.25.329800735698586629295641978511506172918", encoding: ::Encoding::US_ASCII),
+      ::GlobeGlitter::new("urn:oid:2.25.329800735698586629295641978511506172918").to_oid,
+    )
+    111.times {
+      ::GlobeGlitter::random.tap {
+        assert_equal(_1.to_s, ::GlobeGlitter::new(_1.to_oid).to_s)
+        assert_equal(_1.to_oid, ::GlobeGlitter::new(_1.to_s).to_oid)
+      }
+    }
+    # Must *not* match input where OID value is greater than "max UUID".
+    assert_nil(::GlobeGlitter::try_convert("urn:oid:2.25.999999999999999999999999999999999999999"))
   end
 
   # ITU-T Rec. X.667 sez —
