@@ -176,7 +176,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
         )
       else raise ::ArgumentError::new("unsupported comparator #{comparator}")
       end
-    else nil
+    else nil  # “If the other object is not comparable then the `<=>` operator should return `nil`.”
     end
   end  # <=>
 
