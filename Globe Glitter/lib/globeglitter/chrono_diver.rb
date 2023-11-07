@@ -1,6 +1,8 @@
 require('securerandom') unless defined?(::SecureRandom)
 require('socket') unless defined?(::Socket)
 
+require_relative('chrono_seeker') unless defined?(::GlobeGlitter::CHRONO_SEEKER)
+
 # Components for time-based UUIDs.
 #
 # See also:
@@ -100,10 +102,13 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
   #   across systems.  This provides maximum protection against node
   #   identifiers that may move or switch from system to system rapidly.
   #   The initial value MUST NOT be correlated to the node identifier.”
-  #
-  # TODO: Pick a single random sequence at startup and increment from there,
-  #       maybe in a dedicated `::Ractor`.
-  def clock_sequence = ::SecureRandom::random_number(0xFFFF)
+  def clock_sequence = begin
+    # Try to get an actual sequence from the shared source
+    ::GlobeGlitter::CHRONO_SEEKER.take
+  rescue
+    # …but fall back to a random value if something happens to our `::Ractor`
+    ::SecureRandom::random_number(0b11111111111111)  # 14 bits
+  end
 
   # TODO: Take arguments to generate identifiers for specific time/seq/node.
   def from_time = self::new(

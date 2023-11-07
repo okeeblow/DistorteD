@@ -349,3 +349,6 @@ require_relative('globeglitter/first_resolution') unless defined?(::GlobeGlitter
 require_relative('globeglitter/chrono_diver') unless defined?(::GlobeGlitter::CHRONO_DIVER)
 ::GlobeGlitter::extend(::GlobeGlitter::CHRONO_DIVER::PENDULUMS)
 ::GlobeGlitter::include(::GlobeGlitter::CHRONO_DIVER::FRAGMENT)
+
+# Shared `sequence` for time-based identifiers.
+require_relative('globeglitter/chrono_seeker') unless defined?(::GlobeGlitter::CHRONO_SEEKER)

@@ -416,8 +416,10 @@ class TestGlobeGlitterFirstResolution < Test::Unit::TestCase
   end
 
   def test_time_uuid
-    t1 = ::GlobeGlitter::from_time
-    t2 = ::GlobeGlitter::from_time
-    assert_operator(t1, :<, t2)
+    333.times {
+      t1 = ::GlobeGlitter::from_time
+      t2 = ::GlobeGlitter::from_time
+      assert_operator(t1, :<, t2)
+    }
   end
 end
