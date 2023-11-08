@@ -12,6 +12,12 @@ require_relative('chrono_seeker') unless defined?(::GlobeGlitter::CHRONO_SEEKER)
 module ::GlobeGlitter::CHRONO_DIVER; end
 module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
 
+  # Ruby `::Time` to UUID time representation
+  NANOSECONDS_IN_SECOND  = 1_000_000_000
+
+  # Interval between sequential time-based UUIDs
+  NANOSECONDS_TICK_RATE  = 100
+
   # ITU-T Rec. X.667 sez —
   #
   #  “The timestamp is a 60-bit value.  For UUID version 1, this is
@@ -34,7 +40,9 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
   # - https://stackoverflow.com/questions/11835193/how-do-i-use-ruby-date-constants-gregorian-julian-england-and-even-italy
   #
   # TODO: Figure out how to handle date rollover.
-  private def current_time = (((::Time::now.utc - ::Time::new(1582, 10, 15)) * 1_000_000_000) / 100).to_i
+  private def current_time = (
+    ((::Time::now.utc - ::Time::new(1582, 10, 15).utc) * NANOSECONDS_IN_SECOND) / NANOSECONDS_TICK_RATE
+  ).to_i
 
   # ITU-T Rec. X.667 sez —
   #
