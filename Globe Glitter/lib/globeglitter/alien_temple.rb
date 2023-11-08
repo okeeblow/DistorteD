@@ -1,3 +1,6 @@
+require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
+
+
 # Microsoft-style GUID components.
 module ::GlobeGlitter::ALIEN_TEMPLE
 
