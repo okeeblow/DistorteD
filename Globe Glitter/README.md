@@ -282,3 +282,4 @@ https://web.archive.org/web/20230324102349/http://ubiqx.org/cifs/SMB.html
 - https://gist.github.com/brandur/1bddb5215540889983dc7e3a66ef4e41
 - https://github.com/cassandra-rb/simple_uuid
 - https://rubygems.org/gems/uuid4r
+- https://api.rubyonrails.org/classes/Digest/UUID.html

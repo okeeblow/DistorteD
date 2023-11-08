@@ -36,6 +36,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 # Other implementations for reference:
 # - FreeBSD: https://github.com/freebsd/freebsd-src/blob/main/sys/kern/kern_uuid.c
 # - Lunix: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git/tree/lib/uuid/gen_uuid.c
+# - Linux also: https://github.com/util-linux/util-linux/tree/master/libuuid
 # - Winders: https://learn.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
 # - Boost: https://www.boost.org/doc/libs/release/libs/uuid/doc/uuid.html
 # - Apple: https://developer.apple.com/documentation/foundation/uuid
@@ -47,6 +48,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 # - GUID Partition Table: https://en.wikipedia.org/wiki/GUID_Partition_Table#Partition_type_GUIDs
 # - LAS: https://github.com/ASPRSorg/LAS/wiki/LAS-ProjectID-Encoding-and-Representation
 # - Python: https://docs.python.org/3/library/uuid.html
+# - Go: https://pkg.go.dev/github.com/google/UUID
 # - ReactOS: https://doxygen.reactos.org/d9/d36/psdk_2guiddef_8h_source.html
 # - FreeDCE: https://github.com/dcerpc/dcerpc/tree/master/dcerpc/uuid
 
