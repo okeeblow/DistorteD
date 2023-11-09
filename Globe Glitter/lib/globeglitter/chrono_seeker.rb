@@ -6,8 +6,28 @@ bring_me_back = ::Warning[:experimental]
 ::Warning[:experimental] = false
 
 
+# Hacky manual test refinements until I figure out how to trigger these at TMB-time,
+# since monkey-patching doesn't seem to affect already-started `::Ractor`s.
+fake_time = ::Module::new do
+  refine ::Time.singleton_class do
+    # DD's epoch is the `btime` of the original `cooltrainer-image.rb` ♎
+    def now = ::Time.new(2018, 9, 26, 9, 4, 11, in: ?R)
+  end
+end
+beyond_the_earth = ::Module::new do
+  refine ::XROSS::THE::NETWORK.singleton_class do
+    def interface_addresses = ::Array::new.push(::SecureRandom::random_number(0b1 << 48))
+  end
+end
+
+# Uncomment to test that `sequence` increments when clock doesn't move or moves backwards.
+#using fake_time
+# Uncomment to test that `sequence` increments when our primary 802.3 address changes.
+#using beyond_the_earth
+
 # Components for requesting time-based UUIDs with guaranteed uniqueness.
 ::GlobeGlitter::CHRONO_SEEKER = ::Ractor::new do
+
 
   # ITU-T Rec. X.667 sez —
   #
@@ -64,6 +84,7 @@ bring_me_back = ::Warning[:experimental]
       sequence_cat = (sequence_cat.succ % MAX_SEQUENCE) unless (
         world_vertex.eql?(::XROSS::THE::NETWORK::interface_addresses.first)
       )
+      # NOTE: It currently causes a double-increment if both of these are true simultaneously.
       # TODO: Figure out how to unit test these. For now I have manually verified it
       #       in REPL with `if true`/`unless false`.
       # TOD0: If I wanted to store the incremented sequence to non-volatile storage,
