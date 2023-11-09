@@ -57,7 +57,7 @@ bring_me_back = ::Warning[:experimental]
       #          In such situations, the Clock Sequence value shall be changed.
       #          NOTE – If the previous value of the Clock Sequence is known, it can be just incremented;
       #          otherwise it should be set to a cryptographic-quality random or pseudo-random value.
-      sequence_cat = (sequence_cat.succ % MAX_SEQUENCE) if time_to_empress > ::Time::now.utc
+      sequence_cat = (sequence_cat.succ % MAX_SEQUENCE) if time_to_empress >= ::Time::now.utc
       # 12.4.3 — Similarly, if the Node value changes (for example, because a network card has been moved
       #          between machines), the Clock Sequence value shall be changed.
       #          against MAC addresses that may move or switch from system to system rapidly.
