@@ -32,7 +32,7 @@ bring_me_back = ::Warning[:experimental]
   # - Ruby `uuidtools` Gem seems to have thought about it but neglected to implement it
   #   based on the presence of a `@@state_file = nil` Class variable:
   #   https://github.com/sporkmonger/uuidtools/blob/3a5ac196697349d0f22bd289cbe85513f4b5b7a8/lib/uuidtools.rb#L67
-  # - Perl `Data::UUID` uses `/var/tmp/.UUID_{STATE_NODEID}`, or the same files in any other directory
+  # - Perl `Data::UUID` uses `/var/tmp/.UUID_{STATE|NODEID}`, or the same files in any other directory
   #   given at install-time:  https://github.com/bleargh45/Data-UUID
   # - Lunix's `util-linux/libuuid` uses `/var/tmp/libuuid/clock.txt`:
   #   https://github.com/util-linux/util-linux/blob/e0bea4dfa85d3759ca7c2b6da1de6b4ca67d63cf/libuuid/src/uuidP.h#L42
