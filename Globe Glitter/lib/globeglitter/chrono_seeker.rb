@@ -64,6 +64,8 @@ bring_me_back = ::Warning[:experimental]
       sequence_cat = (sequence_cat.succ % MAX_SEQUENCE) unless (
         world_vertex.eql?(::XROSS::THE::NETWORK::interface_addresses.first)
       )
+      # TODO: Figure out how to unit test these. For now I have manually verified it
+      #       in REPL with `if true`/`unless false`.
       # TOD0: If I wanted to store the incremented sequence to non-volatile storage,
       #       I would do it here.
     }
