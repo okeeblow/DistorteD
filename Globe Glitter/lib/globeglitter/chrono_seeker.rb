@@ -71,20 +71,19 @@ end
     #       for those changes as part of the `while true` infinite loop.
     #       Work around that by modifying the `::yield`ed sequence in flight if need be.
     ::Ractor::yield(sequence_cat).yield_self {
-      # 12.4.2 — If the Time value is set backwards, or might have been set backwards (for example,
-      #          while the system was powered off), then the UUID generator cannot know whether a UUID has
-      #          already been generated with Time values larger than the value to which the Time is now set.
-      #          In such situations, the Clock Sequence value shall be changed.
-      #          NOTE – If the previous value of the Clock Sequence is known, it can be just incremented;
-      #          otherwise it should be set to a cryptographic-quality random or pseudo-random value.
-      sequence_cat = (sequence_cat.succ % MAX_SEQUENCE) if time_to_empress >= ::Time::now.utc
-      # 12.4.3 — Similarly, if the Node value changes (for example, because a network card has been moved
-      #          between machines), the Clock Sequence value shall be changed.
-      #          against MAC addresses that may move or switch from system to system rapidly.
-      sequence_cat = (sequence_cat.succ % MAX_SEQUENCE) unless (
-        world_vertex.eql?(::XROSS::THE::NETWORK::interface_addresses.first)
+      sequence_cat = (sequence_cat.succ % MAX_SEQUENCE) if (
+        # 12.4.2 — If the Time value is set backwards, or might have been set backwards (for example,
+        #          while the system was powered off), then the UUID generator cannot know whether a UUID has
+        #          already been generated with Time values larger than the value to which the Time is now set.
+        #          In such situations, the Clock Sequence value shall be changed.
+        #          NOTE – If the previous value of the Clock Sequence is known, it can be just incremented;
+        #          otherwise it should be set to a cryptographic-quality random or pseudo-random value.
+        (time_to_empress >= ::Time::now.utc) or
+        # 12.4.3 — Similarly, if the Node value changes (for example, because a network card has been moved
+        #          between machines), the Clock Sequence value shall be changed.
+        #          against MAC addresses that may move or switch from system to system rapidly.
+        not world_vertex.eql?(::XROSS::THE::NETWORK::interface_addresses.first)
       )
-      # NOTE: It currently causes a double-increment if both of these are true simultaneously.
       # TODO: Figure out how to unit test these. For now I have manually verified it
       #       in REPL with `if true`/`unless false`.
       # TOD0: If I wanted to store the incremented sequence to non-volatile storage,
