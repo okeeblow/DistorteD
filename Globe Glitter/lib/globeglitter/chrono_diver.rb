@@ -1,8 +1,5 @@
 require('securerandom') unless defined?(::SecureRandom)
-require('socket') unless defined?(::Socket)
-
 require('xross-the-xoul/network') unless defined?(::XROSS::THE::NETWORK)
-
 require_relative('chrono_seeker') unless defined?(::GlobeGlitter::CHRONO_SEEKER)
 
 # Components for time-based UUIDs.

@@ -1,3 +1,5 @@
+require('socket') unless defined?(::Socket)
+
 class XROSS; end
 class XROSS::THE; end
 # General background info: https://beej.us/guide/bgnet/html/
