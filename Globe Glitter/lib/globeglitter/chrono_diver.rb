@@ -38,7 +38,7 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
   #
   # TODO: Figure out how to handle date rollover.
   private def current_time = (
-    ((::Time::now.utc - ::Time::new(1582, 10, 15).utc) * NANOSECONDS_IN_SECOND) / NANOSECONDS_TICK_RATE
+    ((::Time::now.utc - ::Time::new(1582, 10, 15, 0, 0, 0, ?Z)) * NANOSECONDS_IN_SECOND) / NANOSECONDS_TICK_RATE
   ).to_i
 
   # ITU-T Rec. X.667 sez —
