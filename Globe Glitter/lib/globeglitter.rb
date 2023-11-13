@@ -76,8 +76,8 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   #   relate to other `GG` instances.
 
   # Default constructor arguments.
-  self::LAYOUT_UNSET              = -1
-  self::BEHAVIOR_UNSET            = -1
+  self::LAYOUT_UNSET              = nil
+  self::BEHAVIOR_UNSET            = nil
 
   #
   # https://bitsavers.org/pdf/apollo/014962-A00_Domain_OS_Design_Principles_Jan89.pdf
