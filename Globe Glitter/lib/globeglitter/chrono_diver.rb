@@ -10,10 +10,10 @@ module ::GlobeGlitter::CHRONO_DIVER; end
 module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
 
   # Ruby `::Time` to UUID time representation
-  NANOSECONDS_IN_SECOND  = 1_000_000_000
+  NANOSECONDS_IN_SECOND    = 1_000_000_000
 
   # Interval between sequential time-based UUIDs
-  NANOSECONDS_TICK_RATE  = 100
+  GREGORIAN_UUID_TICK_RATE = 100
 
   # ITU-T Rec. X.667 sez —
   #
@@ -37,9 +37,10 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
   # - https://stackoverflow.com/questions/11835193/how-do-i-use-ruby-date-constants-gregorian-julian-england-and-even-italy
   #
   # TODO: Figure out how to handle date rollover.
-  private def current_time = (
-    ((::Time::now.utc - ::Time::new(1582, 10, 15, 0, 0, 0, ?Z)) * NANOSECONDS_IN_SECOND) / NANOSECONDS_TICK_RATE
+  private def current_raw_gregorian_time = (
+    ((::Time::now.utc - ::Time::new(1582, 10, 15, 0, 0, 0, in: ?Z)) * NANOSECONDS_IN_SECOND) / GREGORIAN_UUID_TICK_RATE
   ).to_i
+  def current_gregorian_time = (self.current_raw_gregorian_time % 0xFFFFFFFF_FFFFFFF)  # 60 bits
 
   # ITU-T Rec. X.667 sez —
   #
@@ -92,8 +93,8 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
   end
 
   # TODO: Take arguments to generate identifiers for specific time/seq/node.
-  def from_time = self::new(
-    current_time,
+  def from_gregorian_time = self::new(
+    current_gregorian_time,
     clock_sequence,
     current_node,
     layout: ::GlobeGlitter::LAYOUT_ITU_T_REC_X_667,
