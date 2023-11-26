@@ -110,7 +110,7 @@ module ::GlobeGlitter::CHRONO_DIVER::PENDULUMS
   # Conclusion: For forward-compatibility, we will ensure the 0-bit `variant` is set for NCS UUIDs
   #             even if some yet-undefined Address Family could technically make that not so.
   #             irb> 0b01111111 => 127
-  def primary_address_family = ::Socket.ip_address_list.map!(&:afamily).keep_if { _1 <= 127 }.first
+  def primary_address_family = ::Socket.ip_address_list.map!(&:afamily).keep_if { _1 <= 0b01111111 }.first
 
   # NCK `uuid.c` sez —
   #  “The first 48 bits are the number of 4 usec units of time that have passed since 1/1/80 0000 GMT.
