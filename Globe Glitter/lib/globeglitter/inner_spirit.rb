@@ -17,6 +17,13 @@ module ::GlobeGlitter::INNER_SPIRIT
   def bits55–48  = ((self.inner_spirit >> 48) & 0xFF)
   def bits47–0   =  (self.inner_spirit        & 0xFFFFFFFFFFFF)
 
+  # These are used for AEGIS UIDs (36-bit time)
+  def bits63–28 = ((self.inner_spirit >> 28) & 0xFFFFFFFFF)
+
+  # These are used for NCA/NCS time-based UUIDs i.e. "variant 0"
+  def bits127–80 = ((self.inner_spirit >> 80) & 0xFFFFFFFFFFFF)
+  def bits55–0   =  (self.inner_spirit        & 0xFFFFFFFFFFFFFF)
+
   # This one is used for MSSQL-style comparison (based on groups delimited
   # by the `-` of the hex `::String` representation):
   # `https://web.archive.org/web/20190122185434/https://blogs.msdn.microsoft.com/
@@ -125,10 +132,35 @@ module ::GlobeGlitter::INNER_SPIRIT
   #    1     1     1    Reserved for future definition.
   #
   #
-  # NOTE: Some libraries (like `java.util.UUID`) specify the variant value as if it were not backwards-masked:
-  #       https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/UUID.html#variant()
+  # NOTE: DCE/RPC only checks for presense or absense of the `1` bit in what it calls `IS_OLD_UUID`:
+  #       https://github.com/dcerpc/dcerpc/blob/master/dcerpc/uuid/uuid.c#L289
   #
+  #         #define IS_OLD_UUID(uuid) (((uuid)->clock_seq_hi_and_reserved & 0xc0) != 0x80)
+  #
+  #         irb> 0x80.to_s(2) => "10000000"
+  #
+  #
+  # NOTE: DCE/RPC *also* suggests that there may be Microsoft GUIDs out there with
+  #       the "Reserved for future definition" bits set? See "DAMNMICROSOFT":
+  #       https://github.com/dcerpc/dcerpc/blob/master/dcerpc/uuid/uuid.c#L440
+  #
+  #         (((uuid)->clock_seq_hi_and_reserved & 0x80) == 0x00) || /* var #0 */ \
+  #         (((uuid)->clock_seq_hi_and_reserved & 0xc0) == 0x80) || /* var #1 */ \
+  #         (((uuid)->clock_seq_hi_and_reserved & 0xe0) == 0xc0) || /* var #2 */ \
+  #         (((uuid)->clock_seq_hi_and_reserved & 0xe0) == 0xe0)    /* var #DAMNMICROSOFT */ \
+  #
+  #         irb> 0x00.to_s(2) => "0"
+  #         irb> 0x80.to_s(2) => "10000000"
+  #         irb> 0xc0.to_s(2) => "11000000"
+  #         irb> 0xe0.to_s(2) => "11100000"
+  #
+  #       Perhaps this is referring to situations where a stored-as-little-endian identifier
+  #       is trying to be understood by expecting-big-endian software? Dunno!
+  #
+  #
+  # NOTE: Some libraries (like `java.util.UUID`) specify the variant value as if it were not backwards-masked.
   #       I think it makes more sense for it to count upward like `version` rather than use the raw bit value.
+  #       https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/UUID.html#variant()
   def variant
     # TODO: Figure out how this should interact with our instance `layout` member
     #       since only certain variants should be embedded here.

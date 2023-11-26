@@ -16,29 +16,48 @@ module ::GlobeGlitter::SAY_YEEEAHH
   #       - `::BigDecimal`: https://bugs.ruby-lang.org/issues/17011
   def to_s(base=16)
     case base
-    when 2  then self.inner_spirit.to_s(2).rjust(128, ?0)
+    when 2  then self.inner_spirit.to_s(2).rjust(
+      case self.layout
+        when self.class::LAYOUT_AEGIS     then 64
+        #when self.class::LAYOUT_COHERENCE then 256  TODO: Coherence-style 256-bit UUIDs
+        else                                   128
+      end,
+      ?0)
     when 16 then
-      # ITU-T Rec. X.667 sez —
-      #
-      # “Each field is treated as an integer and has its value printed as a
-      #  zero-filled hexadecimal digit string with the most significant digit first.
-      #  The hexadecimal values "a" through "f" are output as lower case characters.”
-      ::Array[
-        # GUIDs (a.k.a Microsoft layout) are stored little-endian and must be reversed to be printed.
-        # Note that the lsb 64 bits represent a GUID's `data4`. i.e. an array of octets which are the same
-        # in either endianness. This is why we only swap `data1`, `data2`, and `data3`.
-        (
-          self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(self.bits127–96) : self.bits127–96
-        ).to_s(16).rjust(8, ?0),
-        (
-          self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(self.bits95–80)  : self.bits95–80
-        ).to_s(16).rjust(4, ?0),
-        (
-          self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(self.bits79–64)  : self.bits79–64
-        ).to_s(16).rjust(4, ?0),
-        self.bits63–48.to_s(16).rjust(4, ?0),
-        self.bits47–0.to_s(16).rjust(12, ?0),
-      ].join(?-).encode!(::Encoding::US_ASCII).-@
+      if self.layout.eql?(self.class::LAYOUT_NCS) then
+        ::Array[
+          # `<time>.<address-family>.<h.o.s.t.i.d>`
+          self.bits127–80.to_s(16).rjust(12, ?0),
+          self.bits63–56.to_s(16).rjust(2, ?0),
+          *(7.times.with_object(self.bits55–0).with_object(::Array::new) { |(which, fiftysix), out|
+            out.unshift((fiftysix >> (which * 8) & 0xFF))
+          }.map! { _1.to_s(16).rjust(2, ?0) })
+        ].join(?.).encode!(::Encoding::US_ASCII).-@
+      else
+        # ITU-T Rec. X.667 sez —
+        #
+        # “Each field is treated as an integer and has its value printed as a
+        #  zero-filled hexadecimal digit string with the most significant digit first.
+        #  The hexadecimal values "a" through "f" are output as lower case characters.”
+        ::Array[
+          # GUIDs (a.k.a Microsoft layout) are stored little-endian and must be reversed to be printed.
+          # Note that the lsb 64 bits represent a GUID's `data4`. i.e. an array of octets which are the same
+          # in either endianness. This is why we only swap `data1`, `data2`, and `data3`.
+          (
+            self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap32(self.bits127–96) : self.bits127–96
+          ).to_s(16).rjust(8, ?0),
+          (
+            self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(self.bits95–80)  : self.bits95–80
+          ).to_s(16).rjust(4, ?0),
+          (
+            self.layout.eql?(self.class::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(self.bits79–64)  : self.bits79–64
+          ).to_s(16).rjust(4, ?0),
+          self.bits63–48.to_s(16).rjust(4, ?0),
+          self.bits47–0.to_s(16).rjust(12, ?0),
+        ].join(?-).encode!(::Encoding::US_ASCII).tap {
+          (_1.upcase! && _1.prepend(?{) && _1.concat(?})) if self.layout.eql?(self.class::LAYOUT_MICROSOFT)
+        }.-@
+      end
     else
       # Compare to `::Integer#to_s` behavior:
       #   irb> 333.to_s(666)

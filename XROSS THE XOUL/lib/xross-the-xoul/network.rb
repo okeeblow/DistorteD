@@ -40,4 +40,11 @@ class XROSS::THE::NETWORK
     _1.delete(0)
   }
 
+  # List interfaces having a non-zero hardware address.
+  def self.physical_interfaces = ::Socket::getifaddrs.select! {
+    _1.addr.inspect_sockaddr =~ MATCH_INTERFACE_HWADDR
+  }.reject! {
+    _1.addr.inspect_sockaddr.include?("hwaddr=00:00:00:00:00:00")
+  }
+
 end

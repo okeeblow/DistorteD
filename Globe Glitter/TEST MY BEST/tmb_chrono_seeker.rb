@@ -16,8 +16,8 @@ class TestGlobeGlitterChronoSeeker < Test::Unit::TestCase
       # If we get failures here, try increasing the wait (maybe by another `* 100`?) such that
       # more-than-UUID-tick-rate time will have elapsed between calls to `CHRONO_SEEKER.take`.
       ::Kernel::sleep(
-        1 / ::GlobeGlitter::CHRONO_DIVER::PENDULUMS::NANOSECONDS_IN_SECOND *
-          ::GlobeGlitter::CHRONO_DIVER::PENDULUMS::NANOSECONDS_TICK_RATE
+        1 / ::GlobeGlitter::CHRONO_DIVER::NANOSECONDS_IN_SECOND *
+          ::GlobeGlitter::CHRONO_DIVER::GREGORIAN_UUID_TICK_RATE
       )
       cat_sequence = ::GlobeGlitter::CHRONO_SEEKER.take
       assert_equal(sequence_cat, cat_sequence)

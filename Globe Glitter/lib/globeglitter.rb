@@ -7,6 +7,8 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 # - https://dl.acm.org/doi/pdf/10.1145/800220.806679  (1982)
 # - https://utzoo.superglobalmegacorp.com/usenet/news084f1/b105/comp/unix/wizards/11047.txt
 # - AEGIS & Domain/OS 1997 date bug http://web.mit.edu/kolya/www/csa-faq.html#4.25
+# - http://bitsavers.org/pdf/apollo/AEGIS_Overview_1985.pdf#page=61
+# - http://bitsavers.org/pdf/apollo/AEGIS_Overview_1985.pdf#page=79
 #
 # Apollo NCS:
 # - https://jim.rees.org/apollo-archive/papers/ncs.pdf.gz
@@ -23,6 +25,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 # - https://utzoo.superglobalmegacorp.com/usenet/b229/comp/sys/sun/15342.txt
 # - https://utzoo.superglobalmegacorp.com/usenet/b179/comp/protocols/misc/989.txt
 # - http://www.typewritten.org/Articles/Apollo/005488-02.pdf DOMAIN System User’s Guide
+# - https://web.archive.org/web/20060712084433/http://shekel.jct.ac.il/~roman/tcp-ip-lab/ibm-tutorial/3376c411.html
 #
 # Version 1/3/4/5, variant 1 UUID:
 # - https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-X.667-201210-I!!PDF-E&type=items
@@ -79,8 +82,32 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   self::LAYOUT_UNSET              = nil
   self::BEHAVIOR_UNSET            = nil
 
+  # http://bitsavers.org/pdf/apollo/AEGIS_Overview_1985.pdf#page=414 sez —
+  #   “A 64-bit number that is the unique "name" of any object (file, physical or logical volune,
+  #    acl, directory, etc.) that lives in or is part of the Apollo file system.
+  #    Certain objects, since their UIDs must be known a priori, are given "canned" UIDs.”
+  # http://bitsavers.org/pdf/apollo/AEGIS_Overview_1985.pdf#page=61 sez —
+  #   “64-bit unique name. Four 16-bit words.”
+  # http://bitsavers.org/pdf/apollo/AEGIS_Overview_1985.pdf#page=79 sez —
+  #   “36 bits — Time Since 1/1/1980, 16 millisecond units
+  #    8  bits — MBZ  (called "AVAILABLE" on page 61)
+  #    20 bits — Node ID”
+  # On an actual AEGIS system the UID would be used as the first 64 of a 96-bit object address:
+  #   http://bitsavers.org/pdf/apollo/AEGIS_Overview_1985.pdf#page=98
+  self::LAYOUT_AEGIS              = -1
+
+  # NCK `uuid.c` sez —
+  #  “The first 48 bits are the number of 4 usec units of time that have passed since 1/1/80 0000 GMT.
+  #   The next 16 bits are reserved for future use. The next 8 bits are an address family.
+  #   The next 56 bits are a host ID in the form allowed by the specified address family.”
   #
-  # https://bitsavers.org/pdf/apollo/014962-A00_Domain_OS_Design_Principles_Jan89.pdf
+  # DCE/RPC refers to these as "old" UUIDs:
+  # - By presense or absense of the `1` bit in what it calls `IS_OLD_UUID`:
+  #   https://github.com/dcerpc/dcerpc/blob/master/dcerpc/uuid/uuid.c#L289
+  #     #define IS_OLD_UUID(uuid) (((uuid)->clock_seq_hi_and_reserved & 0xc0) != 0x80)
+  # - As seen when parsing `::Strings` into UUID structs:
+  #   https://github.com/dcerpc/dcerpc/blob/master/dcerpc/uuid/uuid.c#L956-L1001
+  self::LAYOUT_NCA                =  0
   self::LAYOUT_NCS                =  0
 
   # ITU-T Rec. X.667, ISO/IEC 9834-8, and RFC 4122 are all the same standard,
@@ -102,6 +129,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   self::LAYOUT_FUTURE             =  3
 
   #
+  self::BEHAVIOR_TIME_APOLLO      =  0
   self::BEHAVIOR_TIME_GREGORIAN   =  1
   self::BEHAVIOR_RANDOM           =  4
   # TODO: Versions 2–8 (WIP)
@@ -200,6 +228,8 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
   #
   #       When asked to emit a "GUID", GlobeGlitter will produce upper-case.
   #       By default (e.g. `#to_s`) — and when asked to emit a "UUID", GlobeGlitter will produce lower-case.
+  self::MATCH_AEGIS_UID    = /\A\h{1,8}[,\.]\h{1,8}\Z/
+  self::MATCH_NCA_UUID     = /\A(\h{12})\.(\h\h).(\h\h).(\h\h)\.(\h\h)\.(\h\h)\.(\h\h)\.(\h\h)\.(\h\h)\Z/
   self::MATCH_GUID         = /\A\{?([0-9A-F]{8})-?([0-9A-F]{4})-?([0-9A-F]{4})-?([0-9A-F]{4})-?([0-9A-F]{12})\}?\Z/
   self::MATCH_UUID         = %r&
     # Beginning-of-String anchor
@@ -240,6 +270,7 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
 
   # https://zverok.space/blog/2023-01-03-data-initialize.html
   def self.new(*parts, layout: self::LAYOUT_UNSET, behavior: self::BEHAVIOR_UNSET) = self::allocate.tap { |gg|
+    # TODO: reject integer arguments smaller than the bit_length which would indicate variant/version
     gg.send(
       :initialize,
       inner_spirit: case parts
@@ -290,6 +321,16 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
         ((layout.eql?(self::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(data2) : data2) << 80) |
         ((layout.eql?(self::LAYOUT_MICROSOFT) ? ::XROSS::THE::CPU::swap16(data3) : data3) << 64) |
         data4.reduce { (_1 << 8) | _2 }
+      in [::Integer => aegis_time, 0, ::Integer => node] if (
+        aegis_time.bit_length.<=(36) and node.bit_length.<=(20) and
+        layout.eql?(self::LAYOUT_AEGIS)  # This old uncommon layout must be explicitly asked for.
+      ) then
+        (aegis_time << 28) | node
+      in [::Integer => ncs_time, 0, ::Integer => address_family, ::Integer => node] if (
+        ncs_time.bit_length.<=(48) and address_family.bit_length.<=(7) and node.bit_length.<=(56) and
+        layout.eql?(self::LAYOUT_NCS)  # This old uncommon layout must be explicitly asked for.
+      ) then
+        (ncs_time << 80) | (address_family << 56) | node
       in [::Integer => spirit] if spirit.bit_length.<=(128) then spirit
       in [::Integer => msb, ::Integer => lsb] if (
         msb.bit_length.<=(64) and lsb.bit_length.<=(64)
@@ -297,13 +338,11 @@ require('xross-the-xoul/cpu') unless defined?(::XROSS::THE::CPU)
       in [::Integer => time, ::Integer => seq, ::Integer => node] if (
         time.bit_length.<=(64) and seq.bit_length.<=(16) and node.bit_length.<=(48)
       ) then
-        (time << 64) |
-        (seq  << 48) |
-         node
+        (time << 64) | (seq  << 48) | node
       else raise ::ArgumentError::new("invalid number or structure of arguments")  #TOD0: "given/expected"?
       end,
-      layout: (layout.respond_to?(:>=) and layout&.>=(0)) ? layout : self::LAYOUT_UNSET,
-      behavior: (behavior.respond_to?(:>=) and behavior&.>=(1)) ? behavior : self::BEHAVIOR_UNSET,
+      layout: (layout.respond_to?(:>=) and layout&.>=(-1)) ? layout : self::LAYOUT_UNSET,
+      behavior: (behavior.respond_to?(:>=) and behavior&.>=(0)) ? behavior : self::BEHAVIOR_UNSET,
     )  # send(:initialize)
   }  # def self.new
 
