@@ -327,20 +327,20 @@ module ::GlobeGlitter::CHRONO_DIVER::FRAGMENT
     case [self.layout, self.behavior]
       in [-1, *] then
         ::GlobeGlitter::CHRONO_DIVER::EPOCH_APOLLO + (
-          self.time                                            /
-          ::GlobeGlitter::CHRONO_DIVER::MILLISECONDS_IN_SECOND *
-          ::GlobeGlitter::CHRONO_DIVER::AEGIS_UID_TICK_RATE
+          self.time                                            *
+          ::GlobeGlitter::CHRONO_DIVER::AEGIS_UID_TICK_RATE    /
+          ::GlobeGlitter::CHRONO_DIVER::MILLISECONDS_IN_SECOND
         )
       in [0, *]  then
         ::GlobeGlitter::CHRONO_DIVER::EPOCH_APOLLO + (
-          self.time                                            /
-          ::GlobeGlitter::CHRONO_DIVER::MICROSECONDS_IN_SECOND *
-          ::GlobeGlitter::CHRONO_DIVER::NCS_UUID_TICK_RATE
+          self.time                                            *
+          ::GlobeGlitter::CHRONO_DIVER::NCS_UUID_TICK_RATE     /
+          ::GlobeGlitter::CHRONO_DIVER::MICROSECONDS_IN_SECOND
         )
       in [1, 1]  then ::GlobeGlitter::CHRONO_DIVER::EPOCH_GREGORIAN + (
-        self.time                                              /
-        ::GlobeGlitter::CHRONO_DIVER::NANOSECONDS_IN_SECOND    *
-        ::GlobeGlitter::CHRONO_DIVER::GREGORIAN_UUID_TICK_RATE
+        self.time                                              *
+        ::GlobeGlitter::CHRONO_DIVER::GREGORIAN_UUID_TICK_RATE /
+        ::GlobeGlitter::CHRONO_DIVER::NANOSECONDS_IN_SECOND
       )
     else nil
     end
