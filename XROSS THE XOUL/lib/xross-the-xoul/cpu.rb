@@ -90,6 +90,17 @@ class XROSS::THE::CPU
      ((otra >> 56) & 0x00000000000000FF))
   end
 
+  # Compare to Lunix `__fswab128`
+  # https://lore.kernel.org/lkml/20180124090519.6680-2-ynorov@caviumnetworks.com/
+  #
+  #   __u64 h = (__u64) (val >> 64);
+  #   __u64 l = (__u64) val;
+  #   return (((__u128)__fswab64(l)) << 64) | (__u128)(__fswab64(h));
+  def self.swap128(otra)
+    otra = otra.to_i unless otra.is_a?(::Integer)
+    (self.swap64(otra & 0xFFFFFFFF_FFFFFFFF) << 64) | self.swap64(otra >> 64)
+  end
+
   # Automatically do The Right Thing™ based on the `#bit_length`, expressed as a `::Range`
   # because the `#bit_length` tells us the position of the most significant non-sign bit, e.g.:
   #   irb> 0b11100111.bit_length => 8
@@ -97,10 +108,11 @@ class XROSS::THE::CPU
   def self.swap(otra)
     otra = otra.to_i unless otra.is_a?(::Integer)
     case otra.bit_length
-    when 0        then otra
-    when (01..16) then self.swap16(otra)
-    when (17..32) then self.swap32(otra)
-    when (33..64) then self.swap64(otra)
+    when 0         then otra
+    when (01..16)  then self.swap16(otra)
+    when (17..32)  then self.swap32(otra)
+    when (33..64)  then self.swap64(otra)
+    when (65..128) then self.swap128(otra)
     else raise ::ArgumentError::new("Unable to byte-swap #{otra} with unsupported `#bit_length` #{otra.bit_length}")
     end
   end
