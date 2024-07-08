@@ -101,6 +101,62 @@ class TestGlobeGlitter < Test::Unit::TestCase
     assert_nil(::GlobeGlitter::try_convert(1 << 129))
     assert_nil(::GlobeGlitter::try_convert(1 << 65, 1 << 65))
     assert_nil(::GlobeGlitter::try_convert(1 << 33, 1 << 17, 1 << 49))
+
+    # https://github.com/uuid-rs/uuid/blob/main/tests/ui/compile_fail/invalid_parse.rs
+    [
+      "",
+      "!",
+      "F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45",
+      "F9168C5E-CEB2-4faa-BBF-329BF39FA1E4",
+      "F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4",
+      "F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4",
+      "F9168C5E-CEB2-4faa",
+      "F9168C5E-CEB2-4faaXB6BFF329BF39FA1E4",
+      "F9168C5E-CEB-24fa-eB6BFF32-BF39FA1E4",
+      "01020304-1112-2122-3132-41424344",
+      "67e5504410b1426f9247bb680e5fe0c88",
+      "67e5504410b1426f9247bb680e5fe0cg8",
+      #"urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8", # TODO
+      "67e5504410b1426f9247bb680e5fe0c",
+      "67e550X410b1426f9247bb680e5fe0cd",
+      "67e550-4105b1426f9247bb680e5fe0c",
+      "F9168C5E-CEB2-4faa-B6BF1-02BF39FA1E4",
+      "F9168C5E-CEB2-4faa-BBF-329BF39FA1E4",
+      "F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4",
+      "01020304-1112-2122-3132-41424344",
+      "F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4",
+      "urn:uuid:F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4",
+      "urn:uuid:F9168C5E-CEB2-4faa-B2cBF-32BF39FA1E4",
+      "{F9168C5E-CEB2-4faa-B0a75-32BF39FA1E4}",
+      "{F9168C5E-CEB2-4faa-B6BF-329Bz39FA1E4}",
+      "67e550-4105b1426f9247bb680e5fe0c",
+      "504410岡林aab1426f9247bb680e5fe0c8",
+      "504410😎👍aab1426f9247bb680e5fe0c8",
+      "{F9168C5E-CEB2-4faa-👍5-32BF39FA1E4}",
+      "F916",
+      "F916x",
+    ].each { |badbadnotgood|
+      assert_raise(::ArgumentError) { ::GlobeGlitter::new(badbadnotgood) }
+    }
+  end
+
+  def test_do_parse_valid_input
+    # https://github.com/uuid-rs/uuid/blob/main/tests/ui/compile_pass/valid.rs
+    [
+      "00000000000000000000000000000000",
+      "67e55044-10b1-426f-9247-bb680e5fe0c8",
+      "67e55044-10b1-426f-9247-bb680e5fe0c8",
+      "F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4",
+      "67e5504410b1426f9247bb680e5fe0c8",
+      "01020304-1112-2122-3132-414243444546",
+      "urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8",
+      "00000000000000000000000000000000",
+      "00000000-0000-0000-0000-000000000000",
+      "67e55044-10b1-426f-9247-bb680e5fe0c8",
+      "67e5504410b1426f9247bb680e5fe0c8",
+    ].each { |goodgoodnotbad|
+      assert_nothing_raised(::ArgumentError) { ::GlobeGlitter::new(goodgoodnotbad) }
+    }
   end
 
 end
