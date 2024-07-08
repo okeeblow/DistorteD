@@ -21,12 +21,18 @@ class TestGlobeGlitter < Test::Unit::TestCase
   end
 
   def test_nil_uuid
-    assert_equal("00000000-0000-0000-0000-000000000000", ::GlobeGlitter::nil.to_s)
+    assert_equal(
+      ::String::new("00000000-0000-0000-0000-000000000000", encoding: ::Encoding::US_ASCII),
+      ::GlobeGlitter::nil.to_s
+    )
   end
 
   # https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-04.html#name-max-uuid
   def test_max_uuid
-    assert_equal("ffffffff-ffff-ffff-ffff-ffffffffffff", ::GlobeGlitter::max.to_s)
+    assert_equal(
+      ::String::new("ffffffff-ffff-ffff-ffff-ffffffffffff", encoding: ::Encoding::US_ASCII),
+      ::GlobeGlitter::max.to_s
+    )
   end
 
   def test_microsoft_detection
@@ -72,11 +78,11 @@ class TestGlobeGlitter < Test::Unit::TestCase
   # Both decomposed and composed forms should be accepted
   def test_sixteen_octet_constructor
     assert_equal(
-      "00ff00ff-00ff-00ff-00ff-00ff00ff00ff",
+      ::String::new("00ff00ff-00ff-00ff-00ff-00ff00ff00ff", encoding: ::Encoding::US_ASCII),
       ::GlobeGlitter::new(0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF).to_s,
     )
     assert_equal(
-      "00ff00ff-00ff-00ff-00ff-00ff00ff00ff",
+      ::String::new("00ff00ff-00ff-00ff-00ff-00ff00ff00ff", encoding: ::Encoding::US_ASCII),
       ::GlobeGlitter::new([0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF]).to_s,
     )
   end
