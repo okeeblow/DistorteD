@@ -377,4 +377,18 @@
     <glob pattern="*.ahk"/>
   </mime-type>
 
+  <!--
+    Compare to `application/x-nintendo-3ds-executable`.
+    https://xboxdevwiki.net/Xbe
+  -->
+  <mime-type type="application/x-microsoft-xbox-executable">
+    <comment>Microsoft XBOX executable</comment>
+    <sub-class-of type="application/x-executable"/>
+    <generic-icon name="text-x-executable"/>
+    <glob pattern="*.xbe"/>
+    <magic>
+      <match offset="0" type="string" value="XBEH"/>
+    </magic>
+  </mime-type>
+
 </mime-info>
