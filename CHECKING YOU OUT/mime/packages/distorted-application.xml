@@ -357,4 +357,11 @@
     </magic>
   </mime-type>
 
+  <!--
+		TODO: Pull Request to add `*.wpt` to upstream FDo.
+  -->
+  <mime-type type="application/vnd.ms-works">
+    <glob pattern="*.wpt"/>
+  </mime-type>
+
 </mime-info>
