@@ -364,4 +364,17 @@
     <glob pattern="*.wpt"/>
   </mime-type>
 
+	<!--
+		I am totally just making this one up! I can't find a single reference
+		for AHK being given a Media Type. `file` just calls it a plain text file
+		`UTF-8 Unicode (with BOM) text, with CRLF line terminators`.
+  -->
+  <mime-type type="application/vnd.autohotkey">
+		<comment>AutoHotkey script</comment>
+		<sub-class-of type="application/x-executable"/>
+		<sub-class-of type="text/plain"/>
+		<generic-icon name="text-x-script"/>
+    <glob pattern="*.ahk"/>
+  </mime-type>
+
 </mime-info>
